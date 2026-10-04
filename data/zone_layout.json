@@ -1,0 +1,4766 @@
+{
+ "m_per_square": 2.2,
+ "m_per_roo_unit": 0.0021484375,
+ "axes": "glTF metres: +X east, +Y up, +Z south",
+ "zones": [
+  {
+   "rid": 300,
+   "class": "Raza",
+   "name": "Raza",
+   "bounds_m": {
+    "min": [
+     -0.275,
+     0.0,
+     -96.422
+    ],
+    "max": [
+     151.525,
+     0.0,
+     76.725
+    ]
+   },
+   "teleport": {
+    "pos": [
+     89.1,
+     0.344,
+     49.5
+    ],
+    "yaw_kod": 3072
+   },
+   "exits": [
+    {
+     "pos": [
+      130.9,
+      0.344,
+      34.1
+     ],
+     "row": 16,
+     "col": 60,
+     "locked": true,
+     "message": "The door to the farmhouse is firmly bolted from the inside."
+    },
+    {
+     "pos": [
+      135.3,
+      0.344,
+      14.3
+     ],
+     "row": 7,
+     "col": 62,
+     "locked": true,
+     "message": "The door to the tiny shed is locked."
+    },
+    {
+     "pos": [
+      67.1,
+      0.344,
+      49.5
+     ],
+     "row": 23,
+     "col": 31,
+     "locked": true,
+     "message": "The doors to the temple remain locked at all times, except during funeral services."
+    },
+    {
+     "pos": [
+      69.3,
+      0.344,
+      49.5
+     ],
+     "row": 23,
+     "col": 32,
+     "locked": true,
+     "message": "The doors to the temple remain locked at all times, except during funeral services."
+    },
+    {
+     "pos": [
+      23.1,
+      0.413,
+      25.3
+     ],
+     "row": 12,
+     "col": 11,
+     "dest_rid": 332,
+     "dest_row": 5,
+     "dest_col": 7
+    },
+    {
+     "pos": [
+      108.9,
+      0.344,
+      31.9
+     ],
+     "row": 15,
+     "col": 50,
+     "dest_rid": 333,
+     "dest_row": 5,
+     "dest_col": 2
+    },
+    {
+     "pos": [
+      108.9,
+      0.344,
+      29.7
+     ],
+     "row": 14,
+     "col": 50,
+     "dest_rid": 333,
+     "dest_row": 5,
+     "dest_col": 2
+    },
+    {
+     "pos": [
+      56.1,
+      0.344,
+      14.3
+     ],
+     "row": 7,
+     "col": 26,
+     "dest_rid": 301,
+     "dest_row": 8,
+     "dest_col": 6
+    },
+    {
+     "pos": [
+      58.3,
+      0.413,
+      14.3
+     ],
+     "row": 7,
+     "col": 27,
+     "dest_rid": 301,
+     "dest_row": 8,
+     "dest_col": 6
+    },
+    {
+     "pos": [
+      104.5,
+      0.413,
+      38.5
+     ],
+     "row": 18,
+     "col": 48,
+     "dest_rid": 303,
+     "dest_row": 5,
+     "dest_col": 3
+    },
+    {
+     "pos": [
+      104.5,
+      0.344,
+      40.7
+     ],
+     "row": 19,
+     "col": 48,
+     "dest_rid": 303,
+     "dest_row": 5,
+     "dest_col": 3
+    },
+    {
+     "pos": [
+      106.7,
+      0.413,
+      38.5
+     ],
+     "row": 18,
+     "col": 49,
+     "dest_rid": 303,
+     "dest_row": 5,
+     "dest_col": 3
+    },
+    {
+     "pos": [
+      104.5,
+      0.413,
+      23.1
+     ],
+     "row": 11,
+     "col": 48,
+     "dest_rid": 304,
+     "dest_row": 5,
+     "dest_col": 3
+    },
+    {
+     "pos": [
+      104.5,
+      0.413,
+      25.3
+     ],
+     "row": 12,
+     "col": 48,
+     "dest_rid": 304,
+     "dest_row": 5,
+     "dest_col": 3
+    },
+    {
+     "pos": [
+      106.7,
+      3.438,
+      23.1
+     ],
+     "row": 11,
+     "col": 49,
+     "dest_rid": 304,
+     "dest_row": 5,
+     "dest_col": 3
+    },
+    {
+     "pos": [
+      106.7,
+      0.344,
+      25.3
+     ],
+     "row": 12,
+     "col": 49,
+     "dest_rid": 304,
+     "dest_row": 5,
+     "dest_col": 3
+    },
+    {
+     "pos": [
+      36.3,
+      3.403,
+      9.9
+     ],
+     "row": 5,
+     "col": 17,
+     "dest_rid": 305,
+     "dest_row": 5,
+     "dest_col": 4
+    },
+    {
+     "pos": [
+      38.5,
+      0.413,
+      9.9
+     ],
+     "row": 5,
+     "col": 18,
+     "dest_rid": 305,
+     "dest_row": 5,
+     "dest_col": 4
+    },
+    {
+     "pos": [
+      36.3,
+      0.413,
+      12.1
+     ],
+     "row": 6,
+     "col": 17,
+     "dest_rid": 305,
+     "dest_row": 5,
+     "dest_col": 4
+    },
+    {
+     "pos": [
+      38.5,
+      0.413,
+      12.1
+     ],
+     "row": 6,
+     "col": 18,
+     "dest_rid": 305,
+     "dest_row": 5,
+     "dest_col": 4
+    },
+    {
+     "pos": [
+      51.7,
+      0.688,
+      58.3
+     ],
+     "row": 27,
+     "col": 24,
+     "dest_rid": 306,
+     "dest_row": 11,
+     "dest_col": 16
+    },
+    {
+     "pos": [
+      51.7,
+      0.688,
+      60.5
+     ],
+     "row": 28,
+     "col": 24,
+     "dest_rid": 306,
+     "dest_row": 11,
+     "dest_col": 16
+    },
+    {
+     "pos": [
+      23.1,
+      0.413,
+      34.1
+     ],
+     "row": 16,
+     "col": 11,
+     "dest_rid": 307,
+     "dest_row": 5,
+     "dest_col": 7
+    },
+    {
+     "pos": [
+      23.1,
+      0.413,
+      36.3
+     ],
+     "row": 17,
+     "col": 11,
+     "dest_rid": 307,
+     "dest_row": 5,
+     "dest_col": 7
+    },
+    {
+     "pos": [
+      31.9,
+      0.413,
+      58.3
+     ],
+     "row": 27,
+     "col": 15,
+     "dest_rid": 308,
+     "dest_row": 4,
+     "dest_col": 11
+    },
+    {
+     "pos": [
+      29.7,
+      0.413,
+      58.3
+     ],
+     "row": 27,
+     "col": 14,
+     "dest_rid": 308,
+     "dest_row": 4,
+     "dest_col": 11
+    },
+    {
+     "pos": [
+      20.9,
+      4.873,
+      12.1
+     ],
+     "row": 6,
+     "col": 10,
+     "dest_rid": 302,
+     "dest_row": 5,
+     "dest_col": 8
+    },
+    {
+     "pos": [
+      23.1,
+      0.413,
+      12.1
+     ],
+     "row": 6,
+     "col": 11,
+     "dest_rid": 302,
+     "dest_row": 5,
+     "dest_col": 8
+    },
+    {
+     "pos": [
+      20.9,
+      4.873,
+      14.3
+     ],
+     "row": 7,
+     "col": 10,
+     "dest_rid": 302,
+     "dest_row": 5,
+     "dest_col": 8
+    },
+    {
+     "pos": [
+      23.1,
+      0.413,
+      14.3
+     ],
+     "row": 7,
+     "col": 11,
+     "dest_rid": 302,
+     "dest_row": 5,
+     "dest_col": 8
+    }
+   ],
+   "edge_exits": [
+    {
+     "side": "LEAVE_NORTH",
+     "dest_rid": 330,
+     "dest_row": 43,
+     "dest_col": 41,
+     "rotate": "ROTATE_NONE"
+    }
+   ],
+   "objects": [
+    {
+     "class": "Sign",
+     "params": {
+      "desc": "Now that you're outside, you can really practice moving around.  Autorun is on by default, but if you wish to slow down a bit use the SHIFT key to walk while you move.  Also, you can use the A and D keys to slide sideways (or 'strafe').  The END key is good for turning around 180 degrees in a hurry.\n\nIt's also a good time to learn about the map, to the right of the graphics window.  The blue line shows your position on the map.  Depending on the size of the map, this may look like a blue dot but you can use the + and - keys to zoom in/out.  Other players will show up as blue dots, monsters as red dots, and NPCs as black dots.  You can add comments to the map by RIGHT CLICKING on the map, and then entering your reminder to yourself.",
+      "newbie": 1,
+      "name": "Getting around"
+     },
+     "pos": [
+      57.75,
+      0.344,
+      24.544
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "desc": "Beyond this gate lies the rest of the world of Meridian 59.  At this time, you may wish to read the mail your guardian angel has sent you as it contains information on how to survive and what you might do in this world.  To access your mail, type MAIL.\n\nIn the area surrounding Raza you will find monsters appropriate for your level, however when encountering a new monster, you should look at its description to see what hitpoints it will take you to.  If this number is far beyond your own level, the monster may be too dangerous for you to challenge alone.\n\nYou can return to Raza at any time to sell your items or purchase more, and if you venture north-east to the Forest of Farol you may travel north or south to other towns.",
+      "newbie": 1,
+      "name": "Entering the world"
+     },
+     "pos": [
+      85.8,
+      0.344,
+      9.35
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      77.0,
+      0.344,
+      50.6
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      9.9,
+      0.481,
+      62.7
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      14.3,
+      0.481,
+      60.5
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      12.1,
+      0.481,
+      56.1
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      16.5,
+      0.481,
+      56.1
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      9.9,
+      0.481,
+      51.7
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "FoodDispenser",
+     "params": {
+      "classtype": {
+       "class": "Apple"
+      }
+     },
+     "pos": [
+      27.5,
+      0.481,
+      19.388
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "FoodDispenser",
+     "params": {
+      "classtype": {
+       "class": "Apple"
+      }
+     },
+     "pos": [
+      27.5,
+      0.481,
+      8.525
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      64.9,
+      0.344,
+      11.0
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      70.4,
+      0.344,
+      11.0
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      45.925,
+      0.344,
+      11.0
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      45.1,
+      0.344,
+      48.4
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      105.944,
+      0.344,
+      26.744
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      53.9,
+      0.344,
+      49.5
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      100.1,
+      0.344,
+      41.25
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      92.4,
+      0.344,
+      11.0
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      104.088,
+      0.344,
+      34.925
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 198
+     },
+     "pos": [
+      8.8,
+      0.481,
+      60.5
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 198
+     },
+     "pos": [
+      118.525,
+      0.344,
+      64.625
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 84
+     },
+     "pos": [
+      108.9,
+      0.516,
+      59.125
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 104
+     },
+     "pos": [
+      111.375,
+      0.516,
+      59.125
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 91
+     },
+     "pos": [
+      105.6,
+      0.516,
+      62.15
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 106
+     },
+     "pos": [
+      105.6,
+      0.516,
+      59.125
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      97.625,
+      0.516,
+      61.875
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 83
+     },
+     "pos": [
+      91.3,
+      0.516,
+      60.569
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 104
+     },
+     "pos": [
+      108.9,
+      0.516,
+      62.7
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      113.575,
+      0.516,
+      64.625
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 34
+     },
+     "pos": [
+      95.631,
+      0.516,
+      64.9
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      99.894,
+      0.481,
+      49.225
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      97.694,
+      0.481,
+      18.7
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      51.425,
+      0.481,
+      29.631
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      53.694,
+      0.481,
+      44.825
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      25.025,
+      0.413,
+      52.491
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      34.925,
+      0.413,
+      52.491
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      25.713,
+      0.413,
+      30.284
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      111.1,
+      0.516,
+      62.803
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 104
+     },
+     "pos": [
+      93.431,
+      0.516,
+      62.838
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 104
+     },
+     "pos": [
+      95.7,
+      0.516,
+      60.569
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 104
+     },
+     "pos": [
+      102.3,
+      0.516,
+      60.5
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 83
+     },
+     "pos": [
+      100.031,
+      0.516,
+      59.95
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      91.163,
+      0.516,
+      64.831
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      100.031,
+      0.516,
+      63.525
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 84
+     },
+     "pos": [
+      102.231,
+      0.516,
+      64.35
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      113.3,
+      0.516,
+      61.6
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      110.825,
+      0.516,
+      64.625
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      91.3,
+      0.516,
+      62.7
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      107.663,
+      0.516,
+      62.7
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      113.988,
+      0.516,
+      62.803
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 104
+     },
+     "pos": [
+      107.8,
+      0.516,
+      59.95
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 84
+     },
+     "pos": [
+      104.5,
+      0.516,
+      65.45
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      114.95,
+      0.344,
+      54.725
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      113.3,
+      0.516,
+      59.4
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 106
+     },
+     "pos": [
+      95.975,
+      0.516,
+      62.975
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 106
+     },
+     "pos": [
+      110.825,
+      0.516,
+      61.05
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 107
+     },
+     "pos": [
+      97.625,
+      0.516,
+      58.85
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      123.75,
+      0.344,
+      49.431
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      110.55,
+      0.344,
+      54.725
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      109.45,
+      0.516,
+      65.45
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      107.8,
+      0.516,
+      65.45
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      106.15,
+      0.516,
+      65.45
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      131.725,
+      0.344,
+      44.0
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      139.425,
+      0.344,
+      17.6
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      137.5,
+      0.344,
+      17.6
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      126.225,
+      0.344,
+      51.425
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 66
+     },
+     "pos": [
+      127.6,
+      0.344,
+      23.925
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      139.7,
+      0.344,
+      51.425
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      128.15,
+      0.344,
+      20.9
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 66
+     },
+     "pos": [
+      127.6,
+      0.344,
+      25.575
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      122.375,
+      0.344,
+      12.375
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      123.75,
+      0.344,
+      18.425
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      119.35,
+      0.344,
+      54.725
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      123.475,
+      0.344,
+      12.925
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      78.375,
+      0.413,
+      6.875
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      86.075,
+      0.413,
+      6.875
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "WoodenBox",
+     "params": null,
+     "pos": [
+      56.1,
+      0.344,
+      66.275
+     ],
+     "yaw_kod": 3072
+    },
+    {
+     "class": "Brazier",
+     "params": null,
+     "pos": [
+      51.15,
+      0.688,
+      62.081
+     ],
+     "yaw_kod": 3072
+    },
+    {
+     "class": "Brazier",
+     "params": null,
+     "pos": [
+      51.15,
+      0.688,
+      56.65
+     ],
+     "yaw_kod": 3072
+    },
+    {
+     "class": "Cow",
+     "params": null,
+     "pos": [
+      104.5,
+      0.516,
+      58.3
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Cow",
+     "params": null,
+     "pos": [
+      102.3,
+      0.516,
+      62.7
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Cow",
+     "params": null,
+     "pos": [
+      97.9,
+      0.516,
+      64.9
+     ],
+     "yaw_kod": null
+    }
+   ],
+   "generators": [],
+   "mesh": "build/zones/300_Raza.glb",
+   "roo": "raza.roo"
+  },
+  {
+   "rid": 301,
+   "class": "RazaInn",
+   "name": "The Inn of Raza",
+   "bounds_m": {
+    "min": [
+     0.55,
+     0.0,
+     0.55
+    ],
+    "max": [
+     23.925,
+     0.0,
+     18.975
+    ]
+   },
+   "teleport": {
+    "pos": [
+     16.5,
+     0.688,
+     5.5
+    ],
+    "yaw_kod": 1792
+   },
+   "exits": [
+    {
+     "pos": [
+      12.1,
+      0.688,
+      18.7
+     ],
+     "row": 9,
+     "col": 6,
+     "dest_rid": 300,
+     "dest_row": 8,
+     "dest_col": 27
+    },
+    {
+     "pos": [
+      14.3,
+      0.0,
+      18.7
+     ],
+     "row": 9,
+     "col": 7,
+     "dest_rid": 300,
+     "dest_row": 8,
+     "dest_col": 27
+    },
+    {
+     "pos": [
+      3.3,
+      0.0,
+      1.1
+     ],
+     "row": 1,
+     "col": 2,
+     "locked": true,
+     "message": "The back door is locked."
+    },
+    {
+     "pos": [
+      5.5,
+      0.0,
+      1.1
+     ],
+     "row": 1,
+     "col": 3,
+     "locked": true,
+     "message": "The back door is locked."
+    }
+   ],
+   "edge_exits": [],
+   "objects": [
+    {
+     "class": "NewsLink",
+     "params": {
+      "nid": 9,
+      "name": "Designers' News",
+      "desc": "Check here for information from the game administrators."
+     },
+     "pos": [
+      1.1,
+      0.688,
+      10.416
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "RazaInnKeeper",
+     "params": null,
+     "pos": [
+      6.325,
+      0.688,
+      14.025
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "desc": "Welcome to the game!  We hope that you come to enjoy this unique online experience.\n\nThe first thing you need to learn is how to walk, using the W, A, S, and D keys alone with the left and right arrows. You can walk forward and back using the W and S keys, and turn using the left and right arrows.  We will get more into movement in a moment.\n\nAlso, you should note that you can right-click on many of the things you see in the world. These signs are a good example, as is Marcus, the innkeeper. You can even view yourself by right-clicking on the head on the upper-right corner of the screen.\n\nIf you wish to activate 'mouselook' you can do so at this time by pressing the C key. If you wish to deactivate it, you can do so by pressing the C key again.\n\nLastly, you can go through doors by pressing the space bar.\n\n-------------------\n\nWhen you're ready to proceed, walk to the exit door (forward and to your left), hit the space bar, and then read the next sign which will be in plain sight.",
+      "newbie": 1,
+      "name": "Welcome"
+     },
+     "pos": [
+      10.175,
+      0.688,
+      7.425
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Table",
+     "params": null,
+     "pos": [
+      22.275,
+      0.688,
+      14.025
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Table",
+     "params": null,
+     "pos": [
+      18.975,
+      0.688,
+      3.025
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Table",
+     "params": null,
+     "pos": [
+      5.775,
+      0.688,
+      5.225
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "BarStool",
+     "params": null,
+     "pos": [
+      18.975,
+      0.688,
+      14.025
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "BarStool",
+     "params": null,
+     "pos": [
+      3.575,
+      0.688,
+      9.075
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "BarStool",
+     "params": null,
+     "pos": [
+      21.175,
+      0.688,
+      3.025
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      16.019,
+      0.688,
+      1.959
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      1.1,
+      0.688,
+      15.434
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      17.359,
+      0.688,
+      17.256
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      20.281,
+      0.688,
+      9.075
+     ],
+     "yaw_kod": null
+    }
+   ],
+   "generators": [],
+   "mesh": "build/zones/301_RazaInn.glb",
+   "roo": "razainn.roo"
+  },
+  {
+   "rid": 302,
+   "class": "RazaHall",
+   "name": "The Adventurer's Hall of Raza",
+   "bounds_m": {
+    "min": [
+     1.1,
+     0.0,
+     1.1
+    ],
+    "max": [
+     18.975,
+     0.0,
+     22.275
+    ]
+   },
+   "teleport": {
+    "pos": [
+     9.9,
+     0.0,
+     12.1
+    ],
+    "yaw_kod": null
+   },
+   "exits": [
+    {
+     "pos": [
+      18.7,
+      0.0,
+      9.9
+     ],
+     "row": 5,
+     "col": 9,
+     "dest_rid": 300,
+     "dest_row": 7,
+     "dest_col": 12
+    },
+    {
+     "pos": [
+      18.7,
+      0.0,
+      12.1
+     ],
+     "row": 6,
+     "col": 9,
+     "dest_rid": 300,
+     "dest_row": 7,
+     "dest_col": 12
+    }
+   ],
+   "edge_exits": [],
+   "objects": [
+    {
+     "class": "NewsLink",
+     "params": {
+      "nid": 20,
+      "name": "General News",
+      "desc": "Find out the latest gossip around Meridian."
+     },
+     "pos": [
+      2.2,
+      0.825,
+      21.175
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "name": "News Globes",
+      "desc": "This object on the platform beside the sign is a News Globe.  General News Globes can be found in Adventurer's Halls in each city in Meridian, while Designer's News Globes can be found in Inns.  \n\nPlayers can post on the General News globe, like the one here and you can use this medium to ask questions of other players, post messages asking for a guild, etc.  \n\nUse the Post button to make a post, Reply to post in the same thread as a previous post, or Mail Author to send a private mail to the author of a post. \n\nFor a short time after posting, users can delete their own posts.",
+      "newbie": 1
+     },
+     "pos": [
+      3.988,
+      0.0,
+      21.588
+     ],
+     "yaw_kod": 2560
+    },
+    {
+     "class": "Stool",
+     "params": null,
+     "pos": [
+      7.7,
+      0.0,
+      3.163
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Stool",
+     "params": null,
+     "pos": [
+      12.375,
+      0.0,
+      3.163
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Stool",
+     "params": null,
+     "pos": [
+      7.7,
+      0.0,
+      4.95
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Stool",
+     "params": null,
+     "pos": [
+      12.375,
+      0.0,
+      4.95
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Stool",
+     "params": null,
+     "pos": [
+      7.7,
+      0.0,
+      6.738
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Stool",
+     "params": null,
+     "pos": [
+      12.375,
+      0.0,
+      6.738
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Chandelier",
+     "params": null,
+     "pos": [
+      10.175,
+      0.0,
+      11.619
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 60
+     },
+     "pos": [
+      10.175,
+      0.0,
+      11.619
+     ],
+     "yaw_kod": null
+    }
+   ],
+   "generators": [],
+   "mesh": "build/zones/302_RazaHall.glb",
+   "roo": "razahall.roo"
+  },
+  {
+   "rid": 303,
+   "class": "RazaSmith",
+   "name": "The Blacksmith of Raza",
+   "bounds_m": {
+    "min": [
+     1.925,
+     0.0,
+     0.825
+    ],
+    "max": [
+     22.0,
+     0.0,
+     20.9
+    ]
+   },
+   "teleport": {
+    "pos": [
+     7.7,
+     0.0,
+     9.9
+    ],
+    "yaw_kod": 2560
+   },
+   "exits": [
+    {
+     "pos": [
+      5.5,
+      0.0,
+      7.7
+     ],
+     "row": 4,
+     "col": 3,
+     "dest_rid": 300,
+     "dest_row": 18,
+     "dest_col": 47
+    },
+    {
+     "pos": [
+      7.7,
+      0.0,
+      7.7
+     ],
+     "row": 4,
+     "col": 4,
+     "dest_rid": 300,
+     "dest_row": 18,
+     "dest_col": 47
+    }
+   ],
+   "edge_exits": [],
+   "objects": [
+    {
+     "class": "RazaBlacksmith",
+     "params": null,
+     "pos": [
+      14.025,
+      0.0,
+      14.025
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "desc": "You've come into this world virtually empty handed.  Fortunately, you also started with a bit of cash (and a weapon!), so you can buy some items to get started.\n\nGo up to the blacksmith, press the enter key to get to the chat window, type BUY and press enter again (CTRL-B is the shortcut for buying items).  A list of items that the blacksmith has for sale will appear.  Choose the items you want, and then press [OK].  First buy a shield, and then some armor.  If you have enough money to pay for them all, they will appear in your inventory.\n\nTo equip items from your inventory, press the little chest icon below the mini-map to the right of the graphics window.  Right-click on the item you want to use, and press the [USE] button.  A yellow glow will appear around it, meaning that you're wielding it.  Repeat this for your weapon, armor and shield.  To remove an object from use, simply right-click the object and press the [UNUSE] button.\n\nYou may also just double-click on an item in your inventory to use or unuse it.\n\n-------------\n\nWhen you're done here you should go to the tavern, the large brown building at the west end of town with the cup and bottle sign next to the door.",
+      "name": "Buying items",
+      "newbie": 1
+     },
+     "pos": [
+      9.625,
+      0.0,
+      14.025
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32320,
+      "iIntensity": 30
+     },
+     "pos": [
+      11.825,
+      0.859,
+      18.15
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      7.803,
+      0.0,
+      15.022
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      16.706,
+      0.0,
+      6.806
+     ],
+     "yaw_kod": null
+    }
+   ],
+   "generators": [],
+   "mesh": "build/zones/303_RazaSmith.glb",
+   "roo": "razasmith.roo"
+  },
+  {
+   "rid": 304,
+   "class": "RazaApoth",
+   "name": "Ravi's Magicks of Raza",
+   "bounds_m": {
+    "min": [
+     1.65,
+     0.0,
+     0.55
+    ],
+    "max": [
+     15.125,
+     0.0,
+     14.025
+    ]
+   },
+   "teleport": {
+    "pos": [
+     7.7,
+     0.688,
+     9.9
+    ],
+    "yaw_kod": null
+   },
+   "exits": [
+    {
+     "pos": [
+      5.5,
+      0.688,
+      9.9
+     ],
+     "row": 5,
+     "col": 3,
+     "dest_rid": 300,
+     "dest_row": 12,
+     "dest_col": 47
+    }
+   ],
+   "edge_exits": [],
+   "objects": [
+    {
+     "class": "RazaApothecary",
+     "params": null,
+     "pos": [
+      9.075,
+      0.688,
+      2.475
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "desc": "Occasionally, you will find quests where a shopkeeper or other NPC desires you to bring him a certain item or peform some errand.  More frequently, after killing a monster you will find items that you yourself have no need for but that you can sell to get the weapons and other equipment that you do need.  For example, you may have found entroot berries after killing some mummies.  Use the OFFER command, or press the CONTROL key and O to offer these to Ravi, the apothecary.\n\nIt should be noted that not every NPC wants every item.  Ravi, for example, has no interest in purchasing weapons so if you offer them to him, it will confuse him.  He may even think that it's a gift, and take it from your astonished hands.  If you SAY 'buy' or 'sell', you should get a good idea of what any shopkeeper is willing to take off your hands.\n\n--------------------\n\nThis is the end of your tutorial.  Feel free to explore around a bit and try new things.  You may wish to pay a visit to the Grand Museum, which houses a number of exhibits about the wonders found in Meridian.",
+      "name": "Selling items",
+      "newbie": 1
+     },
+     "pos": [
+      4.675,
+      0.688,
+      6.325
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 57
+     },
+     "pos": [
+      6.875,
+      0.688,
+      11.275
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 33
+     },
+     "pos": [
+      7.975,
+      1.375,
+      5.775
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 57
+     },
+     "pos": [
+      3.575,
+      0.688,
+      7.975
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 131
+     },
+     "pos": [
+      6.875,
+      1.375,
+      4.675
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 132
+     },
+     "pos": [
+      9.35,
+      1.375,
+      4.95
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      10.622,
+      0.688,
+      10.347
+     ],
+     "yaw_kod": null
+    }
+   ],
+   "generators": [],
+   "mesh": "build/zones/304_RazaApoth.glb",
+   "roo": "razaapoth.roo"
+  },
+  {
+   "rid": 305,
+   "class": "RazaHut",
+   "name": "The Home of Roderic D'Stane",
+   "bounds_m": {
+    "min": [
+     0.55,
+     0.0,
+     1.1
+    ],
+    "max": [
+     9.9,
+     0.0,
+     10.45
+    ]
+   },
+   "teleport": {
+    "pos": [
+     3.3,
+     0.0,
+     3.3
+    ],
+    "yaw_kod": null
+   },
+   "exits": [
+    {
+     "pos": [
+      7.7,
+      0.0,
+      9.9
+     ],
+     "row": 5,
+     "col": 4,
+     "dest_rid": 300,
+     "dest_row": 6,
+     "dest_col": 17
+    },
+    {
+     "pos": [
+      5.5,
+      0.0,
+      9.9
+     ],
+     "row": 5,
+     "col": 3,
+     "dest_rid": 300,
+     "dest_row": 6,
+     "dest_col": 17
+    }
+   ],
+   "edge_exits": [],
+   "objects": [
+    {
+     "class": "RazaElder",
+     "params": null,
+     "pos": [
+      4.95,
+      0.0,
+      1.65
+     ],
+     "yaw_kod": 2048
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "desc": "vrSign",
+      "newbie": 1,
+      "name": "Communication"
+     },
+     "pos": [
+      8.25,
+      0.0,
+      5.5
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 29
+     },
+     "pos": [
+      2.75,
+      0.0,
+      8.25
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 46
+     },
+     "pos": [
+      2.75,
+      0.0,
+      3.85
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 99
+     },
+     "pos": [
+      6.6,
+      1.031,
+      3.3
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 20
+     },
+     "pos": [
+      8.8,
+      1.031,
+      3.3
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      5.122,
+      0.0,
+      10.003
+     ],
+     "yaw_kod": null
+    }
+   ],
+   "generators": [],
+   "mesh": "build/zones/305_RazaHut.glb",
+   "roo": "razahut.roo"
+  },
+  {
+   "rid": 306,
+   "class": "RazaCrypt",
+   "name": "Mausoleum",
+   "bounds_m": {
+    "min": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "max": [
+     87.175,
+     0.0,
+     85.8
+    ]
+   },
+   "teleport": {
+    "pos": [
+     49.5,
+     11.688,
+     23.1
+    ],
+    "yaw_kod": null
+   },
+   "exits": [
+    {
+     "pos": [
+      36.3,
+      17.188,
+      23.1
+     ],
+     "row": 11,
+     "col": 17,
+     "dest_rid": 300,
+     "dest_row": 28,
+     "dest_col": 24
+    }
+   ],
+   "edge_exits": [],
+   "objects": [
+    {
+     "class": "Sign",
+     "params": {
+      "desc": "If a monster isn't chasing you, now's a good time to learn another handy interface ability.  By pressing PAGEUP and PAGEDOWN, you can have your character look up at the ceiling, and down at the pit full of mummies.  Once you do so, you may feel inclined to wave at the mummies. You can do that by typing WAVE. They won't wave back, of course, being uncultured brutes, but at least you get the satisfaction of being polite before going out and killing more of their friends.\n\nIt's a good thing to keep in mind that PAGEDOWN is extremely useful when facing a foe shorter than yourself - and most of your early Meridian foes will be shorter than yourself.  However, for the time being, center your view by pressing HOME, and head back into the fray.",
+      "newbie": 1,
+      "name": "Looking around"
+     },
+     "pos": [
+      3.85,
+      14.644,
+      23.1
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "desc": "Combat is essential in Meridian 59, but it's also pretty easy.  If you push your 'E' key by default, you will swing at the monster closest to you with whatever weapon you have armed.  If you don't have a weapon armed, you should do so now, because punching is not an effective way to kill much of anything.\n\nHowever, if you are a mage and have learned one of the touch attack spells (acid touch, icy fingers, holy touch, touch of flame, unholy touch and zap), your unarmed attacks will be transformed into powerful elemental assaults for the duration of the spell!  If you run out of reagents to cast your spells, see Ravi - the town's apothecary - to resupply yourself.\n\nWhile fighting, be sure to keep an eye on your Health bar, marked by a cross in the top-right corner of the screen.  If it gets too low, don't hesitate to run away!  Then rest or eat some food to get your strength up faster.  Keep in mind that you can neither fight nor run while resting, so you want to be sure you find a safe place to hide while you heal.\n\nMonsters you kill will frequently drop treasure behind which can either be sold or used. Be sure to get whatever they drop, by using the GET command, or by pressing 'G'.\n\nYou have already learned that you can [USE] armor and weapons to equip them, but it doesn't stop there!  For example, you may also encounter magical potions, scrolls and wands on your journey.  Try using them!  Remember that you can use the [Space] key to quickly use the item that you have currently selected in your inventory.  Also, keep in mind that wands require a target - be it one of your foes, your allies or even yourself.",
+      "newbie": 1,
+      "name": "Fighting"
+     },
+     "pos": [
+      30.25,
+      17.875,
+      23.1
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "desc": "Now that you are familiar with fighting and spellcasting, you're ready to try out the advanced targeting feature.\n\nPress the '[' or ']' keys while facing a monster or player to activate the targeting system.  You should see your target outlined in color (you can set the color in your Preferences from the Game option in the top menu bar).  As long as a target is outlined, the game will assume that all attacks or spells are to be directed at that target.  Note that this is true regardless of whether you can hit or even see your target, so be careful about leaving inaccessible enemies targetted!\n\nPressing '[' or ']' will cycle through your available targets, and pressing ESC will clear your current target and return you to the default attack/spell mode.\n\nWith a little practise, you'll see how useful targeting can be, especially when casting spells.  Just set up a hotkey to the spell of your choice, highlight a target and fire away!",
+      "newbie": 1,
+      "name": "Targeting"
+     },
+     "pos": [
+      5.5,
+      10.312,
+      23.1
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "desc": "Jumping in Meridian 59 is especially tricky as there is no jump key or command.  Consider it more like falling at an angle.  There will be many places in the world that will require you to leap from one area to the next.  To cross these areas, like the one ahead, get a running start then just aim where you are trying to land and run from one ledge to the next.  If you fail the jump on your first try, you can go around and try again.",
+      "newbie": 1,
+      "name": "Jumping"
+     },
+     "pos": [
+      64.9,
+      7.288,
+      61.6
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "desc": "The two levers you see before you will open the wooden gate if both are pulled at the same time.  Other objects in this world, mainly levers, guild hall switches and light sources, can be interacted with to produce some effect.\n\nTo pull the lever, right-click it and click \"use\", or type use into the chatbox while standing close to it.\n\nYou may find you are not quick enough to pull both levers in time to open the door.  If so, you can use the \"broadcast\" chat command to find another player to help you, or continue killing monsters in the rest of the mausoleum (there are only a few behind the gate).",
+      "newbie": 1,
+      "name": "Using objects"
+     },
+     "pos": [
+      24.681,
+      2.888,
+      52.147
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Skull",
+     "params": null,
+     "pos": [
+      45.375,
+      12.513,
+      23.1
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      37.675,
+      13.613,
+      4.4
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      37.675,
+      13.613,
+      4.4
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      29.975,
+      12.513,
+      9.9
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      38.775,
+      13.613,
+      39.6
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      23.925,
+      12.513,
+      47.025
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      15.95,
+      3.713,
+      49.775
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      29.975,
+      9.213,
+      52.8
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      29.975,
+      9.213,
+      68.2
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      86.625,
+      9.213,
+      63.8
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      70.4,
+      7.769,
+      58.575
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      68.2,
+      9.213,
+      40.975
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      86.625,
+      9.213,
+      35.2
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      86.625,
+      10.312,
+      26.4
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      73.425,
+      11.413,
+      17.6
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      59.4,
+      11.413,
+      7.975
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      56.375,
+      11.413,
+      2.2
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 163
+     },
+     "pos": [
+      86.625,
+      10.312,
+      2.2
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Brazier",
+     "params": null,
+     "pos": [
+      39.05,
+      18.562,
+      17.6
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Brazier",
+     "params": null,
+     "pos": [
+      39.05,
+      18.562,
+      28.6
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 45
+     },
+     "pos": [
+      3.85,
+      14.644,
+      23.1
+     ],
+     "yaw_kod": null
+    }
+   ],
+   "generators": [],
+   "mesh": "build/zones/306_RazaCrypt.glb",
+   "roo": "razacrypt.roo"
+  },
+  {
+   "rid": 307,
+   "class": "RazaBar",
+   "name": "Eric's Stout Spirits",
+   "bounds_m": {
+    "min": [
+     2.2,
+     0.0,
+     2.2
+    ],
+    "max": [
+     16.5,
+     0.0,
+     17.875
+    ]
+   },
+   "teleport": {
+    "pos": [
+     7.7,
+     0.0,
+     9.9
+    ],
+    "yaw_kod": null
+   },
+   "exits": [
+    {
+     "pos": [
+      16.5,
+      0.0,
+      7.7
+     ],
+     "row": 4,
+     "col": 8,
+     "dest_rid": 300,
+     "dest_row": 16,
+     "dest_col": 12
+    },
+    {
+     "pos": [
+      16.5,
+      0.0,
+      9.9
+     ],
+     "row": 5,
+     "col": 8,
+     "dest_rid": 300,
+     "dest_row": 16,
+     "dest_col": 12
+    }
+   ],
+   "edge_exits": [],
+   "objects": [
+    {
+     "class": "RazaBartender",
+     "params": null,
+     "pos": [
+      4.4,
+      0.0,
+      3.575
+     ],
+     "yaw_kod": 1536
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "desc": "In the upper right-hand corner of your screen, you'll see four stats: Health, Mana, Vigor and XP.\n\nHealth is simple - you lose it when you take damage (usually in battle).  If your health is reduced to zero, you die.\n\nMana determines how many spells you can cast.  Both Mana and Health come back with time.\n\nVigor, the third stat, is very important.  How fast your Health and Mana return depends largely on your Vigor. Running requires Vigor - if it drops below 10, you will only be able to walk.  There are two ways to increase your vigor - by eating food ([USE] it from your inventory) and by resting (click on the button in the toolbar above the graphics window).  Resting in inns and taverns will heal your vigor twice as quickly.  Taverns and stores also frequently sell foodstuffs that you can take with you as you explore.\n\nThe last stat shows your \"experience points\" (XP) which determines when you will gain your next maximum hit point.  Looking at the description of a monster shows how many hit points you can get by killing them, though you will gain a small amount of XP by killing monsters at or a bit below your level.  Players with higher stamina will gain more XP from kills, and you can lose XP by dying once you lose your guardian angel (at 50 hit points).\n\n-----------------------\n\nFrom here, go to the elder's home.  It is the small hut just to the north of this building.",
+      "newbie": 1,
+      "name": "Health, Mana, Vigor and XP"
+     },
+     "pos": [
+      4.4,
+      0.0,
+      12.375
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Stool",
+     "params": null,
+     "pos": [
+      11.0,
+      0.0,
+      7.975
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Stool",
+     "params": null,
+     "pos": [
+      11.0,
+      0.0,
+      5.775
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Stool",
+     "params": null,
+     "pos": [
+      8.8,
+      0.0,
+      10.175
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Stool",
+     "params": null,
+     "pos": [
+      6.6,
+      0.0,
+      10.175
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Stool",
+     "params": null,
+     "pos": [
+      14.3,
+      0.0,
+      13.475
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Stool",
+     "params": null,
+     "pos": [
+      12.1,
+      0.0,
+      13.475
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 57
+     },
+     "pos": [
+      15.4,
+      0.0,
+      16.775
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 58
+     },
+     "pos": [
+      15.4,
+      0.0,
+      3.575
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 58
+     },
+     "pos": [
+      15.4,
+      0.0,
+      5.775
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 58
+     },
+     "pos": [
+      15.4,
+      0.0,
+      7.975
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Candle",
+     "params": null,
+     "pos": [
+      6.6,
+      1.1,
+      15.125
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      9.934,
+      0.0,
+      17.325
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      15.125,
+      0.0,
+      2.819
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      5.775,
+      0.0,
+      2.784
+     ],
+     "yaw_kod": null
+    }
+   ],
+   "generators": [],
+   "mesh": "build/zones/307_RazaBar.glb",
+   "roo": "razabar.roo"
+  },
+  {
+   "rid": 308,
+   "class": "RazaMuseum",
+   "name": "The Grand Museum of Raza",
+   "bounds_m": {
+    "min": [
+     2.75,
+     0.0,
+     3.3
+    ],
+    "max": [
+     43.45,
+     0.0,
+     31.9
+    ]
+   },
+   "teleport": {
+    "pos": [
+     23.1,
+     0.0,
+     16.5
+    ],
+    "yaw_kod": null
+   },
+   "exits": [
+    {
+     "pos": [
+      20.9,
+      0.0,
+      5.5
+     ],
+     "row": 3,
+     "col": 10,
+     "dest_rid": 300,
+     "dest_row": 26,
+     "dest_col": 14
+    },
+    {
+     "pos": [
+      23.1,
+      0.0,
+      5.5
+     ],
+     "row": 3,
+     "col": 11,
+     "dest_rid": 300,
+     "dest_row": 26,
+     "dest_col": 14
+    },
+    {
+     "pos": [
+      25.3,
+      0.0,
+      5.5
+     ],
+     "row": 3,
+     "col": 12,
+     "dest_rid": 300,
+     "dest_row": 26,
+     "dest_col": 14
+    }
+   ],
+   "edge_exits": [],
+   "objects": [
+    {
+     "class": "Sign",
+     "params": {
+      "name": "Welcome",
+      "desc": "The Grand Museum is home to a myriad of exhibits, including a number of miniature replicas of items and monsters found in Meridian, as well as tapestries depicting various locales in the world.",
+      "newbie": 1
+     },
+     "pos": [
+      23.1,
+      0.0,
+      17.6
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "name": "The Arena of Tos",
+      "desc": "A proving-ground where mighty warriors clash beneath the watchful eyes of Kraanan.  Combatants can fight here for the pure honor of victory in combat, as Kraanan delivers any true warrior from death at the last possible moment.",
+      "newbie": 1
+     },
+     "pos": [
+      42.831,
+      0.825,
+      17.738
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "name": "Tos",
+      "desc": "Debatably the liveliest city in Meridian (the residents of Barloque would most likely beg to differ), Tos is home to the Arena as well as one of the friendliest bars in Meridian, Familiars.",
+      "newbie": 1
+     },
+     "pos": [
+      42.35,
+      0.825,
+      4.4
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "name": "The Vale of Sorrows",
+      "desc": "Legend has it that this secluded vale tucked away in the forests of Meridian is home to the Fey Elhai and the Fey Dirhai, two races of fairies eternally locked in a struggle to claim the Vale as their own.  A few brave adventurers even tell stories of how they were able, for a time, to sway the balance of the conflict to the side they favored.",
+      "newbie": 1
+     },
+     "pos": [
+      35.475,
+      0.825,
+      18.15
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "name": "The Great Pyramid of Ko'catan",
+      "desc": "The first structure to be built as part of the island settlement of Ko'catan, this grand monument is purported to be the burial place of the great hero Konima, whose sacrifice saved Meridian from the orc hordes during the Orc Wars.  Now, it is home to the Hall of Heroes, a gallery of magical statues which form themselves into the likenesses of the greatest current heroes in the land.",
+      "newbie": 1
+     },
+     "pos": [
+      10.588,
+      0.825,
+      11.55
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "name": "The Trading Post on Konima's Island",
+      "desc": "A bastion of civilization out in the the wilds of Konima's Island, this trading post is a central hub of trade between the Island and the mainland.  No one knows exactly where its proprietor, Wulfgang zax'Ak, obtains some of his more rare goods, nor why he chose to place his trading post so far out from the safe enclosing walls of Ko'catan.  Perhaps the latter is due to Ko'catan's strict trade laws, which among other things strictly forbid trade with the Avar, a strange race of bird-people indiginous to the island.  An artist's representation of an avar is pictured in the foreground, though it should be noted that noone has actually ever seen an avar approach the trading post.",
+      "newbie": 1
+     },
+     "pos": [
+      3.438,
+      0.825,
+      18.15
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "name": "Some of Ko'catan's Intricate Murals",
+      "desc": "Though the Ko'catani are sometimes a brutal and warlike race, they also have a rich and thriving artistic tradition.  The murals pictured here are typical of the stylized and traditional aesthetic of Ko'catani art, which always depicts the same subjects of Ko'catani history and myth.  In fact, new generations of artists are constantly refining the exact same scenes as their predecessors, painting over older murals with the same characters in the same poses, honing the gestures and facial expressions with greater and greater detail with every iteration, until the pictures breath with the soul of the Ko'catani way of life.  Historians estimate that the murals pictured here are more than two feet thick.",
+      "newbie": 1
+     },
+     "pos": [
+      3.85,
+      0.825,
+      4.675
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 145
+     },
+     "pos": [
+      38.5,
+      1.925,
+      15.95
+     ],
+     "yaw_kod": 3072
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 124
+     },
+     "pos": [
+      40.7,
+      1.925,
+      13.75
+     ],
+     "yaw_kod": 3072
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 133
+     },
+     "pos": [
+      5.775,
+      1.925,
+      15.95
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 136
+     },
+     "pos": [
+      3.3,
+      2.75,
+      27.775
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 120
+     },
+     "pos": [
+      9.9,
+      2.75,
+      30.25
+     ],
+     "yaw_kod": 3072
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 147
+     },
+     "pos": [
+      33.0,
+      2.75,
+      30.25
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 141
+     },
+     "pos": [
+      14.85,
+      1.925,
+      6.6
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 150
+     },
+     "pos": [
+      42.9,
+      2.75,
+      27.5
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 137
+     },
+     "pos": [
+      5.775,
+      1.925,
+      13.75
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "ModelNode",
+     "params": null,
+     "pos": [
+      31.35,
+      1.925,
+      6.6
+     ],
+     "yaw_kod": 2048
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 135
+     },
+     "pos": [
+      13.2,
+      2.75,
+      30.25
+     ],
+     "yaw_kod": 3072
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 119
+     },
+     "pos": [
+      6.6,
+      2.75,
+      30.25
+     ],
+     "yaw_kod": 3072
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 122
+     },
+     "pos": [
+      3.3,
+      2.75,
+      30.25
+     ],
+     "yaw_kod": 3584
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 134
+     },
+     "pos": [
+      3.85,
+      1.925,
+      15.95
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 118
+     },
+     "pos": [
+      7.7,
+      1.925,
+      15.95
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 138
+     },
+     "pos": [
+      7.7,
+      1.925,
+      13.75
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 139
+     },
+     "pos": [
+      3.85,
+      1.925,
+      13.75
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 140
+     },
+     "pos": [
+      14.85,
+      1.925,
+      8.8
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 142
+     },
+     "pos": [
+      14.85,
+      1.925,
+      4.4
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 149
+     },
+     "pos": [
+      36.3,
+      2.75,
+      30.25
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 146
+     },
+     "pos": [
+      39.6,
+      2.75,
+      30.25
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 148
+     },
+     "pos": [
+      42.9,
+      2.75,
+      30.25
+     ],
+     "yaw_kod": 512
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 143
+     },
+     "pos": [
+      40.425,
+      1.925,
+      15.95
+     ],
+     "yaw_kod": 3072
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 144
+     },
+     "pos": [
+      42.35,
+      1.925,
+      15.95
+     ],
+     "yaw_kod": 3072
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 123
+     },
+     "pos": [
+      38.5,
+      1.925,
+      13.75
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 117
+     },
+     "pos": [
+      42.35,
+      1.925,
+      13.75
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 126
+     },
+     "pos": [
+      31.35,
+      1.925,
+      4.4
+     ],
+     "yaw_kod": 2048
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 121
+     },
+     "pos": [
+      31.35,
+      1.925,
+      8.8
+     ],
+     "yaw_kod": 2048
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      29.184,
+      0.0,
+      21.484
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      26.916,
+      0.0,
+      7.975
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      19.25,
+      0.0,
+      8.078
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      17.153,
+      0.0,
+      21.519
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      31.419,
+      0.825,
+      21.45
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      38.019,
+      0.825,
+      11.859
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      38.019,
+      0.825,
+      17.944
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      34.65,
+      1.65,
+      25.85
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      14.85,
+      0.825,
+      21.45
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      11.859,
+      1.65,
+      25.85
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      8.25,
+      0.825,
+      17.875
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      8.25,
+      0.825,
+      11.825
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 165
+     },
+     "pos": [
+      24.2,
+      1.1,
+      30.525
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 166
+     },
+     "pos": [
+      22.413,
+      1.1,
+      30.525
+     ],
+     "yaw_kod": 1024
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "name": "Portals",
+      "desc": "Arcane portals are found in a select few places in the world.  Walking through one of these portals will teleport you instantly to another location.  The most common portals encountered are those in the Underworld, which is where poor souls are sent upon dying.  Walking through one of the Underworld portals will teleport you to an Inn in one of the six mainland cities of Meridian.  If you perish on the island of Ko'catan, you may return to the Ko'catan Inn by quickly using the portal on the Underworld floor.",
+      "newbie": 1
+     },
+     "pos": [
+      21.588,
+      0.0,
+      28.875
+     ],
+     "yaw_kod": 1024
+    }
+   ],
+   "generators": [],
+   "mesh": "build/zones/308_RazaMuseum.glb",
+   "roo": "razamuseum.roo"
+  },
+  {
+   "rid": 330,
+   "class": "RazaForest",
+   "name": "Outskirts of Raza",
+   "bounds_m": {
+    "min": [
+     4.469,
+     0.0,
+     -4.916
+    ],
+    "max": [
+     156.269,
+     0.0,
+     168.231
+    ]
+   },
+   "teleport": {
+    "pos": [
+     80.3,
+     0.413,
+     51.7
+    ],
+    "yaw_kod": null
+   },
+   "exits": [
+    {
+     "pos": [
+      115.5,
+      0.344,
+      51.7
+     ],
+     "row": 24,
+     "col": 53,
+     "locked": true,
+     "message": "This door is locked."
+    },
+    {
+     "pos": [
+      115.5,
+      0.344,
+      53.9
+     ],
+     "row": 25,
+     "col": 53,
+     "locked": true,
+     "message": "This door is locked."
+    }
+   ],
+   "edge_exits": [
+    {
+     "side": "LEAVE_SOUTH",
+     "dest_rid": 300,
+     "dest_row": 2,
+     "dest_col": 38,
+     "rotate": "ROTATE_NONE"
+    },
+    {
+     "side": "LEAVE_NORTH",
+     "dest_rid": 331,
+     "dest_row": 48,
+     "dest_col": 24,
+     "rotate": "ROTATE_NONE"
+    }
+   ],
+   "objects": [
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      81.709,
+      0.344,
+      142.072
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      14.609,
+      0.481,
+      154.172
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      19.009,
+      0.481,
+      151.972
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      16.809,
+      0.481,
+      147.572
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      21.209,
+      0.481,
+      147.572
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      14.609,
+      0.481,
+      143.172
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "FoodDispenser",
+     "params": {
+      "classtype": {
+       "class": "Apple"
+      }
+     },
+     "pos": [
+      31.247,
+      0.481,
+      110.859
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "FoodDispenser",
+     "params": {
+      "classtype": {
+       "class": "Apple"
+      }
+     },
+     "pos": [
+      31.247,
+      0.481,
+      99.997
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      69.609,
+      0.344,
+      102.472
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      75.109,
+      0.344,
+      102.472
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      50.634,
+      0.344,
+      102.472
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      49.809,
+      0.344,
+      139.872
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      110.653,
+      0.344,
+      118.216
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      63.009,
+      0.344,
+      140.972
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      104.809,
+      0.344,
+      132.722
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      97.109,
+      0.344,
+      102.472
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 192
+     },
+     "pos": [
+      108.797,
+      0.344,
+      126.397
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 198
+     },
+     "pos": [
+      13.509,
+      0.481,
+      151.972
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 198
+     },
+     "pos": [
+      123.234,
+      0.344,
+      156.097
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 84
+     },
+     "pos": [
+      113.609,
+      0.516,
+      150.597
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 104
+     },
+     "pos": [
+      116.084,
+      0.516,
+      150.597
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 91
+     },
+     "pos": [
+      110.309,
+      0.516,
+      153.622
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 106
+     },
+     "pos": [
+      110.309,
+      0.516,
+      150.597
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      102.334,
+      0.516,
+      153.347
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 83
+     },
+     "pos": [
+      96.009,
+      0.516,
+      152.041
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 104
+     },
+     "pos": [
+      113.609,
+      0.516,
+      154.172
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      118.284,
+      0.516,
+      156.097
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 34
+     },
+     "pos": [
+      100.341,
+      0.516,
+      156.372
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      104.603,
+      0.481,
+      140.697
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      102.403,
+      0.481,
+      110.172
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      56.134,
+      0.481,
+      121.103
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      58.403,
+      0.481,
+      136.297
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      29.734,
+      0.413,
+      143.963
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      39.634,
+      0.413,
+      143.963
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      30.422,
+      0.413,
+      121.756
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      115.809,
+      0.516,
+      154.275
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 104
+     },
+     "pos": [
+      98.141,
+      0.516,
+      154.309
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 104
+     },
+     "pos": [
+      100.409,
+      0.516,
+      152.041
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 104
+     },
+     "pos": [
+      107.009,
+      0.516,
+      151.972
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 83
+     },
+     "pos": [
+      104.741,
+      0.516,
+      151.422
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      95.872,
+      0.516,
+      156.303
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      104.741,
+      0.516,
+      154.997
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 84
+     },
+     "pos": [
+      106.941,
+      0.516,
+      155.822
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      118.009,
+      0.516,
+      153.072
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      115.534,
+      0.516,
+      156.097
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      96.009,
+      0.516,
+      154.172
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      112.372,
+      0.516,
+      154.172
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 105
+     },
+     "pos": [
+      118.697,
+      0.516,
+      154.275
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 104
+     },
+     "pos": [
+      112.509,
+      0.516,
+      151.422
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 84
+     },
+     "pos": [
+      109.209,
+      0.516,
+      156.922
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      119.659,
+      0.344,
+      146.197
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      118.009,
+      0.516,
+      150.872
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 106
+     },
+     "pos": [
+      100.684,
+      0.516,
+      154.447
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 106
+     },
+     "pos": [
+      115.534,
+      0.516,
+      152.522
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 107
+     },
+     "pos": [
+      102.334,
+      0.516,
+      150.322
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      128.459,
+      0.344,
+      140.903
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      115.259,
+      0.344,
+      146.197
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      114.159,
+      0.516,
+      156.922
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      112.509,
+      0.516,
+      156.922
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      110.859,
+      0.516,
+      156.922
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      136.434,
+      0.344,
+      135.472
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      144.134,
+      0.344,
+      109.072
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      142.209,
+      0.344,
+      109.072
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      130.934,
+      0.344,
+      142.897
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 66
+     },
+     "pos": [
+      132.309,
+      0.344,
+      115.397
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      144.409,
+      0.344,
+      142.897
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      132.859,
+      0.344,
+      112.372
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 66
+     },
+     "pos": [
+      132.309,
+      0.344,
+      117.047
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      127.084,
+      0.344,
+      103.847
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      128.459,
+      0.344,
+      109.897
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      124.059,
+      0.344,
+      146.197
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "OrnamentalObject",
+     "params": {
+      "type": 60
+     },
+     "pos": [
+      128.184,
+      0.344,
+      104.397
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      83.188,
+      0.413,
+      98.381
+     ],
+     "yaw_kod": 0
+    },
+    {
+     "class": "Lamp",
+     "params": null,
+     "pos": [
+      90.888,
+      0.413,
+      98.381
+     ],
+     "yaw_kod": 0
+    }
+   ],
+   "generators": [
+    {
+     "row": 13,
+     "col": 47,
+     "pos": [
+      102.3,
+      0.344,
+      27.5
+     ]
+    },
+    {
+     "row": 18,
+     "col": 36,
+     "pos": [
+      78.1,
+      0.344,
+      38.5
+     ]
+    },
+    {
+     "row": 17,
+     "col": 21,
+     "pos": [
+      45.1,
+      0.344,
+      36.3
+     ]
+    },
+    {
+     "row": 6,
+     "col": 10,
+     "pos": [
+      20.9,
+      0.344,
+      12.1
+     ]
+    },
+    {
+     "row": 21,
+     "col": 14,
+     "pos": [
+      29.7,
+      0.344,
+      45.1
+     ]
+    },
+    {
+     "row": 31,
+     "col": 9,
+     "pos": [
+      18.7,
+      0.344,
+      67.1
+     ]
+    },
+    {
+     "row": 31,
+     "col": 17,
+     "pos": [
+      36.3,
+      0.344,
+      67.1
+     ]
+    },
+    {
+     "row": 33,
+     "col": 25,
+     "pos": [
+      53.9,
+      0.344,
+      71.5
+     ]
+    }
+   ],
+   "mesh": "build/zones/330_RazaForest.glb",
+   "roo": "razaforest.roo",
+   "shares_geometry_with": {
+    "rid": 300,
+    "roo_offset": [
+     2208.0,
+     42592.0
+    ],
+    "offset_m": [
+     4.744,
+     0.0,
+     91.506
+    ],
+    "note": "this zone's coords = other zone's coords + offset; place this zone's origin at -offset_m relative to the other to overlay them"
+   }
+  },
+  {
+   "rid": 331,
+   "class": "FarolWest",
+   "name": "Western Edge of the Forest of Farol",
+   "bounds_m": {
+    "min": [
+     -14.197,
+     0.0,
+     1.856
+    ],
+    "max": [
+     126.156,
+     0.0,
+     118.353
+    ]
+   },
+   "teleport": {
+    "pos": [
+     86.9,
+     4.4,
+     58.3
+    ],
+    "yaw_kod": null
+   },
+   "exits": [],
+   "edge_exits": [
+    {
+     "side": "LEAVE_EAST",
+     "dest_rid": 536,
+     "dest_row": 18,
+     "dest_col": 2,
+     "rotate": "ROTATE_NONE"
+    },
+    {
+     "side": "LEAVE_WEST",
+     "dest_rid": 526,
+     "dest_row": 39,
+     "dest_col": 48,
+     "rotate": "ROTATE_NONE"
+    },
+    {
+     "side": "LEAVE_SOUTH",
+     "dest_rid": 330,
+     "dest_row": 5,
+     "dest_col": 31,
+     "rotate": "ROTATE_NONE"
+    }
+   ],
+   "objects": [],
+   "generators": [],
+   "mesh": "build/zones/331_FarolWest.glb",
+   "roo": "farolwest.roo"
+  },
+  {
+   "rid": 332,
+   "class": "RazaVault",
+   "name": "Raza Vaults",
+   "bounds_m": {
+    "min": [
+     2.2,
+     0.0,
+     2.2
+    ],
+    "max": [
+     16.5,
+     0.0,
+     17.875
+    ]
+   },
+   "teleport": {
+    "pos": [
+     12.1,
+     0.275,
+     5.5
+    ],
+    "yaw_kod": null
+   },
+   "exits": [
+    {
+     "pos": [
+      16.5,
+      0.275,
+      7.7
+     ],
+     "row": 4,
+     "col": 8,
+     "dest_rid": 300,
+     "dest_row": 12,
+     "dest_col": 12
+    },
+    {
+     "pos": [
+      16.5,
+      0.275,
+      9.9
+     ],
+     "row": 5,
+     "col": 8,
+     "dest_rid": 300,
+     "dest_row": 12,
+     "dest_col": 12
+    }
+   ],
+   "edge_exits": [],
+   "objects": [
+    {
+     "class": "RazaVaultman",
+     "params": null,
+     "pos": [
+      5.088,
+      0.275,
+      11.688
+     ],
+     "yaw_kod": 1536
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "newbie": 1,
+      "desc": "You can deposit and withdraw items from the vaults found in Barloque, Jasper, Raza and Ko'catan using the same commands that you would use when buying from or offering to any other NPC.\n\nItems that you 'offer' to a vault master will be removed from your inventory and stored safely within the vault for a fee of 1 shilling per stone of weight (2 shillings in Ko'catan).  The required fee will be automatically taken from your inventory.  Later, you can 'buy' the items again from the vault master at no additional cost.\n\nNote that the vault master will not accept shillings (use banks for those) as well as certain items that are too precious or dangerous to store in a vault.  Additionally, items that are deposited in Jasper, Barloque or Raza may be accessed from all three location, while items deposited in Ko'catan are inaccessible from any other location.\n\nFinally, you may use the spell 'conveyance' to directly send any item or stack of items to the regional vault at the same fee as a regular deposit.  To do so, simply cast the spell, then click on the item or stack of items that you wish to send to the vault.  This feature is incredibly convenient for adventurers who would otherwise be forced to head to town, weighed down by the massive amounts of loot they have collected on their journeys.",
+      "name": "Welcome to the Raza Vaults"
+     },
+     "pos": [
+      5.5,
+      0.275,
+      7.7
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      9.934,
+      0.275,
+      17.325
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      15.125,
+      0.275,
+      2.819
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "DynamicLight",
+     "params": {
+      "iColor": 32518,
+      "iIntensity": 30
+     },
+     "pos": [
+      5.775,
+      0.275,
+      2.784
+     ],
+     "yaw_kod": null
+    }
+   ],
+   "generators": [],
+   "mesh": "build/zones/332_RazaVault.glb",
+   "roo": "RazaVault.roo"
+  },
+  {
+   "rid": 333,
+   "class": "RazaBank",
+   "name": "Royal Bank of Raza",
+   "bounds_m": {
+    "min": [
+     1.1,
+     0.0,
+     4.675
+    ],
+    "max": [
+     16.5,
+     0.0,
+     17.875
+    ]
+   },
+   "teleport": {
+    "pos": [
+     12.1,
+     0.0,
+     5.5
+    ],
+    "yaw_kod": null
+   },
+   "exits": [
+    {
+     "pos": [
+      1.1,
+      0.0,
+      12.1
+     ],
+     "row": 6,
+     "col": 1,
+     "dest_rid": 300,
+     "dest_row": 15,
+     "dest_col": 49
+    },
+    {
+     "pos": [
+      1.1,
+      0.0,
+      9.9
+     ],
+     "row": 5,
+     "col": 1,
+     "dest_rid": 300,
+     "dest_row": 15,
+     "dest_col": 49
+    }
+   ],
+   "edge_exits": [],
+   "objects": [
+    {
+     "class": "RazaBanker",
+     "params": null,
+     "pos": [
+      13.2,
+      0.0,
+      11.0
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Sign",
+     "params": {
+      "name": "Welcome to the Bank of Raza",
+      "newbie": 1,
+      "desc": "With thieves and murderers lurking around every corner, it is generally a good idea to travel with as little coin as possible.  The banks in Raza, Tos, Jasper and Ko'catan allow you to deposit your shillings safely and retrieve them at a later point of time at no cost whatsoever.  Note, however, that while the banks of Raza, Tos and Jasper have a shared account balance, the bank of Ko'catan does not.\n\nUse the commands 'deposit xxx' to deposit xxx shillings and 'withdraw xxx' to withdraw the same amount.  In addition, you may use the command 'balance' to learn about your current account balance."
+     },
+     "pos": [
+      9.9,
+      0.0,
+      7.7
+     ],
+     "yaw_kod": null
+    },
+    {
+     "class": "Brazier",
+     "params": null,
+     "pos": [
+      3.575,
+      0.0,
+      17.119
+     ],
+     "yaw_kod": 3072
+    },
+    {
+     "class": "Table",
+     "params": null,
+     "pos": [
+      8.663,
+      0.0,
+      16.5
+     ],
+     "yaw_kod": 3072
+    }
+   ],
+   "generators": [],
+   "mesh": "build/zones/333_RazaBank.glb",
+   "roo": "RazaBank.roo"
+  }
+ ]
+}

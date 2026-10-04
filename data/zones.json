@@ -1,0 +1,4108 @@
+[
+ {
+  "rid": 300,
+  "class": "Raza",
+  "parents": [
+   "RazaRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Raza",
+  "roo": "raza.roo",
+  "music": "login.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2",
+   "ROOM_LAMPS"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_LAKE",
+   "TERRAIN_ROAD",
+   "TERRAIN_FOREST"
+  ],
+  "teleport": {
+   "row": 23,
+   "col": 41,
+   "angle": 3072
+  },
+  "base_light": 255,
+  "outside_factor": 10,
+  "info": "The town of Raza offers almost everything a fresh adventurer could possibly wish for.  Equipment, capable trainers and - of course - quests!  Take your time and look around for yourself.  I'll tell you a bit more about the town as we walk around.\n~I[Hint: Interact with NPCs and objects with a right click.  In Ogre, target the NPC or object with a left click instead, then use the symbols in the target window to interact.]~I",
+  "exits": [
+   {
+    "row": 16,
+    "col": 60,
+    "locked": true,
+    "message": "The door to the farmhouse is firmly bolted from the inside."
+   },
+   {
+    "row": 7,
+    "col": 62,
+    "locked": true,
+    "message": "The door to the tiny shed is locked."
+   },
+   {
+    "row": 23,
+    "col": 31,
+    "locked": true,
+    "message": "The doors to the temple remain locked at all times, except during funeral services."
+   },
+   {
+    "row": 23,
+    "col": 32,
+    "locked": true,
+    "message": "The doors to the temple remain locked at all times, except during funeral services."
+   },
+   {
+    "row": 12,
+    "col": 11,
+    "dest_rid": 332,
+    "dest_row": 5,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 15,
+    "col": 50,
+    "dest_rid": 333,
+    "dest_row": 5,
+    "dest_col": 2,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 14,
+    "col": 50,
+    "dest_rid": 333,
+    "dest_row": 5,
+    "dest_col": 2,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 7,
+    "col": 26,
+    "dest_rid": 301,
+    "dest_row": 8,
+    "dest_col": 6,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 7,
+    "col": 27,
+    "dest_rid": 301,
+    "dest_row": 8,
+    "dest_col": 6,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 18,
+    "col": 48,
+    "dest_rid": 303,
+    "dest_row": 5,
+    "dest_col": 3,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 19,
+    "col": 48,
+    "dest_rid": 303,
+    "dest_row": 5,
+    "dest_col": 3,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 18,
+    "col": 49,
+    "dest_rid": 303,
+    "dest_row": 5,
+    "dest_col": 3,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 11,
+    "col": 48,
+    "dest_rid": 304,
+    "dest_row": 5,
+    "dest_col": 3,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 12,
+    "col": 48,
+    "dest_rid": 304,
+    "dest_row": 5,
+    "dest_col": 3,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 11,
+    "col": 49,
+    "dest_rid": 304,
+    "dest_row": 5,
+    "dest_col": 3,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 12,
+    "col": 49,
+    "dest_rid": 304,
+    "dest_row": 5,
+    "dest_col": 3,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 5,
+    "col": 17,
+    "dest_rid": 305,
+    "dest_row": 5,
+    "dest_col": 4,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 5,
+    "col": 18,
+    "dest_rid": 305,
+    "dest_row": 5,
+    "dest_col": 4,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 6,
+    "col": 17,
+    "dest_rid": 305,
+    "dest_row": 5,
+    "dest_col": 4,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 6,
+    "col": 18,
+    "dest_rid": 305,
+    "dest_row": 5,
+    "dest_col": 4,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 27,
+    "col": 24,
+    "dest_rid": 306,
+    "dest_row": 11,
+    "dest_col": 16,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 28,
+    "col": 24,
+    "dest_rid": 306,
+    "dest_row": 11,
+    "dest_col": 16,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 16,
+    "col": 11,
+    "dest_rid": 307,
+    "dest_row": 5,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 17,
+    "col": 11,
+    "dest_rid": 307,
+    "dest_row": 5,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 27,
+    "col": 15,
+    "dest_rid": 308,
+    "dest_row": 4,
+    "dest_col": 11,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 27,
+    "col": 14,
+    "dest_rid": 308,
+    "dest_row": 4,
+    "dest_col": 11,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 6,
+    "col": 10,
+    "dest_rid": 302,
+    "dest_row": 5,
+    "dest_col": 8,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 6,
+    "col": 11,
+    "dest_rid": 302,
+    "dest_row": 5,
+    "dest_col": 8,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 7,
+    "col": 10,
+    "dest_rid": 302,
+    "dest_row": 5,
+    "dest_col": 8,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 7,
+    "col": 11,
+    "dest_rid": 302,
+    "dest_row": 5,
+    "dest_col": 8,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [
+   {
+    "side": "LEAVE_NORTH",
+    "dest_rid": 330,
+    "dest_row": 43,
+    "dest_col": 41,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "Now that you're outside, you can really practice moving around.  Autorun is on by default, but if you wish to slow down a bit use the SHIFT key to walk while you move.  Also, you can use the A and D keys to slide sideways (or 'strafe').  The END key is good for turning around 180 degrees in a hurry.\n\nIt's also a good time to learn about the map, to the right of the graphics window.  The blue line shows your position on the map.  Depending on the size of the map, this may look like a blue dot but you can use the + and - keys to zoom in/out.  Other players will show up as blue dots, monsters as red dots, and NPCs as black dots.  You can add comments to the map by RIGHT CLICKING on the map, and then entering your reminder to yourself.",
+     "newbie": 1,
+     "name": "Getting around"
+    },
+    "row": 12,
+    "col": 27,
+    "fine_row": 10,
+    "fine_col": 16
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "Beyond this gate lies the rest of the world of Meridian 59.  At this time, you may wish to read the mail your guardian angel has sent you as it contains information on how to survive and what you might do in this world.  To access your mail, type MAIL.\n\nIn the area surrounding Raza you will find monsters appropriate for your level, however when encountering a new monster, you should look at its description to see what hitpoints it will take you to.  If this number is far beyond your own level, the monster may be too dangerous for you to challenge alone.\n\nYou can return to Raza at any time to sell your items or purchase more, and if you venture north-east to the Forest of Farol you may travel north or south to other towns.",
+     "newbie": 1,
+     "name": "Entering the world"
+    },
+    "row": 5,
+    "col": 40,
+    "fine_row": 16,
+    "fine_col": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 24,
+    "col": 36,
+    "fine_row": 0,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 29,
+    "col": 5,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 28,
+    "col": 7,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 26,
+    "col": 6,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 26,
+    "col": 8,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 24,
+    "col": 5,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Apple"
+     }
+    },
+    "row": 9,
+    "col": 13,
+    "fine_row": 52,
+    "fine_col": "04",
+    "angle": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Apple"
+     }
+    },
+    "row": 4,
+    "col": 13,
+    "fine_row": 56,
+    "fine_col": "04",
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 6,
+    "col": 30,
+    "fine_row": 0,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 6,
+    "col": 33,
+    "fine_row": 0,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 6,
+    "col": 21,
+    "fine_row": 0,
+    "fine_col": 56,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 23,
+    "col": 21,
+    "fine_row": 0,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 13,
+    "col": 49,
+    "fine_row": 10,
+    "fine_col": 10,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 23,
+    "col": 25,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 19,
+    "col": 46,
+    "fine_row": 48,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 6,
+    "col": 43,
+    "fine_row": 0,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 16,
+    "col": 48,
+    "fine_row": 56,
+    "fine_col": 20,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 198
+    },
+    "row": 28,
+    "col": 5,
+    "fine_row": 32,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 198
+    },
+    "row": 30,
+    "col": 54,
+    "fine_row": 24,
+    "fine_col": 56,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 84
+    },
+    "row": 27,
+    "col": 50,
+    "fine_row": 56,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 104
+    },
+    "row": 27,
+    "col": 51,
+    "fine_row": 56,
+    "fine_col": 40,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 91
+    },
+    "row": 29,
+    "col": 49,
+    "fine_row": 16,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 106
+    },
+    "row": 27,
+    "col": 49,
+    "fine_row": 56,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 29,
+    "col": 45,
+    "fine_row": 8,
+    "fine_col": 24,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 83
+    },
+    "row": 28,
+    "col": 42,
+    "fine_row": 34,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 104
+    },
+    "row": 29,
+    "col": 50,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 30,
+    "col": 52,
+    "fine_row": 24,
+    "fine_col": 40,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 34
+    },
+    "row": 30,
+    "col": 44,
+    "fine_row": 32,
+    "fine_col": 30,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 23,
+    "col": 46,
+    "fine_row": 24,
+    "fine_col": 26,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 9,
+    "col": 45,
+    "fine_row": 32,
+    "fine_col": 26,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 14,
+    "col": 24,
+    "fine_row": 30,
+    "fine_col": 24,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 21,
+    "col": 25,
+    "fine_row": 24,
+    "fine_col": 26,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 24,
+    "col": 12,
+    "fine_row": 55,
+    "fine_col": 24,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 24,
+    "col": 16,
+    "fine_row": 55,
+    "fine_col": 56,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 14,
+    "col": 12,
+    "fine_row": 49,
+    "fine_col": 44,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 29,
+    "col": 51,
+    "fine_row": 35,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 104
+    },
+    "row": 29,
+    "col": 43,
+    "fine_row": 36,
+    "fine_col": 30,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 104
+    },
+    "row": 28,
+    "col": 44,
+    "fine_row": 34,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 104
+    },
+    "row": 28,
+    "col": 47,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 83
+    },
+    "row": 28,
+    "col": 46,
+    "fine_row": 16,
+    "fine_col": 30,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 30,
+    "col": 42,
+    "fine_row": 30,
+    "fine_col": 28,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 29,
+    "col": 46,
+    "fine_row": 56,
+    "fine_col": 30,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 84
+    },
+    "row": 30,
+    "col": 47,
+    "fine_row": 16,
+    "fine_col": 30,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 29,
+    "col": 52,
+    "fine_row": 0,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 30,
+    "col": 51,
+    "fine_row": 24,
+    "fine_col": 24,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 29,
+    "col": 42,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 29,
+    "col": 49,
+    "fine_row": 32,
+    "fine_col": 60,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 29,
+    "col": 52,
+    "fine_row": 35,
+    "fine_col": 52,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 104
+    },
+    "row": 28,
+    "col": 50,
+    "fine_row": 16,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 84
+    },
+    "row": 30,
+    "col": 48,
+    "fine_row": 48,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 25,
+    "col": 53,
+    "fine_row": 56,
+    "fine_col": 16,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 28,
+    "col": 52,
+    "fine_row": 0,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 106
+    },
+    "row": 29,
+    "col": 44,
+    "fine_row": 40,
+    "fine_col": 40,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 106
+    },
+    "row": 28,
+    "col": 51,
+    "fine_row": 48,
+    "fine_col": 24,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 107
+    },
+    "row": 27,
+    "col": 45,
+    "fine_row": 48,
+    "fine_col": 24,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 23,
+    "col": 57,
+    "fine_row": 30,
+    "fine_col": 16,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 25,
+    "col": 51,
+    "fine_row": 56,
+    "fine_col": 16,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 30,
+    "col": 50,
+    "fine_row": 48,
+    "fine_col": 48,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 30,
+    "col": 50,
+    "fine_row": 48,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 30,
+    "col": 49,
+    "fine_row": 48,
+    "fine_col": 16,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 21,
+    "col": 60,
+    "fine_row": 0,
+    "fine_col": 56,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 9,
+    "col": 64,
+    "fine_row": 0,
+    "fine_col": 24,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 9,
+    "col": 63,
+    "fine_row": 0,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 24,
+    "col": 58,
+    "fine_row": 24,
+    "fine_col": 24,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 66
+    },
+    "row": 11,
+    "col": 59,
+    "fine_row": 56,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 24,
+    "col": 64,
+    "fine_row": 24,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 10,
+    "col": 59,
+    "fine_row": 32,
+    "fine_col": 16,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 66
+    },
+    "row": 12,
+    "col": 59,
+    "fine_row": 40,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 6,
+    "col": 56,
+    "fine_row": 40,
+    "fine_col": 40,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 9,
+    "col": 57,
+    "fine_row": 24,
+    "fine_col": 16,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 25,
+    "col": 55,
+    "fine_row": 56,
+    "fine_col": 16,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 6,
+    "col": 57,
+    "fine_row": 56,
+    "fine_col": 8,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 4,
+    "col": 36,
+    "fine_row": 8,
+    "fine_col": 40,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 4,
+    "col": 40,
+    "fine_row": 8,
+    "fine_col": 8,
+    "angle": 0
+   },
+   {
+    "class": "WoodenBox",
+    "row": 31,
+    "col": 26,
+    "fine_row": 8,
+    "fine_col": 32,
+    "angle": 3072
+   },
+   {
+    "class": "Brazier",
+    "row": 29,
+    "col": 24,
+    "fine_row": 14,
+    "fine_col": 16,
+    "angle": 3072
+   },
+   {
+    "class": "Brazier",
+    "row": 26,
+    "col": 24,
+    "fine_row": 48,
+    "fine_col": 16,
+    "angle": 3072
+   },
+   {
+    "class": "Cow",
+    "row": 27,
+    "col": 48
+   },
+   {
+    "class": "Cow",
+    "row": 29,
+    "col": 47
+   },
+   {
+    "class": "Cow",
+    "row": 30,
+    "col": 45
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/razarm/raza.kod"
+ },
+ {
+  "rid": 301,
+  "class": "RazaInn",
+  "parents": [
+   "RazaRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Inn of Raza",
+  "roo": "razainn.roo",
+  "music": "login.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2",
+   "ROOM_HOMETOWN",
+   "ROOM_SANCTUARY",
+   "ROOM_SAFELOGOFF"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 3,
+   "col": 8,
+   "angle": 1792
+  },
+  "base_light": 255,
+  "outside_factor": 10,
+  "info": null,
+  "exits": [
+   {
+    "row": 9,
+    "col": 6,
+    "dest_rid": 300,
+    "dest_row": 8,
+    "dest_col": 27,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 9,
+    "col": 7,
+    "dest_rid": 300,
+    "dest_row": 8,
+    "dest_col": 27,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 1,
+    "col": 2,
+    "locked": true,
+    "message": "The back door is locked."
+   },
+   {
+    "row": 1,
+    "col": 3,
+    "locked": true,
+    "message": "The back door is locked."
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "NewsLink",
+    "params": {
+     "nid": 9,
+     "name": "Designers' News",
+     "desc": "Check here for information from the game administrators."
+    },
+    "row": 5,
+    "col": 1,
+    "fine_row": 47,
+    "fine_col": 32
+   },
+   {
+    "class": "RazaInnKeeper",
+    "row": 7,
+    "col": 3,
+    "fine_row": 24,
+    "fine_col": 56
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "Welcome to the game!  We hope that you come to enjoy this unique online experience.\n\nThe first thing you need to learn is how to walk, using the W, A, S, and D keys alone with the left and right arrows. You can walk forward and back using the W and S keys, and turn using the left and right arrows.  We will get more into movement in a moment.\n\nAlso, you should note that you can right-click on many of the things you see in the world. These signs are a good example, as is Marcus, the innkeeper. You can even view yourself by right-clicking on the head on the upper-right corner of the screen.\n\nIf you wish to activate 'mouselook' you can do so at this time by pressing the C key. If you wish to deactivate it, you can do so by pressing the C key again.\n\nLastly, you can go through doors by pressing the space bar.\n\n-------------------\n\nWhen you're ready to proceed, walk to the exit door (forward and to your left), hit the space bar, and then read the next sign which will be in plain sight.",
+     "newbie": 1,
+     "name": "Welcome"
+    },
+    "row": 4,
+    "col": 5,
+    "fine_row": 24,
+    "fine_col": 40
+   },
+   {
+    "class": "Table",
+    "row": 7,
+    "col": 11,
+    "fine_row": 24,
+    "fine_col": 8
+   },
+   {
+    "class": "Table",
+    "row": 2,
+    "col": 9,
+    "fine_row": 24,
+    "fine_col": 40
+   },
+   {
+    "class": "Table",
+    "row": 3,
+    "col": 3,
+    "fine_row": 24,
+    "fine_col": 40
+   },
+   {
+    "class": "BarStool",
+    "row": 7,
+    "col": 9,
+    "fine_row": 24,
+    "fine_col": 40
+   },
+   {
+    "class": "BarStool",
+    "row": 5,
+    "col": 2,
+    "fine_row": 8,
+    "fine_col": 40
+   },
+   {
+    "class": "BarStool",
+    "row": 2,
+    "col": 10,
+    "fine_row": 24,
+    "fine_col": 40
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 1,
+    "col": 8,
+    "fine_row": 57,
+    "fine_col": 18
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 8,
+    "col": 1,
+    "fine_row": 1,
+    "fine_col": 32
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 8,
+    "col": 8,
+    "fine_row": 54,
+    "fine_col": 57
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 5,
+    "col": 10,
+    "fine_row": 8,
+    "fine_col": 14
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/razarm/razainn.kod"
+ },
+ {
+  "rid": 302,
+  "class": "RazaHall",
+  "parents": [
+   "RazaRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Adventurer's Hall of Raza",
+  "roo": "razahall.roo",
+  "music": "login.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2",
+   "ROOM_SAFELOGOFF"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 6,
+   "col": 5,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 5,
+  "info": null,
+  "exits": [
+   {
+    "row": 5,
+    "col": 9,
+    "dest_rid": 300,
+    "dest_row": 7,
+    "dest_col": 12,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 6,
+    "col": 9,
+    "dest_rid": 300,
+    "dest_row": 7,
+    "dest_col": 12,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "NewsLink",
+    "params": {
+     "nid": 20,
+     "name": "General News",
+     "desc": "Find out the latest gossip around Meridian."
+    },
+    "row": 10,
+    "col": 2,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "name": "News Globes",
+     "desc": "This object on the platform beside the sign is a News Globe.  General News Globes can be found in Adventurer's Halls in each city in Meridian, while Designer's News Globes can be found in Inns.  \n\nPlayers can post on the General News globe, like the one here and you can use this medium to ask questions of other players, post messages asking for a guild, etc.  \n\nUse the Post button to make a post, Reply to post in the same thread as a previous post, or Mail Author to send a private mail to the author of a post. \n\nFor a short time after posting, users can delete their own posts.",
+     "newbie": 1
+    },
+    "row": 10,
+    "col": 2,
+    "fine_row": 52,
+    "fine_col": 52,
+    "angle": 2560
+   },
+   {
+    "class": "Stool",
+    "row": 2,
+    "col": 4,
+    "fine_row": 28,
+    "fine_col": 32
+   },
+   {
+    "class": "Stool",
+    "row": 2,
+    "col": 6,
+    "fine_row": 28,
+    "fine_col": 40
+   },
+   {
+    "class": "Stool",
+    "row": 3,
+    "col": 4,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "Stool",
+    "row": 3,
+    "col": 6,
+    "fine_row": 16,
+    "fine_col": 40
+   },
+   {
+    "class": "Stool",
+    "row": 4,
+    "col": 4,
+    "fine_row": 4,
+    "fine_col": 32
+   },
+   {
+    "class": "Stool",
+    "row": 4,
+    "col": 6,
+    "fine_row": 4,
+    "fine_col": 40
+   },
+   {
+    "class": "Chandelier",
+    "row": 6,
+    "col": 5,
+    "fine_row": 18,
+    "fine_col": 40
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 60
+    },
+    "row": 6,
+    "col": 5,
+    "fine_row": 18,
+    "fine_col": 40
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/razarm/razahall.kod"
+ },
+ {
+  "rid": 303,
+  "class": "RazaSmith",
+  "parents": [
+   "RazaRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Blacksmith of Raza",
+  "roo": "razasmith.roo",
+  "music": "smithy.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 5,
+   "col": 4,
+   "angle": 2560
+  },
+  "base_light": 164,
+  "outside_factor": 5,
+  "info": null,
+  "exits": [
+   {
+    "row": 4,
+    "col": 3,
+    "dest_rid": 300,
+    "dest_row": 18,
+    "dest_col": 47,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 4,
+    "col": 4,
+    "dest_rid": 300,
+    "dest_row": 18,
+    "dest_col": 47,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "RazaBlacksmith",
+    "row": 7,
+    "col": 7,
+    "fine_row": 24,
+    "fine_col": 24,
+    "angle": 1024
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "You've come into this world virtually empty handed.  Fortunately, you also started with a bit of cash (and a weapon!), so you can buy some items to get started.\n\nGo up to the blacksmith, press the enter key to get to the chat window, type BUY and press enter again (CTRL-B is the shortcut for buying items).  A list of items that the blacksmith has for sale will appear.  Choose the items you want, and then press [OK].  First buy a shield, and then some armor.  If you have enough money to pay for them all, they will appear in your inventory.\n\nTo equip items from your inventory, press the little chest icon below the mini-map to the right of the graphics window.  Right-click on the item you want to use, and press the [USE] button.  A yellow glow will appear around it, meaning that you're wielding it.  Repeat this for your weapon, armor and shield.  To remove an object from use, simply right-click the object and press the [UNUSE] button.\n\nYou may also just double-click on an item in your inventory to use or unuse it.\n\n-------------\n\nWhen you're done here you should go to the tavern, the large brown building at the west end of town with the cup and bottle sign next to the door.",
+     "name": "Buying items",
+     "newbie": 1
+    },
+    "row": 7,
+    "col": 5,
+    "fine_row": 24,
+    "fine_col": 24
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32320,
+     "iIntensity": 30
+    },
+    "row": 9,
+    "col": 6,
+    "fine_row": 16,
+    "fine_col": 24
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 7,
+    "col": 4,
+    "fine_row": 53,
+    "fine_col": 35
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 4,
+    "col": 8,
+    "fine_row": 6,
+    "fine_col": 38
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/razarm/razasmith.kod"
+ },
+ {
+  "rid": 304,
+  "class": "RazaApoth",
+  "parents": [
+   "RazaRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Ravi's Magicks of Raza",
+  "roo": "razaapoth.roo",
+  "music": "login.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 5,
+   "col": 4,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 5,
+  "info": null,
+  "exits": [
+   {
+    "row": 5,
+    "col": 3,
+    "dest_rid": 300,
+    "dest_row": 12,
+    "dest_col": 47,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "RazaApothecary",
+    "row": 2,
+    "col": 5,
+    "fine_row": 8,
+    "fine_col": 8
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "Occasionally, you will find quests where a shopkeeper or other NPC desires you to bring him a certain item or peform some errand.  More frequently, after killing a monster you will find items that you yourself have no need for but that you can sell to get the weapons and other equipment that you do need.  For example, you may have found entroot berries after killing some mummies.  Use the OFFER command, or press the CONTROL key and O to offer these to Ravi, the apothecary.\n\nIt should be noted that not every NPC wants every item.  Ravi, for example, has no interest in purchasing weapons so if you offer them to him, it will confuse him.  He may even think that it's a gift, and take it from your astonished hands.  If you SAY 'buy' or 'sell', you should get a good idea of what any shopkeeper is willing to take off your hands.\n\n--------------------\n\nThis is the end of your tutorial.  Feel free to explore around a bit and try new things.  You may wish to pay a visit to the Grand Museum, which houses a number of exhibits about the wonders found in Meridian.",
+     "name": "Selling items",
+     "newbie": 1
+    },
+    "row": 3,
+    "col": 3,
+    "fine_row": 56,
+    "fine_col": 8
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 57
+    },
+    "row": 6,
+    "col": 4,
+    "fine_row": 8,
+    "fine_col": 8
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 33
+    },
+    "row": 3,
+    "col": 4,
+    "fine_row": 40,
+    "fine_col": 40
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 57
+    },
+    "row": 4,
+    "col": 2,
+    "fine_row": 40,
+    "fine_col": 40
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 131
+    },
+    "row": 3,
+    "col": 4,
+    "fine_row": 8,
+    "fine_col": 8
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 132
+    },
+    "row": 3,
+    "col": 5,
+    "fine_row": 16,
+    "fine_col": 16
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 5,
+    "col": 5,
+    "fine_row": 45,
+    "fine_col": 53
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/razarm/razashop.kod"
+ },
+ {
+  "rid": 305,
+  "class": "RazaHut",
+  "parents": [
+   "RazaRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Home of Roderic D'Stane",
+  "roo": "razahut.roo",
+  "music": "login.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 2,
+   "col": 2,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 5,
+  "info": null,
+  "exits": [
+   {
+    "row": 5,
+    "col": 4,
+    "dest_rid": 300,
+    "dest_row": 6,
+    "dest_col": 17,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 5,
+    "col": 3,
+    "dest_rid": 300,
+    "dest_row": 6,
+    "dest_col": 17,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "RazaElder",
+    "row": 1,
+    "col": 3,
+    "fine_row": 48,
+    "fine_col": 16,
+    "angle": 2048
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "vrSign",
+     "newbie": 1,
+     "name": "Communication"
+    },
+    "row": 3,
+    "col": 4,
+    "fine_row": 32,
+    "fine_col": 48
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 29
+    },
+    "row": 4,
+    "col": 2,
+    "fine_row": 48,
+    "fine_col": 16
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 46
+    },
+    "row": 2,
+    "col": 2,
+    "fine_row": 48,
+    "fine_col": 16
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 99
+    },
+    "row": 2,
+    "col": 4,
+    "fine_row": 32,
+    "fine_col": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 20
+    },
+    "row": 2,
+    "col": 5,
+    "fine_row": 32,
+    "fine_col": 0
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 5,
+    "col": 3,
+    "fine_row": 35,
+    "fine_col": 21
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/razarm/razahut.kod"
+ },
+ {
+  "rid": 306,
+  "class": "RazaCrypt",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Mausoleum",
+  "roo": "razacrypt.roo",
+  "music": "nec03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CAVES",
+   "TERRAIN_NECROPOLIS"
+  ],
+  "teleport": {
+   "row": 11,
+   "col": 23,
+   "angle": null
+  },
+  "base_light": 124,
+  "outside_factor": 0,
+  "info": null,
+  "exits": [
+   {
+    "row": 11,
+    "col": 17,
+    "dest_rid": 300,
+    "dest_row": 28,
+    "dest_col": 24,
+    "rotate": "SET_ANGLE_EAST"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Mummy",
+     "weight": 50
+    },
+    {
+     "class": "MummyNoTreasure",
+     "weight": 50
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 100,
+   "init_count_min": 12,
+   "init_count_max": 15,
+   "monster_count_max": 35
+  },
+  "objects": [
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "If a monster isn't chasing you, now's a good time to learn another handy interface ability.  By pressing PAGEUP and PAGEDOWN, you can have your character look up at the ceiling, and down at the pit full of mummies.  Once you do so, you may feel inclined to wave at the mummies. You can do that by typing WAVE. They won't wave back, of course, being uncultured brutes, but at least you get the satisfaction of being polite before going out and killing more of their friends.\n\nIt's a good thing to keep in mind that PAGEDOWN is extremely useful when facing a foe shorter than yourself - and most of your early Meridian foes will be shorter than yourself.  However, for the time being, center your view by pressing HOME, and head back into the fray.",
+     "newbie": 1,
+     "name": "Looking around"
+    },
+    "row": 11,
+    "col": 2,
+    "fine_col": 48
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "Combat is essential in Meridian 59, but it's also pretty easy.  If you push your 'E' key by default, you will swing at the monster closest to you with whatever weapon you have armed.  If you don't have a weapon armed, you should do so now, because punching is not an effective way to kill much of anything.\n\nHowever, if you are a mage and have learned one of the touch attack spells (acid touch, icy fingers, holy touch, touch of flame, unholy touch and zap), your unarmed attacks will be transformed into powerful elemental assaults for the duration of the spell!  If you run out of reagents to cast your spells, see Ravi - the town's apothecary - to resupply yourself.\n\nWhile fighting, be sure to keep an eye on your Health bar, marked by a cross in the top-right corner of the screen.  If it gets too low, don't hesitate to run away!  Then rest or eat some food to get your strength up faster.  Keep in mind that you can neither fight nor run while resting, so you want to be sure you find a safe place to hide while you heal.\n\nMonsters you kill will frequently drop treasure behind which can either be sold or used. Be sure to get whatever they drop, by using the GET command, or by pressing 'G'.\n\nYou have already learned that you can [USE] armor and weapons to equip them, but it doesn't stop there!  For example, you may also encounter magical potions, scrolls and wands on your journey.  Try using them!  Remember that you can use the [Space] key to quickly use the item that you have currently selected in your inventory.  Also, keep in mind that wands require a target - be it one of your foes, your allies or even yourself.",
+     "newbie": 1,
+     "name": "Fighting"
+    },
+    "row": 11,
+    "col": 14,
+    "fine_row": 32,
+    "fine_col": 48
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "Now that you are familiar with fighting and spellcasting, you're ready to try out the advanced targeting feature.\n\nPress the '[' or ']' keys while facing a monster or player to activate the targeting system.  You should see your target outlined in color (you can set the color in your Preferences from the Game option in the top menu bar).  As long as a target is outlined, the game will assume that all attacks or spells are to be directed at that target.  Note that this is true regardless of whether you can hit or even see your target, so be careful about leaving inaccessible enemies targetted!\n\nPressing '[' or ']' will cycle through your available targets, and pressing ESC will clear your current target and return you to the default attack/spell mode.\n\nWith a little practise, you'll see how useful targeting can be, especially when casting spells.  Just set up a hotkey to the spell of your choice, highlight a target and fire away!",
+     "newbie": 1,
+     "name": "Targeting"
+    },
+    "row": 11,
+    "col": 3,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "Jumping in Meridian 59 is especially tricky as there is no jump key or command.  Consider it more like falling at an angle.  There will be many places in the world that will require you to leap from one area to the next.  To cross these areas, like the one ahead, get a running start then just aim where you are trying to land and run from one ledge to the next.  If you fail the jump on your first try, you can go around and try again.",
+     "newbie": 1,
+     "name": "Jumping"
+    },
+    "row": 29,
+    "col": 30,
+    "fine_row": 0,
+    "fine_col": 32
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "The two levers you see before you will open the wooden gate if both are pulled at the same time.  Other objects in this world, mainly levers, guild hall switches and light sources, can be interacted with to produce some effect.\n\nTo pull the lever, right-click it and click \"use\", or type use into the chatbox while standing close to it.\n\nYou may find you are not quick enough to pull both levers in time to open the door.  If so, you can use the \"broadcast\" chat command to find another player to help you, or continue killing monsters in the rest of the mausoleum (there are only a few behind the gate).",
+     "newbie": 1,
+     "name": "Using objects"
+    },
+    "row": 24,
+    "col": 12,
+    "fine_row": 45,
+    "fine_col": 14
+   },
+   {
+    "class": "Skull",
+    "row": 11,
+    "col": 21,
+    "fine_row": 32,
+    "fine_col": 40
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 3,
+    "col": 18,
+    "fine_row": 0,
+    "fine_col": 8
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 3,
+    "col": 18,
+    "fine_row": 0,
+    "fine_col": 8
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 5,
+    "col": 14,
+    "fine_row": 32,
+    "fine_col": 40
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 19,
+    "col": 18,
+    "fine_row": 0,
+    "fine_col": 40
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 22,
+    "col": 11,
+    "fine_row": 24,
+    "fine_col": 56
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 23,
+    "col": 8,
+    "fine_row": 40,
+    "fine_col": 16
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 25,
+    "col": 14,
+    "fine_row": 0,
+    "fine_col": 40
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 32,
+    "col": 14,
+    "fine_row": 0,
+    "fine_col": 40
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 30,
+    "col": 40,
+    "fine_row": 0,
+    "fine_col": 24
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 27,
+    "col": 33,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 19,
+    "col": 32,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 17,
+    "col": 40,
+    "fine_row": 0,
+    "fine_col": 24
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 13,
+    "col": 40,
+    "fine_row": 0,
+    "fine_col": 24
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 9,
+    "col": 34,
+    "fine_row": 0,
+    "fine_col": 24
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 4,
+    "col": 28,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 2,
+    "col": 26,
+    "fine_row": 0,
+    "fine_col": 40
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 163
+    },
+    "row": 2,
+    "col": 40,
+    "fine_row": 0,
+    "fine_col": 24
+   },
+   {
+    "class": "Brazier",
+    "row": 9,
+    "col": 18,
+    "fine_row": 0,
+    "fine_col": 48
+   },
+   {
+    "class": "Brazier",
+    "row": 14,
+    "col": 18,
+    "fine_row": 0,
+    "fine_col": 48
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 45
+    },
+    "row": 11,
+    "col": 2,
+    "fine_row": 32,
+    "fine_col": 48
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/razacrypt.kod"
+ },
+ {
+  "rid": 307,
+  "class": "RazaBar",
+  "parents": [
+   "RazaRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Eric's Stout Spirits",
+  "roo": "razabar.roo",
+  "music": "login.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2",
+   "ROOM_SANCTUARY",
+   "ROOM_SAFELOGOFF"
+  ],
+  "terrain": [],
+  "teleport": {
+   "row": 5,
+   "col": 4,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 5,
+  "info": null,
+  "exits": [
+   {
+    "row": 4,
+    "col": 8,
+    "dest_rid": 300,
+    "dest_row": 16,
+    "dest_col": 12,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 5,
+    "col": 8,
+    "dest_rid": 300,
+    "dest_row": 16,
+    "dest_col": 12,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "RazaBartender",
+    "row": 2,
+    "col": 3,
+    "fine_row": 40,
+    "fine_col": 0,
+    "angle": 1536
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "In the upper right-hand corner of your screen, you'll see four stats: Health, Mana, Vigor and XP.\n\nHealth is simple - you lose it when you take damage (usually in battle).  If your health is reduced to zero, you die.\n\nMana determines how many spells you can cast.  Both Mana and Health come back with time.\n\nVigor, the third stat, is very important.  How fast your Health and Mana return depends largely on your Vigor. Running requires Vigor - if it drops below 10, you will only be able to walk.  There are two ways to increase your vigor - by eating food ([USE] it from your inventory) and by resting (click on the button in the toolbar above the graphics window).  Resting in inns and taverns will heal your vigor twice as quickly.  Taverns and stores also frequently sell foodstuffs that you can take with you as you explore.\n\nThe last stat shows your \"experience points\" (XP) which determines when you will gain your next maximum hit point.  Looking at the description of a monster shows how many hit points you can get by killing them, though you will gain a small amount of XP by killing monsters at or a bit below your level.  Players with higher stamina will gain more XP from kills, and you can lose XP by dying once you lose your guardian angel (at 50 hit points).\n\n-----------------------\n\nFrom here, go to the elder's home.  It is the small hut just to the north of this building.",
+     "newbie": 1,
+     "name": "Health, Mana, Vigor and XP"
+    },
+    "row": 6,
+    "col": 3,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "Stool",
+    "row": 4,
+    "col": 6,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "Stool",
+    "row": 3,
+    "col": 6,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "Stool",
+    "row": 5,
+    "col": 5,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "Stool",
+    "row": 5,
+    "col": 4,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "Stool",
+    "row": 7,
+    "col": 7,
+    "fine_row": 8,
+    "fine_col": 32
+   },
+   {
+    "class": "Stool",
+    "row": 7,
+    "col": 6,
+    "fine_row": 8,
+    "fine_col": 32
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 57
+    },
+    "row": 8,
+    "col": 8,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 58
+    },
+    "row": 2,
+    "col": 8,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 58
+    },
+    "row": 3,
+    "col": 8,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 58
+    },
+    "row": 4,
+    "col": 8,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "Candle",
+    "row": 7,
+    "col": 4,
+    "fine_row": 56,
+    "fine_col": 0
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 8,
+    "col": 5,
+    "fine_row": 56,
+    "fine_col": 33
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 2,
+    "col": 7,
+    "fine_row": 18,
+    "fine_col": 56
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 2,
+    "col": 3,
+    "fine_row": 17,
+    "fine_col": 40
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/razarm/razabar.kod"
+ },
+ {
+  "rid": 308,
+  "class": "RazaMuseum",
+  "parents": [
+   "RazaRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Grand Museum of Raza",
+  "roo": "razamuseum.roo",
+  "music": "login.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [],
+  "teleport": {
+   "row": 8,
+   "col": 11,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 5,
+  "info": null,
+  "exits": [
+   {
+    "row": 3,
+    "col": 10,
+    "dest_rid": 300,
+    "dest_row": 26,
+    "dest_col": 14,
+    "rotate": "SET_ANGLE_NORTH"
+   },
+   {
+    "row": 3,
+    "col": 11,
+    "dest_rid": 300,
+    "dest_row": 26,
+    "dest_col": 14,
+    "rotate": "SET_ANGLE_NORTH"
+   },
+   {
+    "row": 3,
+    "col": 12,
+    "dest_rid": 300,
+    "dest_row": 26,
+    "dest_col": 14,
+    "rotate": "SET_ANGLE_NORTH"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "Sign",
+    "params": {
+     "name": "Welcome",
+     "desc": "The Grand Museum is home to a myriad of exhibits, including a number of miniature replicas of items and monsters found in Meridian, as well as tapestries depicting various locales in the world.",
+     "newbie": 1
+    },
+    "row": 9,
+    "col": 11,
+    "fine_row": 0,
+    "fine_col": 32,
+    "angle": 1024
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "name": "The Arena of Tos",
+     "desc": "A proving-ground where mighty warriors clash beneath the watchful eyes of Kraanan.  Combatants can fight here for the pure honor of victory in combat, as Kraanan delivers any true warrior from death at the last possible moment.",
+     "newbie": 1
+    },
+    "row": 9,
+    "col": 20,
+    "fine_row": 4,
+    "fine_col": 30,
+    "angle": 1024
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "name": "Tos",
+     "desc": "Debatably the liveliest city in Meridian (the residents of Barloque would most likely beg to differ), Tos is home to the Arena as well as one of the friendliest bars in Meridian, Familiars.",
+     "newbie": 1
+    },
+    "row": 3,
+    "col": 20,
+    "fine_row": 0,
+    "fine_col": 16,
+    "angle": 1024
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "name": "The Vale of Sorrows",
+     "desc": "Legend has it that this secluded vale tucked away in the forests of Meridian is home to the Fey Elhai and the Fey Dirhai, two races of fairies eternally locked in a struggle to claim the Vale as their own.  A few brave adventurers even tell stories of how they were able, for a time, to sway the balance of the conflict to the side they favored.",
+     "newbie": 1
+    },
+    "row": 9,
+    "col": 17,
+    "fine_row": 16,
+    "fine_col": 8,
+    "angle": 1024
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "name": "The Great Pyramid of Ko'catan",
+     "desc": "The first structure to be built as part of the island settlement of Ko'catan, this grand monument is purported to be the burial place of the great hero Konima, whose sacrifice saved Meridian from the orc hordes during the Orc Wars.  Now, it is home to the Hall of Heroes, a gallery of magical statues which form themselves into the likenesses of the greatest current heroes in the land.",
+     "newbie": 1
+    },
+    "row": 6,
+    "col": 5,
+    "fine_row": 16,
+    "fine_col": 52,
+    "angle": 1024
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "name": "The Trading Post on Konima's Island",
+     "desc": "A bastion of civilization out in the the wilds of Konima's Island, this trading post is a central hub of trade between the Island and the mainland.  No one knows exactly where its proprietor, Wulfgang zax'Ak, obtains some of his more rare goods, nor why he chose to place his trading post so far out from the safe enclosing walls of Ko'catan.  Perhaps the latter is due to Ko'catan's strict trade laws, which among other things strictly forbid trade with the Avar, a strange race of bird-people indiginous to the island.  An artist's representation of an avar is pictured in the foreground, though it should be noted that noone has actually ever seen an avar approach the trading post.",
+     "newbie": 1
+    },
+    "row": 9,
+    "col": 2,
+    "fine_row": 16,
+    "fine_col": 36,
+    "angle": 1024
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "name": "Some of Ko'catan's Intricate Murals",
+     "desc": "Though the Ko'catani are sometimes a brutal and warlike race, they also have a rich and thriving artistic tradition.  The murals pictured here are typical of the stylized and traditional aesthetic of Ko'catani art, which always depicts the same subjects of Ko'catani history and myth.  In fact, new generations of artists are constantly refining the exact same scenes as their predecessors, painting over older murals with the same characters in the same poses, honing the gestures and facial expressions with greater and greater detail with every iteration, until the pictures breath with the soul of the Ko'catani way of life.  Historians estimate that the murals pictured here are more than two feet thick.",
+     "newbie": 1
+    },
+    "row": 3,
+    "col": 2,
+    "fine_row": 8,
+    "fine_col": 48,
+    "angle": 1024
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 145
+    },
+    "row": 8,
+    "col": 18,
+    "fine_row": 16,
+    "fine_col": 32,
+    "angle": 3072
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 124
+    },
+    "row": 7,
+    "col": 19,
+    "fine_row": 16,
+    "fine_col": 32,
+    "angle": 3072
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 133
+    },
+    "row": 8,
+    "col": 3,
+    "fine_row": 16,
+    "fine_col": 40,
+    "angle": 1024
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 136
+    },
+    "row": 13,
+    "col": 2,
+    "fine_row": 40,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 120
+    },
+    "row": 14,
+    "col": 5,
+    "fine_row": 48,
+    "fine_col": 32,
+    "angle": 3072
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 147
+    },
+    "row": 14,
+    "col": 16,
+    "fine_row": 48,
+    "fine_col": 0,
+    "angle": 1024
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 141
+    },
+    "row": 4,
+    "col": 7,
+    "fine_row": 0,
+    "fine_col": 48,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 150
+    },
+    "row": 13,
+    "col": 20,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 137
+    },
+    "row": 7,
+    "col": 3,
+    "fine_row": 16,
+    "fine_col": 40,
+    "angle": 1024
+   },
+   {
+    "class": "ModelNode",
+    "row": 4,
+    "col": 15,
+    "fine_row": 0,
+    "fine_col": 16,
+    "angle": 2048
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 135
+    },
+    "row": 14,
+    "col": 7,
+    "fine_row": 48,
+    "fine_col": 0,
+    "angle": 3072
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 119
+    },
+    "row": 14,
+    "col": 4,
+    "fine_row": 48,
+    "fine_col": 0,
+    "angle": 3072
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 122
+    },
+    "row": 14,
+    "col": 2,
+    "fine_row": 48,
+    "fine_col": 32,
+    "angle": 3584
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 134
+    },
+    "row": 8,
+    "col": 2,
+    "fine_row": 16,
+    "fine_col": 48,
+    "angle": 1024
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 118
+    },
+    "row": 8,
+    "col": 4,
+    "fine_row": 16,
+    "fine_col": 32,
+    "angle": 1024
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 138
+    },
+    "row": 7,
+    "col": 4,
+    "fine_row": 16,
+    "fine_col": 32,
+    "angle": 1024
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 139
+    },
+    "row": 7,
+    "col": 2,
+    "fine_row": 16,
+    "fine_col": 48,
+    "angle": 1024
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 140
+    },
+    "row": 5,
+    "col": 7,
+    "fine_row": 0,
+    "fine_col": 48,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 142
+    },
+    "row": 3,
+    "col": 7,
+    "fine_row": 0,
+    "fine_col": 48,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 149
+    },
+    "row": 14,
+    "col": 17,
+    "fine_row": 48,
+    "fine_col": 32,
+    "angle": 1024
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 146
+    },
+    "row": 14,
+    "col": 19,
+    "fine_row": 48,
+    "fine_col": 0,
+    "angle": 1024
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 148
+    },
+    "row": 14,
+    "col": 20,
+    "fine_row": 48,
+    "fine_col": 32,
+    "angle": 512
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 143
+    },
+    "row": 8,
+    "col": 19,
+    "fine_row": 16,
+    "fine_col": 24,
+    "angle": 3072
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 144
+    },
+    "row": 8,
+    "col": 20,
+    "fine_row": 16,
+    "fine_col": 16,
+    "angle": 3072
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 123
+    },
+    "row": 7,
+    "col": 18,
+    "fine_row": 16,
+    "fine_col": 32,
+    "angle": 1024
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 117
+    },
+    "row": 7,
+    "col": 20,
+    "fine_row": 16,
+    "fine_col": 16,
+    "angle": 1024
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 126
+    },
+    "row": 3,
+    "col": 15,
+    "fine_row": 0,
+    "fine_col": 16,
+    "angle": 2048
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 121
+    },
+    "row": 5,
+    "col": 15,
+    "fine_row": 0,
+    "fine_col": 16,
+    "angle": 2048
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 10,
+    "col": 14,
+    "fine_row": 49,
+    "fine_col": 17
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 4,
+    "col": 13,
+    "fine_row": 40,
+    "fine_col": 15
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 4,
+    "col": 9,
+    "fine_row": 43,
+    "fine_col": 48
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 10,
+    "col": 8,
+    "fine_row": 50,
+    "fine_col": 51
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 10,
+    "col": 15,
+    "fine_row": 48,
+    "fine_col": 18
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 6,
+    "col": 18,
+    "fine_row": 25,
+    "fine_col": 18
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 9,
+    "col": 18,
+    "fine_row": 10,
+    "fine_col": 18
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 12,
+    "col": 16,
+    "fine_row": 48,
+    "fine_col": 48
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 10,
+    "col": 7,
+    "fine_row": 48,
+    "fine_col": 48
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 12,
+    "col": 6,
+    "fine_row": 48,
+    "fine_col": 25
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 9,
+    "col": 4,
+    "fine_row": 8,
+    "fine_col": 48
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 6,
+    "col": 4,
+    "fine_row": 24,
+    "fine_col": 48
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 165
+    },
+    "row": 14,
+    "col": 12,
+    "fine_row": 56,
+    "fine_col": 0,
+    "angle": 1024
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 166
+    },
+    "row": 14,
+    "col": 11,
+    "fine_row": 56,
+    "fine_col": 12,
+    "angle": 1024
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "name": "Portals",
+     "desc": "Arcane portals are found in a select few places in the world.  Walking through one of these portals will teleport you instantly to another location.  The most common portals encountered are those in the Underworld, which is where poor souls are sent upon dying.  Walking through one of the Underworld portals will teleport you to an Inn in one of the six mainland cities of Meridian.  If you perish on the island of Ko'catan, you may return to the Ko'catan Inn by quickly using the portal on the Underworld floor.",
+     "newbie": 1
+    },
+    "row": 14,
+    "col": 10,
+    "fine_row": 8,
+    "fine_col": 52,
+    "angle": 1024
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/razarm/razamuseum.kod"
+ },
+ {
+  "rid": 330,
+  "class": "RazaForest",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Outskirts of Raza",
+  "roo": "razaforest.roo",
+  "music": "walk5.ogg",
+  "flags": [
+   "ROOM_LAMPS"
+  ],
+  "terrain": [
+   "TERRAIN_FOREST"
+  ],
+  "teleport": {
+   "row": 24,
+   "col": 37,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 8,
+  "info": null,
+  "exits": [
+   {
+    "row": 24,
+    "col": 53,
+    "locked": true,
+    "message": "This door is locked."
+   },
+   {
+    "row": 25,
+    "col": 53,
+    "locked": true,
+    "message": "This door is locked."
+   }
+  ],
+  "edge_exits": [
+   {
+    "side": "LEAVE_SOUTH",
+    "dest_rid": 300,
+    "dest_row": 2,
+    "dest_col": 38,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_NORTH",
+    "dest_rid": 331,
+    "dest_row": 48,
+    "dest_col": 24,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Bunny",
+     "weight": 60
+    },
+    {
+     "class": "SpiderBaby",
+     "weight": 40
+    }
+   ],
+   "generators": [
+    [
+     13,
+     47
+    ],
+    [
+     18,
+     36
+    ],
+    [
+     17,
+     21
+    ],
+    [
+     6,
+     10
+    ],
+    [
+     21,
+     14
+    ],
+    [
+     31,
+     9
+    ],
+    [
+     31,
+     17
+    ],
+    [
+     33,
+     25
+    ]
+   ],
+   "gen_time_ms": 20000,
+   "gen_percent": 100,
+   "init_count_min": 3,
+   "init_count_max": 7,
+   "monster_count_max": 15
+  },
+  "objects": [
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 65,
+    "col": 38,
+    "fine_row": 37,
+    "fine_col": 9,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 71,
+    "col": 7,
+    "fine_row": 5,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 70,
+    "col": 9,
+    "fine_row": 5,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 68,
+    "col": 8,
+    "fine_row": 5,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 68,
+    "col": 10,
+    "fine_row": 5,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 66,
+    "col": 7,
+    "fine_row": 5,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Apple"
+     }
+    },
+    "row": 51,
+    "col": 15,
+    "fine_row": 25,
+    "fine_col": 13,
+    "angle": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Apple"
+     }
+    },
+    "row": 46,
+    "col": 15,
+    "fine_row": 29,
+    "fine_col": 13,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 47,
+    "col": 32,
+    "fine_row": 37,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 47,
+    "col": 35,
+    "fine_row": 37,
+    "fine_col": 9,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 47,
+    "col": 24,
+    "fine_row": 37,
+    "fine_col": 1,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 64,
+    "col": 23,
+    "fine_row": 37,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 54,
+    "col": 51,
+    "fine_row": 47,
+    "fine_col": 19,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 65,
+    "col": 29,
+    "fine_row": 5,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 61,
+    "col": 48,
+    "fine_row": 21,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 47,
+    "col": 45,
+    "fine_row": 37,
+    "fine_col": 9,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 192
+    },
+    "row": 58,
+    "col": 50,
+    "fine_row": 29,
+    "fine_col": 29,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 198
+    },
+    "row": 70,
+    "col": 7,
+    "fine_row": 5,
+    "fine_col": 9,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 198
+    },
+    "row": 71,
+    "col": 57,
+    "fine_row": 61,
+    "fine_col": 1,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 84
+    },
+    "row": 69,
+    "col": 52,
+    "fine_row": 29,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 104
+    },
+    "row": 69,
+    "col": 53,
+    "fine_row": 29,
+    "fine_col": 49,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 91
+    },
+    "row": 70,
+    "col": 51,
+    "fine_row": 53,
+    "fine_col": 9,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 106
+    },
+    "row": 69,
+    "col": 51,
+    "fine_row": 29,
+    "fine_col": 9,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 70,
+    "col": 47,
+    "fine_row": 45,
+    "fine_col": 33,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 83
+    },
+    "row": 70,
+    "col": 44,
+    "fine_row": 7,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 104
+    },
+    "row": 71,
+    "col": 52,
+    "fine_row": 5,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 71,
+    "col": 54,
+    "fine_row": 61,
+    "fine_col": 49,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 34
+    },
+    "row": 72,
+    "col": 46,
+    "fine_row": 5,
+    "fine_col": 39,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 64,
+    "col": 48,
+    "fine_row": 61,
+    "fine_col": 35,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 51,
+    "col": 47,
+    "fine_row": 5,
+    "fine_col": 35,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 56,
+    "col": 26,
+    "fine_row": 3,
+    "fine_col": 33,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 62,
+    "col": 27,
+    "fine_row": 61,
+    "fine_col": 35,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 66,
+    "col": 14,
+    "fine_row": 28,
+    "fine_col": 33,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 66,
+    "col": 19,
+    "fine_row": 28,
+    "fine_col": 1,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 56,
+    "col": 14,
+    "fine_row": 22,
+    "fine_col": 53,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 71,
+    "col": 53,
+    "fine_row": 8,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 104
+    },
+    "row": 71,
+    "col": 45,
+    "fine_row": 9,
+    "fine_col": 39,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 104
+    },
+    "row": 70,
+    "col": 46,
+    "fine_row": 7,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 104
+    },
+    "row": 70,
+    "col": 49,
+    "fine_row": 5,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 83
+    },
+    "row": 69,
+    "col": 48,
+    "fine_row": 53,
+    "fine_col": 39,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 72,
+    "col": 44,
+    "fine_row": 3,
+    "fine_col": 37,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 71,
+    "col": 48,
+    "fine_row": 29,
+    "fine_col": 39,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 84
+    },
+    "row": 71,
+    "col": 49,
+    "fine_row": 53,
+    "fine_col": 39,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 70,
+    "col": 54,
+    "fine_row": 37,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 71,
+    "col": 53,
+    "fine_row": 61,
+    "fine_col": 33,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 71,
+    "col": 44,
+    "fine_row": 5,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 71,
+    "col": 52,
+    "fine_row": 5,
+    "fine_col": 5,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 105
+    },
+    "row": 71,
+    "col": 54,
+    "fine_row": 8,
+    "fine_col": 61,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 104
+    },
+    "row": 69,
+    "col": 52,
+    "fine_row": 53,
+    "fine_col": 9,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 84
+    },
+    "row": 72,
+    "col": 50,
+    "fine_row": 21,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 67,
+    "col": 55,
+    "fine_row": 29,
+    "fine_col": 25,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 69,
+    "col": 54,
+    "fine_row": 37,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 106
+    },
+    "row": 71,
+    "col": 46,
+    "fine_row": 13,
+    "fine_col": 49,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 106
+    },
+    "row": 70,
+    "col": 53,
+    "fine_row": 21,
+    "fine_col": 33,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 107
+    },
+    "row": 69,
+    "col": 47,
+    "fine_row": 21,
+    "fine_col": 33,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 65,
+    "col": 59,
+    "fine_row": 3,
+    "fine_col": 25,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 67,
+    "col": 53,
+    "fine_row": 29,
+    "fine_col": 25,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 72,
+    "col": 52,
+    "fine_row": 21,
+    "fine_col": 57,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 72,
+    "col": 52,
+    "fine_row": 21,
+    "fine_col": 9,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 72,
+    "col": 51,
+    "fine_row": 21,
+    "fine_col": 25,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 62,
+    "col": 63,
+    "fine_row": 37,
+    "fine_col": 1,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 50,
+    "col": 66,
+    "fine_row": 37,
+    "fine_col": 33,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 50,
+    "col": 65,
+    "fine_row": 37,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 65,
+    "col": 60,
+    "fine_row": 61,
+    "fine_col": 33,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 66
+    },
+    "row": 53,
+    "col": 61,
+    "fine_row": 29,
+    "fine_col": 9,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 65,
+    "col": 66,
+    "fine_row": 61,
+    "fine_col": 41,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 52,
+    "col": 61,
+    "fine_row": 5,
+    "fine_col": 25,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 66
+    },
+    "row": 54,
+    "col": 61,
+    "fine_row": 13,
+    "fine_col": 9,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 48,
+    "col": 58,
+    "fine_row": 13,
+    "fine_col": 49,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 50,
+    "col": 59,
+    "fine_row": 61,
+    "fine_col": 25,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 67,
+    "col": 57,
+    "fine_row": 29,
+    "fine_col": 25,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 60
+    },
+    "row": 48,
+    "col": 59,
+    "fine_row": 29,
+    "fine_col": 17,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 45,
+    "col": 38,
+    "fine_row": 46,
+    "fine_col": 52,
+    "angle": 0
+   },
+   {
+    "class": "Lamp",
+    "row": 45,
+    "col": 42,
+    "fine_row": 46,
+    "fine_col": 20,
+    "angle": 0
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/razaforest.kod"
+ },
+ {
+  "rid": 331,
+  "class": "FarolWest",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Western Edge of the Forest of Farol",
+  "roo": "farolwest.roo",
+  "music": "walk5.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_FOREST"
+  ],
+  "teleport": {
+   "row": 27,
+   "col": 40,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 8,
+  "info": null,
+  "exits": [],
+  "edge_exits": [
+   {
+    "side": "LEAVE_EAST",
+    "dest_rid": 536,
+    "dest_row": 18,
+    "dest_col": 2,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_WEST",
+    "dest_rid": 526,
+    "dest_row": 39,
+    "dest_col": 48,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_SOUTH",
+    "dest_rid": 330,
+    "dest_row": 5,
+    "dest_col": 31,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Bunny",
+     "weight": 30
+    },
+    {
+     "class": "GiantRat",
+     "weight": 30
+    },
+    {
+     "class": "SpiderBaby",
+     "weight": 20
+    },
+    {
+     "class": "Centipede",
+     "weight": 20
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 100,
+   "init_count_min": 4,
+   "init_count_max": 6,
+   "monster_count_max": 12
+  },
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/farolwest.kod"
+ },
+ {
+  "rid": 332,
+  "class": "RazaVault",
+  "parents": [
+   "RazaRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Raza Vaults",
+  "roo": "RazaVault.roo",
+  "music": "smithy.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 3,
+   "col": 6,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 4,
+    "col": 8,
+    "dest_rid": 300,
+    "dest_row": 12,
+    "dest_col": 12,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 5,
+    "col": 8,
+    "dest_rid": 300,
+    "dest_row": 12,
+    "dest_col": 12,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "RazaVaultman",
+    "row": 6,
+    "col": 3,
+    "fine_row": 20,
+    "fine_col": 20,
+    "angle": 1536
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "newbie": 1,
+     "desc": "You can deposit and withdraw items from the vaults found in Barloque, Jasper, Raza and Ko'catan using the same commands that you would use when buying from or offering to any other NPC.\n\nItems that you 'offer' to a vault master will be removed from your inventory and stored safely within the vault for a fee of 1 shilling per stone of weight (2 shillings in Ko'catan).  The required fee will be automatically taken from your inventory.  Later, you can 'buy' the items again from the vault master at no additional cost.\n\nNote that the vault master will not accept shillings (use banks for those) as well as certain items that are too precious or dangerous to store in a vault.  Additionally, items that are deposited in Jasper, Barloque or Raza may be accessed from all three location, while items deposited in Ko'catan are inaccessible from any other location.\n\nFinally, you may use the spell 'conveyance' to directly send any item or stack of items to the regional vault at the same fee as a regular deposit.  To do so, simply cast the spell, then click on the item or stack of items that you wish to send to the vault.  This feature is incredibly convenient for adventurers who would otherwise be forced to head to town, weighed down by the massive amounts of loot they have collected on their journeys.",
+     "name": "Welcome to the Raza Vaults"
+    },
+    "row": 4,
+    "col": 3
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 8,
+    "col": 5,
+    "fine_row": 56,
+    "fine_col": 33
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 2,
+    "col": 7,
+    "fine_row": 18,
+    "fine_col": 56
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 30
+    },
+    "row": 2,
+    "col": 3,
+    "fine_row": 17,
+    "fine_col": 40
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/razarm/razavault.kod"
+ },
+ {
+  "rid": 333,
+  "class": "RazaBank",
+  "parents": [
+   "RazaRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Royal Bank of Raza",
+  "roo": "RazaBank.roo",
+  "music": "bank.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 3,
+   "col": 6,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 6,
+    "col": 1,
+    "dest_rid": 300,
+    "dest_row": 15,
+    "dest_col": 49,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 5,
+    "col": 1,
+    "dest_rid": 300,
+    "dest_row": 15,
+    "dest_col": 49,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "RazaBanker",
+    "row": 6,
+    "col": 7,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "name": "Welcome to the Bank of Raza",
+     "newbie": 1,
+     "desc": "With thieves and murderers lurking around every corner, it is generally a good idea to travel with as little coin as possible.  The banks in Raza, Tos, Jasper and Ko'catan allow you to deposit your shillings safely and retrieve them at a later point of time at no cost whatsoever.  Note, however, that while the banks of Raza, Tos and Jasper have a shared account balance, the bank of Ko'catan does not.\n\nUse the commands 'deposit xxx' to deposit xxx shillings and 'withdraw xxx' to withdraw the same amount.  In addition, you may use the command 'balance' to learn about your current account balance."
+    },
+    "row": 4,
+    "col": 5
+   },
+   {
+    "class": "Brazier",
+    "row": 8,
+    "col": 2,
+    "fine_row": 50,
+    "fine_col": 40,
+    "angle": 3072
+   },
+   {
+    "class": "Table",
+    "row": 8,
+    "col": 4,
+    "fine_row": 32,
+    "fine_col": 60,
+    "angle": 3072
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/razarm/razabank.kod"
+ }
+]

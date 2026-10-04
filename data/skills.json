@@ -1,0 +1,782 @@
+[
+ {
+  "class": "Proficiency",
+  "parents": [
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/profic.kod",
+  "vrName": "Weapon proficiency",
+  "vrDesc": "This is a weapon proficiency",
+  "vrIcon": "light.bgf",
+  "vrSkill_intro": "One of several agile skills.",
+  "viSkill_num": 0,
+  "viSchool": 10,
+  "viSkill_level": 1,
+  "viChance_to_Increase": 25,
+  "viMeditate_ratio": 30,
+  "viskillExertion": 2,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "plPrerequisites": null,
+   "piSchool": 0,
+   "piChanceToIncrease": 100
+  }
+ },
+ {
+  "class": "Dodge",
+  "parents": [
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/dodge.kod",
+  "vrName": "dodge",
+  "vrDesc": "Dodge is a basic skill, allowing people to avoid blows in combat.",
+  "vrIcon": "dodgeico.bgf",
+  "vrSkill_intro": "Weaponcraft Lv. 2: The ability to avoid blows in combat, and thus stay alive longer.",
+  "viSkill_num": 401,
+  "viSchool": 10,
+  "viSkill_level": 2,
+  "viChance_to_Increase": 20,
+  "viMeditate_ratio": 20,
+  "viskillExertion": 0,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "vbCheck_exertion": 0
+  }
+ },
+ {
+  "class": "Parry",
+  "parents": [
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/parry.kod",
+  "vrName": "parry",
+  "vrDesc": "Parrying allows people with a weapon to turn aside a blow, thus avoiding being hit.",
+  "vrIcon": "parryico.bgf",
+  "vrSkill_intro": "One of several agile skills.",
+  "viSkill_num": 402,
+  "viSchool": 10,
+  "viSkill_level": 4,
+  "viChance_to_Increase": 20,
+  "viMeditate_ratio": 40,
+  "viskillExertion": 0,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "vbCheck_exertion": 0,
+   "plPrerequisites": null
+  }
+ },
+ {
+  "class": "Assess",
+  "parents": [
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/assess.kod",
+  "vrName": "assess",
+  "vrDesc": "This is a crude and often inaccurate technique used to gauge how good an opponent is in the art of hand-to-hand combat.",
+  "vrIcon": "light.bgf",
+  "vrSkill_intro": "One of several agile skills.",
+  "viSkill_num": 403,
+  "viSchool": 11,
+  "viSkill_level": 50,
+  "viChance_to_Increase": 25,
+  "viMeditate_ratio": 0,
+  "viskillExertion": 2,
+  "vbAutomatic": 0,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "piSkillExertion": 5
+  }
+ },
+ {
+  "class": "Block",
+  "parents": [
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/block.kod",
+  "vrName": "block",
+  "vrDesc": "Block is a basic skill, allowing people in combat to block blows with a shield.  A successfully blocked blow will be more damaging to the attacking weapon and to the defending shield.",
+  "vrIcon": "iblock.bgf",
+  "vrSkill_intro": "Weaponcraft Lv. 1: The ability to block blows in combat, and thus stay alive longer.",
+  "viSkill_num": 404,
+  "viSchool": 10,
+  "viSkill_level": 1,
+  "viChance_to_Increase": 60,
+  "viMeditate_ratio": 10,
+  "viskillExertion": 0,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "vbCheck_exertion": 0
+  }
+ },
+ {
+  "class": "SecondWind",
+  "parents": [
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/secwind.kod",
+  "vrName": "second wind",
+  "vrDesc": "Second wind will give a mighty adventurer the vigor to do strenuous activity even when exhausted.  When near exhaustion, this skill will give a boost to vigor.  It is useless to rest or eat food to regain stamina for a while after gaining a second wind.",
+  "vrIcon": "isecwind.bgf",
+  "vrSkill_intro": "Weaponcraft Lv. 4: The ability to press on even when exhausted.",
+  "viSkill_num": 405,
+  "viSchool": 10,
+  "viSkill_level": 4,
+  "viChance_to_Increase": 50,
+  "viMeditate_ratio": 40,
+  "viskillExertion": 0,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "vbCheck_exertion": 0,
+   "viShow_enchantment_icon": 2
+  }
+ },
+ {
+  "class": "Disarm",
+  "parents": [
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/disarm.kod",
+  "vrName": "disarm",
+  "vrDesc": "A technique that allows a warrior to strike at his or her opponent's weapon.  Often successful use of this skill will put the opponent at a disadvantage, and occasionally throw the weapon from an opponent's grasp.",
+  "vrIcon": "idisarm.bgf",
+  "vrSkill_intro": "One of several agile skills.",
+  "viSkill_num": 406,
+  "viSchool": 10,
+  "viSkill_level": 6,
+  "viChance_to_Increase": 30,
+  "viMeditate_ratio": 60,
+  "viskillExertion": 10,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "vbCheck_exertion": 0
+  }
+ },
+ {
+  "class": "Mining",
+  "parents": [
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/mining.kod",
+  "vrName": "mining",
+  "vrDesc": "This skill allows you to break down heavy rocks and recover precious minerals. Higher proficiency in this skill will prevent damaging those precious minerals. Requires a pickaxe and sense of adventure.",
+  "vrIcon": "imining.bgf",
+  "vrSkill_intro": "Crafting Lv. 1: This skill allows you to break down heavy rocks and recover precious minerals.",
+  "viSkill_num": 407,
+  "viSchool": 7,
+  "viSkill_level": 1,
+  "viChance_to_Increase": 15,
+  "viMeditate_ratio": 20,
+  "viskillExertion": 20,
+  "vbAutomatic": 0,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "vbCheck_exertion": 0,
+   "viAttack_Type": 512
+  }
+ },
+ {
+  "class": "Logging",
+  "parents": [
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/logging.kod",
+  "vrName": "logging",
+  "vrDesc": "This skill allows you to chop down mature trees and harvest wood. Requires a wood cutting axe.",
+  "vrIcon": "ilogging.bgf",
+  "vrSkill_intro": "Crafting Lv. 1: This skill allows you to chop down mature trees and recover precious minerals.",
+  "viSkill_num": 408,
+  "viSchool": 7,
+  "viSkill_level": 1,
+  "viChance_to_Increase": 15,
+  "viMeditate_ratio": 20,
+  "viskillExertion": 20,
+  "vbAutomatic": 0,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "vbCheck_exertion": 0,
+   "viAttack_Type": 128
+  }
+ },
+ {
+  "class": "Gathering",
+  "parents": [
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/gathering.kod",
+  "vrName": "gathering",
+  "vrDesc": "This skill allows you to gather useful plants for there fibers. Requires a Sickle. ",
+  "vrIcon": "igathering.bgf",
+  "vrSkill_intro": "Crafting Lv. 1: This skill allows you to gather useful plants for there fibers.",
+  "viSkill_num": 409,
+  "viSchool": 7,
+  "viSkill_level": 1,
+  "viChance_to_Increase": 15,
+  "viMeditate_ratio": 20,
+  "viskillExertion": 20,
+  "vbAutomatic": 0,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "vbCheck_exertion": 0,
+   "viAttack_Type": 16384
+  }
+ },
+ {
+  "class": "Skinning",
+  "parents": [
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/skinning.kod",
+  "vrName": "skinning",
+  "vrDesc": "This skill allows you to gather hides from slain monsters. Requires a skinning knife. ",
+  "vrIcon": "iskinning.bgf",
+  "vrSkill_intro": "Crafting Lv. 1: This skill allows you to gather hides from slain monsters.",
+  "viSkill_num": 410,
+  "viSchool": 7,
+  "viSkill_level": 1,
+  "viChance_to_Increase": 25,
+  "viMeditate_ratio": 20,
+  "viskillExertion": 20,
+  "vbAutomatic": 0,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "vbCheck_exertion": 0,
+   "viAttack_Type": 128
+  }
+ },
+ {
+  "class": "Stroke",
+  "parents": [
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/stroke.kod",
+  "vrName": "Weapon stroke",
+  "vrDesc": "This is a weapon stroke.",
+  "vrIcon": "light.bgf",
+  "vrSkill_intro": "One of several agile skills.",
+  "viSkill_num": 420,
+  "viSchool": 10,
+  "viSkill_level": 1,
+  "viChance_to_Increase": 25,
+  "viMeditate_ratio": 100,
+  "viskillExertion": 2,
+  "vbAutomatic": 0,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "vrPlayer_Hit_something": "%sYour %s hits %s%s.",
+   "vrPlayer_was_hit": "%s%s hits you.",
+   "vrPlayer_killed_something": null,
+   "vrPlayer_was_killed": null,
+   "vrMissed_Message_attacker": "%sYour %s misses %s%s.",
+   "vrMissed_Message_defender": "%s%s misses you.",
+   "vrMiss_Sound": "swordmis.ogg",
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "viSkill_Exertion": 2,
+   "viMaxProficiencyDamage": 5,
+   "plPrerequisites": null
+  }
+ },
+ {
+  "class": "Unarmed",
+  "parents": [
+   "Stroke",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/stroke/unarmed.kod",
+  "vrName": "Unarmed Combat",
+  "vrDesc": "This is a hand to hand combat move.",
+  "vrIcon": "light.bgf",
+  "vrSkill_intro": "One of several agile skills.",
+  "viSkill_num": 420,
+  "viSchool": 11,
+  "viSkill_level": 1,
+  "viChance_to_Increase": 25,
+  "viMeditate_ratio": 100,
+  "viskillExertion": 10,
+  "vbAutomatic": 0,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "viMin_Damage": 1,
+   "viMax_Damage": 3,
+   "viRange": 192,
+   "viAttack_type": 0,
+   "viSpell_type": 0,
+   "plReagents": null,
+   "plPrerequisites": null,
+   "piChanceToIncrease": 100,
+   "vrPlayer_Hit_something": "%sYour %s hits %s%s.",
+   "vrPlayer_was_hit": "%s%s hits you.",
+   "vrPlayer_killed_something": null,
+   "vrPlayer_was_killed": null,
+   "vrMissed_Message_attacker": "%sYour %s misses %s%s.",
+   "vrMissed_Message_defender": "%s%s misses you.",
+   "vrMiss_Sound": "swordmis.ogg",
+   "viSkill_Exertion": 2,
+   "viMaxProficiencyDamage": 5
+  }
+ },
+ {
+  "class": "Slash",
+  "parents": [
+   "Stroke",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/stroke/slash.kod",
+  "vrName": "slash",
+  "vrDesc": "Slash is the most common weapon skill.  It helps you hit with melee weapons.",
+  "vrIcon": "slashico.bgf",
+  "vrSkill_intro": "Weaponcraft Lv. 1: The most basic skill of armed combat. A must for those who live by the blade.",
+  "viSkill_num": 421,
+  "viSchool": 10,
+  "viSkill_level": 1,
+  "viChance_to_Increase": 25,
+  "viMeditate_ratio": 10,
+  "viskillExertion": 2,
+  "vbAutomatic": 0,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "vbCheck_exertion": 0,
+   "plPrerequisites": null,
+   "piChanceToIncrease": 100,
+   "vrPlayer_Hit_something": "%sYour %s hits %s%s.",
+   "vrPlayer_was_hit": "%s%s hits you.",
+   "vrPlayer_killed_something": null,
+   "vrPlayer_was_killed": null,
+   "vrMissed_Message_attacker": "%sYour %s misses %s%s.",
+   "vrMissed_Message_defender": "%s%s misses you.",
+   "vrMiss_Sound": "swordmis.ogg",
+   "viSkill_Exertion": 2,
+   "viMaxProficiencyDamage": 5
+  }
+ },
+ {
+  "class": "Thrust",
+  "parents": [
+   "Stroke",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/stroke/thrust.kod",
+  "vrName": "thrust",
+  "vrDesc": "Thrust is a high damage, low-hit chance stroke.",
+  "vrIcon": "light.bgf",
+  "vrSkill_intro": "One of several agile skills.",
+  "viSkill_num": 422,
+  "viSchool": 10,
+  "viSkill_level": 50,
+  "viChance_to_Increase": 12,
+  "viMeditate_ratio": 100,
+  "viskillExertion": 500,
+  "vbAutomatic": 0,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "vrPlayer_killed_something": "With a quick thrust, you finish off %s%s.",
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "plPrerequisites": null,
+   "vrPlayer_Hit_something": "%sYour %s hits %s%s.",
+   "vrPlayer_was_hit": "%s%s hits you.",
+   "vrPlayer_was_killed": null,
+   "vrMissed_Message_attacker": "%sYour %s misses %s%s.",
+   "vrMissed_Message_defender": "%s%s misses you.",
+   "vrMiss_Sound": "swordmis.ogg",
+   "viSkill_Exertion": 2,
+   "viMaxProficiencyDamage": 5
+  }
+ },
+ {
+  "class": "Fire",
+  "parents": [
+   "Stroke",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/stroke/fire.kod",
+  "vrName": "fire",
+  "vrDesc": "Fire is the most basic technique used for shooting a missile weapon.  It is not too difficult to learn, but only those with strong aim will be able to master this skill.",
+  "vrIcon": "fibowico.bgf",
+  "vrSkill_intro": "Weaponcraft Lv. 4: Key to mastering any type of missile weapon.",
+  "viSkill_num": 425,
+  "viSchool": 10,
+  "viSkill_level": 4,
+  "viChance_to_Increase": 50,
+  "viMeditate_ratio": 40,
+  "viskillExertion": 2,
+  "vbAutomatic": 0,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "vbCheck_exertion": 0,
+   "plPrerequisites": null,
+   "piChanceToIncrease": 100,
+   "vrPlayer_Hit_something": "%sYour %s hits %s%s.",
+   "vrPlayer_was_hit": "%s%s hits you.",
+   "vrPlayer_killed_something": null,
+   "vrPlayer_was_killed": null,
+   "vrMissed_Message_attacker": "%sYour %s misses %s%s.",
+   "vrMissed_Message_defender": "%s%s misses you.",
+   "vrMiss_Sound": "swordmis.ogg",
+   "viSkill_Exertion": 2,
+   "viMaxProficiencyDamage": 5
+  }
+ },
+ {
+  "class": "Punch",
+  "parents": [
+   "Unarmed",
+   "Stroke",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/stroke/unarmed/punch.kod",
+  "vrName": "punch",
+  "vrDesc": "This is the most basic hand-to-hand combat move.  Can be very strong for a powerful warrior, but is extremely tiring.",
+  "vrIcon": "punchico.bgf",
+  "vrSkill_intro": "Weaponcraft Lv. 1: The most basic of fighting skills, used by fighters and mages alike.",
+  "viSkill_num": 430,
+  "viSchool": 10,
+  "viSkill_level": 1,
+  "viChance_to_Increase": 60,
+  "viMeditate_ratio": 10,
+  "viskillExertion": 3,
+  "vbAutomatic": 0,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "vrPlayer_was_hit": "%s%s connects a punch solidly on your jaw.",
+   "vrPlayer_hit_something": "%sYou hit %s%s with a hard right cross.",
+   "vrPlayer_was_killed": "The last thing you see is %s%s's fist speeding towards your nose.",
+   "vrPlayer_killed_something": "%s%s crumples to the ground, never to rise again.",
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "vbCheck_exertion": 0,
+   "viMin_Damage": 2,
+   "viMax_Damage": 11,
+   "viAttack_Type": 24576,
+   "viRange": 192,
+   "viSpell_type": 0,
+   "plReagents": null,
+   "plPrerequisites": null,
+   "piChanceToIncrease": 100,
+   "vrMissed_Message_attacker": "%sYour %s misses %s%s.",
+   "vrMissed_Message_defender": "%s%s misses you.",
+   "vrMiss_Sound": "swordmis.ogg",
+   "viSkill_Exertion": 2,
+   "viMaxProficiencyDamage": 5
+  }
+ },
+ {
+  "class": "Kick",
+  "parents": [
+   "Unarmed",
+   "Stroke",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/stroke/unarmed/kick.kod",
+  "vrName": "kick",
+  "vrDesc": "This is a damaging but costly combat move.",
+  "vrIcon": "light.bgf",
+  "vrSkill_intro": "One of several agile skills.",
+  "viSkill_num": 431,
+  "viSchool": 11,
+  "viSkill_level": 50,
+  "viChance_to_Increase": 25,
+  "viMeditate_ratio": 100,
+  "viskillExertion": 2000,
+  "vbAutomatic": 0,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "vrPlayer_was_hit": "%s%s kicks you in the unmentionables.",
+   "vrPlayer_hit_something": "%sYou kick %s%s hard in the groin.",
+   "vrPlayer_was_killed": "%s%s's kick shuffles you off this mortal coil.",
+   "vrPlayer_killed_something": "%s%s is knocked to the ground by your kick - and doesn't get up.",
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "viHit_Factor": 30,
+   "viDamage_Min": 3,
+   "viDamage_Max": 9,
+   "viAttack_Type": 40960,
+   "plPrerequisites": null,
+   "piChanceToIncrease": 100,
+   "viMin_Damage": 1,
+   "viMax_Damage": 3,
+   "viRange": 192,
+   "viSpell_type": 0,
+   "plReagents": null,
+   "vrMissed_Message_attacker": "%sYour %s misses %s%s.",
+   "vrMissed_Message_defender": "%s%s misses you.",
+   "vrMiss_Sound": "swordmis.ogg",
+   "viSkill_Exertion": 2,
+   "viMaxProficiencyDamage": 5
+  }
+ },
+ {
+  "class": "Brawling",
+  "parents": [
+   "Proficiency",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/profic/brawling.kod",
+  "vrName": "brawling",
+  "vrDesc": "This allows the combatant to fight better unarmed.",
+  "vrIcon": "brawlico.bgf",
+  "vrSkill_intro": "Weaponcraft Lv. 2: Advanced tricks in unarmed combat, building on the punch skill.",
+  "viSkill_num": 450,
+  "viSchool": 10,
+  "viSkill_level": 2,
+  "viChance_to_Increase": 25,
+  "viMeditate_ratio": 20,
+  "viskillExertion": 2,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "plPrerequisites": null,
+   "piSchool": 0,
+   "piChanceToIncrease": 100,
+   "viIndefinite": 0,
+   "viDefinite": 0
+  }
+ },
+ {
+  "class": "SwordProficiency",
+  "parents": [
+   "Proficiency",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/profic/profswrd.kod",
+  "vrName": "fencing",
+  "vrDesc": "This skill offers added expertise in swords with long blades, magical or not.",
+  "vrIcon": "fenceico.bgf",
+  "vrSkill_intro": "One of several agile skills.",
+  "viSkill_num": 451,
+  "viSchool": 10,
+  "viSkill_level": 3,
+  "viChance_to_Increase": 30,
+  "viMeditate_ratio": 30,
+  "viskillExertion": 2,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "plPrerequisites": null,
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "piSchool": 0,
+   "piChanceToIncrease": 100
+  }
+ },
+ {
+  "class": "MaceProficiency",
+  "parents": [
+   "Proficiency",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/profic/profmace.kod",
+  "vrName": "mace fighting",
+  "vrDesc": "Allows one to become more proficient at Meridian's most common weapon.",
+  "vrIcon": "maceico.bgf",
+  "vrSkill_intro": "Weaponcraft Lv. 1: Skills in the land's most common, but least powerful, weapon.",
+  "viSkill_num": 452,
+  "viSchool": 10,
+  "viSkill_level": 1,
+  "viChance_to_Increase": 40,
+  "viMeditate_ratio": 10,
+  "viskillExertion": 2,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "plPrerequisites": null,
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "piSchool": 0,
+   "piChanceToIncrease": 100
+  }
+ },
+ {
+  "class": "ScimitarProficiency",
+  "parents": [
+   "Proficiency",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/profic/profscim.kod",
+  "vrName": "scimitar wielding",
+  "vrDesc": "Allows for growth and strength in Meridian's most exotic weapon.",
+  "vrIcon": "scimico.bgf",
+  "vrSkill_intro": "One of several agile skills.",
+  "viSkill_num": 453,
+  "viSchool": 10,
+  "viSkill_level": 4,
+  "viChance_to_Increase": 20,
+  "viMeditate_ratio": 40,
+  "viskillExertion": 2,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "plPrerequisites": null,
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "piSchool": 0,
+   "piChanceToIncrease": 100
+  }
+ },
+ {
+  "class": "HammerProficiency",
+  "parents": [
+   "Proficiency",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/profic/profhamr.kod",
+  "vrName": "hammer wielding",
+  "vrDesc": "This allows the user to use all manner of hammers more proficiently.",
+  "vrIcon": "hammrico.bgf",
+  "vrSkill_intro": "One of several agile skills.",
+  "viSkill_num": 454,
+  "viSchool": 10,
+  "viSkill_level": 3,
+  "viChance_to_Increase": 30,
+  "viMeditate_ratio": 30,
+  "viskillExertion": 2,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "plPrerequisites": null,
+   "piSchool": 0,
+   "piChanceToIncrease": 100
+  }
+ },
+ {
+  "class": "AxeProficiency",
+  "parents": [
+   "Proficiency",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/profic/profaxe.kod",
+  "vrName": "axe wielding",
+  "vrDesc": "Allows the user to become more efficient with any axe.",
+  "vrIcon": "axeico.bgf",
+  "vrSkill_intro": "One of several agile skills.",
+  "viSkill_num": 455,
+  "viSchool": 10,
+  "viSkill_level": 3,
+  "viChance_to_Increase": 30,
+  "viMeditate_ratio": 30,
+  "viskillExertion": 2,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "plPrerequisites": null,
+   "piSchool": 0,
+   "piChanceToIncrease": 100
+  }
+ },
+ {
+  "class": "Archery",
+  "parents": [
+   "Proficiency",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/profic/archery.kod",
+  "vrName": "archery",
+  "vrDesc": "Those with this skill find themselves better able to handle any standard bow.  However, the learning curve is tediously slow, and only those with good aim will ever truly excel at it.",
+  "vrIcon": "archrico.bgf",
+  "vrSkill_intro": "One of several agile skills.",
+  "viSkill_num": 456,
+  "viSchool": 10,
+  "viSkill_level": 5,
+  "viChance_to_Increase": 30,
+  "viMeditate_ratio": 50,
+  "viskillExertion": 2,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "plPrerequisites": null,
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "piSchool": 0,
+   "piChanceToIncrease": 100
+  }
+ },
+ {
+  "class": "ShortSwordProficiency",
+  "parents": [
+   "Proficiency",
+   "Skill",
+   "PassiveObject"
+  ],
+  "file": "Server-104/kod/object/passive/skill/profic/profshsw.kod",
+  "vrName": "short sword fighting",
+  "vrDesc": "Allows added proficiency with short swords.",
+  "vrIcon": "shswdico.bgf",
+  "vrSkill_intro": "Weaponcraft Lv. 2: Skill with the common short sword.",
+  "viSkill_num": 457,
+  "viSchool": 10,
+  "viSkill_level": 2,
+  "viChance_to_Increase": 60,
+  "viMeditate_ratio": 20,
+  "viskillExertion": 2,
+  "vbAutomatic": 1,
+  "vbIsAreaEffect": 0,
+  "vars": {
+   "plPrerequisites": null,
+   "viIndefinite": 0,
+   "viDefinite": 0,
+   "piSchool": 0,
+   "piChanceToIncrease": 100
+  }
+ }
+]

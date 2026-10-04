@@ -1,0 +1,1042 @@
+[
+ {
+  "class": "Bunny",
+  "parents": [
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/bunny.kod",
+  "vrName": "bunny",
+  "vrDesc": "Aw, look at the cute little bunny!",
+  "vrIcon": "bunny2.bgf",
+  "vrDead_icon": "bunny2X.bgf",
+  "viLevel": 30,
+  "viDifficulty": 4,
+  "viKarma": 30,
+  "viSpeed": 12,
+  "viAttack_type": 128,
+  "viDefault_behavior": 32800,
+  "viTreasure_type": 3,
+  "viCashmin": 150,
+  "viCashmax": 300,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 0,
+  "viAttributes": 0,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": "bunny_atkh.ogg",
+  "vrSound_miss": "bunny_atkh.ogg",
+  "vrSound_aware": "bunny_awr.ogg",
+  "vrSound_death": "bunny_dth.ogg",
+  "vars": {
+   "vrKocName": "ixleocbunny",
+   "vrDead_name": "dead bunny",
+   "piAnimation": 0
+  },
+  "behavior_flags": [
+   "AI_MOVE_FLEE_FRIGHTENERS",
+   "AI_FIGHT_KARMA_AGGRESSIVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_SLASH",
+   "ATCK_SPELL_QUAKE"
+  ],
+  "is_npc": false
+ },
+ {
+  "class": "Centipede",
+  "parents": [
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/centip.kod",
+  "vrName": "centipede",
+  "vrDesc": "Bright red plates make up the exoskeleton of this giant centipede.  Instinct, not intellect, guides its quest for nourishment.",
+  "vrIcon": "centip.bgf",
+  "vrDead_icon": "centipX.bgf",
+  "viLevel": 30,
+  "viDifficulty": 5,
+  "viKarma": 25,
+  "viSpeed": 16,
+  "viAttack_type": 1024,
+  "viDefault_behavior": 32768,
+  "viTreasure_type": 3,
+  "viCashmin": 150,
+  "viCashmax": 300,
+  "viVisionDistance": 8,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 0,
+  "viAttributes": 0,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": "cnt_atkh.ogg",
+  "vrSound_miss": "cnt_atkm.ogg",
+  "vrSound_aware": "cnt_awr.ogg",
+  "vrSound_death": "cnt_dth.ogg",
+  "vars": {
+   "vrKocName": "puuckinich",
+   "vrDead_name": "dead centipede",
+   "piAnimation": 0
+  },
+  "behavior_flags": [
+   "AI_FIGHT_KARMA_AGGRESSIVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_BITE"
+  ],
+  "is_npc": false
+ },
+ {
+  "class": "Cow",
+  "parents": [
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/cow.kod",
+  "vrName": "cow",
+  "vrDesc": "Alchemists and farmers endeavored to breed the perfect cow for sweet milk and tender meat.  Unfortunately their experiments went too far and eventually created the utterly useless Pygmy Cow.  Disappointed by their failure, they let loose their entire herd.  The undomesticated pygmy cow is rarely seen any more.",
+  "vrIcon": "cow.bgf",
+  "vrDead_icon": "cowX.bgf",
+  "viLevel": 50,
+  "viDifficulty": 5,
+  "viKarma": 0,
+  "viSpeed": 8,
+  "viAttack_type": 8,
+  "viDefault_behavior": 0,
+  "viTreasure_type": 127,
+  "viCashmin": 0,
+  "viCashmax": 0,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 0,
+  "viAttributes": 1,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "vrKocName": "nahyijoa",
+   "vrDead_name": "dead cow",
+   "viMove_delay_min": 2000,
+   "viMove_delay_max": 10000,
+   "piLastDungTime": 0,
+   "poDung": null
+  },
+  "behavior_flags": [],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": false
+ },
+ {
+  "class": "GiantRat",
+  "parents": [
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/giarat.kod",
+  "vrName": "giant rat",
+  "vrDesc": "The giant rat bares its yellow teeth in defiance.  A smell of rot emanates from its filthy coat.",
+  "vrIcon": "rat.bgf",
+  "vrDead_icon": "ratX.bgf",
+  "viLevel": 30,
+  "viDifficulty": 1,
+  "viKarma": -20,
+  "viSpeed": 16,
+  "viAttack_type": 512,
+  "viDefault_behavior": 32768,
+  "viTreasure_type": 27,
+  "viCashmin": 150,
+  "viCashmax": 250,
+  "viVisionDistance": 6,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 0,
+  "viAttributes": 0,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": "rat_atkh.ogg",
+  "vrSound_miss": "rat_atkm.ogg",
+  "vrSound_aware": "rat_awr.ogg",
+  "vrSound_death": "rat_dth.ogg",
+  "vars": {
+   "vrKocName": "napyijoa",
+   "vrDead_name": "dead giant rat",
+   "piAnimation": 0
+  },
+  "behavior_flags": [
+   "AI_FIGHT_KARMA_AGGRESSIVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_CLAW"
+  ],
+  "is_npc": false
+ },
+ {
+  "class": "Mummy",
+  "parents": [
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/mummy.kod",
+  "vrName": "mummy",
+  "vrDesc": "Unable to find peace, this poor, forsaken soul wanders dark and endless corridors, waiting to be judged at last.  Its flesh is putrid and soft, and its eyes ask for rest from its cursed unlife.",
+  "vrIcon": "mummy.bgf",
+  "vrDead_icon": "mummyX.bgf",
+  "viLevel": 30,
+  "viDifficulty": 1,
+  "viKarma": 0,
+  "viSpeed": 10,
+  "viAttack_type": 8,
+  "viDefault_behavior": 16416,
+  "viTreasure_type": 30,
+  "viCashmin": 50,
+  "viCashmax": 100,
+  "viVisionDistance": 16,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 1,
+  "viOccupation": 0,
+  "viAttributes": 0,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": "mum_atkh.ogg",
+  "vrSound_miss": "mum_atkm.ogg",
+  "vrSound_aware": "mum_awr2.ogg",
+  "vrSound_death": "mum_die.ogg",
+  "vars": {
+   "vrKocName": "napleoc",
+   "vrDead_name": "dead mummy",
+   "piAnimation": 0
+  },
+  "behavior_flags": [
+   "AI_MOVE_FLEE_FRIGHTENERS",
+   "AI_FIGHT_AGGRESSIVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": false
+ },
+ {
+  "class": "MummyNoTreasure",
+  "parents": [
+   "Mummy",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/mummy/mummyt.kod",
+  "vrName": "mummy",
+  "vrDesc": "Unable to find peace, this poor, forsaken soul wanders dark and endless corridors, waiting to be judged at last.  Its flesh is putrid and soft, and its eyes ask for rest from its cursed unlife.",
+  "vrIcon": "mummy.bgf",
+  "vrDead_icon": "mummyX.bgf",
+  "viLevel": 30,
+  "viDifficulty": 1,
+  "viKarma": 0,
+  "viSpeed": 10,
+  "viAttack_type": 8,
+  "viDefault_behavior": 16416,
+  "viTreasure_type": 1,
+  "viCashmin": 50,
+  "viCashmax": 100,
+  "viVisionDistance": 16,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 1,
+  "viOccupation": 0,
+  "viAttributes": 0,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": "mum_atkh.ogg",
+  "vrSound_miss": "mum_atkm.ogg",
+  "vrSound_aware": "mum_awr2.ogg",
+  "vrSound_death": "mum_die.ogg",
+  "vars": {
+   "vrKocName": "napleoc",
+   "vrDead_name": "dead mummy",
+   "piAnimation": 0
+  },
+  "behavior_flags": [
+   "AI_MOVE_FLEE_FRIGHTENERS",
+   "AI_FIGHT_AGGRESSIVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": false
+ },
+ {
+  "class": "RazaApothecary",
+  "parents": [
+   "RazaTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/razatwn/razaapoth.kod",
+  "vrName": "Ravi",
+  "vrDesc": "A strange man of unknown origin, Ravi is always willing to buy reagents and gems for his inventory-poor shop.",
+  "vrIcon": "kcshopk.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 2,
+  "viAttributes": 1048795,
+  "viGender": 1,
+  "viMerchant_markup": 1,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "items": [
+    {
+     "class": "Robe",
+     "params": {
+      "color": 1
+     }
+    },
+    {
+     "class": "BlueMushroom",
+     "params": {
+      "number": 4
+     }
+    },
+    {
+     "class": "RedMushroom",
+     "params": {
+      "number": 4
+     }
+    },
+    {
+     "class": "Mushroom",
+     "params": {
+      "number": 5
+     }
+    },
+    {
+     "class": "ElderBerry",
+     "params": {
+      "number": 4
+     }
+    },
+    {
+     "class": "Herbs",
+     "params": {
+      "number": 5
+     }
+    }
+   ]
+  }
+ },
+ {
+  "class": "RazaBanker",
+  "parents": [
+   "RazaTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/razatwn/razabanker.kod",
+  "vrName": "Gamos",
+  "vrDesc": "As a self-proclaimed disciple of the goddess Shal'ille, Gamos has made it his holy mission to spread the blessed teachings of fiscal responsibility to the masses - and where better to start than in the quaint town of Raza with its near endless supply of young and impressionable adventurers ready to spread the gospel.  Enthusiastically embracing his role as a mentor, he never tires of familiarizing his 'acolytes' with important theological concepts such as 'wicked be the poor' or 'no loans'.",
+  "vrIcon": "gamos.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 4,
+  "viAttributes": 1311035,
+  "viGender": 1,
+  "viMerchant_markup": 1,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viBank": 1,
+   "vrUnwanted_give": "~k%s%s tells you, \"~IGuh~I I don't have any place to put that.  Now if it were shillings...~n~k\"",
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true
+ },
+ {
+  "class": "RazaBartender",
+  "parents": [
+   "RazaTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/razatwn/razabart.kod",
+  "vrName": "Eric d'Jorn",
+  "vrDesc": "Despite his professional demeanor and fashionable barkeeping attire, Eric's spirits truly soar when it comes to his true passion: cooking.  He is especially renowned for his delicious soup and always on the lookout for fresh ingredients.",
+  "vrIcon": "tsinnk.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 1,
+  "viAttributes": 1048763,
+  "viGender": 1,
+  "viMerchant_markup": 3,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "items": [
+    {
+     "class": "Meatpie",
+     "params": {
+      "number": 4
+     }
+    },
+    {
+     "class": "Soup",
+     "params": {
+      "number": 1
+     }
+    },
+    {
+     "class": "Bread",
+     "params": {
+      "number": 4
+     }
+    },
+    {
+     "class": "Apple",
+     "params": {
+      "number": 2
+     }
+    },
+    {
+     "class": "Mug",
+     "params": {
+      "number": 1
+     }
+    },
+    {
+     "class": "BeerMug"
+    }
+   ]
+  }
+ },
+ {
+  "class": "RazaBlacksmith",
+  "parents": [
+   "RazaTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/razatwn/razabsmith.kod",
+  "vrName": "Tomas",
+  "vrDesc": "As a maker of unremarkable but reliable weapons and armor, Tomas earns his customers with good comradeship and low prices.  A fine warrior in his days, Tomas is known to gladly share his knowledge in the art of battle with any young adventurer who would be interested in picking up a blade to defend the land.  He may also be of help, should you wish to forget what you have learned of weaponcraft, so that you may fully dedicate yourself to the study of magicks.  Most people agree, however, that even a mage would do good knowing how to dodge a blow.",
+  "vrIcon": "bqsmith.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 5,
+  "viAttributes": 1115355,
+  "viGender": 1,
+  "viMerchant_markup": 1,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "items": [
+    {
+     "class": "ChainArmor"
+    },
+    {
+     "class": "MetalShield"
+    },
+    {
+     "class": "ShortSword"
+    },
+    {
+     "class": "Mace"
+    },
+    {
+     "class": "Torch"
+    },
+    {
+     "class": "SimpleHelm"
+    }
+   ],
+   "skills": [
+    {
+     "id": 457,
+     "const": "SKID_PROFICIENCY_SHORTSWORD"
+    },
+    {
+     "id": 401,
+     "const": "SKID_DODGE"
+    },
+    {
+     "id": 450,
+     "const": "SKID_BRAWLING"
+    },
+    {
+     "id": 421,
+     "const": "SKID_SLASH"
+    },
+    {
+     "id": 430,
+     "const": "SKID_PUNCH"
+    },
+    {
+     "id": 452,
+     "const": "SKID_PROFICIENCY_MACE"
+    },
+    {
+     "id": 404,
+     "const": "SKID_BLOCK"
+    }
+   ],
+   "spells": [
+    {
+     "id": 210,
+     "const": "SID_CRAFTMACE"
+    },
+    {
+     "id": 217,
+     "const": "SID_CRAFTSHORTSWORD"
+    },
+    {
+     "id": 215,
+     "const": "SID_CRAFTLEATHERARMOR"
+    },
+    {
+     "id": 218,
+     "const": "SID_CRAFTSMALLSHIELD"
+    }
+   ]
+  }
+ },
+ {
+  "class": "RazaElder",
+  "parents": [
+   "RazaTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/razatwn/razaelder.kod",
+  "vrName": "Rodric d'Stane",
+  "vrDesc": "The old man looks back at you with eyes that have seen beyond forever. He is famous for his knowledge of various magicks and seems quite willing to teach some of them to aspiring adventurers. You may also ask him about a school of magic if you need help with freeing your mind from its teachings, so that you may be more successful in learning others.",
+  "vrIcon": "mrelder.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 9,
+  "viAttributes": 1115195,
+  "viGender": 1,
+  "viMerchant_markup": 3,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "vrTeach_message": "I teach %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s at that level.",
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "spells": [
+    {
+     "id": 29,
+     "const": "SID_RESIST_FIRE"
+    },
+    {
+     "id": 36,
+     "const": "SID_RESIST_COLD"
+    },
+    {
+     "id": 20,
+     "const": "SID_TOUCH_OF_FLAME"
+    },
+    {
+     "id": 24,
+     "const": "SID_ICY_FINGERS"
+    },
+    {
+     "id": 23,
+     "const": "SID_ZAP"
+    },
+    {
+     "id": 156,
+     "const": "SID_SWEEP"
+    },
+    {
+     "id": 157,
+     "const": "SID_MYSTIC_TOUCH"
+    },
+    {
+     "id": 30,
+     "const": "SID_LIGHT"
+    },
+    {
+     "id": 150,
+     "const": "SID_FOG"
+    },
+    {
+     "id": 17,
+     "const": "SID_SUPERSTRENGTH"
+    },
+    {
+     "id": 130,
+     "const": "SID_RESIST_POISON"
+    },
+    {
+     "id": 116,
+     "const": "SID_HASTE"
+    },
+    {
+     "id": 61,
+     "const": "SID_ENCHANT_WEAPON"
+    },
+    {
+     "id": 11,
+     "const": "SID_BLESS"
+    },
+    {
+     "id": 158,
+     "const": "SID_RELAY"
+    },
+    {
+     "id": 153,
+     "const": "SID_GLOW"
+    },
+    {
+     "id": 56,
+     "const": "SID_CREATE_WEAPON"
+    },
+    {
+     "id": 63,
+     "const": "SID_CREATE_FOOD"
+    },
+    {
+     "id": 59,
+     "const": "SID_UNHOLY_WEAPON"
+    },
+    {
+     "id": 66,
+     "const": "SID_KARAHOLS_CURSE"
+    },
+    {
+     "id": 45,
+     "const": "SID_ACID_TOUCH"
+    },
+    {
+     "id": 124,
+     "const": "SID_DETECT_GOOD"
+    },
+    {
+     "id": 38,
+     "const": "SID_DARKNESS"
+    },
+    {
+     "id": 152,
+     "const": "SID_CLOAK"
+    },
+    {
+     "id": 149,
+     "const": "SID_RESIST_ACID"
+    },
+    {
+     "id": 31,
+     "const": "SID_REMOVE_CURSE"
+    },
+    {
+     "id": 60,
+     "const": "SID_HOLY_WEAPON"
+    },
+    {
+     "id": 21,
+     "const": "SID_HOLY_TOUCH"
+    },
+    {
+     "id": 37,
+     "const": "SID_CURE_POISON"
+    },
+    {
+     "id": 154,
+     "const": "SID_SEANCE"
+    },
+    {
+     "id": 132,
+     "const": "SID_HOLY_SYMBOL"
+    },
+    {
+     "id": 2,
+     "const": "SID_MINOR_HEAL"
+    },
+    {
+     "id": 125,
+     "const": "SID_DETECT_EVIL"
+    },
+    {
+     "id": 148,
+     "const": "SID_BREATH_OF_LIFE"
+    },
+    {
+     "id": 188,
+     "const": "SID_UNHOLY_TOUCH"
+    }
+   ]
+  }
+ },
+ {
+  "class": "RazaInnKeeper",
+  "parents": [
+   "RazaTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/razatwn/razainnk.kod",
+  "vrName": "Marcus",
+  "vrDesc": "A veteran of the Orc Wars, Marcus now seems content to settle into his new life running a small and quiet country inn.",
+  "vrIcon": "jsmerch.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 3,
+  "viAttributes": 1048763,
+  "viGender": 1,
+  "viMerchant_markup": 3,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "vrNothing_for_sale": "I don't have anything to sell myself, but ask around - some of the other folks around here do.",
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true
+ },
+ {
+  "class": "RazaVaultman",
+  "parents": [
+   "RazaTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/razatwn/razavaultm.kod",
+  "vrName": "Bentu",
+  "vrDesc": "A gruff old man with untamed white hair, Bentu seems to handle the heavy crates stacked in his vault with remarkable ease.  A mischievous twinkle is dancing in his eyes as he rests his gaze upon you and you can't quite make up your mind whether you should be unsettled or not.",
+  "vrIcon": "bentu.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 21,
+  "viAttributes": 1573051,
+  "viGender": 1,
+  "viMerchant_markup": 4,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viVault": 1,
+   "vrVaultman_nogold": "This ain't no bank!",
+   "vrVaultman_nocursed": "Are ye insane?  No way I'll let ye use my vault fer %s cursed %s!",
+   "vrVaultman_fullvault": "I don't have any more space fer ye things!",
+   "vrVaultman_thanks_amount": "That will cost ye %i shillings!",
+   "vrVaultman_dont_have": "Huh, ye sure %s%s is somewhere in here?",
+   "vrVaultman_no_room": "Now look at ye trying t' carry all of that garbage!  Maybe take one thing at a time?",
+   "vrVaultman_deposit_thanks": "Just as ye left it!",
+   "vrVaultman_thanks": "Here ye go!",
+   "vrVaultman_withdraw_failed": "Huh?  Something's not quite right...  Gimme a moment!",
+   "vrVaultman_nowithdraw_cash": "This ain't fer free, buddy!",
+   "vrVaultman_nodeposit_cash": "My services ain't free.  Get %i shillings or get lost!",
+   "vrVaultman_cant_part": "This %s looks like trouble!  Keep it.",
+   "vrVaultman_noaccount": "What ye want?",
+   "vrVaultman_not_enough": "Are ye trying t' fool me?  Ye never gave me that many %s!",
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true
+ },
+ {
+  "class": "SpiderBaby",
+  "parents": [
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/spdrbaby.kod",
+  "vrName": "baby spider",
+  "vrDesc": "Smaller and weaker than his larger kin, this baby spider is deadly nonetheless.   Its soft belly is engorged with its last meal.",
+  "vrIcon": "spdrby.bgf",
+  "vrDead_icon": "spdrbyX.bgf",
+  "viLevel": 25,
+  "viDifficulty": 4,
+  "viKarma": -10,
+  "viSpeed": 8,
+  "viAttack_type": 1024,
+  "viDefault_behavior": 32768,
+  "viTreasure_type": 2,
+  "viCashmin": 25,
+  "viCashmax": 50,
+  "viVisionDistance": 6,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 0,
+  "viAttributes": 4,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": "bsp_atkh.ogg",
+  "vrSound_miss": "bsp_atkm.ogg",
+  "vrSound_aware": "bsp_awr.ogg",
+  "vrSound_death": "bsp_dth.ogg",
+  "vars": {
+   "vrKocName": "imixkinich",
+   "vrDead_name": "dead baby spider",
+   "piAnimation": 0
+  },
+  "behavior_flags": [
+   "AI_FIGHT_KARMA_AGGRESSIVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_BITE"
+  ],
+  "is_npc": false
+ }
+]

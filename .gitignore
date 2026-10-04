@@ -1,0 +1,23 @@
+# Reference checkout of the original server (its own git repo, GPLv2) — not part of this repo
+/Server-104/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Generated, reproducible build outputs (regenerate with tools/)
+/build/
+
+# Unreal
+game/**/Binaries/
+game/**/Intermediate/
+game/**/Saved/
+game/**/DerivedDataCache/
+game/**/.vs/
+game/*.sln
+game/**/*.VC.db
+
+# Secrets
+.env
+*.env.local
