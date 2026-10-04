@@ -8,6 +8,8 @@ commandlet, and quits the editor when it finishes; set MR_BUILD_WORLD_ARGS=-keep
 
 Output (everything under /Game/Generated, git-ignored, rebuilt from scratch each run):
   /Game/Generated/Zones/Z<rid>/...          imported blockout mesh + materials (complex-as-simple collision)
+  /Game/Generated/Environment/...           placeholder textures + material instances per original
+                                            texture, assigned to the zone meshes (environment_materials.py)
   /Game/Generated/Maps/Zones/L_Zone_<rid>   one streaming sublevel per zone *geometry*: the zone mesh
                                             at its world_origin_cm (data/zone_layout.json). Zones that
                                             share geometry (Raza town + Outskirts) share one sublevel,
@@ -20,8 +22,13 @@ Output (everything under /Game/Generated, git-ignored, rebuilt from scratch each
 """
 import json
 import os
+import shutil
+import sys
 
 import unreal
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from environment_materials import ENV as ENVIRONMENT_DIR, ZoneMaterials  # noqa: E402
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 LAYOUT = os.path.join(REPO, "data", "zone_layout.json")
@@ -46,12 +53,24 @@ def zone_level_path(rid):
 
 
 def reset_generated():
-    """Switch to a blank map so nothing under /Game/Generated is in use, then delete it."""
+    """Switch to a blank map so nothing this script made is in use, then delete what it owns
+    (the maps, zone meshes and zone materials; other generated content under /Game/Generated is
+    left alone)."""
     unreal.EditorLoadingAndSavingUtils.new_blank_map(False)
     unreal.SystemLibrary.collect_garbage()
-    if eal.does_directory_exist(GENERATED):
-        if not eal.delete_directory(GENERATED):
-            raise RuntimeError("could not delete " + GENERATED + " (is it open in another editor?)")
+    content = unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_content_dir())
+    for folder in (GENERATED + "/Maps", GENERATED + "/Zones", ENVIRONMENT_DIR):
+        if eal.does_directory_exist(folder):
+            eal.delete_directory(folder)
+        # Package files the asset registry doesn't know about (e.g. from an interrupted run) survive
+        # delete_directory; they're ours and git-ignored, so remove them from disk. A file still open
+        # in another editor makes rmtree fail, which is the error we want.
+        disk = os.path.join(content, folder[len("/Game/"):])
+        if os.path.isdir(disk):
+            try:
+                shutil.rmtree(disk)
+            except OSError as e:
+                raise RuntimeError("could not delete %s (is it open in another editor?): %s" % (folder, e))
     unreal.SystemLibrary.collect_garbage()
 
 
@@ -68,6 +87,12 @@ def import_zone_mesh(glb_path, dest_dir):
     if not meshes:
         raise RuntimeError("no static mesh imported from " + glb_path)
     mesh = eal.load_asset(meshes[0])
+    # The importer enables Nanite, but its glTF materials lack the Nanite usage flag, so a
+    # standalone game would render them with the default grey material. Blockouts are small
+    # and temporary; plain static meshes are fine.
+    nanite = mesh.get_editor_property("nanite_settings")
+    nanite.set_editor_property("enabled", False)
+    mesh.set_editor_property("nanite_settings", nanite)
     body = mesh.get_editor_property("body_setup")
     if body:
         body.set_editor_property("collision_trace_flag", unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
@@ -150,6 +175,7 @@ def main():
     layout = json.load(open(LAYOUT, encoding="utf-8"))
     zones = layout["zones"]
     reset_generated()
+    materials = ZoneMaterials()
 
     # which zones reuse another zone's geometry
     sharers = {}
@@ -165,6 +191,7 @@ def main():
             continue
         mesh = import_zone_mesh(os.path.join(REPO, z["mesh"]), "%s/Zones/Z%d" % (GENERATED, z["rid"]))
         bad += 0 if check_orientation(z, mesh) else 1
+        log("zone %d materials: %d real, %d placeholder, %d left as imported" % ((z["rid"],) + tuple(materials.apply(mesh))))
         zone_levels.append(build_zone_level(z, mesh, sharers.get(z["rid"], [])))
 
     build_persistent_level(zone_levels)

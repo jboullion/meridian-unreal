@@ -1,0 +1,4 @@
+{
+ "_doc": "Original texture id (blockout material slot) -> real material asset. Slots not listed use the generated placeholder MI_<grd> (tools/textures/make_placeholders.py). See docs/adr/0003-environment-art-pipeline.md.",
+ "materials": {}
+}

@@ -43,4 +43,12 @@ private:
 
 	/** Levels requested but not yet visible: zone -> request time, for load-time logging. */
 	TMap<int32, double> PendingLoads;
+
+	/** -MRScreenshots visual check. */
+	UPROPERTY()
+	TObjectPtr<class UMRScreenshotTour> ScreenshotTour;
+
+	/** -MRProfile character cost measurement. */
+	UPROPERTY()
+	TObjectPtr<class UMRProfileTour> ProfileTour;
 };

@@ -18,9 +18,10 @@ class MERIDIANREMASTERED_API AMRGameMode : public AGameModeBase
 public:
 	AMRGameMode();
 
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual void RestartPlayer(AController* NewPlayer) override;
 
-	/** Zone new characters start in. */
+	/** Zone new characters start in. Override with -MRStartZone=<rid> (e.g. 300, the town square). */
 	UPROPERTY(EditDefaultsOnly, Category = "Zones")
 	int32 StartZone = 301; // RID_RAZA_INN
 

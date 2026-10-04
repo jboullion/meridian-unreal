@@ -12,6 +12,8 @@ class UInputAction;
 class UInputMappingContext;
 class UMRCharacterMovementComponent;
 class UMRAttributeSet;
+class UMRCharacterAppearance;
+class USceneComponent;
 struct FInputActionValue;
 
 /**
@@ -24,8 +26,10 @@ struct FInputActionValue;
  * - Gaits: run (default), walk (Caps Lock), sprint (Shift, drains Vigor). They are predicted
  *   in UMRCharacterMovementComponent.
  * - The Ability System Component lives on AMRPlayerState.
+ * - Looks come from a UMRCharacterAppearance (a MakeHuman body on the mannequin skeleton, plus
+ *   parts). Fallbacks: configured appearance -> plain engine mannequin -> placeholder cylinder.
  */
-UCLASS()
+UCLASS(Config = Game)
 class MERIDIANREMASTERED_API AMRCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
@@ -49,6 +53,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void SetFirstPerson(bool bNewFirstPerson);
 
+	/**
+	 * First-person eyes relative to the driver's head bone (reference pose, actor space: X forward,
+	 * Z up). The head bone sits at the top of the neck; eyes are a little above and in front.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Camera")
+	FVector EyeOffsetFromHeadBone = FVector(10.f, 0.f, 9.f);
+
 	/** Vigor drained per second while sprinting. */
 	UPROPERTY(EditDefaultsOnly, Category = "Vigor")
 	float SprintVigorPerSecond = 12.f;
@@ -66,6 +77,26 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float MaxArmLength = 600.f;
 
+	/** Appearance for player characters (DefaultGame.ini). */
+	UPROPERTY(Config, EditDefaultsOnly, Category = "Appearance")
+	FSoftObjectPath DefaultAppearance;
+
+	/** Apply an appearance (null = fallbacks). Safe to call again to change looks. */
+	void ApplyAppearance(const UMRCharacterAppearance* Appearance);
+
+	/**
+	 * Set the head sliders (values in [-1, 1], in the appearance's HeadSliders order; missing
+	 * values are 0). Applied as morph-target weights on the body and on every part (hair follows
+	 * the head shape because it carries the same morphs).
+	 */
+	void ApplyHeadSliders(const TArray<float>& Values);
+
+	/** Random slider values for testing crowds (deterministic per seed). */
+	void ApplyRandomHeadSliders(int32 Seed, float Strength = 0.6f);
+
+	/** What ended up on screen: "appearance:<name>", "mannequin" or "placeholder". */
+	const FString& GetAppearanceDescription() const { return AppearanceDescription; }
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -75,9 +106,34 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	TObjectPtr<UCameraComponent> Camera;
 
-	/** Stand-in body until the MetaHuman is in. Hidden from its owner in first person. */
+	/** Last-resort body when no character or mannequin content is installed. */
 	UPROPERTY(VisibleAnywhere, Category = "Body")
 	TObjectPtr<UStaticMeshComponent> PlaceholderBody;
+
+	/** Components created from the appearance's parts, by part name. */
+	UPROPERTY(Transient)
+	TMap<FName, TObjectPtr<USceneComponent>> AppearanceParts;
+
+	/** Parts hidden from the owner in first person. */
+	TSet<FName> FirstPersonHiddenParts;
+	FName FirstPersonBodyPart;
+	FName DriverHiddenBone;
+	FName BodyPartHiddenBone;
+	FString AppearanceDescription = TEXT("placeholder");
+
+	void ClearAppearance();
+
+	/** The appearance currently applied (for its sliders). */
+	UPROPERTY(Transient)
+	TObjectPtr<const UMRCharacterAppearance> CurrentAppearance;
+	USceneComponent* CreateAppearancePart(const struct FMRAppearancePart& Part, USceneComponent* Parent);
+	bool ApplyMannequinFallback();
+	void ApplyFirstPersonVisibility();
+	/** Place the first-person eyes from the driver skeleton (so taller bodies see from higher up). */
+	void UpdateEyePosition();
+
+	/** First-person camera position in actor space (from UpdateEyePosition). */
+	FVector FirstPersonEye = FVector(12.f, 0.f, 75.f);
 
 	UPROPERTY(ReplicatedUsing = OnRep_FirstPerson)
 	bool bFirstPerson = true;

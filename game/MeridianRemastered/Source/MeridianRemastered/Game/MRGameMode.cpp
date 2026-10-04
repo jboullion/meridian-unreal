@@ -4,6 +4,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
 #include "MeridianRemastered.h"
+#include "Misc/CommandLine.h"
 #include "Player/MRPlayerController.h"
 #include "Player/MRPlayerState.h"
 #include "Tests/MRZoneSmokeTest.h"
@@ -15,6 +16,17 @@ AMRGameMode::AMRGameMode()
 	DefaultPawnClass = AMRCharacter::StaticClass();
 	PlayerStateClass = AMRPlayerState::StaticClass();
 	PlayerControllerClass = AMRPlayerController::StaticClass();
+}
+
+void AMRGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+	int32 Override = 0;
+	if (FParse::Value(FCommandLine::Get(), TEXT("MRStartZone="), Override) && Override > 0)
+	{
+		UE_LOG(LogMeridian, Log, TEXT("Start zone overridden: %d"), Override);
+		StartZone = Override;
+	}
 }
 
 void AMRGameMode::RestartPlayer(AController* NewPlayer)

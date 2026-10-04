@@ -4,6 +4,8 @@ This is a free fan remaster of Meridian 59, built on the Server 104 ruleset, usi
 
 - **Decisions:** [docs/adr/0001-engine-and-architecture.md](docs/adr/0001-engine-and-architecture.md)
 - **Findings from the original data** (scale, zone layout, missing assets): [docs/findings.md](docs/findings.md)
+- **Environment art pipeline** (terrain, buildings, materials, lighting): [docs/adr/0003-environment-art-pipeline.md](docs/adr/0003-environment-art-pipeline.md)
+- **Characters** (appearance system, MetaHumans, first person): [docs/characters.md](docs/characters.md)
 
 > The Server 104 team has approved the "Meridian" name for this project. "104" must not be used in the product's name or branding. The original art and audio are not covered by the GPL. This repo contains no original art. Extracted assets go to `build/`, which is git-ignored, and are used only as reference.
 
@@ -75,11 +77,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_zone_test.ps1
 |---|---|
 | `Core/MRUnits.h` | Original grid and angle conversions to UE (must match `roo2gltf`) |
 | `Abilities/MRAttributeSet` | GAS attributes: the six stats plus Health, Mana and Vigor |
-| `Character/` | Player character (FP/TP camera, input built in code) and predicted walk/run/sprint movement |
+| `Character/` | Player character (FP/TP camera, input built in code), predicted walk/run/sprint movement, and the data-driven appearance (MakeHuman body on the mannequin skeleton, head sliders, hair part); see [docs/characters.md](docs/characters.md) |
 | `Player/` | Player state (owns the Ability System Component and the zone ID) and controller (drives client zone streaming) |
 | `Zones/MRZoneSubsystem` | Zone data, tile and edge exits, seamless shared-geometry zones, teleports, zone level streaming |
 | `Game/MRGameMode` | Spawns new characters at the Raza Inn |
 | `Tests/MRZoneSmokeTest` | The `-MRZoneTest` server-side travel test |
+| `Tests/MRScreenshotTour`, `Tests/MRProfileTour` | `-MRScreenshots` visual check and `-MRProfile` character cost measurement |
 
 ### Zone streaming
 
@@ -101,3 +104,12 @@ The game reads `data/zones.json` and `data/zone_layout.json` directly from the r
 - **`tools/roo2gltf/roo2gltf.py`**: turns `.roo` files into glTF blockouts. It builds floors and ceilings from the BSP leaves and Doom-style wall sections, and handles slopes. It also writes the world positions of exits, arrivals, objects and spawn generators.
 - **`tools/bgf2png/bgf2png.py`**: decodes BGF v10 files into PNGs. Sprites become contact sheets (one group per row, view angles in columns); textures are written un-rotated, along with a size catalog.
 - **`tools/blender/render_glb.py`**: renders a preview of any `.glb` in headless Blender.
+- **`tools/blender/install_mpfb_packs.py`**: installs MakeHuman asset packs (zips) into Blender's MPFB extension.
+- **`tools/blender/mpfb_character.py`**: builds a MakeHuman character kit on the UE5 mannequin skeleton: one body mesh with head-slider morph targets, hairstyles, textures and a manifest. Settings live in `tools/blender/characters/*.json`.
+- **`tools/blender/preview_character.py`**: renders a kit with random head sliders.
+- **`tools/blender/retarget_ual.py`**: retargets the Quaternius Universal Animation Library (CC0) onto the UE5 mannequin skeleton.
+- **`tools/ue/export_mannequin.py`**: exports the engine mannequins to FBX for Blender.
+- **`tools/ue/import_character.ps1`**: imports a kit into UE, with material instances and an appearance asset.
+- **`tools/ue/import_animations.ps1`**: imports the retargeted clips and makes montages.
+
+Characters and animation are covered in [docs/characters.md](docs/characters.md).

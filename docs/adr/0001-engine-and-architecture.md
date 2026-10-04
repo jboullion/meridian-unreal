@@ -17,7 +17,7 @@ The target is 100–200 concurrent players. The original code is GPLv2. The orig
 
 1. **Engine: Unreal Engine 5.8.**
    - Gameplay is written in C++ on the Gameplay Ability System (GAS).
-   - Built-in features used: Iris replication, Motion Matching locomotion, Chaos ragdolls, MetaHuman characters and level streaming.
+   - Built-in features used: Iris replication, Motion Matching locomotion, Chaos ragdolls, MetaHuman characters and level streaming. (Characters later changed to MakeHuman on the mannequin skeleton: see [ADR 0002](0002-metahuman-characters.md#decision-makehuman-2026-10-04).)
    - Blueprints are used only for thin presentation layers.
 2. **Server: a new authoritative UE dedicated server.**
    - It runs as one process that holds the whole world.
@@ -47,7 +47,7 @@ The target is 100–200 concurrent players. The original code is GPLv2. The orig
 - **Engine build:** packaging a standalone dedicated server needs UE built from source. Until then we develop in Play-In-Editor's dedicated-server mode.
 - **Binary assets:** they're harder for AI-assisted editing. We offset this by keeping logic in C++ and data in JSON.
 - **Naming:** the product is **Meridian Remastered** (UE module `MeridianRemastered`). The Server 104 team approved the "Meridian" name on 2026-10-04, on the condition that "104" is not used in the name or branding.
-- **Art:** models derived from the original sprites are reference-driven remakes. Using the original art as reference wasn't part of the name approval; confirm it with the Server 104 team before a public release.
+- **Art:** the Server 103 and Server 104 teams gave permission on 2026-10-04 to use **all original game assets**, on two conditions: the product uses a different name and runs on its own server. Both are met. Upscaled or reworked originals may ship; models derived from the original sprites are still reference-driven remakes. Raw extracted art stays out of git and is rebuilt from the installed client. See [ADR 0003](0003-environment-art-pipeline.md).
 
 ## Alternatives considered
 - **Unity 6:** a good fit for text-based assets, but we'd have to assemble the networking, action combat and character stack ourselves.

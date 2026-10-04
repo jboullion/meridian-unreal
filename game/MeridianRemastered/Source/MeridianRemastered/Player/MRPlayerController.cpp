@@ -3,6 +3,8 @@
 #include "Engine/World.h"
 #include "MeridianRemastered.h"
 #include "Player/MRPlayerState.h"
+#include "Tests/MRProfileTour.h"
+#include "Tests/MRScreenshotTour.h"
 #include "Zones/MRZoneSubsystem.h"
 
 namespace
@@ -25,6 +27,16 @@ void AMRPlayerController::BeginPlay()
 	{
 		SetInputMode(FInputModeGameOnly());
 		bShowMouseCursor = false;
+		if (UMRScreenshotTour::IsRequested())
+		{
+			ScreenshotTour = NewObject<UMRScreenshotTour>(this);
+			ScreenshotTour->Start(this);
+		}
+		else if (UMRProfileTour::IsRequested())
+		{
+			ProfileTour = NewObject<UMRProfileTour>(this);
+			ProfileTour->Start(this);
+		}
 	}
 }
 

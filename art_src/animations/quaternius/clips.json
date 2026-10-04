@@ -1,0 +1,538 @@
+{
+ "source": "Quaternius Universal Animation Library 1+2 (Standard), CC0",
+ "skeleton": "UE5 mannequin (SK_Mannequin)",
+ "clips": [
+  {
+   "name": "A_Crouch_Fwd_Loop",
+   "source": "UAL1/Crouch_Fwd_Loop",
+   "frames": 61,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Crouch_Idle_Loop",
+   "source": "UAL1/Crouch_Idle_Loop",
+   "frames": 89,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Dance_Loop",
+   "source": "UAL1/Dance_Loop",
+   "frames": 31,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Death01",
+   "source": "UAL1/Death01",
+   "frames": 73,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Fixing_Kneeling",
+   "source": "UAL1/Fixing_Kneeling",
+   "frames": 157,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Hit_Chest",
+   "source": "UAL1/Hit_Chest",
+   "frames": 11,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Hit_Head",
+   "source": "UAL1/Hit_Head",
+   "frames": 14,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Idle_Loop",
+   "source": "UAL1/Idle_Loop",
+   "frames": 76,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Idle_Talking_Loop",
+   "source": "UAL1/Idle_Talking_Loop",
+   "frames": 89,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Idle_Torch_Loop",
+   "source": "UAL1/Idle_Torch_Loop",
+   "frames": 39,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Interact",
+   "source": "UAL1/Interact",
+   "frames": 61,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Jog_Fwd_Loop",
+   "source": "UAL1/Jog_Fwd_Loop",
+   "frames": 29,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Jump_Land",
+   "source": "UAL1/Jump_Land",
+   "frames": 39,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Jump_Loop",
+   "source": "UAL1/Jump_Loop",
+   "frames": 76,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Jump_Start",
+   "source": "UAL1/Jump_Start",
+   "frames": 41,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_PickUp_Table",
+   "source": "UAL1/PickUp_Table",
+   "frames": 26,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Punch_Cross",
+   "source": "UAL1/Punch_Cross",
+   "frames": 31,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Punch_Jab",
+   "source": "UAL1/Punch_Jab",
+   "frames": 27,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Push_Loop",
+   "source": "UAL1/Push_Loop",
+   "frames": 81,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Roll",
+   "source": "UAL1/Roll",
+   "frames": 45,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sitting_Enter",
+   "source": "UAL1/Sitting_Enter",
+   "frames": 40,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sitting_Exit",
+   "source": "UAL1/Sitting_Exit",
+   "frames": 32,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sitting_Idle_Loop",
+   "source": "UAL1/Sitting_Idle_Loop",
+   "frames": 51,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Sitting_Talking_Loop",
+   "source": "UAL1/Sitting_Talking_Loop",
+   "frames": 89,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Spell_Simple_Enter",
+   "source": "UAL1/Spell_Simple_Enter",
+   "frames": 17,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Spell_Simple_Exit",
+   "source": "UAL1/Spell_Simple_Exit",
+   "frames": 14,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Spell_Simple_Idle_Loop",
+   "source": "UAL1/Spell_Simple_Idle_Loop",
+   "frames": 64,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Spell_Simple_Shoot",
+   "source": "UAL1/Spell_Simple_Shoot",
+   "frames": 16,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sprint_Loop",
+   "source": "UAL1/Sprint_Loop",
+   "frames": 21,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Swim_Fwd_Loop",
+   "source": "UAL1/Swim_Fwd_Loop",
+   "frames": 41,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Swim_Idle_Loop",
+   "source": "UAL1/Swim_Idle_Loop",
+   "frames": 101,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Sword_Attack",
+   "source": "UAL1/Sword_Attack",
+   "frames": 47,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sword_Idle",
+   "source": "UAL1/Sword_Idle",
+   "frames": 51,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Walk_Formal_Loop",
+   "source": "UAL1/Walk_Formal_Loop",
+   "frames": 41,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Walk_Loop",
+   "source": "UAL1/Walk_Loop",
+   "frames": 41,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Chest_Open",
+   "source": "UAL2/Chest_Open",
+   "frames": 42,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_ClimbUp_1m",
+   "source": "UAL2/ClimbUp_1m",
+   "frames": 21,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Consume",
+   "source": "UAL2/Consume",
+   "frames": 41,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Farm_Harvest",
+   "source": "UAL2/Farm_Harvest",
+   "frames": 76,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Farm_PlantSeed",
+   "source": "UAL2/Farm_PlantSeed",
+   "frames": 84,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Farm_Watering",
+   "source": "UAL2/Farm_Watering",
+   "frames": 115,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Hit_Knockback",
+   "source": "UAL2/Hit_Knockback",
+   "frames": 26,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Idle_FoldArms_Loop",
+   "source": "UAL2/Idle_FoldArms_Loop",
+   "frames": 76,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Idle_Lantern_Loop",
+   "source": "UAL2/Idle_Lantern_Loop",
+   "frames": 76,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Idle_No_Loop",
+   "source": "UAL2/Idle_No_Loop",
+   "frames": 76,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Idle_Rail_Call",
+   "source": "UAL2/Idle_Rail_Call",
+   "frames": 76,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Idle_Rail_Loop",
+   "source": "UAL2/Idle_Rail_Loop",
+   "frames": 76,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Idle_Shield_Break",
+   "source": "UAL2/Idle_Shield_Break",
+   "frames": 33,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Idle_Shield_Loop",
+   "source": "UAL2/Idle_Shield_Loop",
+   "frames": 76,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_LayToIdle",
+   "source": "UAL2/LayToIdle",
+   "frames": 47,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Melee_Hook",
+   "source": "UAL2/Melee_Hook",
+   "frames": 15,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Melee_Hook_Rec",
+   "source": "UAL2/Melee_Hook_Rec",
+   "frames": 19,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_NinjaJump_Idle_Loop",
+   "source": "UAL2/NinjaJump_Idle_Loop",
+   "frames": 61,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_NinjaJump_Land",
+   "source": "UAL2/NinjaJump_Land",
+   "frames": 39,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_NinjaJump_Start",
+   "source": "UAL2/NinjaJump_Start",
+   "frames": 30,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_OverhandThrow",
+   "source": "UAL2/OverhandThrow",
+   "frames": 41,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Shield_Dash",
+   "source": "UAL2/Shield_Dash",
+   "frames": 34,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Shield_OneShot",
+   "source": "UAL2/Shield_OneShot",
+   "frames": 26,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Slide_Exit",
+   "source": "UAL2/Slide_Exit",
+   "frames": 16,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Slide_Loop",
+   "source": "UAL2/Slide_Loop",
+   "frames": 61,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Slide_Start",
+   "source": "UAL2/Slide_Start",
+   "frames": 26,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sword_Block",
+   "source": "UAL2/Sword_Block",
+   "frames": 38,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sword_Dash",
+   "source": "UAL2/Sword_Dash",
+   "frames": 48,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sword_Heavy_Combo",
+   "source": "UAL2/Sword_Heavy_Combo",
+   "frames": 131,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sword_Regular_A",
+   "source": "UAL2/Sword_Regular_A",
+   "frames": 14,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sword_Regular_A_Rec",
+   "source": "UAL2/Sword_Regular_A_Rec",
+   "frames": 30,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sword_Regular_B",
+   "source": "UAL2/Sword_Regular_B",
+   "frames": 17,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sword_Regular_B_Rec",
+   "source": "UAL2/Sword_Regular_B_Rec",
+   "frames": 32,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sword_Regular_C",
+   "source": "UAL2/Sword_Regular_C",
+   "frames": 61,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Sword_Regular_Combo",
+   "source": "UAL2/Sword_Regular_Combo",
+   "frames": 91,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_TreeChopping_Loop",
+   "source": "UAL2/TreeChopping_Loop",
+   "frames": 30,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Walk_Carry_Loop",
+   "source": "UAL2/Walk_Carry_Loop",
+   "frames": 61,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Yes",
+   "source": "UAL2/Yes",
+   "frames": 76,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Zombie_Idle_Loop",
+   "source": "UAL2/Zombie_Idle_Loop",
+   "frames": 41,
+   "fps": 30,
+   "loop": true
+  },
+  {
+   "name": "A_Zombie_Scratch",
+   "source": "UAL2/Zombie_Scratch",
+   "frames": 55,
+   "fps": 30,
+   "loop": false
+  },
+  {
+   "name": "A_Zombie_Walk_Fwd_Loop",
+   "source": "UAL2/Zombie_Walk_Fwd_Loop",
+   "frames": 41,
+   "fps": 30,
+   "loop": true
+  }
+ ]
+}

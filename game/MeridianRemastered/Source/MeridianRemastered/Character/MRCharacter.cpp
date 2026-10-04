@@ -3,9 +3,18 @@
 #include "AbilitySystemComponent.h"
 #include "Abilities/MRAttributeSet.h"
 #include "Camera/CameraComponent.h"
+#include "Animation/AnimInstance.h"
+#include "AnimationRuntime.h"
+#include "Character/MRCharacterAppearance.h"
 #include "Character/MRCharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
+#include "Materials/MaterialInterface.h"
+#include "MeridianRemastered.h"
+#include "Misc/CommandLine.h"
+#include "Misc/PackageName.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
@@ -18,6 +27,14 @@
 #include "Player/MRPlayerState.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Zones/MRZoneSubsystem.h"
+
+namespace
+{
+	// Engine mannequin pack, copied into the project by tools/setup.ps1 (not committed).
+	const TCHAR* MannequinMeshPath = TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple");
+	const TCHAR* MannequinAnimPath = TEXT("/Game/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed.ABP_Unarmed_C");
+	const FName DriverPartName(TEXT("Driver"));
+}
 
 AMRCharacter::AMRCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UMRCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -41,6 +58,11 @@ AMRCharacter::AMRCharacter(const FObjectInitializer& ObjectInitializer)
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
 	Camera->SetFieldOfView(90.f);
+
+	// The character mesh is the animation driver: mannequin skeleton, feet on the capsule bottom,
+	// facing +X (mannequin assets face +Y).
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -90.f), FRotator(0.f, -90.f, 0.f));
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	PlaceholderBody = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PlaceholderBody"));
 	PlaceholderBody->SetupAttachment(GetCapsuleComponent());
@@ -82,7 +104,286 @@ UMRCharacterMovementComponent* AMRCharacter::GetMRMovement() const
 void AMRCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// -MRAppearance=/Game/Path/DA_Name overrides the configured appearance (testing)
+	FSoftObjectPath AppearancePath = DefaultAppearance;
+	FString Override;
+	if (FParse::Value(FCommandLine::Get(), TEXT("MRAppearance="), Override))
+	{
+		AppearancePath = FSoftObjectPath(Override.Contains(TEXT(".")) ? Override
+			: Override + TEXT(".") + FPackageName::GetShortName(Override));
+	}
+	const UMRCharacterAppearance* Appearance = nullptr;
+	if (AppearancePath.IsValid())
+	{
+		Appearance = Cast<UMRCharacterAppearance>(AppearancePath.TryLoad());
+		if (!Appearance)
+		{
+			UE_LOG(LogMeridian, Log, TEXT("Appearance %s not found (see tools/ue/import_character.ps1); using fallbacks"),
+				*AppearancePath.ToString());
+		}
+	}
+	ApplyAppearance(Appearance);
 	ApplyViewMode();
+}
+
+// ------------------------------------------------------------------------------ appearance
+
+void AMRCharacter::ClearAppearance()
+{
+	for (TPair<FName, TObjectPtr<USceneComponent>>& Part : AppearanceParts)
+	{
+		if (Part.Value)
+		{
+			Part.Value->DestroyComponent();
+		}
+	}
+	AppearanceParts.Reset();
+	FirstPersonHiddenParts.Reset();
+	FirstPersonBodyPart = NAME_None;
+	DriverHiddenBone = NAME_None;
+	BodyPartHiddenBone = NAME_None;
+}
+
+bool AMRCharacter::ApplyMannequinFallback()
+{
+	USkeletalMesh* MannequinMesh = LoadObject<USkeletalMesh>(nullptr, MannequinMeshPath, nullptr, LOAD_NoWarn | LOAD_Quiet);
+	UClass* Anim = LoadClass<UAnimInstance>(nullptr, MannequinAnimPath, nullptr, LOAD_NoWarn | LOAD_Quiet);
+	if (!MannequinMesh || !Anim)
+	{
+		return false;
+	}
+	GetMesh()->SetSkeletalMesh(MannequinMesh);
+	GetMesh()->SetAnimInstanceClass(Anim);
+	GetMesh()->SetVisibility(true);
+	DriverHiddenBone = TEXT("head");
+	AppearanceDescription = TEXT("mannequin");
+	return true;
+}
+
+USceneComponent* AMRCharacter::CreateAppearancePart(const FMRAppearancePart& Part, USceneComponent* Parent)
+{
+	{
+		USkeletalMesh* PartMesh = Part.Mesh.LoadSynchronous();
+		if (!PartMesh)
+		{
+			return nullptr;
+		}
+		USkeletalMeshComponent* Comp = NewObject<USkeletalMeshComponent>(this, Part.Name);
+		Comp->SetSkeletalMesh(PartMesh);
+		Comp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		for (int32 i = 0; i < Part.MaterialOverrides.Num(); ++i)
+		{
+			if (UMaterialInterface* Mat = Part.MaterialOverrides[i].LoadSynchronous())
+			{
+				Comp->SetMaterial(i, Mat);
+			}
+		}
+		Comp->SetupAttachment(Parent, Part.AttachSocket);
+		Comp->RegisterComponent();
+		if (UClass* Anim = Part.AnimClass.LoadSynchronous())
+		{
+			Comp->SetAnimInstanceClass(Anim);
+		}
+		else if (Part.bLeaderPose)
+		{
+			if (USkinnedMeshComponent* Leader = Cast<USkinnedMeshComponent>(Parent))
+			{
+				Comp->SetLeaderPoseComponent(Leader);
+			}
+		}
+		return Comp;
+	}
+}
+
+void AMRCharacter::ApplyHeadSliders(const TArray<float>& Values)
+{
+	if (!CurrentAppearance)
+	{
+		return;
+	}
+	TArray<USkinnedMeshComponent*> Meshes;
+	GetComponents<USkinnedMeshComponent>(Meshes);
+	const TArray<FMRHeadSlider>& Sliders = CurrentAppearance->HeadSliders;
+	for (int32 i = 0; i < Sliders.Num(); ++i)
+	{
+		const float V = Values.IsValidIndex(i) ? FMath::Clamp(Values[i], -1.f, 1.f) : 0.f;
+		for (USkinnedMeshComponent* Comp : Meshes)
+		{
+			USkeletalMeshComponent* Skel = Cast<USkeletalMeshComponent>(Comp);
+			if (!Skel)
+			{
+				continue;
+			}
+			if (!Sliders[i].DecrMorph.IsNone())
+			{
+				Skel->SetMorphTarget(Sliders[i].DecrMorph, FMath::Max(0.f, -V));
+			}
+			if (!Sliders[i].IncrMorph.IsNone())
+			{
+				Skel->SetMorphTarget(Sliders[i].IncrMorph, FMath::Max(0.f, V));
+			}
+		}
+	}
+}
+
+void AMRCharacter::ApplyRandomHeadSliders(int32 Seed, float Strength)
+{
+	if (!CurrentAppearance)
+	{
+		return;
+	}
+	FRandomStream Rng(Seed);
+	TArray<float> Values;
+	for (int32 i = 0; i < CurrentAppearance->HeadSliders.Num(); ++i)
+	{
+		Values.Add(Rng.FRandRange(-Strength, Strength));
+	}
+	ApplyHeadSliders(Values);
+}
+
+void AMRCharacter::ApplyAppearance(const UMRCharacterAppearance* Appearance)
+{
+	ClearAppearance();
+	CurrentAppearance = Appearance;
+	USkeletalMeshComponent* Driver = GetMesh();
+	const bool bDedicatedServer = IsNetMode(NM_DedicatedServer);
+
+	bool bApplied = false;
+	if (Appearance)
+	{
+		USkeletalMesh* DriverMesh = Appearance->DriverMesh.LoadSynchronous();
+		UClass* DriverAnim = Appearance->DriverAnimClass.LoadSynchronous();
+		if (DriverMesh && DriverAnim)
+		{
+			Driver->SetSkeletalMesh(DriverMesh);
+			Driver->SetAnimInstanceClass(DriverAnim);
+			Driver->SetVisibility(Appearance->bDriverVisible);
+			DriverHiddenBone = Appearance->bDriverVisible ? Appearance->FirstPersonHiddenBone : NAME_None;
+			FirstPersonBodyPart = Appearance->FirstPersonBodyPart;
+			BodyPartHiddenBone = Appearance->FirstPersonHiddenBone;
+			AppearanceDescription = FString::Printf(TEXT("appearance:%s"), *Appearance->GetName());
+			bApplied = true;
+
+			// Cosmetic parts are pointless on a dedicated server: it only needs the driver's pose.
+			if (!bDedicatedServer)
+			{
+				for (const FMRAppearancePart& Part : Appearance->Parts)
+				{
+					USceneComponent* Parent = Driver;
+					if (!Part.AttachTo.IsNone() && Part.AttachTo != DriverPartName)
+					{
+						if (const TObjectPtr<USceneComponent>* Found = AppearanceParts.Find(Part.AttachTo))
+						{
+							Parent = *Found;
+						}
+						else
+						{
+							UE_LOG(LogMeridian, Warning, TEXT("%s: part %s attaches to unknown part %s (list parents first)"),
+								*Appearance->GetName(), *Part.Name.ToString(), *Part.AttachTo.ToString());
+						}
+					}
+					if (USceneComponent* Created = CreateAppearancePart(Part, Parent))
+					{
+						AppearanceParts.Add(Part.Name, Created);
+						if (Part.bHideInFirstPerson)
+						{
+							FirstPersonHiddenParts.Add(Part.Name);
+						}
+					}
+					else
+					{
+						UE_LOG(LogMeridian, Warning, TEXT("%s: part %s has no loadable asset"),
+							*Appearance->GetName(), *Part.Name.ToString());
+					}
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogMeridian, Warning, TEXT("Appearance %s is missing its driver mesh or anim class"), *Appearance->GetName());
+		}
+	}
+
+	if (!bApplied)
+	{
+		CurrentAppearance = nullptr; // fallbacks have no head sliders
+		bApplied = ApplyMannequinFallback();
+	}
+	if (!bApplied)
+	{
+		AppearanceDescription = TEXT("placeholder");
+	}
+
+	// The driver must keep animating while hidden, because visible parts follow its pose.
+	// On a dedicated server nothing is rendered; only montages need to run for now.
+	Driver->VisibilityBasedAnimTickOption = bDedicatedServer
+		? EVisibilityBasedAnimTickOption::OnlyTickMontagesWhenNotRendered
+		: EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+
+	PlaceholderBody->SetVisibility(!bApplied);
+	UpdateEyePosition();
+	ApplyViewMode();
+	UE_LOG(LogMeridian, Log, TEXT("%s appearance: %s (%d parts)"), *GetName(), *AppearanceDescription, AppearanceParts.Num());
+}
+
+void AMRCharacter::UpdateEyePosition()
+{
+	// Default: the original game's eye height (0.75 squares = 1.65 m) when there is no skeleton.
+	FirstPersonEye = FVector(12.f, 0.f, BaseEyeHeight);
+	const USkeletalMeshComponent* Driver = GetMesh();
+	const USkeletalMesh* DriverMesh = Driver ? Driver->GetSkeletalMeshAsset() : nullptr;
+	if (DriverMesh)
+	{
+		const FReferenceSkeleton& RefSkeleton = DriverMesh->GetRefSkeleton();
+		const int32 Head = RefSkeleton.FindBoneIndex(TEXT("head"));
+		if (Head != INDEX_NONE)
+		{
+			const FVector HeadCS = FAnimationRuntime::GetComponentSpaceTransformRefPose(RefSkeleton, Head).GetLocation();
+			const FVector HeadActor = Driver->GetRelativeTransform().TransformPosition(HeadCS);
+			FirstPersonEye = HeadActor + EyeOffsetFromHeadBone;
+			UE_LOG(LogMeridian, Log, TEXT("%s first-person eyes %.0f cm above the floor"), *GetName(),
+				FirstPersonEye.Z + GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+		}
+	}
+}
+
+void AMRCharacter::ApplyFirstPersonVisibility()
+{
+	// Only the player's own view changes: everyone else always sees the whole character.
+	const bool bHideOwnHead = bFirstPerson && IsLocallyControlled();
+
+	auto SetHeadBone = [bHideOwnHead](USkinnedMeshComponent* Comp, FName Bone)
+	{
+		if (!Comp || Bone.IsNone() || Comp->GetBoneIndex(Bone) == INDEX_NONE)
+		{
+			return;
+		}
+		if (bHideOwnHead)
+		{
+			Comp->HideBoneByName(Bone, PBO_None);
+		}
+		else
+		{
+			Comp->UnHideBoneByName(Bone);
+		}
+	};
+	SetHeadBone(GetMesh(), DriverHiddenBone);
+	if (const TObjectPtr<USceneComponent>* Body = AppearanceParts.Find(FirstPersonBodyPart))
+	{
+		SetHeadBone(Cast<USkinnedMeshComponent>(Body->Get()), BodyPartHiddenBone);
+	}
+	for (const FName& Name : FirstPersonHiddenParts)
+	{
+		if (const TObjectPtr<USceneComponent>* Part = AppearanceParts.Find(Name))
+		{
+			if (UPrimitiveComponent* Prim = Cast<UPrimitiveComponent>(Part->Get()))
+			{
+				Prim->SetOwnerNoSee(bFirstPerson);
+				Prim->bCastHiddenShadow = true; // keep the full shadow on the ground
+			}
+		}
+	}
 }
 
 void AMRCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -118,6 +419,7 @@ void AMRCharacter::InitAbilityActorInfo()
 void AMRCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
 	if (HasAuthority())
 	{
 		ServerTickVigor(DeltaSeconds);
@@ -194,13 +496,17 @@ void AMRCharacter::ApplyViewMode()
 	}
 	if (CameraBoom)
 	{
+		// The boom pivots at eye height in both views; first person puts the camera at the eyes,
+		// third person swings it back from there.
+		CameraBoom->SetRelativeLocation(FVector(0.f, 0.f, FirstPersonEye.Z));
 		CameraBoom->TargetArmLength = bFirstPerson ? 0.f : ThirdPersonArmLength;
-		CameraBoom->SocketOffset = bFirstPerson ? FVector::ZeroVector : FVector(0.f, 45.f, 25.f);
+		CameraBoom->SocketOffset = bFirstPerson ? FVector(FirstPersonEye.X, FirstPersonEye.Y, 0.f) : FVector(0.f, 45.f, 25.f);
 	}
 	if (PlaceholderBody)
 	{
 		PlaceholderBody->SetOwnerNoSee(bFirstPerson);
 	}
+	ApplyFirstPersonVisibility();
 }
 
 // ---------------------------------------------------------------------------- input

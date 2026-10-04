@@ -1,0 +1,14 @@
+{
+ "name": "MPFB_Female",
+ "macro": {"gender": 0.0, "age": 0.5, "muscle": 0.55, "weight": 0.45, "proportions": 0.6, "height": 0.5,
+           "cupsize": 0.5, "firmness": 0.5,
+           "race": {"asian": 0.33, "caucasian": 0.34, "african": 0.33}},
+ "rig": "game_engine",
+ "fit_to": "SKM_Quinn_Simple",
+ "skin": "young_caucasian_female",
+ "eyes": "low-poly",
+ "eye_material": "green",
+ "eyebrows": "eyebrow002",
+ "eyelashes": "eyelashes02",
+ "hair": ["ponytail01", "bob01", "long01"]
+}

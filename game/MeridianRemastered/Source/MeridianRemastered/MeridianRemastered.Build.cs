@@ -26,7 +26,9 @@ public class MeridianRemastered : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] {
 			"Slate",
-			"SlateCore"
+			"SlateCore",
+			"RHI",
+			"RenderCore"
 		});
 
 		PublicIncludePaths.Add(ModuleDirectory);
