@@ -288,7 +288,7 @@ def write_glb(mb: MeshBuilder, path: Path, name: str) -> dict:
         tri_count += len(pr["idx"]) // 3
 
     gltf = {
-        "asset": {"version": "2.0", "generator": "blakston roo2gltf"},
+        "asset": {"version": "2.0", "generator": "meridian-remastered roo2gltf"},
         "scene": 0,
         "scenes": [{"nodes": [0]}],
         "nodes": [{"name": name, "mesh": 0}],
@@ -365,6 +365,11 @@ def zone_layout(zone: dict, room: Room) -> dict:
         "class": zone["class"],
         "name": zone["name"],
         "bounds_m": {"min": world((min(xs), min(ys)), 0), "max": world((max(xs), max(ys)), 0)},
+        # The Kod grid rectangle is [0, width] x [0, height] in this zone's ROO coords (room
+        # header).  Geometry can extend beyond it (e.g. the forest drawn outside Raza's walls);
+        # leaving the rectangle on a side with an edge exit is how the original changes zone.
+        "grid_size_roo": [room.width, room.height],
+        "grid_size_m": [round(room.width * M_PER_ROO, 3), round(room.height * M_PER_ROO, 3)],
         "teleport": {"pos": at(t["row"], t["col"]), "yaw_kod": t.get("angle")} if t.get("row") else None,
         "exits": exits,
         "edge_exits": zone["edge_exits"],
@@ -476,9 +481,28 @@ def main():
                 }
                 print(f"  {lay['rid']} shares geometry with {other['rid']} (offset {off})")
 
+    # World placement (single source of truth for the UE level builder and the game's zone
+    # subsystem).  Zones sit on a 2 km grid in UE space (X east, Y south, cm); a zone that shares
+    # geometry with another is placed so the two overlay exactly.
+    spacing_cm = 200000.0
+    slot = 0
+    by_rid = {lay["rid"]: lay for lay in layouts}
+    for lay in sorted(layouts, key=lambda l: l["rid"]):
+        if "shares_geometry_with" in lay:
+            continue
+        lay["world_origin_cm"] = [(slot % 4) * spacing_cm, (slot // 4) * spacing_cm, 0.0]
+        slot += 1
+    for lay in layouts:
+        sg = lay.get("shares_geometry_with")
+        if sg and sg["rid"] in by_rid:
+            o = by_rid[sg["rid"]]["world_origin_cm"]
+            off_cm = [sg["roo_offset"][0] * M_PER_ROO * 100, sg["roo_offset"][1] * M_PER_ROO * 100]
+            # same physical point: roo_this = roo_other + offset  ->  origin_this = origin_other - offset
+            lay["world_origin_cm"] = [round(o[0] - off_cm[0], 3), round(o[1] - off_cm[1], 3), o[2]]
+
     if not a.rid:
         out = {"m_per_square": M_PER_SQUARE, "m_per_roo_unit": M_PER_ROO,
-               "axes": "glTF metres: +X east, +Y up, +Z south", "zones": layouts}
+               "axes": "positions: glTF metres [+X east, +Y up, +Z south] relative to the zone; world_origin_cm: UE cm [X east, Y south, Z up]", "zones": layouts}
         (ROOT / "data" / "zone_layout.json").write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
         print("wrote data/zone_layout.json")
 

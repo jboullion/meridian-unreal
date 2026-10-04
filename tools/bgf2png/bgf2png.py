@@ -37,7 +37,10 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_RES = Path(r"H:\Steam\steamapps\common\Meridian 59\resource")
+# Searched in order: the Server 104 client (matches the ruleset), the Steam classic client,
+# then the source tree's resource/ folder (see find_file).
+CLIENT_RES = [Path(r"C:\Users\jboul\AppData\Local\Meridian-104\resource"),
+              Path(r"H:\Steam\steamapps\common\Meridian 59\resource")]
 PALETTE_FILE = ROOT / "Server-104" / "blakston.pal"
 TRANSPARENT = 254
 
@@ -112,16 +115,19 @@ FALLBACK_RES = ROOT / "Server-104" / "resource"   # Server 104 additions not in 
 _fallback_index: dict[str, Path] | None = None
 
 
-def find_file(res: Path, stem: str) -> Path | None:
-    """Look in the client resource dir first, then anywhere under Server-104/resource."""
+def find_file(res_dirs: list[Path], stem: str) -> Path | None:
+    """Look in each client resource dir in order, then anywhere under Server-104/resource."""
     global _fallback_index
     stem = stem.lower().removesuffix(".bgf")
-    cand = res / f"{stem}.bgf"
-    if cand.exists():
-        return cand
-    for p in res.glob("*.bgf"):
-        if p.stem.lower() == stem:
-            return p
+    for res in res_dirs:
+        if not res.is_dir():
+            continue
+        cand = res / f"{stem}.bgf"
+        if cand.exists():
+            return cand
+        for p in res.glob("*.bgf"):
+            if p.stem.lower() == stem:
+                return p
     if _fallback_index is None:
         _fallback_index = {p.stem.lower(): p for p in FALLBACK_RES.rglob("*.bgf")}
     return _fallback_index.get(stem)
@@ -181,7 +187,7 @@ def zone_texture_ids() -> set[int]:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("names", nargs="*")
-    ap.add_argument("--res", type=Path, default=DEFAULT_RES)
+    ap.add_argument("--res", type=Path, nargs="*", default=CLIENT_RES)
     ap.add_argument("--textures", nargs="*", type=int)
     ap.add_argument("--textures-for-zones", action="store_true")
     ap.add_argument("--list", action="store_true")
@@ -191,7 +197,7 @@ def main():
     for n in a.names:
         f = find_file(a.res, n)
         if not f:
-            print(f"!! {n}: not found in {a.res}")
+            print(f"!! {n}: not found in {[str(r) for r in a.res]}")
             continue
         bgf = BGF(f)
         print(f"{f.name}: {len(bgf.bitmaps)} bitmaps, {len(bgf.groups)} groups, shrink {bgf.shrink}, "

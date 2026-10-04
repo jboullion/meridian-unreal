@@ -1,23 +1,67 @@
-# Reference checkout of the original server (its own git repo, GPLv2) — not part of this repo
+# Reference checkout of the original server (its own git repo, GPLv2) - not part of this repo
 /Server-104/
 
-# Python
-__pycache__/
-*.pyc
-.venv/
-
-# Generated, reproducible build outputs (regenerate with tools/)
+# Generated, reproducible build outputs: extracted reference art, blockout meshes, previews.
+# Regenerate with tools/setup.ps1. Original game art must never be committed.
 /build/
 
-# Unreal
+# --- Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Unreal Engine (any project under game/)
 game/**/Binaries/
 game/**/Intermediate/
 game/**/Saved/
 game/**/DerivedDataCache/
 game/**/.vs/
-game/*.sln
+game/**/.idea/
+game/**/.vscode/
+game/*/*.sln
+game/*/*.slnx
+game/*/*.code-workspace
 game/**/*.VC.db
+game/**/*.opensdf
+game/**/*.sdf
+game/**/*.suo
+game/**/*.xcworkspace
+game/**/*.xcodeproj
+# Content written by tools/ue/build_world.py (rebuild with tools/setup.ps1)
+game/*/Content/Generated/
+# Per-user editor folders
+game/*/Content/Developers/
+game/*/Content/Collections/
+# Copy of data/ staged for packaged builds
+game/*/Data/
+# Packaged builds (package with -archivedirectory=<project>/Packaged)
+game/*/Packaged/
 
-# Secrets
-.env
-*.env.local
+# --- Supabase CLI local state
+backend/supabase/.temp/
+backend/supabase/.branches/
+
+# --- Blender backups and autosaves
+*.blend1
+*.blend2
+*.blend@
+
+# --- Editors / OS
+.idea/
+.vscode/
+*.swp
+*~
+Thumbs.db
+desktop.ini
+.DS_Store

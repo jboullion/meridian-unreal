@@ -1,7 +1,7 @@
 {
  "m_per_square": 2.2,
  "m_per_roo_unit": 0.0021484375,
- "axes": "glTF metres: +X east, +Y up, +Z south",
+ "axes": "positions: glTF metres [+X east, +Y up, +Z south] relative to the zone; world_origin_cm: UE cm [X east, Y south, Z up]",
  "zones": [
   {
    "rid": 300,
@@ -19,6 +19,14 @@
      76.725
     ]
    },
+   "grid_size_roo": [
+    67584,
+    35520
+   ],
+   "grid_size_m": [
+    145.2,
+    76.312
+   ],
    "teleport": {
     "pos": [
      89.1,
@@ -1360,7 +1368,12 @@
    ],
    "generators": [],
    "mesh": "build/zones/300_Raza.glb",
-   "roo": "raza.roo"
+   "roo": "raza.roo",
+   "world_origin_cm": [
+    0.0,
+    0.0,
+    0.0
+   ]
   },
   {
    "rid": 301,
@@ -1378,6 +1391,14 @@
      18.975
     ]
    },
+   "grid_size_roo": [
+    12896,
+    10160
+   ],
+   "grid_size_m": [
+    27.706,
+    21.828
+   ],
    "teleport": {
     "pos": [
      16.5,
@@ -1589,7 +1610,12 @@
    ],
    "generators": [],
    "mesh": "build/zones/301_RazaInn.glb",
-   "roo": "razainn.roo"
+   "roo": "razainn.roo",
+   "world_origin_cm": [
+    200000.0,
+    0.0,
+    0.0
+   ]
   },
   {
    "rid": 302,
@@ -1607,6 +1633,14 @@
      22.275
     ]
    },
+   "grid_size_roo": [
+    13264,
+    11904
+   ],
+   "grid_size_m": [
+    28.497,
+    25.575
+   ],
    "teleport": {
     "pos": [
      9.9,
@@ -1757,7 +1791,12 @@
    ],
    "generators": [],
    "mesh": "build/zones/302_RazaHall.glb",
-   "roo": "razahall.roo"
+   "roo": "razahall.roo",
+   "world_origin_cm": [
+    400000.0,
+    0.0,
+    0.0
+   ]
   },
   {
    "rid": 303,
@@ -1775,6 +1814,14 @@
      20.9
     ]
    },
+   "grid_size_roo": [
+    11216,
+    10672
+   ],
+   "grid_size_m": [
+    24.097,
+    22.928
+   ],
    "teleport": {
     "pos": [
      7.7,
@@ -1877,7 +1924,12 @@
    ],
    "generators": [],
    "mesh": "build/zones/303_RazaSmith.glb",
-   "roo": "razasmith.roo"
+   "roo": "razasmith.roo",
+   "world_origin_cm": [
+    600000.0,
+    0.0,
+    0.0
+   ]
   },
   {
    "rid": 304,
@@ -1895,6 +1947,14 @@
      14.025
     ]
    },
+   "grid_size_roo": [
+    7744,
+    6912
+   ],
+   "grid_size_m": [
+    16.638,
+    14.85
+   ],
    "teleport": {
     "pos": [
      7.7,
@@ -2019,7 +2079,12 @@
    ],
    "generators": [],
    "mesh": "build/zones/304_RazaApoth.glb",
-   "roo": "razaapoth.roo"
+   "roo": "razaapoth.roo",
+   "world_origin_cm": [
+    0.0,
+    200000.0,
+    0.0
+   ]
   },
   {
    "rid": 305,
@@ -2037,6 +2102,14 @@
      10.45
     ]
    },
+   "grid_size_roo": [
+    6256,
+    6496
+   ],
+   "grid_size_m": [
+    13.441,
+    13.956
+   ],
    "teleport": {
     "pos": [
      3.3,
@@ -2161,7 +2234,12 @@
    ],
    "generators": [],
    "mesh": "build/zones/305_RazaHut.glb",
-   "roo": "razahut.roo"
+   "roo": "razahut.roo",
+   "world_origin_cm": [
+    200000.0,
+    200000.0,
+    0.0
+   ]
   },
   {
    "rid": 306,
@@ -2179,6 +2257,14 @@
      85.8
     ]
    },
+   "grid_size_roo": [
+    40960,
+    39936
+   ],
+   "grid_size_m": [
+    88.0,
+    85.8
+   ],
    "teleport": {
     "pos": [
      49.5,
@@ -2523,7 +2609,12 @@
    ],
    "generators": [],
    "mesh": "build/zones/306_RazaCrypt.glb",
-   "roo": "razacrypt.roo"
+   "roo": "razacrypt.roo",
+   "world_origin_cm": [
+    400000.0,
+    200000.0,
+    0.0
+   ]
   },
   {
    "rid": 307,
@@ -2541,6 +2632,14 @@
      17.875
     ]
    },
+   "grid_size_roo": [
+    9344,
+    10048
+   ],
+   "grid_size_m": [
+    20.075,
+    21.588
+   ],
    "teleport": {
     "pos": [
      7.7,
@@ -2761,7 +2860,12 @@
    ],
    "generators": [],
    "mesh": "build/zones/307_RazaBar.glb",
-   "roo": "razabar.roo"
+   "roo": "razabar.roo",
+   "world_origin_cm": [
+    600000.0,
+    200000.0,
+    0.0
+   ]
   },
   {
    "rid": 308,
@@ -2779,6 +2883,14 @@
      31.9
     ]
    },
+   "grid_size_roo": [
+    21536,
+    15856
+   ],
+   "grid_size_m": [
+    46.269,
+    34.066
+   ],
    "teleport": {
     "pos": [
      23.1,
@@ -3456,7 +3568,12 @@
    ],
    "generators": [],
    "mesh": "build/zones/308_RazaMuseum.glb",
-   "roo": "razamuseum.roo"
+   "roo": "razamuseum.roo",
+   "world_origin_cm": [
+    0.0,
+    400000.0,
+    0.0
+   ]
   },
   {
    "rid": 330,
@@ -3474,6 +3591,14 @@
      168.231
     ]
    },
+   "grid_size_roo": [
+    73904,
+    43984
+   ],
+   "grid_size_m": [
+    158.778,
+    94.497
+   ],
    "teleport": {
     "pos": [
      80.3,
@@ -4486,7 +4611,12 @@
      91.506
     ],
     "note": "this zone's coords = other zone's coords + offset; place this zone's origin at -offset_m relative to the other to overlay them"
-   }
+   },
+   "world_origin_cm": [
+    -474.375,
+    -9150.625,
+    0.0
+   ]
   },
   {
    "rid": 331,
@@ -4504,6 +4634,14 @@
      118.353
     ]
    },
+   "grid_size_roo": [
+    55200,
+    50688
+   ],
+   "grid_size_m": [
+    118.594,
+    108.9
+   ],
    "teleport": {
     "pos": [
      86.9,
@@ -4539,7 +4677,12 @@
    "objects": [],
    "generators": [],
    "mesh": "build/zones/331_FarolWest.glb",
-   "roo": "farolwest.roo"
+   "roo": "farolwest.roo",
+   "world_origin_cm": [
+    200000.0,
+    400000.0,
+    0.0
+   ]
   },
   {
    "rid": 332,
@@ -4557,6 +4700,14 @@
      17.875
     ]
    },
+   "grid_size_roo": [
+    9344,
+    10048
+   ],
+   "grid_size_m": [
+    20.075,
+    21.588
+   ],
    "teleport": {
     "pos": [
      12.1,
@@ -4659,7 +4810,12 @@
    ],
    "generators": [],
    "mesh": "build/zones/332_RazaVault.glb",
-   "roo": "RazaVault.roo"
+   "roo": "RazaVault.roo",
+   "world_origin_cm": [
+    400000.0,
+    400000.0,
+    0.0
+   ]
   },
   {
    "rid": 333,
@@ -4677,6 +4833,14 @@
      17.875
     ]
    },
+   "grid_size_roo": [
+    13264,
+    11904
+   ],
+   "grid_size_m": [
+    28.497,
+    25.575
+   ],
    "teleport": {
     "pos": [
      12.1,
@@ -4760,7 +4924,12 @@
    ],
    "generators": [],
    "mesh": "build/zones/333_RazaBank.glb",
-   "roo": "RazaBank.roo"
+   "roo": "RazaBank.roo",
+   "world_origin_cm": [
+    600000.0,
+    400000.0,
+    0.0
+   ]
   }
  ]
 }

@@ -1,0 +1,42 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Object.h"
+#include "MRZoneSmokeTest.generated.h"
+
+class APawn;
+
+/**
+ * Server-side end-to-end check of zone travel, run when the server is started with -MRZoneTest.
+ * The first player to spawn is moved onto real exit squares and edges from the original data,
+ * and each step logs PASS/FAIL ("MRZoneTest:" lines), then "MRZoneTest: DONE n/m passed".
+ */
+UCLASS()
+class MERIDIANREMASTERED_API UMRZoneSmokeTest : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	static bool IsRequested();
+	void Start(APawn* InPawn);
+
+private:
+	struct FStep
+	{
+		FString Label;
+		int32 PlaceZone = 0;
+		int32 Row = 0;
+		int32 Col = 0;
+		int32 ExpectZone = 0;
+		bool bNeedsFloor = true;
+	};
+
+	void RunStep();
+	void CheckStep();
+
+	TWeakObjectPtr<APawn> Pawn;
+	TArray<FStep> Steps;
+	int32 Index = 0;
+	int32 Passed = 0;
+	FTimerHandle Timer;
+};

@@ -46,7 +46,8 @@ The target is 100–200 concurrent players. The original code is GPLv2. The orig
 ## Consequences
 - **Engine build:** packaging a standalone dedicated server needs UE built from source. Until then we develop in Play-In-Editor's dedicated-server mode.
 - **Binary assets:** they're harder for AI-assisted editing. We offset this by keeping logic in C++ and data in JSON.
-- **Naming and art:** the project uses the codename **Blakston** until the Server 104 team or rights holders clear the name and the use of the original art. Models derived from the original sprites are placeholders until then.
+- **Naming:** the product is **Meridian Remastered** (UE module `MeridianRemastered`). The Server 104 team approved the "Meridian" name on 2026-10-04, on the condition that "104" is not used in the name or branding.
+- **Art:** models derived from the original sprites are reference-driven remakes. Using the original art as reference wasn't part of the name approval; confirm it with the Server 104 team before a public release.
 
 ## Alternatives considered
 - **Unity 6:** a good fit for text-based assets, but we'd have to assemble the networking, action combat and character stack ourselves.

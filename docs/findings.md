@@ -25,10 +25,10 @@
 - Western Farol (331) also spawns GiantRat and Centipede. It leads east to RID 536 and west to RID 526, both outside the demo.
 - The two quick-start signs carry the original movement and map tutorial text, which is in `data/zones.json`.
 
-## Asset coverage (Steam client plus the repo's `resource/`)
-- **Textures:** 149 of the 150 textures the demo rooms use were extracted. **Missing: grd20232.**
-- **Creature sprites:** all present. Raza uses Server 104's high-resolution `bunny2.bgf` (repo `resource/graphics/keen/bunny`), not the classic bunny.
-- **NPC sprites:** `gamos.bgf` (Gamos the banker) and `bentu.bgf` (Bentu the vault keeper) are missing. Like grd20232, they need the Server 104 client from meridian59.us.
+## Asset coverage
+- **Sources, searched in order:** the Server 104 client, then the Steam classic client, then the repo's `resource/`.
+- **Textures:** all 150 textures the demo rooms use were extracted.
+- **Sprites:** all 6 creatures and all 7 NPCs. Raza uses Server 104's high-resolution `bunny2.bgf`, not the classic bunny.
 - **Sprite layout:** a sprite group is one animation frame. Its indices are the view angles: 8 for most creatures, 6 for the mummy. That gives front, side and back reference images for Meshy.
 
 ## Kod data quality notes
