@@ -57,6 +57,10 @@ struct FMRZoneInfo
 	UPROPERTY(BlueprintReadOnly) float TeleportYaw = 0.f;
 	/** Another zone drawn from the same geometry (e.g. Raza town and its Outskirts), or 0. */
 	UPROPERTY(BlueprintReadOnly) int32 SharesGeometryWith = 0;
+	/** Zone whose streaming level holds this zone's geometry (itself unless it shares). */
+	UPROPERTY(BlueprintReadOnly) int32 GeometryRid = 0;
+	/** Short name of that streaming level, e.g. L_Zone_300 (tools/ue/build_world.py). */
+	UPROPERTY(BlueprintReadOnly) FName LevelName;
 	UPROPERTY(BlueprintReadOnly) TArray<FMRZoneExit> Exits;
 	UPROPERTY(BlueprintReadOnly) TArray<FMREdgeExit> EdgeExits;
 	/** Zones reachable through one exit (tile or edge); the client keeps these preloaded. */
@@ -65,6 +69,8 @@ struct FMRZoneInfo
 	double GridArea() const { return GridSizeRoo.X * GridSizeRoo.Y; }
 };
 
+class ULevelStreaming;
+
 /**
  * Knows every zone's placement and exits, and moves players between zones on the server.
  *
@@ -72,6 +78,14 @@ struct FMRZoneInfo
  * across an edge with an edge exit changes zone. When the destination shares geometry with
  * the current zone (the town and the Outskirts) only the zone ID changes, with no teleport,
  * so walking out of the north gate is seamless.
+ *
+ * Streaming: every zone's geometry is a streaming sublevel of L_World (L_Zone_<rid>).
+ *  - The server loads all of them at startup (authoritative collision, AI, traces).
+ *  - Each client loads its current zone plus every zone one exit away and keeps them visible
+ *    (AMRPlayerController drives this), so taking an exit is a same-frame switch.
+ *  - The server only teleports or spawns a player into a zone the player's client has already
+ *    made visible; otherwise it asks the client to load it and waits (up to a timeout), so a
+ *    player can never land on geometry their client hasn't got.
  */
 UCLASS()
 class MERIDIANREMASTERED_API UMRZoneSubsystem : public UWorldSubsystem
@@ -81,6 +95,30 @@ class MERIDIANREMASTERED_API UMRZoneSubsystem : public UWorldSubsystem
 public:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+
+	// --- streaming
+	/** The streaming level holding a zone's geometry, or null (e.g. a map without zone sublevels). */
+	ULevelStreaming* FindZoneLevel(int32 Rid) const;
+
+	/** True if the zone's geometry is loaded and visible in this world. */
+	bool IsZoneVisibleLocally(int32 Rid) const;
+
+	/**
+	 * Server: true if Controller can be put into the zone right now. For a remote player this
+	 * means its client has reported the zone's level as visible; for anything else, that the
+	 * level is visible on the server.
+	 */
+	bool IsZoneReadyFor(const AController* Controller, int32 Rid) const;
+
+	/** Client: make exactly these zones' levels loaded and visible, unloading the rest. */
+	void SetClientStreamingTarget(const TSet<int32>& ZoneRids);
+
+	/** Server: load every zone level; bBlock waits until they are all in. */
+	void LoadAllZoneLevels(bool bBlock);
+
+	/** How long the server waits for a client to stream a destination before moving it anyway. */
+	static constexpr double StreamWaitTimeoutSeconds = 8.0;
 
 	bool IsLoaded() const { return Zones.Num() > 0; }
 	const FMRZoneInfo* FindZone(int32 Rid) const { return Zones.Find(Rid); }
@@ -116,4 +154,10 @@ private:
 
 	/** Pawns that just teleported don't take another exit until they leave the arrival square. */
 	TMap<TWeakObjectPtr<APawn>, FIntVector> ArrivalSquare;
+
+	/** Pawns waiting for their client to stream a teleport destination: (dest rid, wait start). */
+	TMap<TWeakObjectPtr<APawn>, TPair<int32, double>> PendingTeleport;
+
+	/** LevelName -> streaming level, filled on first lookup. */
+	mutable TMap<FName, TWeakObjectPtr<ULevelStreaming>> LevelCache;
 };

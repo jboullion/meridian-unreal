@@ -7,7 +7,7 @@
 param(
     [string]$Engine = "G:\Unreal Engine\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe",
     [int]$Port = 7777,
-    [int]$TimeoutSeconds = 180
+    [int]$TimeoutSeconds = 240
 )
 
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -39,9 +39,16 @@ while ((Get-Date) -lt $deadline) {
 Stop-Process -Id $cli.Id -Force -ErrorAction SilentlyContinue
 Stop-Process -Id $srv.Id -Force -ErrorAction SilentlyContinue
 
-Select-String -Path $serverLog -Pattern "MRZoneTest|zone \d+ -> \d+|LogMeridian: (Warning|Error)" |
+Select-String -Path $serverLog -Pattern "MRZoneTest|MRStreaming|zone \d+ -> \d+|LogMeridian: (Warning|Error)" |
     ForEach-Object { $_.Line -replace '^\[[^\]]*\]\[[^\]]*\]', '' }
+Write-Host "--- client streaming"
+Select-String -Path $clientLog -Pattern "MRStreaming" | ForEach-Object { $_.Line -replace '^\[[^\]]*\]\[[^\]]*\]', '' }
 Write-Host "server log: $serverLog"
+Write-Host "client log: $clientLog"
+
+# every zone the client entered must already have been streamed in ("ready=1")
+$notReady = Select-String -Path $clientLog -Pattern "entered zone \d+, ready=0"
+if ($notReady) { Write-Host "FAIL: client entered a zone before its level was visible"; exit 1 }
 
 $done = Select-String -Path $serverLog -Pattern "MRZoneTest: DONE (\d+)/(\d+)"
 if ($done -and $done.Matches[0].Groups[1].Value -eq $done.Matches[0].Groups[2].Value) { exit 0 } else { exit 1 }

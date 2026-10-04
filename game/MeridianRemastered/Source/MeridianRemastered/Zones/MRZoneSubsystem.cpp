@@ -2,13 +2,18 @@
 
 #include "Core/MRUnits.h"
 #include "Dom/JsonObject.h"
+#include "Engine/LevelStreaming.h"
+#include "Engine/NetConnection.h"
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerState.h"
 #include "HAL/FileManager.h"
 #include "MeridianRemastered.h"
 #include "Misc/FileHelper.h"
+#include "Misc/PackageName.h"
 #include "Misc/Paths.h"
+#include "Player/MRPlayerController.h"
 #include "Player/MRPlayerState.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -62,6 +67,139 @@ void UMRZoneSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	}
 }
 
+void UMRZoneSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+	Super::OnWorldBeginPlay(InWorld);
+	if (InWorld.GetNetMode() != NM_Client)
+	{
+		// The server (dedicated, listen or standalone) simulates every zone.
+		LoadAllZoneLevels(true);
+	}
+}
+
+// ------------------------------------------------------------------------------ streaming
+
+ULevelStreaming* UMRZoneSubsystem::FindZoneLevel(int32 Rid) const
+{
+	const FMRZoneInfo* Z = Zones.Find(Rid);
+	const UWorld* World = GetWorld();
+	if (!Z || !World)
+	{
+		return nullptr;
+	}
+	if (const TWeakObjectPtr<ULevelStreaming>* Cached = LevelCache.Find(Z->LevelName))
+	{
+		if (Cached->IsValid())
+		{
+			return Cached->Get();
+		}
+	}
+	const FString Wanted = Z->LevelName.ToString();
+	for (ULevelStreaming* Streaming : World->GetStreamingLevels())
+	{
+		if (!Streaming)
+		{
+			continue;
+		}
+		// PIE renames packages (UEDPIE_<n>_L_Zone_300); compare the plain short name
+		const FString Package = UWorld::RemovePIEPrefix(Streaming->GetWorldAssetPackageFName().ToString());
+		if (FPackageName::GetShortName(Package) == Wanted)
+		{
+			LevelCache.Add(Z->LevelName, Streaming);
+			return Streaming;
+		}
+	}
+	return nullptr;
+}
+
+bool UMRZoneSubsystem::IsZoneVisibleLocally(int32 Rid) const
+{
+	const ULevelStreaming* Streaming = FindZoneLevel(Rid);
+	return !Streaming || Streaming->IsLevelVisible(); // no sublevel: geometry lives in the persistent level
+}
+
+bool UMRZoneSubsystem::IsZoneReadyFor(const AController* Controller, int32 Rid) const
+{
+	const ULevelStreaming* Streaming = FindZoneLevel(Rid);
+	if (!Streaming)
+	{
+		return true;
+	}
+	const APlayerController* PC = Cast<APlayerController>(Controller);
+	const UNetConnection* Connection = PC && !PC->IsLocalController() ? PC->GetNetConnection() : nullptr;
+	if (!Connection)
+	{
+		return Streaming->IsLevelVisible();
+	}
+	const ULevel* Level = Streaming->GetLoadedLevel();
+	return Level && Connection->ClientHasInitializedLevel(Level);
+}
+
+void UMRZoneSubsystem::SetClientStreamingTarget(const TSet<int32>& ZoneRids)
+{
+	TSet<FName> Wanted;
+	for (const int32 Rid : ZoneRids)
+	{
+		if (const FMRZoneInfo* Z = Zones.Find(Rid))
+		{
+			Wanted.Add(Z->LevelName);
+		}
+	}
+	TSet<FName> Seen;
+	for (const TPair<int32, FMRZoneInfo>& Pair : Zones)
+	{
+		const FName Name = Pair.Value.LevelName;
+		if (Seen.Contains(Name))
+		{
+			continue;
+		}
+		Seen.Add(Name);
+		if (ULevelStreaming* Streaming = FindZoneLevel(Pair.Key))
+		{
+			const bool bWant = Wanted.Contains(Name);
+			if (Streaming->ShouldBeLoaded() != bWant || Streaming->ShouldBeVisible() != bWant)
+			{
+				UE_LOG(LogMeridian, Log, TEXT("MRStreaming: %s %s"), bWant ? TEXT("load") : TEXT("unload"), *Name.ToString());
+				Streaming->SetShouldBeLoaded(bWant);
+				Streaming->SetShouldBeVisible(bWant);
+			}
+		}
+	}
+}
+
+void UMRZoneSubsystem::LoadAllZoneLevels(bool bBlock)
+{
+	UWorld* World = GetWorld();
+	int32 Count = 0;
+	TSet<FName> Seen;
+	for (const TPair<int32, FMRZoneInfo>& Pair : Zones)
+	{
+		if (Seen.Contains(Pair.Value.LevelName))
+		{
+			continue;
+		}
+		Seen.Add(Pair.Value.LevelName);
+		if (ULevelStreaming* Streaming = FindZoneLevel(Pair.Key))
+		{
+			Streaming->SetShouldBeLoaded(true);
+			Streaming->SetShouldBeVisible(true);
+			++Count;
+		}
+	}
+	if (bBlock && World && Count > 0)
+	{
+		const double Start = FPlatformTime::Seconds();
+		World->FlushLevelStreaming(EFlushLevelStreamingType::Full);
+		UE_LOG(LogMeridian, Log, TEXT("Loaded %d zone levels in %.2f s"), Count, FPlatformTime::Seconds() - Start);
+	}
+	else if (Count == 0)
+	{
+		UE_LOG(LogMeridian, Log, TEXT("No zone streaming levels in this map; zone geometry is in the persistent level"));
+	}
+}
+
+// -------------------------------------------------------------------------------- data
+
 FString UMRZoneSubsystem::GetDataDir()
 {
 	// Packaged / synced copy first, then the repo's data/ folder during development.
@@ -109,6 +247,10 @@ bool UMRZoneSubsystem::LoadData()
 		{
 			Info.SharesGeometryWith = IntField(*Shares, TEXT("rid"));
 		}
+		// The layout records sharing on the zone that reuses another's geometry, so this is the
+		// zone that owns the streaming level (matches build_world.py).
+		Info.GeometryRid = Info.SharesGeometryWith ? Info.SharesGeometryWith : Info.Rid;
+		Info.LevelName = FName(*FString::Printf(TEXT("L_Zone_%d"), Info.GeometryRid));
 
 		if (const TSharedPtr<FJsonObject>* KodPtr = KodZones.Find(Info.Rid))
 		{
@@ -367,6 +509,36 @@ bool UMRZoneSubsystem::TeleportPawn(APawn* Pawn, int32 DestRid, int32 Row, int32
 	if (!Pawn || !Pawn->HasAuthority() || !Zones.Contains(DestRid))
 	{
 		return false;
+	}
+
+	// Don't move a player onto geometry their client hasn't streamed in. Neighbours are always
+	// preloaded, so this normally passes at once; otherwise ask the client and retry on later
+	// zone updates (the pawn is still standing on the exit), giving up after a timeout.
+	AController* Controller = Pawn->GetController();
+	if (Controller && !IsZoneReadyFor(Controller, DestRid))
+	{
+		const double Now = FPlatformTime::Seconds();
+		TPair<int32, double>* Pending = PendingTeleport.Find(Pawn);
+		if (!Pending || Pending->Key != DestRid)
+		{
+			PendingTeleport.Add(Pawn, TPair<int32, double>(DestRid, Now));
+			if (AMRPlayerController* MRPC = Cast<AMRPlayerController>(Controller))
+			{
+				MRPC->ClientPrepareZone(DestRid);
+			}
+			UE_LOG(LogMeridian, Log, TEXT("MRStreaming: waiting for client to stream zone %d before teleport"), DestRid);
+			return false;
+		}
+		if (Now - Pending->Value < StreamWaitTimeoutSeconds)
+		{
+			return false;
+		}
+		UE_LOG(LogMeridian, Warning, TEXT("MRStreaming: client did not stream zone %d within %.0f s; teleporting anyway"),
+			DestRid, StreamWaitTimeoutSeconds);
+	}
+	if (PendingTeleport.Remove(Pawn) > 0)
+	{
+		UE_LOG(LogMeridian, Log, TEXT("MRStreaming: client ready for zone %d"), DestRid);
 	}
 	FVector Dest = GridToWorld(DestRid, Row, Col, true);
 	Dest.Z += Pawn->GetSimpleCollisionHalfHeight() + 2.0;

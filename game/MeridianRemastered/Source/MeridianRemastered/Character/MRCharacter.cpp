@@ -52,6 +52,10 @@ AMRCharacter::AMRCharacter(const FObjectInitializer& ObjectInitializer)
 		PlaceholderBody->SetStaticMesh(Cylinder.Object);
 	}
 
+	// Iris filters replication spatially by this distance. Zones sit 2 km apart, so players in
+	// other zones are never sent; 300 m covers the largest outdoor zone (Raza is ~150 m across).
+	SetNetCullDistanceSquared(FMath::Square(30000.f));
+
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 

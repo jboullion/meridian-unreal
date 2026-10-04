@@ -29,6 +29,10 @@ void UMRZoneSmokeTest::Start(APawn* InPawn)
 		// the forest's north passage crosses the grid edge at columns 33-36
 		{TEXT("north passage off the Outskirts' edge -> Western Farol"), 330, 0, 34, 331},
 		{TEXT("Western Farol south passage -> Outskirts"),                331, 51, 24, 330},
+		{TEXT("into Western Farol again"),                                 330, 0, 34, 331},
+		// After 35 s in Farol the client has dropped the town's buildings (30 s retention), so
+		// this exercises the server asking the client to stream a far zone and waiting for it.
+		{TEXT("server teleport from Farol to the Bank (not a neighbour)"), 333, 5, 2, 333, true, true, 35.f},
 	};
 	Index = 0;
 	Passed = 0;
@@ -46,7 +50,23 @@ void UMRZoneSmokeTest::RunStep()
 		return;
 	}
 	const FStep& S = Steps[Index];
-	if (S.PlaceZone != 0)
+	if (S.bServerTeleport)
+	{
+		if (TeleportStart == 0.0)
+		{
+			TeleportStart = FPlatformTime::Seconds();
+		}
+		if (!Zones->TeleportPawn(P, S.PlaceZone, S.Row, S.Col))
+		{
+			// the server is waiting for the client to stream the destination; try again shortly
+			P->GetWorldTimerManager().SetTimer(Timer, FTimerDelegate::CreateUObject(this, &UMRZoneSmokeTest::RunStep), 0.05f, false);
+			return;
+		}
+		UE_LOG(LogMeridian, Display, TEXT("MRZoneTest:   server teleport completed after %.0f ms"),
+			(FPlatformTime::Seconds() - TeleportStart) * 1000.0);
+		TeleportStart = 0.0;
+	}
+	else if (S.PlaceZone != 0)
 	{
 		FVector Dest = Zones->GridToWorld(S.PlaceZone, S.Row, S.Col, S.bNeedsFloor);
 		if (!S.bNeedsFloor)
@@ -78,14 +98,22 @@ void UMRZoneSmokeTest::CheckStep()
 	// a pawn that fell through the world would be far below its zone
 	const FMRZoneInfo* Info = Zones ? Zones->FindZone(Zone) : nullptr;
 	const bool bGrounded = Info && P->GetActorLocation().Z > Info->Origin.Z - 2000.0;
-	const bool bPass = Zone == S.ExpectZone && bGrounded;
+	// the player's client must have streamed the zone's geometry (reported to the server)
+	const bool bClientHasZone = Zones && Zones->IsZoneReadyFor(P->GetController(), Zone);
+	const bool bPass = Zone == S.ExpectZone && bGrounded && bClientHasZone;
 	Passed += bPass ? 1 : 0;
-	UE_LOG(LogMeridian, Display, TEXT("MRZoneTest: %s  %s  (zone %d, expected %d, square %d,%d, z=%.0f)"),
-		bPass ? TEXT("PASS") : TEXT("FAIL"), *S.Label, Zone, S.ExpectZone, Grid.X, Grid.Y, P->GetActorLocation().Z);
+	UE_LOG(LogMeridian, Display, TEXT("MRZoneTest: %s  %s  (zone %d, expected %d, square %d,%d, z=%.0f, client has level=%d)"),
+		bPass ? TEXT("PASS") : TEXT("FAIL"), *S.Label, Zone, S.ExpectZone, Grid.X, Grid.Y, P->GetActorLocation().Z,
+		bClientHasZone ? 1 : 0);
 
 	if (++Index < Steps.Num())
 	{
-		P->GetWorldTimerManager().SetTimer(Timer, FTimerDelegate::CreateUObject(this, &UMRZoneSmokeTest::RunStep), 0.5f, false);
+		const float Delay = 0.5f + Steps[Index].PreDelay;
+		if (Steps[Index].PreDelay > 0.f)
+		{
+			UE_LOG(LogMeridian, Display, TEXT("MRZoneTest:   waiting %.0f s"), Steps[Index].PreDelay);
+		}
+		P->GetWorldTimerManager().SetTimer(Timer, FTimerDelegate::CreateUObject(this, &UMRZoneSmokeTest::RunStep), Delay, false);
 	}
 	else
 	{

@@ -60,7 +60,7 @@ Rebuild the world level (`/Game/Generated/Maps/L_World`) from the zone blockouts
 "G:/Unreal Engine/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" "E:/2026_Experiments/meridian-unreal/game/MeridianRemastered/MeridianRemastered.uproject" -ExecutePythonScript="E:/2026_Experiments/meridian-unreal/tools/ue/build_world.py" -unattended -nosplash -RenderOffscreen
 ```
 
-Run the network smoke test. It starts a dedicated server and a headless client, walks the player through the demo's exits, and exits 0 if every step passes:
+Run the network smoke test. It starts a dedicated server and a headless client, walks the player through the demo's exits, and exits 0 if every step passes. It takes about 2 minutes, including a 35 s wait that lets the client unload zones before a long-distance teleport:
 
 ```bash
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_zone_test.ps1
@@ -76,10 +76,21 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_zone_test.ps1
 | `Core/MRUnits.h` | Original grid and angle conversions to UE (must match `roo2gltf`) |
 | `Abilities/MRAttributeSet` | GAS attributes: the six stats plus Health, Mana and Vigor |
 | `Character/` | Player character (FP/TP camera, input built in code) and predicted walk/run/sprint movement |
-| `Player/` | Player state (owns the Ability System Component and the zone ID) and controller |
-| `Zones/MRZoneSubsystem` | Zone data, tile and edge exits, seamless shared-geometry zones, teleports |
+| `Player/` | Player state (owns the Ability System Component and the zone ID) and controller (drives client zone streaming) |
+| `Zones/MRZoneSubsystem` | Zone data, tile and edge exits, seamless shared-geometry zones, teleports, zone level streaming |
 | `Game/MRGameMode` | Spawns new characters at the Raza Inn |
 | `Tests/MRZoneSmokeTest` | The `-MRZoneTest` server-side travel test |
+
+### Zone streaming
+
+`L_World` is a persistent level that holds only lighting and sky. Every zone's geometry is its own streaming sublevel, `Generated/Maps/Zones/L_Zone_<rid>`; the town and Outskirts share `L_Zone_300`.
+
+- **Server:** loads every zone at startup.
+- **Client:** keeps its current zone and every zone one exit away loaded and visible, so taking an exit is a same-frame switch. Zones it has just left stay loaded for 30 s.
+- **Spawning and teleports:** the server only spawns or teleports a player into a zone that player's client has reported as visible. Otherwise it asks the client to stream the zone (`ClientPrepareZone`) and waits, up to 8 s.
+- **Relevancy:** Iris's spatial filter does it. Zones sit 2 km apart and characters cull at 300 m, so players in other zones are never replicated.
+
+The client logs `MRStreaming: entered zone N, ready=1|0`. The smoke test fails on any `ready=0`.
 
 The game reads `data/zones.json` and `data/zone_layout.json` directly from the repo during development. A packaged build reads them from `game/MeridianRemastered/Data/`.
 

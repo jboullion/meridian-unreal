@@ -29,6 +29,10 @@ private:
 		int32 Col = 0;
 		int32 ExpectZone = 0;
 		bool bNeedsFloor = true;
+		/** Use UMRZoneSubsystem::TeleportPawn (waits for the client to stream) instead of placing. */
+		bool bServerTeleport = false;
+		/** Seconds to wait before the step (e.g. so the client unloads zones it left). */
+		float PreDelay = 0.f;
 	};
 
 	void RunStep();
@@ -37,6 +41,7 @@ private:
 	TWeakObjectPtr<APawn> Pawn;
 	TArray<FStep> Steps;
 	int32 Index = 0;
+	double TeleportStart = 0.0;
 	int32 Passed = 0;
 	FTimerHandle Timer;
 };
