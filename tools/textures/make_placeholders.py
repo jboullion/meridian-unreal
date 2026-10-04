@@ -8,11 +8,18 @@ For every texture in build/textures/catalog.json it writes, to build/textures_pl
   T_<grd>_D.png   base colour: upscaled (Lanczos, or Real-ESRGAN when --esrgan points at
                   realesrgan-ncnn-vulkan.exe) and resized to power-of-two sides so UE gets mips.
                   The UVs from roo2gltf span one texture repeat, so the stretch doesn't change the mapping.
-  T_<grd>_N.png   tangent-space normal map, DirectX convention (green = down), derived from the base
-                  colour's luminance as a height field (dark cracks/mortar = low). Filters wrap around
-                  the tile edges so tiling textures stay seamless. Blue is a constant: UE stores normal
-                  maps as BC5 and rebuilds Z from X/Y.
-  placeholders.json   per texture: file names, masked (has transparency), roughness, normal strength.
+  T_<grd>_H.png   height (0 = deepest), for normals and Nanite displacement. Two modes:
+                  "luma": blurred luminance (dark cracks = low);
+                  "stones" (masonry: cobble, ashlar, paths): the mortar is found as the minority side of
+                  an Otsu threshold (it is light on some originals and dark on others, so luminance
+                  alone would raise the mortar), and each stone is domed by its distance to the mortar.
+  T_<grd>_N.png   tangent-space normal map, DirectX convention (green = down), from the height. Filters
+                  wrap around the tile edges so tiling textures stay seamless. Blue is a constant: UE
+                  stores normal maps as BC5 and rebuilds Z from X/Y.
+  T_MacroNoise.png    tileable low-frequency noise (R large, G medium, B small blobs) for breaking up
+                      tiling and tinting ground and grass across the world (world-aligned in UE).
+  placeholders.json   per texture: file names, masked (has transparency), roughness, normal strength;
+                      "extras": shared textures (macro noise).
 
 These are throwaway: tools/ue/build_world.py turns them into material instances under
 /Game/Generated, and data/environment/materials.json overrides any slot with a real material.
@@ -26,7 +33,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from PIL import Image, ImageFilter
+from PIL import Image, ImageChops, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "build" / "textures"
@@ -36,13 +43,20 @@ OUT = ROOT / "build" / "textures_placeholder"
 SURFACE_RULES = [
     (r"water", 0.08, 0.15),
     (r"marble", 0.35, 0.6),
-    (r"sign|tapestry|carpet|cloth|clock|picture|stained", 0.8, 0.35),
+    (r"sign|tapestry|carpet|cloth|clock|picture", 0.8, 0.35),
     (r"cage|fence|gate|torch", 0.55, 0.8),
     (r"grass|field|forest|tree", 0.95, 0.7),
     (r"rock|stone|path|brick|flagston|mausoleum|wall", 0.9, 1.0),
     (r"wood|roof|door|floor|cab|shelf|table|bar|chair|barrel", 0.75, 0.8),
 ]
 DEFAULT_SURFACE = (0.85, 0.8)
+# height mode by name; first match wins, default "luma"
+HEIGHT_RULES = [
+    (r"sign|tapestry|carpet|cloth|clock|picture|water|fence|cage|gate|torch|tree|forest", "luma"),
+    (r"stone|rock|cobble|brick|flagston|mausoleum|bldg-h|raz-wall|path", "stones"),
+]
+STONE_RADIUS = 3.5
+DEDITHER = r"grass|field"  # originals de-dithered (median) before upscaling  # dome radius in texels of the original art (typical stone half-width)
 BUMP = 6.0  # height of a black-to-white luminance step, in texels of the original art
 
 
@@ -51,6 +65,82 @@ def surface(name: str) -> tuple[float, float]:
         if re.search(pat, name, re.I):
             return rough, strength
     return DEFAULT_SURFACE
+
+
+def height_mode(name: str) -> str:
+    for pat, mode in HEIGHT_RULES:
+        if re.search(pat, name, re.I):
+            return mode
+    return "luma"
+
+
+def otsu(img: Image.Image) -> int:
+    hist = img.histogram()
+    total = sum(hist)
+    sum_all = sum(i * h for i, h in enumerate(hist))
+    best, best_t, w0, sum0 = -1.0, 128, 0, 0.0
+    for t in range(256):
+        w0 += hist[t]
+        if w0 == 0 or w0 == total:
+            continue
+        sum0 += t * hist[t]
+        m0, m1 = sum0 / w0, (sum_all - sum0) / (total - w0)
+        between = w0 * (total - w0) * (m0 - m1) ** 2
+        if between > best:
+            best, best_t = between, t
+    return best_t
+
+
+def height_map(color: Image.Image, mode: str, texel_scale: float) -> Image.Image:
+    """0..255 height, same size as color, seamless across tile edges."""
+    w, h = color.size
+    blur = max(1.0, texel_scale * 0.6)  # hide the original's dither, keep its shapes
+    radius = STONE_RADIUS * texel_scale
+    pad = int(blur * 3) + 2 + (int(radius * 3) if mode == "stones" else 0)
+    luma = wrap_crop(color.convert("L"), pad).filter(ImageFilter.GaussianBlur(blur))
+    if mode != "stones":
+        return luma.crop((pad, pad, pad + w, pad + h))
+    # stone mask: Otsu split of a smoother copy, mortar = the minority side, specks removed
+    smooth = luma.filter(ImageFilter.GaussianBlur(texel_scale * 0.6))
+    t = otsu(smooth.crop((pad, pad, pad + w, pad + h)))
+    stones = smooth.point(lambda v: 255 if v <= t else 0)
+    if sum(stones.histogram()[255:]) < (stones.width * stones.height) / 2:
+        stones = smooth.point(lambda v: 255 if v > t else 0)
+    k = 2 * max(1, round(texel_scale * 0.5)) + 1
+    stones = stones.filter(ImageFilter.MaxFilter(k)).filter(ImageFilter.MinFilter(k))  # close specks in stones
+    stones = stones.filter(ImageFilter.MinFilter(k)).filter(ImageFilter.MaxFilter(k))  # open specks in mortar
+    # dome: the blurred mask is ~0.5 at a stone's edge and rises towards its middle
+    dome = ImageChops.multiply(stones.filter(ImageFilter.GaussianBlur(radius)), stones)
+    dome = dome.filter(ImageFilter.GaussianBlur(texel_scale * 0.5))  # round the mortar edges
+    lo, hi = dome.getextrema()
+    dome = dome.point(lambda v: round(255 * (v - lo) / max(1, hi - lo)))
+    # a little of the painted surface detail on top
+    return Image.blend(dome, luma, 0.12).crop((pad, pad, pad + w, pad + h))
+
+
+def macro_noise(size: int = 512, seed: int = 59) -> Image.Image:
+    """Tileable value noise: random cells upscaled with wrap-around bicubic, one octave per channel."""
+    import random
+    rng = random.Random(seed)
+    channels = []
+    for cells in (4, 9, 22):
+        small = Image.new("L", (cells, cells))
+        small.putdata([rng.randrange(256) for _ in range(cells * cells)])
+        big = wrap_crop(small, 2).resize(((cells + 4) * size // cells, (cells + 4) * size // cells), Image.Resampling.BICUBIC)
+        off = 2 * size // cells
+        channels.append(big.crop((off, off, off + size, off + size)).filter(ImageFilter.GaussianBlur(size / cells / 6)))
+    return Image.merge("RGB", channels)
+
+
+def _normalise(premul: Image.Image, weight: Image.Image) -> Image.Image:
+    """premultiplied colour / weight, per channel (0 where the weight is 0)."""
+    w = weight.tobytes()
+    out = []
+    for band in premul.split():
+        out.append([min(255, round(c * 255 / a)) if a else 0 for c, a in zip(band.tobytes(), w)])
+    img = Image.new("RGB", premul.size)
+    img.putdata(list(zip(*out)))
+    return img
 
 
 def pow2(n: int) -> int:
@@ -84,12 +174,11 @@ def wrap_crop(img: Image.Image, pad: int) -> Image.Image:
     return big.crop((w - pad, h - pad, 2 * w + pad, 2 * h + pad))
 
 
-def normal_map(color: Image.Image, strength: float, texel_scale: float) -> Image.Image:
-    """Height = blurred luminance; slopes from Sobel; X/Y squashed into [-1, 1] by g/sqrt(1+g^2)."""
-    w, h = color.size
-    blur = max(1.0, texel_scale * 0.6)  # hide the original's dither, keep its shapes
-    pad = int(blur * 3) + 2
-    height = wrap_crop(color.convert("L"), pad).filter(ImageFilter.GaussianBlur(blur))
+def normal_map(height_img: Image.Image, strength: float, texel_scale: float) -> Image.Image:
+    """Slopes of the height map from Sobel; X/Y squashed into [-1, 1] by g/sqrt(1+g^2)."""
+    w, h = height_img.size
+    pad = 2
+    height = wrap_crop(height_img, pad)
     # Sobel on 0..255 heights spans -1020..1020; scale 8 + offset 128 keeps it in a byte.
     # Pillow flips kernels vertically before applying them, so ky is written upside down:
     # both give +slope where height rises to the right / down the image.
@@ -138,31 +227,47 @@ def main():
         if args.esrgan:
             rgb = esrgan_upscale(args.esrgan, src).resize(size, Image.Resampling.LANCZOS)
         else:
-            rgb = orig.convert("RGB").resize(size, Image.Resampling.LANCZOS)
-            rgb = rgb.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=2))
+            src_rgb = orig.convert("RGB")
+            if re.search(DEDITHER, info["name"], re.I):
+                # 64 px grass/field art is mostly dither; upscaled, it reads as coloured noise
+                src_rgb = src_rgb.filter(ImageFilter.MedianFilter(3))
+                rgb = src_rgb.resize(size, Image.Resampling.BICUBIC)
+            else:
+                rgb = src_rgb.resize(size, Image.Resampling.LANCZOS)
+                rgb = rgb.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=2))
         # alpha stays hard-edged (the originals are 1-bit cut-outs)
         alpha = orig.getchannel("A").resize(size, Image.Resampling.BILINEAR).point(lambda a: 255 if a >= 128 else 0)
         masked = bool(info.get("has_transparency"))
         if masked:
-            # bleed colour into cut-out texels so mips and filtering don't pull in the palette's key colour
-            solid = rgb.filter(ImageFilter.MaxFilter(5))
-            rgb = Image.composite(rgb, solid, alpha)
+            # fill cut-out texels with the surrounding opaque colour (alpha-weighted blur), so mips,
+            # filtering and solid rebuilds (zone art merlons) never show the palette's key colour
+            fill = Image.new("RGB", size)
+            for radius in (32, 8, 2):
+                premul = ImageChops.multiply(rgb, Image.merge("RGB", (alpha,) * 3)).filter(ImageFilter.GaussianBlur(radius))
+                weight = alpha.filter(ImageFilter.GaussianBlur(radius))
+                layer = _normalise(premul, weight)
+                fill = Image.composite(layer, fill, weight.point(lambda a: 255 if a > 8 else 0))
+            rgb = Image.composite(rgb, fill, alpha)
         rough, strength = surface(info["name"])
         texel_scale = size[0] / orig.size[0]
-        nrm = normal_map(rgb, strength, texel_scale)
+        mode = height_mode(info["name"])
+        height = height_map(rgb, mode, texel_scale)
+        nrm = normal_map(height, strength, texel_scale)
         if masked:
             # flat normals in the holes so the cut edge doesn't shade as a cliff
             nrm = Image.composite(nrm, Image.new("RGB", size, (128, 128, 255)), alpha)
 
-        d_name, n_name = "T_%s_D.png" % key, "T_%s_N.png" % key
+        d_name, n_name, h_name = "T_%s_D.png" % key, "T_%s_N.png" % key, "T_%s_H.png" % key
         (Image.merge("RGBA", (*rgb.split(), alpha)) if masked else rgb).save(OUT / d_name)
         nrm.save(OUT / n_name)
-        manifest[key] = {"name": info["name"], "d": d_name, "n": n_name, "w": size[0], "h": size[1],
-                         "masked": masked, "roughness": rough, "normal_strength": strength}
-        print("%s %-34s %4dx%-4d %s rough %.2f" % (key, info["name"][:34], size[0], size[1],
-                                                   "masked" if masked else "      ", rough))
+        height.save(OUT / h_name)
+        manifest[key] = {"name": info["name"], "d": d_name, "n": n_name, "height": h_name, "w": size[0], "h": size[1],
+                         "height_mode": mode, "masked": masked, "roughness": rough, "normal_strength": strength}
+        print("%s %-34s %4dx%-4d %s rough %.2f %s" % (key, info["name"][:34], size[0], size[1],
+                                                      "masked" if masked else "      ", rough, mode))
 
-    (OUT / "placeholders.json").write_text(json.dumps({"textures": manifest}, indent=1))
+    macro_noise().save(OUT / "T_MacroNoise.png")
+    (OUT / "placeholders.json").write_text(json.dumps({"textures": manifest, "extras": {"macro": "T_MacroNoise.png"}}, indent=1))
     print("wrote %d placeholder texture sets to %s" % (len(manifest), OUT.relative_to(ROOT)))
 
 

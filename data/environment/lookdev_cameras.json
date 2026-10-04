@@ -1,0 +1,12 @@
+{
+  "_doc": "Fixed look-dev viewpoints for environment art (docs/adr/0003). World UE cm (X east, Y south, Z up); rotation = [pitch, yaw], yaw 0 = east, 90 = south. Rendered by tools/ue/run_lookdev.ps1 (-MRLookDev). Add one from inside the game with the console command: MRBookmark <name>",
+  "cameras": [
+    {"name": "hall_south", "location_cm": [7800, 6020, 200], "rotation": [0.7, -166.0], "fov": 90},
+    {"name": "hall_front", "location_cm": [6150, 4500, 205], "rotation": [10.1, 36.6], "fov": 90},
+    {"name": "hall_corner_close", "location_cm": [5980, 5820, 190], "rotation": [-3.7, -36.1], "fov": 75},
+    {"name": "square_overview", "location_cm": [9900, 5200, 700], "rotation": [-10.5, -146.3], "fov": 90},
+    {"name": "west_street", "location_cm": [4100, 4000, 205], "rotation": [1.2, 180.0], "fov": 90},
+    {"name": "north_gate", "location_cm": [8220, 1700, 205], "rotation": [1.8, -90.0], "fov": 90},
+    {"name": "outskirts", "location_cm": [8220, -600, 205], "rotation": [0.8, -90.0], "fov": 90}
+  ]
+}

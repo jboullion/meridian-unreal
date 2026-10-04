@@ -1,0 +1,38 @@
+{
+  "_doc": "Features painted into original facade textures, in the texture's own pixels (x right, y down from the top-left of build/textures/<grd>.png). tools/blender/build_zone_art.py rebuilds them as geometry wherever a wall uses the texture: openings are cut and recessed (glass/door panel at the back keeps the painted image), frame_px wide surrounds and bands stand proud of the wall, crenels become solid merlons. Check alignment with: python tools/environment/facades.py. Sizes in metres; 'trim' names the texture used for reveals and the stone faces the painting doesn't cover.",
+  "defaults": {
+    "trim": "grd09670",
+    "reveal_depth_m": 0.22,
+    "frame_proud_m": 0.035,
+    "band_proud_m": 0.06,
+    "plinth": {"height_m": 0.42, "proud_m": 0.07},
+    "parapet_thickness_m": 0.32
+  },
+  "textures": {
+    "grd09663": {
+      "name": "raz-bldg-h A wl w/ stainedglss",
+      "openings": [
+        {"kind": "window", "shape": "pointed", "x": [42, 92], "y": [47, 143], "spring": 84, "frame_px": 4, "sill": true},
+        {"kind": "window", "shape": "pointed", "x": [163, 213], "y": [47, 143], "spring": 84, "frame_px": 4, "sill": true}
+      ],
+      "bands": [{"y": [35, 42]}],
+      "plinth": true
+    },
+    "grd09665": {
+      "name": "raz-bldg-h C wall w/door",
+      "openings": [
+        {"kind": "door", "shape": "round", "x": [64, 188], "y": [88, 280], "spring": 137, "frame_px": 31, "reveal_depth_m": 0.32}
+      ],
+      "bands": [{"y": [36, 42]}],
+      "plinth": true
+    },
+    "grd09669": {
+      "name": "raz-bldg-h top of wall large",
+      "crenels": {"x": [[19, 51], [79, 112], [140, 173]], "depth_px": 18, "cap_px": 33}
+    },
+    "grd09668": {
+      "name": "raz_bldg-h F top wall small",
+      "crenels": {"x": [[12, 34], [52, 75], [93, 116]], "depth_px": 12, "cap_px": 22}
+    }
+  }
+}

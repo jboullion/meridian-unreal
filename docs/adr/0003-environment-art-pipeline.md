@@ -16,7 +16,7 @@ The reference shots (`ReferenceImages/`) show the look we're starting from:
 - Low-resolution textures (most are 64–128 px per 2.2 m square, about 30–60 px/m) with lighting painted into them.
 - Sprite trees and props, and a strong, saturated palette (green grass, grey cobble, timber-and-plaster houses, purple night sky).
 
-The target is **low-poly fantasy**. That means chunky, readable shapes and clean stylized materials, plus modern lighting: normal maps, GI, fog, grading and VFX. It does not mean photoreal.
+The target is **mid-poly fantasy that stays faithful to the original** (revised 2026-10-04, was "low-poly fantasy"). The original textures and facades stay the identity of the world. Geometry gets real depth where the originals only painted it: recessed windows, proud trims, solid merlons, grass. Modern lighting comes on top: normal maps, displacement, GI, fog, grading and VFX. The detail level should sit with the MakeHuman characters (ADR 0002). It does not mean photoreal, and it does not mean chunky stylized low-poly either.
 
 ### Constraints that shape the decision
 1. **We may use the original art.** The project lead built the Server 103 and Server 104 websites and works closely with both teams. As of 2026-10-04 we have their permission to use **all original game assets**, on two conditions: the product uses a different name (it's *Meridian Remastered*, with no "104") and it runs on its own server (ADR 0001 §2). Both are already met. Upscaled, retouched or AI-reworked versions of the originals can ship. ADR 0001's "confirm before public release" note is now resolved.
@@ -123,6 +123,49 @@ Every blockout slot is named after its original texture. `data/environment/mater
 | 3 | Remaining Raza buildings, Outskirts cliffs and tree lines, the other demo zones | Demo content complete |
 | 4 | Zone moods, Niagara pass, art-collision switch where it's verified | Final polish |
 
+## Raza look-dev (2026-10-04)
+
+The first pass at making Raza look less flat. These are working tools, not final art; every output is regenerated from the originals plus the text files listed.
+
+### Diagnosis
+The flatness came from four places, in order: zero-thickness walls with every window, trim and merlon painted on; one flat ground plane with a noisy upscaled 64 px grass texture; lighting painted into the textures plus a flat default sky; and the Outskirts' 17 m solid "tree walls".
+
+### What was built
+| Piece | Files | Notes |
+|---|---|---|
+| Look-dev captures | `data/environment/lookdev_cameras.json`, `Tests/MRLookDevTour` (`-MRLookDev`), `tools/ue/run_lookdev.ps1`, `tools/lookdev/compare.py` | Fixed camera bookmarks rendered in a standalone game into `build/lookdev/<label>/`, side-by-side sheets with `compare.py a b`. Console `MRBookmark <name>` logs the current view as a new bookmark. Every change below was judged against these sheets. |
+| Lighting mood | `data/environment/moods.json`, `tools/ue/zone_mood.py` | Sun, sky light, fog and post-process values by actor label; applied by `build_world.py` or on its own (no rebuild). Moods can `inherit`; `MR_MOOD=<name>` tries one without editing `levels`. Still one outdoor mood baked into `L_World`; per-zone runtime blending (`UMRZoneMood`) is later. |
+| Building rebuild ("facade relief") | `data/environment/facades.json`, `data/environment/zone_<rid>.json`, `tools/environment/{blockout,facades}.py`, `tools/blender/build_zone_art.py` | See below. First building: the Hall (`raz-bldg-h`). |
+| Hidden collision | `tools/ue/build_world.py` | A zone with art gets three parts: the full blockout as invisible collision, the blockout minus the rebuilt buildings for rendering, and the art meshes (Nanite, no collision). Both sides pick the rebuilt faces with the same function (`blockout.building_triangles`). |
+| Height maps + displacement | `make_placeholders.py` (`T_<grd>_H`), `M_PlaceholderDisplaced`, `materials.json` `displacement` | See below. |
+| Ground + grass | `materials.json` `ground`/`grass`, `M_Ground`, `M_Grass`, `tools/blender/build_grass_kit.py`, `tools/environment/scatter.py`, `AMRScatterActor` | World-aligned ground material and seeded grass tufts on the original grass floors. |
+
+### Facade relief instead of a modular kit (for Raza)
+Pass 3 above planned a modular kit assembled over each footprint. For a faithful remaster the painted facades are the identity, so the Hall was rebuilt differently, and that is the approach we'll keep for Raza's buildings:
+- `facades.json` records, per original facade texture, where its painted features are, in the texture's own pixels: openings (pointed/round/rect arch, frame width, sill), string-course bands, plinth, crenels. `python tools/environment/facades.py` overlays them on the textures to check the alignment.
+- `build_zone_art.py` (headless Blender) takes every blockout face in a building's region (`zone_<rid>.json`). The outward face of a described facade keeps the original texture and UVs, but painted openings are cut and recessed 22–32 cm behind a stone reveal, with the painted glass/door on the panel at the back. Surrounds and bands stand 3–6 cm proud, a plinth runs along the base, and alpha-cut crenellation strips become solid parapets with real merlons. Everything else (roofs, tower, pilasters) is copied. Because the features are found through the wall's own UV mapping, they land exactly where the painting shows them, mirrored and repeated walls included.
+- The wall's outer surface stays on the blockout plane, so the hidden collision still matches within the few centimetres of trim.
+- Output: `build/environment/zone_<rid>/SM_Z<rid>_<Building>.glb` + `manifest.json` + a `.blend` (art over the remaining blockout) for inspection or hand-editing.
+- Kit pieces are still the plan for things the originals didn't paint at all (props, lamp posts, trees) and for hero pieces that need hand modelling (the clock tower's face, the Inn's timber). Those can be added to the same art meshes or placed beside them.
+
+### Nanite displacement (test)
+- `make_placeholders.py` writes `T_<grd>_H`. Masonry ("stones" mode: cobble, ashlar, paths, the Hall) can't use luminance as height: the Raza cobble has light mortar, so luminance would raise the mortar. Instead the mortar is found as the minority side of an Otsu threshold, cleaned morphologically, and each stone is domed by a blurred mask. The normal maps are now derived from the same height, so the stones read as rounded instead of the mortar reading as ridges.
+- `M_PlaceholderDisplaced` (Material Attributes, because the Python `MaterialProperty` enum has no Displacement pin; `enable_tessellation`; ±2.5 cm at strength 1) is used for zone-art slots only. `materials.json` `displacement` lists the textures that displace and how strongly. `<grd>__glass` and `<grd>__panel` (door leaves) don't.
+- Displacement moves vertices along their normals, so flat-shaded corners would crack open. `build_zone_art.py` cuts the art mesh into a 25 cm grid and writes vertex colour R = 0 on corners, openings and open edges (1 inside flat faces); the material multiplies the displacement by it.
+- Project: `r.Nanite.AllowTessellation=1` (DefaultEngine.ini).
+
+### Texture alignment fix
+Several textures sat slightly wrong: two half clocks on the clock tower, fences drawn as 2.8 m bars, and seams where walls were split. The cause was that `roo2gltf` anchored wall textures at world height 0, restarted them at every wall piece, and ignored the per-side offsets and pegging flags. It now follows the original client's rules (`wall_uvs`, see `docs/findings.md`), and floors tile once per grid square like the client. `facades.json` is in texture pixels, so the rebuilt buildings follow automatically.
+
+### How to run the loop
+```
+python tools/textures/make_placeholders.py                                   # textures, heights, macro noise
+blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 --preview
+blender -b --factory-startup -P tools/blender/build_grass_kit.py
+UnrealEditor-Cmd ... -ExecutePythonScript=tools/ue/build_world.py           # (or zone_mood.py for lighting only)
+powershell -File tools/ue/run_lookdev.ps1 -Label <name> -Compare baseline
+```
+
 ## Options considered
 
 ### Textures
@@ -188,8 +231,15 @@ Landscape gives painting tools and Landscape Grass. But it's a heightfield that 
 
 ## Action items
 
-1. [x] `tools/textures/make_placeholders.py`: tier-0 base colour + DirectX normal maps for all 150 textures (POC).
-2. [ ] Validate `tools/ue/environment_materials.py` in-editor: placeholder MIs on every zone slot and correct normal shading under a moving sun, then rerun the zone smoke test. Do it when no other session is using the editor.
+1. [x] `tools/textures/make_placeholders.py`: tier-0 base colour + DirectX normal maps for all 150 textures (POC). Now also height maps, de-dithered grass, macro noise.
+2. [x] Validate `tools/ue/environment_materials.py` in-editor (look-dev captures, 2026-10-04); material slots are now assigned in one batch (minutes faster).
+2a. [x] Look-dev loop: camera bookmarks, `-MRLookDev`, compare sheets.
+2b. [x] `roo2gltf` wall/floor texture placement matches the original client (offsets, pegging, no-vtile clipping, floor tiling).
+2c. [x] Facade relief for the Hall + hidden-collision split + Nanite displacement test + grass scatter + first Raza mood.
+2d. [ ] Facade descriptions for the rest of Raza's buildings (timber houses `RAZ-BLDG-*`, the Inn, `raz-DEF-*`, the museum); timber beams as proud trims.
+2e. [ ] Decide on displacement after viewing in-game up close (cost on an RTX 3070, the look at grazing angles); then extend `displacement` or drop it.
+2f. [ ] Tune `grd20232` (town wall) stone heights: Otsu splits its mottling, not its mortar.
+2g. [ ] Replace the Outskirts tree-wall cards with real tree lines (they read fine at a distance now that textures are aligned, but are flat up close).
 3. [ ] Tier 1: Real-ESRGAN pass (`make_placeholders.py --esrgan`), plus a before/after contact sheet per texture to pick tier-2 candidates.
 4. [ ] `tools/textures/sample_palette.py`: dominant colours per original texture → tints for the tier-3 masters.
 5. [ ] Author the first 10 masters + `M_Terrain` + `M_Master_Surface` (BaseColor/Normal/ORM, tint, world-aligned option).

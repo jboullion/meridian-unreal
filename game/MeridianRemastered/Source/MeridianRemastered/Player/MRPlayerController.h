@@ -19,6 +19,10 @@ public:
 
 	virtual void PlayerTick(float DeltaTime) override;
 
+	/** Console: log the current view as a data/environment/lookdev_cameras.json entry. */
+	UFUNCTION(Exec)
+	void MRBookmark(const FString& Name);
+
 	/** Server -> owning client: start streaming this zone now (it is about to be needed). */
 	UFUNCTION(Client, Reliable)
 	void ClientPrepareZone(int32 Rid);
@@ -51,4 +55,8 @@ private:
 	/** -MRProfile character cost measurement. */
 	UPROPERTY()
 	TObjectPtr<class UMRProfileTour> ProfileTour;
+
+	/** -MRLookDev environment captures. */
+	UPROPERTY()
+	TObjectPtr<class UMRLookDevTour> LookDevTour;
 };

@@ -1,8 +1,10 @@
 #include "Player/MRPlayerController.h"
 
+#include "Camera/PlayerCameraManager.h"
 #include "Engine/World.h"
 #include "MeridianRemastered.h"
 #include "Player/MRPlayerState.h"
+#include "Tests/MRLookDevTour.h"
 #include "Tests/MRProfileTour.h"
 #include "Tests/MRScreenshotTour.h"
 #include "Zones/MRZoneSubsystem.h"
@@ -37,7 +39,23 @@ void AMRPlayerController::BeginPlay()
 			ProfileTour = NewObject<UMRProfileTour>(this);
 			ProfileTour->Start(this);
 		}
+		else if (UMRLookDevTour::IsRequested())
+		{
+			LookDevTour = NewObject<UMRLookDevTour>(this);
+			LookDevTour->Start(this);
+		}
 	}
+}
+
+void AMRPlayerController::MRBookmark(const FString& Name)
+{
+	FVector Location;
+	FRotator Rotation;
+	GetPlayerViewPoint(Location, Rotation);
+	const float Fov = PlayerCameraManager ? PlayerCameraManager->GetFOVAngle() : 90.f;
+	const FString Entry = UMRLookDevTour::FormatBookmark(Name.IsEmpty() ? TEXT("bookmark") : Name, Location, Rotation, Fov);
+	UE_LOG(LogMeridian, Display, TEXT("MRBookmark: %s"), *Entry);
+	ClientMessage(Entry);
 }
 
 void AMRPlayerController::PlayerTick(float DeltaTime)

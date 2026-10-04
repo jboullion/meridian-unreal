@@ -1,0 +1,99 @@
+{
+  "_doc": "Lighting moods (docs/adr/0003 pass 4). tools/ue/zone_mood.py applies a mood to the lighting actors build_world.py spawns in L_World, by actor label. Each actor block sets `rotation` ([pitch, yaw], directional light only) and properties on its main component; `settings` on GlobalPostProcess sets PostProcessSettings fields and turns their override flags on. Values: numbers, bools, [r,g,b(,a)] for colours/vectors, strings for enums. For now one outdoor mood is baked into L_World (`levels`); per-zone runtime blending (UMRZoneMood) comes later. Exposure is in EV100 (r.DefaultFeature.AutoExposure.ExtendDefaultLuminanceRange); with the sun at ~8 lux the town sits around EV -1..1, so clamping above that blackens the shade.",
+  "levels": {
+    "L_World": "raza_afternoon"
+  },
+  "moods": {
+    "raza_afternoon": {
+      "_doc": "Late-afternoon sun raking across the Hall's long facades from the south-west, warm key against a cooler sky fill, light haze for depth.",
+      "Sun": {
+        "rotation": [
+          -38.0,
+          -55.0
+        ],
+        "intensity": 8.0,
+        "use_temperature": true,
+        "temperature": 4900,
+        "light_source_angle": 1.2,
+        "contact_shadow_length": 0.05,
+        "cast_shadows_on_clouds": true,
+        "volumetric_scattering_intensity": 1.0
+      },
+      "SkyLight": {
+        "intensity": 1.4,
+        "lower_hemisphere_is_black": false,
+        "lower_hemisphere_color": [
+          0.11,
+          0.1,
+          0.08,
+          1.0
+        ]
+      },
+      "HeightFog": {
+        "fog_density": 0.035,
+        "fog_height_falloff": 0.25,
+        "start_distance": 1500,
+        "fog_max_opacity": 0.85,
+        "fog_inscattering_luminance": [
+          0.42,
+          0.48,
+          0.58,
+          1.0
+        ],
+        "directional_inscattering_luminance": [
+          0.55,
+          0.42,
+          0.28,
+          1.0
+        ],
+        "directional_inscattering_exponent": 6.0,
+        "enable_volumetric_fog": true,
+        "volumetric_fog_scattering_distribution": 0.6,
+        "volumetric_fog_extinction_scale": 0.6,
+        "volumetric_fog_distance": 8000
+      },
+      "GlobalPostProcess": {
+        "settings": {
+          "auto_exposure_method": "AEM_HISTOGRAM",
+          "auto_exposure_min_brightness": -3.0,
+          "auto_exposure_max_brightness": 3.0,
+          "auto_exposure_bias": -0.3,
+          "bloom_intensity": 0.45,
+          "bloom_threshold": 1.0,
+          "vignette_intensity": 0.35,
+          "color_saturation": [
+            1.08,
+            1.08,
+            1.08,
+            1.0
+          ],
+          "color_contrast": [
+            1.08,
+            1.08,
+            1.08,
+            1.0
+          ],
+          "color_gain_shadows": [
+            0.95,
+            0.98,
+            1.05,
+            1.0
+          ],
+          "color_gain_highlights": [
+            1.04,
+            1.01,
+            0.96,
+            1.0
+          ],
+          "film_toe": 0.6,
+          "lumen_final_gather_quality": 1.5,
+          "lumen_scene_lighting_quality": 1.5,
+          "lumen_ambient_occlusion_intensity": 1.0,
+          "local_exposure_shadow_contrast_scale": 0.85,
+          "local_exposure_highlight_contrast_scale": 0.85,
+          "sharpen": 0.4
+        }
+      }
+    }
+  }
+}

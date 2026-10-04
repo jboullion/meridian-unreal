@@ -1,4 +1,60 @@
 {
- "_doc": "Original texture id (blockout material slot) -> real material asset. Slots not listed use the generated placeholder MI_<grd> (tools/textures/make_placeholders.py). See docs/adr/0003-environment-art-pipeline.md.",
- "materials": {}
+ "_doc": "Original texture id (blockout material slot) -> real material asset. Slots not listed use the generated placeholder MI_<grd> (tools/textures/make_placeholders.py). Zone-art slots named <grd>__<variant> use <grd>'s material with the parameters of `variants`. See docs/adr/0003-environment-art-pipeline.md.",
+ "materials": {},
+ "variants": {
+  "_doc": "Material parameter overrides for <grd>__<variant> slots (written by tools/blender/build_zone_art.py).",
+  "glass": {
+   "Roughness": 0.18,
+   "NormalStrength": 0.35,
+   "DisplacementStrength": 0.0
+  },
+  "panel": {
+   "DisplacementStrength": 0.0,
+   "NormalStrength": 0.6
+  }
+ },
+ "displacement": {
+  "_doc": "Nanite displacement strength (0..1, full range +-2.5 cm) for zone-art (Nanite) meshes using these textures; unlisted textures don't displace. Heights come from T_<grd>_H (make_placeholders.py).",
+  "grd09663": 1.0,
+  "grd09665": 1.0,
+  "grd09667": 0.8,
+  "grd09670": 0.5,
+  "grd09669": 0.6,
+  "grd09668": 0.6
+ },
+ "ground": {
+  "_doc": "Floors drawn with the world-aligned ground master instead of the blockout UVs: the original texture at two scales blended by macro noise (breaks up tiling), tinted by the macro noise. tile_m = the original repeat size (floors tile once per 2.2 m grid square in the original client, whatever the texture's size).",
+  "grd02306": {
+   "tile_m": 2.2
+  },
+  "grd02301": {
+   "tile_m": 2.2
+  },
+  "grd09603": {
+   "tile_m": 2.2
+  },
+  "grd09604": {
+   "tile_m": 2.2
+  },
+  "grd03811": {
+   "tile_m": 2.2
+  },
+  "grd09629": {
+   "tile_m": 2.2
+  }
+ },
+ "grass": {
+  "_doc": "Grass tuft colours (sRGB), sampled from the original grass texture (grd02306): its middle fifth at the root, a little above its lightest fifth at the tip.",
+  "root": [
+   0.189,
+   0.306,
+   0.151
+  ],
+  "tip": [
+   0.33,
+   0.42,
+   0.22
+  ],
+  "wind": 0.6
+ }
 }

@@ -47,6 +47,14 @@ blender -b --factory-startup -P tools/blender/render_glb.py -- build/zones/300_R
 
 Run `bgf2png` before `roo2gltf` so the blockouts pick up the real texture sizes for UV tiling and for walls that shouldn't tile vertically.
 
+Environment art for the world build (see [ADR 0003](docs/adr/0003-environment-art-pipeline.md), "Raza look-dev"):
+
+```bash
+python tools/textures/make_placeholders.py                                   # textures, normals, heights, macro noise
+blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 # rebuilt buildings (the Hall) -> build/environment/
+blender -b --factory-startup -P tools/blender/build_grass_kit.py              # grass tufts -> build/environment/kit/
+```
+
 ## Game project (`game/MeridianRemastered`)
 
 Requires UE 5.8 (`G:\Unreal Engine\UE_5.8`) and Visual Studio 2022 or 2026 with the C++ game workload.
@@ -68,6 +76,12 @@ Run the network smoke test. It starts a dedicated server and a headless client, 
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_zone_test.ps1
 ```
 
+Environment look-dev: render the camera bookmarks in `data/environment/lookdev_cameras.json` and compare against an earlier label. Change only the lighting with `tools/ue/zone_mood.py` (same command line as `build_world.py`), which skips the full rebuild:
+
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_lookdev.ps1 -Label mytest -Compare baseline
+```
+
 **To play:** open the project in the editor and press Play with Net Mode set to "Play As Client" (2+ players).
 - Move with WASD and the mouse.
 - Shift sprints (drains Vigor), Caps Lock toggles walking, C crouches, Space jumps.
@@ -83,6 +97,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_zone_test.ps1
 | `Game/MRGameMode` | Spawns new characters at the Raza Inn |
 | `Tests/MRZoneSmokeTest` | The `-MRZoneTest` server-side travel test |
 | `Tests/MRScreenshotTour`, `Tests/MRProfileTour` | `-MRScreenshots` visual check and `-MRProfile` character cost measurement |
+| `Tests/MRLookDevTour` | `-MRLookDev` environment captures from fixed cameras; console `MRBookmark <name>` logs a new camera |
+| `Environment/MRScatterActor` | Instanced decoration (grass tufts) placed by the world build |
 
 ### Zone streaming
 
@@ -104,6 +120,11 @@ The game reads `data/zones.json` and `data/zone_layout.json` directly from the r
 - **`tools/roo2gltf/roo2gltf.py`**: turns `.roo` files into glTF blockouts. It builds floors and ceilings from the BSP leaves and Doom-style wall sections, and handles slopes. It also writes the world positions of exits, arrivals, objects and spawn generators.
 - **`tools/bgf2png/bgf2png.py`**: decodes BGF v10 files into PNGs. Sprites become contact sheets (one group per row, view angles in columns); textures are written un-rotated, along with a size catalog.
 - **`tools/blender/render_glb.py`**: renders a preview of any `.glb` in headless Blender.
+- **`tools/blender/build_zone_art.py`**: rebuilds the buildings listed in `data/environment/zone_<rid>.json` as real geometry (recessed windows, proud trims, solid merlons) from the blockout and the painted-feature map in `data/environment/facades.json`.
+- **`tools/blender/build_grass_kit.py`**: grass tuft meshes for the ground scatter.
+- **`tools/environment/`**: shared pure-Python helpers: blockout glb reading and the rebuilt-face selection (`blockout.py`), facade outlines and an alignment check (`facades.py`), and seeded ground scatter (`scatter.py`).
+- **`tools/textures/make_placeholders.py`**: tier-0 textures from the originals: upscaled base colour, normal and height maps (masonry heights from a mortar/stone split), and the macro-variation noise.
+- **`tools/ue/zone_mood.py`**, **`tools/ue/run_lookdev.ps1`**, **`tools/lookdev/compare.py`**: lighting moods from `data/environment/moods.json`, and the look-dev capture and comparison loop.
 - **`tools/blender/install_mpfb_packs.py`**: installs MakeHuman asset packs (zips) into Blender's MPFB extension.
 - **`tools/blender/mpfb_character.py`**: builds a MakeHuman character kit on the UE5 mannequin skeleton: one body mesh with head-slider morph targets, hairstyles, textures and a manifest. Settings live in `tools/blender/characters/*.json`.
 - **`tools/blender/preview_character.py`**: renders a kit with random head sliders.

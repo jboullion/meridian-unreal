@@ -8,6 +8,12 @@
   - The original max step height is 24 Kod units ≈ 0.8 m. The remaster will use a normal ~45 cm step and ramps instead.
   - Resulting sizes: Raza town's walled area is roughly 145 × 76 m; the Inn is 23 × 18 m.
 - **Texture size.** One texel = 1/shrink Kod units (`d3drender.c` wall UVs), so a texture covers `pixels / shrink / 64` squares. Wall textures are stored transposed (`makebgf -r`).
+- **Wall texture placement** (`D3DRenderWallExtract`, mirrored in `roo2gltf.wall_uvs`):
+  - Each side measures horizontally from its own start vertex (x0 for the pos side, x1 for the neg side) plus that side's x offset. `WF_BACKWARDS` mirrors it. BSP-split wall pieces carry offsets that continue the texture across the split.
+  - Vertically, normal and below sections are anchored bottom-up (the texture's bottom row on the section's bottom edge) unless `WF_NORMAL_TOPDOWN` / `WF_BELOW_TOPDOWN`. Above sections are top-down unless `WF_ABOVE_BOTTOMUP`. The y offset shifts the texture from there, and sloped edges anchor to the enclosing whole grid square.
+  - Wall x/y offsets and sector offsets are signed 16-bit Kod fine units (16 ROO units).
+  - `WF_NO_VTILE` textures are drawn once and clipped where the texture runs out. Raza's iron fences use a y offset of 60 so only the spiked top shows, as railings about 0.7 m tall.
+- **Floor and ceiling textures tile once per grid square** (2.2 m) whatever their pixel size, shifted by the sector's texture offset (`D3DRenderFloorExtract`). The 512 px Raza path textures are therefore denser than their shrink value suggests.
 
 ## Raza town and the Outskirts are one map
 - `raza.roo` (RID 300) and `razaforest.roo` (RID 330) hold the **same geometry**. The forest file's coordinates are the town's plus (2208, 42592) ROO units, which is about (4.7 m, 91.5 m).

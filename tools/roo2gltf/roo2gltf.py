@@ -39,8 +39,11 @@ HEIGHT_TO_ROO = 16.0
 M_PER_SQUARE = 2.2
 M_PER_ROO = M_PER_SQUARE / ROO_PER_SQUARE
 
+WF_BACKWARDS = 0x1
 WF_TRANSPARENT = 0x2
 WF_PASSABLE = 0x4
+WF_ABOVE_BOTTOMUP = 0x40
+WF_BELOW_TOPDOWN = 0x80
 WF_NORMAL_TOPDOWN = 0x100
 WF_NO_VTILE = 0x200
 
@@ -56,6 +59,65 @@ if _TEX_CATALOG.exists():
 def tex_repeat(t: int) -> tuple[float, float]:
     """(width, height) in ROO units covered by one repeat of texture t."""
     return TEX_SIZES.get(tex_key(t), (ROO_PER_SQUARE, ROO_PER_SQUARE))
+
+
+def signed16(v: int) -> int:
+    return v - 0x10000 if v >= 0x8000 else v
+
+
+def wall_uvs(tex: int, sd, section: str, side: int, w, length: float, b0, t0, b1, t1):
+    """Wall texture coordinates as the original client computes them (clientd3d/d3drender.c,
+    D3DRenderWallExtract). Returns ((b0, t0, b1, t1), (uv_b0, uv_t0, uv_b1, uv_t1)) for the
+    corners (x0, b0), (x0, t0), (x1, b1), (x1, t1); the heights change only when a
+    WF_NO_VTILE texture is clipped to one repeat.
+
+    - Horizontal: the drawing side's start vertex (x0 for the pos side, x1 for the neg side)
+      plus that side's x offset; WF_BACKWARDS mirrors it. (Restarting at 0 on every wall piece
+      broke textures across BSP splits.)
+    - Vertical: anchored to the section's own bottom (texture bottom row on the wall's bottom
+      edge) or top (texture top row on the top edge) plus the y offset, not to world height 0.
+      Normal and below sections are bottom-up unless WF_NORMAL_TOPDOWN / WF_BELOW_TOPDOWN;
+      above sections are top-down unless WF_ABOVE_BOTTOMUP. Sloped edges anchor to the
+      enclosing whole grid square, like the client.
+    - Offsets are in Kod fine units (16 ROO units), signed 16-bit."""
+    rw, rh = tex_repeat(tex)
+    flags = sd.flags if sd else 0
+    xoff = signed16(w.pos_xoff if side > 0 else w.neg_xoff) * HEIGHT_TO_ROO
+    yoff = signed16(w.pos_yoff if side > 0 else w.neg_yoff) * HEIGHT_TO_ROO
+    start, end = xoff / rw, (xoff + length) / rw
+    if flags & WF_BACKWARDS:
+        start, end = end, start
+    u_x0, u_x1 = (start, end) if side > 0 else (end, start)
+
+    if section == "normal":
+        topdown = bool(flags & WF_NORMAL_TOPDOWN)
+    elif section == "below":
+        topdown = bool(flags & WF_BELOW_TOPDOWN)
+    else:
+        topdown = not flags & WF_ABOVE_BOTTOMUP
+    if topdown:
+        top = t0 if t0 == t1 else math.ceil(max(t0, t1) / ROO_PER_SQUARE) * ROO_PER_SQUARE
+
+        def v(z):
+            return (top - z - yoff) / rh
+    else:
+        bottom = b0 if b0 == b1 else math.floor(min(b0, b1) / ROO_PER_SQUARE) * ROO_PER_SQUARE
+
+        def v(z):
+            return 1.0 - (yoff + z - bottom) / rh
+
+    if section == "normal" and flags & WF_NO_VTILE:
+        # drawn once: keep the part of the wall where 0 <= v <= 1 (fences, railings, hedges)
+        def clip(b, t):
+            vb, vt = v(b), v(t)  # v falls as z rises
+            if vt < 0:
+                t = b + (t - b) * (vb - 0.0) / (vb - vt) if vb != vt else b
+            if vb > 1:
+                b = t - (t - b) * (1.0 - v(t)) / (vb - v(t)) if vb != v(t) else t
+            return b, t
+        b0, t0 = clip(b0, t0)
+        b1, t1 = clip(b1, t1)
+    return (b0, t0, b1, t1), ((u_x0, v(b0)), (u_x0, v(t0)), (u_x1, v(b1)), (u_x1, v(t1)))
 
 
 def grid_to_roo(row: int, col: int, fine_row: int = 0, fine_col: int = 0) -> tuple[float, float]:
@@ -157,8 +219,10 @@ def build_room_mesh(room: Room) -> MeshBuilder:
         # glTF normal must point up for floors.  In ROO space (x east, y south), the
         # gltf mapping (x, h, y) keeps handedness; decide winding by the computed normal.
         floor = [(x, y, H.floor(node.sector, x, y)) for x, y in pts]
-        fw, fh = tex_repeat(s.floor_type)
-        uvs = [(x / fw, y / fh) for x, y in pts]
+        # The original client tiles every floor and ceiling texture once per grid square,
+        # whatever its size, shifted by the sector's texture offset (Kod fine units).
+        tx, ty = signed16(s.xoffset) * HEIGHT_TO_ROO, signed16(s.yoffset) * HEIGHT_TO_ROO
+        uvs = [((x - tx) / ROO_PER_SQUARE, (y - ty) / ROO_PER_SQUARE) for x, y in pts]
         g = [to_gltf(p) for p in floor]
         n = newell_normal(g)
         if n and n[1] < 0:
@@ -167,8 +231,7 @@ def build_room_mesh(room: Room) -> MeshBuilder:
 
         if s.ceiling_type:  # 0 = open sky
             ceil = [(x, y, H.ceil(node.sector, x, y)) for x, y in pts]
-            cw, chh = tex_repeat(s.ceiling_type)
-            cuv = [(x / cw, y / chh) for x, y in pts]
+            cuv = [((x - tx) / ROO_PER_SQUARE, (y - ty) / ROO_PER_SQUARE) for x, y in pts]
             n = newell_normal([to_gltf(p) for p in ceil])
             if n and n[1] > 0:
                 ceil, cuv = ceil[::-1], cuv[::-1]
@@ -187,25 +250,26 @@ def build_room_mesh(room: Room) -> MeshBuilder:
         sd_pos = room.sidedefs[w.pos_sidedef - 1] if w.pos_sidedef else None
         sd_neg = room.sidedefs[w.neg_sidedef - 1] if w.neg_sidedef else None
         P, N = w.pos_sector, w.neg_sector
-        def emit(tex, b0, t0, b1, t1, double=True):
+        def emit(tex, b0, t0, b1, t1, sd, section, side, double=True):
             if t0 - b0 < 1 and t1 - b1 < 1:
                 return
             t0, t1 = max(t0, b0), max(t1, b1)
-            rw, rh = tex_repeat(tex)
-            u1 = length / rw
+            (b0, t0, b1, t1), (ub0, ut0, ub1, ut1) = wall_uvs(tex, sd, section, side, w, length, b0, t0, b1, t1)
+            if t0 - b0 < 1 and t1 - b1 < 1:
+                return
             mb.quad(tex_key(tex),
                     (w.x0, w.y0, b0), (w.x1, w.y1, b1), (w.x1, w.y1, t1), (w.x0, w.y0, t0),
-                    (0, -b0 / rh), (u1, -b1 / rh), (u1, -t1 / rh), (0, -t0 / rh), double=double)
+                    ub0, ub1, ut1, ut0, double=double)
 
         if not P and not N:
             continue
         if not P or not N:  # one-sided: solid wall
-            S, sd = (P, sd_pos) if P else (N, sd_neg)
+            S, sd, side = (P, sd_pos, 1) if P else (N, sd_neg, -1)
             if sd is None:
                 sd = sd_pos or sd_neg
             emit(sd.type_normal if sd else 0,
                  H.floor(S, w.x0, w.y0), H.ceil(S, w.x0, w.y0),
-                 H.floor(S, w.x1, w.y1), H.ceil(S, w.x1, w.y1))
+                 H.floor(S, w.x1, w.y1), H.ceil(S, w.x1, w.y1), sd, "normal", side)
             continue
 
         fP0, fP1 = H.floor(P, w.x0, w.y0), H.floor(P, w.x1, w.y1)
@@ -218,28 +282,22 @@ def build_room_mesh(room: Room) -> MeshBuilder:
         lowP = (fP0 + fP1) <= (fN0 + fN1)
         sd_low = sd_pos if lowP else sd_neg
         emit(sd_low.type_below if sd_low else 0,
-             min(fP0, fN0), max(fP0, fN0), min(fP1, fN1), max(fP1, fN1))
+             min(fP0, fN0), max(fP0, fN0), min(fP1, fN1), max(fP1, fN1), sd_low, "below", 1 if lowP else -1)
 
         # upper section (skipped between two open-sky sectors)
         if not sky:
             highP = (cP0 + cP1) >= (cN0 + cN1)
             sd_up = sd_pos if highP else sd_neg
             emit(sd_up.type_above if sd_up else 0,
-                 min(cP0, cN0), max(cP0, cN0), min(cP1, cN1), max(cP1, cN1))
+                 min(cP0, cN0), max(cP0, cN0), min(cP1, cN1), max(cP1, cN1), sd_up, "above", 1 if highP else -1)
 
         # middle (fences, windows, railings): only where a normal texture is set
-        for sd in (sd_pos, sd_neg):
+        for sd, side in ((sd_pos, 1), (sd_neg, -1)):
             if sd and sd.type_normal:
                 b0, t0 = max(fP0, fN0), min(cP0, cN0)
                 b1, t1 = max(fP1, fN1), min(cP1, cN1)
-                if sd.flags & WF_NO_VTILE:
-                    # drawn once, one texture tall (fences, hedges, railings)
-                    th = tex_repeat(sd.type_normal)[1]
-                    if sd.flags & WF_NORMAL_TOPDOWN and not sky:
-                        b0, b1 = max(b0, t0 - th), max(b1, t1 - th)
-                    else:
-                        t0, t1 = min(t0, b0 + th), min(t1, b1 + th)
-                emit(sd.type_normal, b0, t0, b1, t1)
+                # WF_NO_VTILE (fences, hedges, railings) is clipped to one repeat in wall_uvs
+                emit(sd.type_normal, b0, t0, b1, t1, sd, "normal", side)
                 break
     return mb
 
