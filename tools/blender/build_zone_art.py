@@ -9,7 +9,8 @@ data/environment/facades.json. Runs in headless Blender:
 cut into the displacement grid), for judging what height maps alone do (tools/lookdev/ai_maps_test.ps1).
 
 zone_<rid>.json "rebuild" picks what is rebuilt (default all): "facades" (walls described in
-facades.json: openings, trims, plinths, window panes, timber relief), "roofs" (thickness and
+facades.json: openings, trims, plinths, window panes, timber relief), "plain_facades" (only the
+facades.json walls without painted windows or doors: their bands, piers and plinth), "roofs" (thickness and
 overhangs), "parapets" (crenellation strips as solid merlons; without it they are cut-out solids),
 "cutouts" (fences, gates, signs as solids). Anything not rebuilt is the original geometry.
 materials.json "relief" "displacement": false leaves out the displacement grid.
@@ -529,32 +530,36 @@ def open_chain(outline):
     return path
 
 
-def add_box(out, wall, s0, s1, t0, t1, d0, d1, mat, front_uv=True, shift=0.0):
+def add_box(out, wall, s0, s1, t0, t1, d0, d1, mat, front_uv=True, shift=0.0, ends=(True, True), mitre=(0.0, 0.0)):
     """Axis-aligned box in wall space. Front (+d) shows the facade texture through the wall's UVs
     (sampled `shift` metres along the wall); the other faces use the same mapping with depth folded
     into s or t. Cut at the seams between texture maps (joined mirrored walls); only the outer ends
-    get end faces."""
+    get end faces, and only where `ends` (s0 end, s1 end) asks for them. mitre: how much shorter the
+    box is at d0 than at d1 at the s0 / s1 end (a mitred corner; that end gets no end face)."""
     cuts = [s0] + [c for c in wall.seams if s0 + 1e-4 < c < s1 - 1e-4] + [s1]
     for a, b in zip(cuts, cuts[1:]):
-        _box(out, wall, a, b, t0, t1, d0, d1, mat, left=a == s0, right=b == s1, shift=shift)
+        ml, mr = (mitre[0] if a == s0 else 0.0), (mitre[1] if b == s1 else 0.0)
+        _box(out, wall, a, b, t0, t1, d0, d1, mat, left=a == s0 and ends[0] and not ml,
+             right=b == s1 and ends[1] and not mr, shift=shift, mitre=(ml, mr))
 
 
-def _box(out, wall, s0, s1, t0, t1, d0, d1, mat, left=True, right=True, shift=0.0):
+def _box(out, wall, s0, s1, t0, t1, d0, d1, mat, left=True, right=True, shift=0.0, mitre=(0.0, 0.0)):
     at = (s0 + s1) / 2 + shift
+    b0, b1 = s0 + mitre[0], s1 - mitre[1]  # the ends at d0
 
     def uv(st):
         return wall.uv((st[0] + shift, st[1]), at)
     faces = [
         # (corner (s, t, d) list, wanted normal, uv function of (s, t, d))
         ([(s0, t0, d1), (s1, t0, d1), (s1, t1, d1), (s0, t1, d1)], wall.n, lambda s, t, d: uv((s, t))),
-        ([(s0, t0, d0), (s0, t1, d0), (s1, t1, d0), (s1, t0, d0)], -wall.n, lambda s, t, d: uv((s, t))),
-        ([(s0, t1, d0), (s0, t1, d1), (s1, t1, d1), (s1, t1, d0)], UP, lambda s, t, d: uv((s, t + d - d1))),
-        ([(s0, t0, d0), (s1, t0, d0), (s1, t0, d1), (s0, t0, d1)], -UP, lambda s, t, d: uv((s, t - d + d1))),
+        ([(b0, t0, d0), (b0, t1, d0), (b1, t1, d0), (b1, t0, d0)], -wall.n, lambda s, t, d: uv((s, t))),
+        ([(b0, t1, d0), (s0, t1, d1), (s1, t1, d1), (b1, t1, d0)], UP, lambda s, t, d: uv((s, t + d - d1))),
+        ([(b0, t0, d0), (b1, t0, d0), (s1, t0, d1), (s0, t0, d1)], -UP, lambda s, t, d: uv((s, t - d + d1))),
     ]
     if right:
-        faces.append(([(s1, t0, d0), (s1, t1, d0), (s1, t1, d1), (s1, t0, d1)], wall.r, lambda s, t, d: uv((s + d - d1, t))))
+        faces.append(([(b1, t0, d0), (b1, t1, d0), (s1, t1, d1), (s1, t0, d1)], wall.r, lambda s, t, d: uv((s + d - d1, t))))
     if left:
-        faces.append(([(s0, t0, d0), (s0, t0, d1), (s0, t1, d1), (s0, t1, d0)], -wall.r, lambda s, t, d: uv((s - d + d1, t))))
+        faces.append(([(b0, t0, d0), (s0, t0, d1), (s0, t1, d1), (b0, t1, d0)], -wall.r, lambda s, t, d: uv((s - d + d1, t))))
     for corners, want, uvf in faces:
         out.poly([wall.p3(s, t, d) for s, t, d in corners], [uvf(s, t, d) for s, t, d in corners], mat, want)
 
@@ -615,10 +620,44 @@ def why_outside(wall, pts, door, tol=0.01):
     return "; ".join(why) or "outside the wall"
 
 
-def build_facade_wall(out, wall, desc, defaults, catalog):
+def wall_continues(wall, polys, rebuilt=lambda q: False, tol=0.02):
+    """(s0 end, s1 end): should bands and the plinth stop at that end instead of wrapping round it?
+    They stop where another wall carries on in the same plane, and at an outside corner with another
+    rebuilt facade wall (`rebuilt(poly)`) whose bands wrap round it instead (the wall with the
+    smaller normal wraps), so two never overlap there."""
+    flat_n = Vector((wall.n.x, wall.n.z))
+    out = []
+    for s in (wall.s0, wall.s1):
+        found = False
+        for q in polys:
+            if q is wall.poly or not q.vertical:
+                continue
+            qn = Vector((q.normal.x, 0.0, q.normal.z)).normalized()
+            ss = [wall.r.dot(Vector((v.x, 0.0, v.z)) - wall.o) for v in q.pts]
+            ds = [wall.n.dot(Vector((v.x, 0.0, v.z)) - wall.o) for v in q.pts]
+            touches = any(abs(x - s) < tol and abs(y) < tol for x, y in zip(ss, ds))
+            if not touches:
+                continue
+            if qn.dot(wall.n) > 0.999 and max(abs(x) for x in ds) <= tol:
+                beyond = min(ss) < wall.s0 - 0.05 if s == wall.s0 else max(ss) > wall.s1 + 0.05
+                if beyond:  # the wall carries on in this plane
+                    found = True
+                    break
+            elif abs(qn.dot(wall.n)) < 0.3 and max(ds) <= tol and min(ds) < -0.05 and rebuilt(q):
+                # outside corner with another rebuilt facade: one of the two wraps round it
+                if (round(qn.x, 3), round(qn.z, 3)) < (round(flat_n.x, 3), round(flat_n.y, 3)):
+                    found = True
+                    break
+        out.append(found)
+    return tuple(out)
+
+
+def build_facade_wall(out, wall, desc, defaults, catalog, continues=(False, False)):
     """Facade wall with recessed openings, proud surrounds, bands and a plinth. With facades.json
     defaults "cut_openings": false nothing is recessed (depth comes from the height map): windows
-    become flush panes in a glossy "<grd>__pane" slot, and doors only interrupt the plinth."""
+    become flush panes in a glossy "<grd>__pane" slot, and doors only interrupt the plinth.
+    continues (wall_continues): ends where the wall carries on in the same plane, so bands and the
+    plinth stop there rather than wrapping round a corner."""
     mat = wall.poly.material
     trim = desc.get("trim", defaults["trim"])
     trim_uv = trim_uv_fn(catalog[trim])
@@ -740,12 +779,13 @@ def build_facade_wall(out, wall, desc, defaults, catalog):
             if lo < wall.t0 - 0.01 or hi > wall.t1 + 0.01:
                 continue
             done.add(kv)
-            add_box(out, wall, wall.s0 - band_proud, wall.s1 + band_proud, lo, hi, 0.0, band_proud, mat)
+            add_box(out, wall, wall.s0 - (0.0 if continues[0] else band_proud),
+                    wall.s1 + (0.0 if continues[1] else band_proud), lo, hi, 0.0, band_proud, mat)
 
     # plinth, interrupted by doors
     if desc.get("plinth"):
         pl = defaults["plinth"]
-        spans = [(wall.s0 - pl["proud_m"], wall.s1 + pl["proud_m"])]
+        spans = [(wall.s0 - (0.0 if continues[0] else pl["proud_m"]), wall.s1 + (0.0 if continues[1] else pl["proud_m"]))]
         for inner, outer in notches + gaps:
             edge = outer or inner
             a, b = min(p.x for p in edge), max(p.x for p in edge)
@@ -757,10 +797,94 @@ def build_facade_wall(out, wall, desc, defaults, catalog):
 PARAPET_CORNER_M = 0.25  # solid merlon width kept at each end of a parapet (besides its thickness)
 
 
-def build_parapet(out, wall, desc, defaults):
-    """Alpha-cut crenellation strip -> solid parapet with merlons, built inward from the wall plane."""
+def parapet_thickness(desc, defaults):
+    return desc.get("parapet_thickness_m", defaults["parapet_thickness_m"])
+
+
+def parapet_corner_trims(parapets, others=(), tol=0.03):
+    """At an outside corner two parapets overlap in a T x T column, and the end face of one lies on
+    the outer face of the other: they z-fight. -> {index: [trim at s0, trim at s1]}: metres to take
+    off a parapet's end so it stops at the other's inner face (that end then gets no end face; the
+    other parapet's end face, which carries its texture round the corner, closes it).
+
+    parapets: [(Wall, T)]. At a corner where both parapets end, the one whose height range lies
+    inside the other's is trimmed (the lower index when they match); where one ends against the
+    middle of the other, that one is trimmed if the other covers its height.
+
+    others: the building's other vertical polygons. A parapet end whose end face would lie on one of
+    them facing the same way (a parapet running into a tower) gets no end face either (trim 0 and
+    the end listed in the second result).
+
+    Oblique outside corners (walls meeting at well under 90 degrees of turn) are mitred instead:
+    -> mitres {index: [inner-face shortening at s0, at s1]}. Returns (trims, capless, mitres)."""
+    def flat(v):
+        return Vector((v.x, v.z))
+
+    ends = []  # (index, end 0/1, corner point, unit direction into the parapet)
+    for i, (w, _) in enumerate(parapets):
+        a, b = flat(w.p3(w.s0, 0.0)), flat(w.p3(w.s1, 0.0))
+        if (b - a).length > 1e-3:
+            ends += [(i, 0, a, (b - a).normalized()), (i, 1, b, (a - b).normalized())]
+    trims, mitres = {}, {}
+    for i, e, p, u in ends:
+        wi, ti = parapets[i]
+        for j, (wj, tj) in enumerate(parapets):
+            if j == i:
+                continue
+            a, b = flat(wj.p3(wj.s0, 0.0)), flat(wj.p3(wj.s1, 0.0))
+            ab = b - a
+            k = max(0.0, min(1.0, (p - a).dot(ab) / max(ab.length_squared, 1e-9)))
+            if (a + ab * k - p).length > tol:
+                continue
+            if 0.05 < u.dot(-flat(wj.n)) < 0.7:
+                # oblique outside corner: where both end here at the same height, mitre both (each
+                # parapet's inner face stops where the two inner faces cross)
+                uj = next((u2 for j2, _, p2, u2 in ends if j2 == j and (p2 - p).length <= tol), None)
+                if uj is not None and abs(wi.t0 - wj.t0) < 0.02 and abs(wi.t1 - wj.t1) < 0.02:
+                    a1, a2 = p - flat(wi.n) * ti, p - flat(wj.n) * tj
+                    den = u.x * uj.y - u.y * uj.x
+                    x = ((a2 - a1).x * uj.y - (a2 - a1).y * uj.x) / den if abs(den) > 1e-6 else 0.0
+                    if 0.0 < x < ti + tj:
+                        mitres.setdefault(i, [0.0, 0.0])[e] = x
+                continue
+            if u.dot(-flat(wj.n)) < 0.7:
+                continue  # i doesn't end on j's outer face, running into j
+            inside_j = wj.t0 - 0.02 <= wi.t0 and wi.t1 <= wj.t1 + 0.02
+            inside_i = wi.t0 - 0.02 <= wj.t0 and wj.t1 <= wi.t1 + 0.02
+            both_end = any(j2 == j and (p2 - p).length <= tol and u2.dot(-flat(wi.n)) >= 0.7
+                           for j2, _, p2, u2 in ends)
+            trim_i = (i < j if inside_i else True) if both_end and inside_j else inside_j
+            if trim_i:  # else j is trimmed instead (or the heights don't let either be)
+                trims.setdefault(i, [0.0, 0.0])[e] = tj
+    capless = {}
+    for i, e, p, u in ends:
+        wi, ti = parapets[i]
+        c = p - flat(wi.n) * (ti / 2)  # middle of the end face, which faces -u
+        for poly in others:
+            n2 = flat(poly.normal)
+            if n2.length < 0.5 or n2.normalized().dot(-u) < 0.99:
+                continue
+            n2 = n2.normalized()
+            if abs(n2.dot(c - flat(poly.pts[0]))) > 0.02:
+                continue
+            h = Vector((-n2.y, n2.x))
+            hs = [h.dot(flat(q)) for q in poly.pts]
+            ys = [q.y for q in poly.pts]
+            if min(hs) - tol <= h.dot(c) <= max(hs) + tol and min(ys) < wi.t1 - 0.02 and max(ys) > wi.t0 + 0.02:
+                capless.setdefault(i, set()).add(e)
+                break
+    return trims, capless, mitres
+
+
+def build_parapet(out, wall, desc, defaults, trim=(0.0, 0.0), no_cap=(), mitre=(0.0, 0.0)):
+    """Alpha-cut crenellation strip -> solid parapet with merlons, built inward from the wall plane.
+    trim: metres taken off the s0 / s1 end where another parapet's corner covers it; no_cap: ends
+    (0 = s0, 1 = s1) without an end face; mitre: inner-face shortening at an oblique corner
+    (parapet_corner_trims)."""
     cren = desc["crenels"]
-    T = desc.get("parapet_thickness_m", defaults["parapet_thickness_m"])
+    T = parapet_thickness(desc, defaults)
+    s_lo, s_hi = wall.s0 + trim[0], wall.s1 - trim[1]
+    ends = (trim[0] == 0.0 and 0 not in no_cap, trim[1] == 0.0 and 1 not in no_cap)
     mat = wall.poly.material + "__solid"  # the cut-out original rebuilt as solid stone
     cut_t = None
     gaps = []
@@ -775,9 +899,9 @@ def build_parapet(out, wall, desc, defaults):
             b = wall.st_of_px((x1 + 1, 0), ku, kv).x
             gaps.append((min(a, b), max(a, b)))
     if cut_t is None:
-        add_box(out, wall, wall.s0, wall.s1, wall.t0, wall.t1, -T, 0.0, mat)
+        add_box(out, wall, s_lo, s_hi, wall.t0, wall.t1, -T, 0.0, mat, ends=ends, mitre=mitre)
         return
-    add_box(out, wall, wall.s0, wall.s1, wall.t0, cut_t, -T, 0.0, mat)
+    add_box(out, wall, s_lo, s_hi, wall.t0, cut_t, -T, 0.0, mat, ends=ends, mitre=mitre)
     # solid stone for the parapet's thickness (plus a merlon's worth) at both ends, so two parapets
     # meeting at a corner close into one corner merlon instead of two half-merlons with gaps; where
     # the painting has a crenel there, the end block shows the nearest painted merlon instead
@@ -786,9 +910,11 @@ def build_parapet(out, wall, desc, defaults):
     lo, hi = wall.s0 + end_m, wall.s1 - end_m
     if hi - lo < 0.1:
         lo = hi = (wall.s0 + wall.s1) / 2  # short wall: solid
-    for a, b in ((wall.s0, lo), (hi, wall.s1)):
-        if b - a > 0.01:
-            add_box(out, wall, a, b, cut_t, wall.t1, -T, 0.0, mat, shift=_merlon_shift(a, b, gaps, wall.s0, wall.s1))
+    for (a, b), (a2, b2), cap, mit in (((wall.s0, lo), (s_lo, lo), (ends[0], True), (mitre[0], 0.0)),
+                                       ((hi, wall.s1), (hi, s_hi), (True, ends[1]), (0.0, mitre[1]))):
+        if b2 - a2 > 0.01:  # the end block, less any corner trim
+            add_box(out, wall, a2, b2, cut_t, wall.t1, -T, 0.0, mat, shift=_merlon_shift(a, b, gaps, wall.s0, wall.s1),
+                    ends=cap, mitre=mit)
     s = lo
     for a, b in [(max(a, lo), min(b, hi)) for a, b in gaps if min(b, hi) - max(a, lo) > 0.05] + [(hi, hi)]:
         if a - s > 0.03:
@@ -815,9 +941,33 @@ def _merlon_shift(a, b, gaps, s0, s1):
     return m0 - a if abs(m0 - a) <= abs(m1 - b) else m1 - b
 
 
-def build_roof(out, poly, cfg):
+def roof_neighbour(a, b, poly, roofs_here, tol=0.05):
+    """The other roof polygon of the building that shares the edge a-b of `poly` (None: an outer
+    edge). Roofs are often split into several pieces, coplanar or meeting at hips and valleys."""
+    e = b - a
+    if e.length < 1e-6:
+        return None
+    e = e.normalized()
+    mid = (a + b) / 2
+    for q in roofs_here:
+        if q is poly:
+            continue
+        for i in range(len(q.pts)):
+            q1, q2 = q.pts[i], q.pts[(i + 1) % len(q.pts)]
+            f = q2 - q1
+            if f.length < 1e-6 or abs(e.dot(f.normalized())) < 0.99:
+                continue
+            k = max(0.0, min(1.0, (mid - q1).dot(f) / f.length_squared))
+            if (q1 + f * k - mid).length < tol:
+                return q
+    return None
+
+
+def build_roof(out, poly, cfg, roofs_here=()):
     """Sloped roof polygon -> slab with thickness, eave overhang on its low edge and verge
-    overhangs along the slope; UVs continue the blockout's mapping."""
+    overhangs along the slope; UVs continue the blockout's mapping. Edges shared with another roof
+    piece (roofs_here: the building's roof polygons) get no overhang and, between coplanar pieces,
+    no side face, so the pieces join into one slab instead of overlapping (z-fighting)."""
     n = poly.normal.normalized()
     down = (-UP) - n * (-UP).dot(n)
     if down.length < 1e-4:
@@ -826,20 +976,32 @@ def build_roof(out, poly, cfg):
     d = down.normalized()
     r = n.cross(d).normalized()
     c = sum(poly.pts, Vector()) / len(poly.pts)
-    ab = [((p - c).dot(r), (p - c).dot(d)) for p in poly.pts]
-    amin, amax = min(a for a, _ in ab), max(a for a, _ in ab)
-    bmax = max(b for _, b in ab)
-    eps = 0.05
+    ab = [Vector(((p - c).dot(r), (p - c).dot(d))) for p in poly.pts]
+    k = len(ab)
+    # per edge: the neighbouring roof piece, the outward direction (in the roof plane) and how far
+    # that edge moves out: eave on edges facing down the slope, none at the ridge, verge otherwise
+    shared, outs, dist = [], [], []
+    for i in range(k):
+        a, b = ab[i], ab[(i + 1) % k]
+        o = Vector((b.y - a.y, -(b.x - a.x)))
+        o = o.normalized() if o.length > 1e-9 else Vector((0.0, 0.0))
+        if o.dot((a + b) / 2) < 0:
+            o = -o
+        q = roof_neighbour(poly.pts[i], poly.pts[(i + 1) % k], poly, roofs_here)
+        shared.append(q)
+        outs.append(o)
+        dist.append(0.0 if q is not None or o.y < -0.7 else cfg["eave_m"] if o.y > 0.7 else cfg["verge_m"])
     grown = []
-    for p, (a, b) in zip(poly.pts, ab):
-        q = p.copy()
-        if a > amax - eps:
-            q += r * cfg["verge_m"]
-        elif a < amin + eps:
-            q -= r * cfg["verge_m"]
-        if b > bmax - eps:
-            q += d * cfg["eave_m"]
-        grown.append(q)
+    for i in range(k):
+        j = (i - 1) % k  # the edges before and after vertex i
+        o1, o2, d1, d2 = outs[j], outs[i], dist[j], dist[i]
+        den = o1.x * o2.y - o1.y * o2.x
+        if abs(den) < 1e-4:  # collinear edges
+            x = o2 * max(d1, d2)
+        else:  # the point at distance d1 from edge j's line and d2 from edge i's
+            x = Vector(((d1 * o2.y - d2 * o1.y) / den, (o1.x * d2 - o2.x * d1) / den))
+        grown.append(poly.pts[i] + r * x.x + d * x.y)
+    ab = [(v.x, v.y) for v in ab]
     # affine (a, b) -> uv from the original corners
     best, tri = -1.0, (0, 1, 2)
     k = len(ab)
@@ -864,6 +1026,9 @@ def build_roof(out, poly, cfg):
         zone_detail.roof_tiles(out, grown, n, r, d, c, uv, T, poly.material)
     out.poly(grown[::-1], [uv(q) for q in grown[::-1]], poly.material, -n)
     for i in range(len(grown)):
+        q = shared[i]
+        if q is not None and q.normal.normalized().dot(n) > 0.999:
+            continue  # inside one slab
         a, b = grown[i], grown[(i + 1) % len(grown)]
         edge = b - a
         side = edge.cross(n).normalized()
@@ -1108,7 +1273,13 @@ def render_preview(path, obj):
 # ------------------------------------------------------------------------------------------ main
 
 # what zone_<rid>.json "rebuild" can list (default: all of them)
-REBUILD_FEATURES = ("facades", "roofs", "parapets", "cutouts")
+REBUILD_FEATURES = ("facades", "plain_facades", "roofs", "parapets", "cutouts")
+
+
+def plain_facade(desc):
+    """A facades.json wall with trims (bands, piers, plinth) but no painted windows or doors: its
+    relief is geometry that can't miss the painting (rebuild "plain_facades")."""
+    return bool(desc) and not desc.get("openings") and any(k in desc for k in ("bands", "piers", "plinth"))
 
 
 def main():
@@ -1223,14 +1394,19 @@ def main():
         out = MeshOut()
         counts = {"rebuilt": 0, "parapet": 0, "roof": 0, "copied": 0, "dropped": 0, "cut-outs": 0}
         all_polys = [poly for name, tris in sorted(sel.items()) for poly in polys_of(prims[name], tris)]
+        building_polys = list(all_polys)  # for neighbours, whatever happens to each
+        rebuilt_facades = {k for k, v in described.items() if "crenels" not in v and "clock" not in v
+                           and ("facades" in rebuild or ("plain_facades" in rebuild and plain_facade(v)))}
         if plain:
             for poly in all_polys:
                 copy_poly(out, poly)
             all_polys = []  # nothing left to rebuild
         if "facades" not in rebuild:
-            # walls stay as they are: only the parts listed in "rebuild" (roofs, parapets, cut-outs)
+            # walls stay as they are: only the parts listed in "rebuild" (roofs, parapets, cut-outs,
+            # and with "plain_facades" the trims of walls without painted openings)
             facade_like = [p for p in all_polys if p.vertical and (described.get(p.material) or timber_only(p))
-                           and "crenels" not in described.get(p.material, {})]
+                           and "crenels" not in described.get(p.material, {})
+                           and not ("plain_facades" in rebuild and plain_facade(described.get(p.material)))]
             for poly in facade_like:
                 copy_poly(out, poly)
                 counts["copied"] += 1
@@ -1248,6 +1424,20 @@ def main():
             if poly.vertical and (described.get(poly.material) or timber_only(poly)):
                 sides.setdefault(poly_key(poly), []).append(outward(poly, floors))
         keep_as_is = {k for k, flags in sides.items() if not any(flags)}
+        # parapets meeting at corners: one of each pair stops at the other's inner face
+        parapets = [p for p in all_polys if p.vertical and p.material not in cutouts and "parapets" in rebuild
+                    and "crenels" in described.get(p.material, {}) and poly_key(p) not in keep_as_is and outward(p, floors)]
+        walls_of = {id(p): Wall(p, catalog[p.material]) for p in parapets}
+        others = [p for p in all_polys if p.vertical and id(p) not in walls_of]
+        roofs_here = [p for p in all_polys if p.material in roofs and 0.1 < p.normal.y < 0.97]
+        trims, capless, mitres = parapet_corner_trims(
+            [(walls_of[id(p)], parapet_thickness(described[p.material], defaults)) for p in parapets], others)
+        trim_of = {id(p): (tuple(trims.get(i, (0.0, 0.0))), capless.get(i, set()), tuple(mitres.get(i, (0.0, 0.0))))
+                   for i, p in enumerate(parapets)}
+        if trims or capless or mitres:
+            log("%s: parapet corners: %d ends trimmed, %d mitred, %d end faces left out against walls"
+                % (name, sum(1 for t in trims.values() for x in t if x), sum(1 for t in mitres.values() for x in t if x),
+                   sum(len(c) for c in capless.values())))
         for poly in all_polys:
             if poly.vertical and poly.material in cutouts:
                 counts["cut-outs"] += 1 if build_cutout(out, poly, cutouts[poly.material], catalog, cut_done) else 0
@@ -1259,7 +1449,7 @@ def main():
                 counts["copied"] += 1
                 continue
             if poly.material in roofs and 0.1 < poly.normal.y < 0.97 and "roofs" in rebuild:
-                build_roof(out, poly, roofs[poly.material])
+                build_roof(out, poly, roofs[poly.material], roofs_here)
                 counts["roof"] += 1
                 continue
             desc = described.get(poly.material)
@@ -1267,12 +1457,14 @@ def main():
                 desc = {"name": poly.material}  # plain timber wall: relief only
             if desc and poly.vertical and ("crenels" not in desc or "parapets" in rebuild):
                 if outward(poly, floors):
-                    wall = Wall(poly, catalog[poly.material])
+                    wall = walls_of.get(id(poly)) or Wall(poly, catalog[poly.material])
                     if "crenels" in desc:
-                        build_parapet(out, wall, desc, defaults)
+                        trim, no_cap, mitre = trim_of.get(id(poly), ((0.0, 0.0), set(), (0.0, 0.0)))
+                        build_parapet(out, wall, desc, defaults, trim, no_cap, mitre)
                         counts["parapet"] += 1
                     else:
-                        build_facade_wall(out, wall, desc, defaults, catalog)
+                        stops = wall_continues(wall, building_polys, lambda q: q.material in rebuilt_facades)
+                        build_facade_wall(out, wall, desc, defaults, catalog, stops)
                         counts["rebuilt"] += 1
                 else:
                     counts["dropped"] += 1  # the inward copy of a rebuilt wall

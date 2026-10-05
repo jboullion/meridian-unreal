@@ -5,9 +5,9 @@
   "normals": true,
   "displacement": false,
   "flat_openings": true,
-  "rules_for": "roof",
+  "rules_for": "roof|RAZ-GRASSTONE PATH|RAZ-STONEPATH|Path Generic|rockgrnd",
   "flat": "sign|door|w/ ?dr|gate|win|glass|picture|tapestry|carpet|clock|tower|razmus|shelf|cab|frnt|weapons|torch",
-  "_doc": "Relief from the height maps (T_<grd>_N/_H, Marigold) by texture. normals: normal maps on, except textures with painted windows or doors (facades.json openings, when flat_openings) and names matching flat (painted doors, gates, windows, pictures, signs, clocks that facades.json doesn't describe): inferred relief reads wrong on those. displacement: Nanite displacement (and the zone-art displacement grid). rules_for: names that keep make_placeholders.py's rule-based maps instead of Marigold's (Marigold gives roofs nearly flat normals; the rules give them relief that follows the painted strokes). true / false for the whole value switches both. 2026-10-05: normals on plain walls, roofs and ground; no displacement (see docs/adr/0003)."
+  "_doc": "Relief from the height maps (T_<grd>_N/_H, Marigold) by texture. normals: normal maps on, except textures with painted windows or doors (facades.json openings, when flat_openings) and names matching flat (painted doors, gates, windows, pictures, signs, clocks that facades.json doesn't describe): inferred relief reads wrong on those. displacement: Nanite displacement (and the zone-art displacement grid). rules_for: names that keep make_placeholders.py's rule-based maps instead of Marigold's (Marigold gives roofs nearly flat normals; the rules give them relief that follows the painted strokes; the path, stone-path and rocky-ground floors use the rules' domed stones, chosen 2026-10-05 from tools/lookdev/ground_normals_test.ps1). true / false for the whole value switches both. 2026-10-05: normals on plain walls, roofs and ground; no displacement (see docs/adr/0003)."
  },
  "grime": {
   "enabled": true,
@@ -87,7 +87,7 @@
   "grd09629": 0.5
  },
  "ground": {
-  "_doc": "Floors drawn with the world-aligned ground master instead of the blockout UVs: the original texture at two scales blended by macro noise (breaks up tiling), tinted by the macro noise. tile_m = the original repeat size (floors tile once per 2.2 m grid square in the original client, whatever the texture's size).",
+  "_doc": "Floors drawn with the world-aligned ground master instead of the blockout UVs: the original texture at two scales blended by macro noise (breaks up tiling), tinted by the macro noise. tile_m = the original repeat size (floors tile once per 2.2 m grid square in the original client, whatever the texture's size). normal_strength: the normal map's strength on that floor (default M_Ground's 0.8).",
   "grd02306": {
    "tile_m": 2.2
   },
@@ -95,17 +95,21 @@
    "tile_m": 2.2
   },
   "grd09603": {
-   "tile_m": 2.2
-  },
+      "tile_m": 2.2,
+      "normal_strength": 1.0
+    },
   "grd09604": {
-   "tile_m": 2.2
-  },
+      "tile_m": 2.2,
+      "normal_strength": 1.0
+    },
   "grd03811": {
-   "tile_m": 2.2
-  },
+      "tile_m": 2.2,
+      "normal_strength": 1.0
+    },
   "grd09629": {
-   "tile_m": 2.2
-  }
+      "tile_m": 2.2,
+      "normal_strength": 1.0
+    }
  },
  "grass": {
   "_doc": "Grass tuft colours (sRGB), sampled from the original grass texture (grd02306): its middle fifth at the root, a little above its lightest fifth at the tip. Wind: base sway `wind` at `wind_speed`, scaled between `calm` and 1 by a slowly drifting gust field (`gust_cm` across).",

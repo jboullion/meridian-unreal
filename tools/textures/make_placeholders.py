@@ -69,6 +69,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageStat
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "build" / "textures"
 FACADES = ROOT / "data" / "environment" / "facades.json"
+MATERIALS = ROOT / "data" / "environment" / "materials.json"
 OUT = ROOT / "build" / "textures_placeholder"
 
 # (name pattern, roughness, normal strength); first match wins
@@ -538,11 +539,21 @@ SET_CODE = (source_image, clock_layout, make_set, fill_cutout, height_map, norma
 UPSCALE_CODE = (_upscale_source, run_upscales, wrap_crop, fill_cutout, source_image, clock_layout)
 
 
-def set_rules(key: str, info: dict) -> dict:
+def relief_rules_for() -> str:
+    """materials.json "relief" "rules_for": names whose rule-based maps tools/textures/ai_maps.py
+    --apply leaves in place instead of Marigold's."""
+    relief = json.loads(MATERIALS.read_text(encoding="utf-8")).get("relief", {}) if MATERIALS.exists() else {}
+    return (relief.get("rules_for") or "") if isinstance(relief, dict) else ""
+
+
+def set_rules(key: str, info: dict, rules_for: str = "") -> dict:
     rough, strength = surface(info["name"])
     return {"roughness": rough, "normal_strength": strength, "height_mode": height_mode(info["name"]),
             "dedither": bool(re.search(DEDITHER, info["name"], re.I)), "windows": window_outlines(key), "clock": clock_layout(key),
-            "esrgan_model": esrgan_model(info["name"])}
+            "esrgan_model": esrgan_model(info["name"]),
+            # a texture moving to (or from) the rule-based maps must be remade: ai_maps.py has
+            # overwritten its maps with Marigold's
+            "rule_relief": bool(rules_for and re.search(rules_for, info["name"], re.I))}
 
 
 def file_digest(path: Path) -> str:
@@ -590,8 +601,9 @@ def main():
     options = [args.scale, args.max, bool(args.esrgan)]
 
     manifest, new_cache, jobs, todo, missing = {}, {}, [], {}, set()
+    rules_for = relief_rules_for()
     for key, info in sorted(catalog.items()):
-        rules = set_rules(key, info)
+        rules = set_rules(key, info, rules_for)
         if args.esrgan_model:
             rules["esrgan_model"] = args.esrgan_model
         if args.esrgan:

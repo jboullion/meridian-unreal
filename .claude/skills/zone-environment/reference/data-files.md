@@ -1,0 +1,82 @@
+# Environment data files
+
+Everything that shapes a zone's look is text in `data/environment/` (and `data/zone_layout.json`, generated).
+Each file has `_doc` strings next to its keys. They are the authority when this summary and the file disagree.
+
+## `zone_<rid>.json`: which parts of a zone are rebuilt as art
+Read by `tools/environment/blockout.py` (`zone_art_config`, `building_triangles`), `build_zone_art.py` and `build_world.py`.
+Without this file, the zone renders as the plain blockout with placeholder materials.
+
+| Key | Meaning |
+|---|---|
+| `rid` | zone id |
+| `rebuild` | what `build_zone_art.py` rebuilds: any of `facades`, `plain_facades`, `roofs`, `parapets`, `cutouts`. **Missing = all**, so always set it. Current default: `["plain_facades", "roofs", "parapets", "cutouts"]`. `plain_facades` = only the facades.json walls with bands/piers/plinth and no painted openings. Without `parapets`, crenels become cut-out solids |
+| `buildings[]` | entries, in priority order (a face belongs to the first entry that takes it) |
+| `buildings[].name` | becomes `SM_Z<rid>_<name>` |
+| `buildings[].region_m` | `[x0, z0, x1, z1]` in blockout glTF metres (x east, z south). Ground-level floors in the region stay in the blockout |
+| `buildings[].materials` | limit the entry to these texture ids (e.g. the town wall `grd20232` over a whole-town region) |
+| `buildings[].kind` | `"water"` (sunken bed + water surface; `bed_depth_m`, `bed_texture`) or `"cutouts"` (catch-all for fences/gates/signs outside buildings; put it last, `"displacement": "none"`) |
+| `buildings[].displacement` | `"runtime"` (default) / `"baked"` / `"none"`; ignored while `materials.json` relief displacement is off |
+| `buildings[].detail` | opt-in Blender detail: `timber`, `tiles`, `window_boxes` (`zone_detail.py`); off by default |
+| `buildings[].grid_m` | displacement grid size (default 0.25; only matters with displacement on) |
+| `scatter[]` | ground decoration: `meshes`, `per_m2` per floor texture, `scale`, `cull_m`, `shadows`, `seed`, `keep_out_m` |
+
+A per-building Blender override `art_src/environment/zones/<rid>/<Building>.blend` replaces the generated building (`--seed-override <Building>` starts one).
+
+## `facades.json`: painted features, in texture pixels
+Pixels of `build/textures/<grd>.png`: x right, y down from the top-left. Sizes are in metres.
+
+| Key | Meaning |
+|---|---|
+| `defaults` | `cut_openings` (false: windows/doors aren't cut), `trim` texture, reveal/frame/band/pier depths, `plinth`, `parapet_thickness_m`, `roof` (`thickness_m` 0.14, `eave_m` 0.35, `verge_m` 0.22) |
+| `roofs` | sloped roof textures that get a slab and overhangs (`{}` = defaults, or per-texture overrides). Used when `rebuild` has `roofs` |
+| `cutouts` | cut-out solids: `thickness_m` rules `[[name regex, metres], …]` (first match), `default_m`, `exclude` (foliage stays flat) |
+| `textures.<grd>.openings[]` | `kind` `window`/`door`, `shape` (`rect`, `round`, `pointed`, `circle`), `x`/`y` pixel ranges, `spring`, `frame_px`, `sill` |
+| `textures.<grd>.bands[]`, `piers[]`, `plinth`, `crenels` | trims: built with `facades` in `rebuild`, or with `plain_facades` when the texture has no `openings`. Bands and plinths wrap round outside corners (one wall of each corner) and stop where the wall continues in the same plane |
+| `textures.<grd>.clock` | a time-driven animated texture: dial `shape`/`x`/`y`. The frames are packed into a 4×3 atlas and the material picks `floor(GameHour) mod 12` |
+
+Even with facade relief off, `openings` matter:
+- `window` openings give the night-glow mask `T_<grd>_E` and flattened height and normals in the glass.
+- Any opening makes the texture flat under `relief.flat_openings`.
+
+Other animated textures (`catalog.json` `frames` > 1) show frame 0.
+
+## `materials.json`: material policy per texture
+| Key | Meaning |
+|---|---|
+| `materials` | `grd` → real material asset override (empty today) |
+| `relief` | `normals`, `displacement`, `flat_openings`, `flat` (regex on the catalog **name**, case-insensitive), `rules_for` (names that keep the rule-based maps instead of Marigold's: roofs and the four path/stone/rock floors; changing it remakes those texture sets). `true`/`false` switches both |
+| `grime` | `enabled`, `exclude` (texture-name regex), `base` and `eave` blocks: `height_m`, linear `color`, `opacity`, `falloff` |
+| `variants` | parameters for `<grd>__<variant>` slots: `pane`, `glass`, `panel`, `solid` |
+| `displacement`, `displacement_range_cm`, `displacement_facade_scale` | per-texture Nanite displacement strengths; dormant while `relief.displacement` is false |
+| `ground` | floors drawn with the world-aligned ground master (`tile_m` 2.2, optional `normal_strength`, default 0.8) |
+| `grass` | tuft colours and wind (`wind`, `wind_speed`, `calm`, `gust_cm`) |
+| `water` | `M_Water` colour, scattering, absorption, ripples |
+
+## `moods.json`: lighting
+| Key | Meaning |
+|---|---|
+| `levels` | level → mood (today only `L_World`: `raza_afternoon`). `MR_MOOD=<name>` overrides it for a run |
+| `moods.<name>.inherit` | start from another mood; set only what differs |
+| `moods.<name>.<ActorLabel>` | `Sun` (`rotation` [pitch, yaw], intensity in lux, temperature), `SkyLight`, `HeightFog`, `GlobalPostProcess.settings` (PostProcessSettings fields; exposure in EV100) |
+| `moods.<name>.Collection` | `MPC_Environment` scalars: `WindowGlow` (0 by day, 0.12 dusk, 0.35 night). `GameHour` is written by C++, not by moods |
+
+Moods: `raza_afternoon` (the level's mood), `raza_morning`, `raza_dusk`, `raza_night`.
+
+## `props.json`: Kod-placed objects
+- `classes.<KodClass>`: `mesh` (`build/environment/kit/<mesh>.glb` from `build_prop_kit.py`) and an optional `light` (`offset_m`, `candela`, `radius_m`, `temperature`, `source_radius_cm`).
+- `materials`: the kit's slots (linear colours, emissive).
+- `build_world.py` spawns one per object in `data/zone_layout.json`.
+
+## `lookdev_cameras.json`
+`cameras[]`: `name`, `location_cm` (world UE cm, X east, Y south, Z up), `rotation` [pitch, yaw] (yaw 0 = east, 90 = south), `fov`.
+
+Interiors sit at their zone's `world_origin_cm` (`data/zone_layout.json`). `MRBookmark <name>` in game logs a ready-made entry.
+
+## Generated files you read but don't edit
+| File | What |
+|---|---|
+| `data/zone_layout.json` | per zone: `world_origin_cm`, objects, exits (from `roo2gltf`) |
+| `build/textures/catalog.json` | per texture: `name`, `w`, `h`, `shrink`, `frames`, `groups`, `has_transparency` |
+| `build/textures_placeholder/placeholders.json` | per texture: maps, `masked`, roughness, normal strength, `atlas` |
+| `build/environment/zone_<rid>/manifest.json`, `openings.json` | what `build_world.py` imports; every painted opening built or not |

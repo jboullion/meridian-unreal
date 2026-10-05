@@ -1,8 +1,8 @@
 {
   "_doc": "Zone art for Raza (rid 300), docs/adr/0003 pass 3. Each building lists a region (blockout glTF metres [x0, z0, x1, z1], x east, z south) whose blockout faces are rebuilt as art by tools/blender/build_zone_art.py and hidden from the rendered blockout by tools/ue/build_world.py (the full blockout stays as collision). Ground-level floors in a region stay in the blockout. `materials` limits an entry to those textures; a face belongs to the first entry that takes it, so broad entries (the town wall) go last. kind \"water\": the faces become a water surface over a sunken bed. `scatter`: ground decoration per floor texture (tools/environment/scatter.py). grid_m: displacement grid for that entry (default 0.25 m; coarser for long walls).",
   "rid": 300,
-  "rebuild": ["roofs", "parapets", "cutouts"],
-  "_rebuild_doc": "What tools/blender/build_zone_art.py rebuilds (default all): facades (walls from facades.json: openings, trims, plinths, window panes, timber relief), roofs (thickness, overhangs), parapets (solid merlons), cutouts (fences, gates, signs as solids). The rest stays the original geometry. 2026-10-05: facades off (their inferred depth kept producing artefacts); see docs/adr/0003.",
+  "rebuild": ["plain_facades", "roofs", "parapets", "cutouts"],
+  "_rebuild_doc": "What tools/blender/build_zone_art.py rebuilds (default all): facades (walls from facades.json: openings, trims, plinths, window panes, timber relief), plain_facades (only the facades.json walls without painted windows or doors: bands, piers, plinth), roofs (thickness, overhangs), parapets (solid merlons), cutouts (fences, gates, signs as solids). The rest stays the original geometry. 2026-10-05: facades off (their inferred depth kept producing artefacts), plain_facades on (the town wall pilasters); see docs/adr/0003.",
   "buildings": [
     {"name": "Hall", "region_m": [61.5, 49.5, 75.5, 57.0], "_doc": "raz-bldg-h: stone hall, stained glass, clock tower over the door"},
     {"name": "Inn", "region_m": [49.1, 5.4, 63.1, 14.4], "_doc": "raz-bldg-g: timber-framed, blue door, sign Inn"},

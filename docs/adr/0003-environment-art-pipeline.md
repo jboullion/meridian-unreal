@@ -3,6 +3,7 @@
 - Status: Proposed
 - Date: 2026-10-04
 - Related: [ADR 0001](0001-engine-and-architecture.md) (text-first data, generated levels), [findings](../findings.md) (scale, texture sizes)
+- How-to: this ADR is the decision log (experiments, comparisons, reasons). The current recipe for building a zone's environment is the `zone-environment` skill, [.claude/skills/zone-environment/SKILL.md](../../.claude/skills/zone-environment/SKILL.md). Update it when a decision here changes a default.
 
 ## Context
 
@@ -106,6 +107,8 @@ Every blockout slot is named after its original texture. `data/environment/mater
   - Naming: `SM_`, `M_`/`MI_`, `T_<name>_D|N|ORM`, `NS_` for Niagara.
 
 ### 4. Lighting, post process and VFX: per-zone "moods" in data
+
+> Superseded by [ADR 0005](0005-time-weather-and-atmosphere.md) (2026-10-05): moods become keys of a day/night cycle applied at runtime by a client-side environment director, with interiors, fire and weather. The `UMRZoneMood` DataAsset below is not going to be built.
 
 - **Rendering defaults:** Lumen GI and reflections, Virtual Shadow Maps, and Nanite enabled on kit meshes (instances and LOD-free kits benefit; blockouts keep it off).
 - **`UMRZoneMood` DataAsset** keyed by zone rid. It holds the post-process settings (exposure range, grading LUT, bloom, vignette, AO), fog colour and density, sky and sun settings, and ambient particles. The client applies the current zone's mood through the one unbound post-process volume in `L_World` and blends over about 1 s when the zone changes. A volume per sublevel would fight across the pre-loaded neighbour zones.
@@ -337,7 +340,49 @@ The remaster does the same without asking a server:
 
 Look-dev pins the hour (`run_lookdev.ps1 -GameHour`, default 15; `-MRGameHour=<h>` / `mr.GameHour` in game) so captures compare. Camera `hall_clock`; sheet `build/lookdev/clock_hours.png`.
 
-**Known flake.** Once, a capture right after an in-place mesh reimport showed the Hall and Shops with their textures stuck at low mips, and their Nanite fallback meshes on the first try. Forgetting those meshes in `Saved/MRBuild/world_cache.json` and building again fixed it.
+**Plain facades back, corner z-fighting fixed (2026-10-05, user).** The user missed the town wall's proud pilasters, which came from the facade rebuild and not from the normals.
+- **New rebuild feature `plain_facades`.** It rebuilds only the `facades.json` walls without painted windows or doors: their bands, piers and plinth are solid geometry that can't miss the painting. In Raza that's the town wall (and the Crypt entrance's stretch of it), the Tavern's middle wall, and the west house's side and picture walls. `zone_300.json` `rebuild` is now `["plain_facades", "roofs", "parapets", "cutouts"]`.
+- **Bands and plinths wrap only round real corners.** They used to run past both ends of every wall, so collinear walls overlapped at the joint and both walls of a corner overlapped in the corner (`wall_continues`).
+
+The z-fighting on the crenellations (`ReferenceImages/issues/z-fighting-crenellation-corners.png`) had three causes. A new check, `tools/blender/check_overlaps.py`, finds same-plane, same-facing overlapping triangles in the art meshes.
+- **Parapet corners.** Two parapets meeting at a corner both filled the corner column, and one's end face lay on the other's outer face. Now one stops at the other's inner face, without an end face, and the other's end face (its texture wrapping round) closes the corner.
+- **Oblique corners** (the Shops' chamfers) are mitred: both inner faces stop where they cross.
+- **Parapets running into the clock tower** no longer get an end face on the tower's wall.
+- **Roof slabs overlapped too.** Every roof piece grew eave and verge overhangs, even along edges it shares with the next piece of the same roof. Coplanar pieces then overlapped, which flickered and read as a seam ("split" roofs). Overhangs now grow only on a roof's outer edges, and coplanar pieces join into one slab (`roof_neighbour`).
+
+Overlapping pairs, before → after:
+- Hall: 234 → 0.
+- Shops: 250 → 16, which are cut-out signs touching the walls.
+- Roofs: 377 → 0 across all the roofed buildings.
+
+What the check still reports:
+- The facade trims' back faces and bottoms. These are hidden: they face into the wall or the ground.
+- The pond bed's skirts (underwater).
+- Duplicated faces in some cut-out signs. That's a follow-up.
+
+Cameras: `hall_parapet_corner`, `hall_tower_join`, `townwall_piers`.
+
+**Lines along the tops of cut-outs (2026-10-05).** The user spotted a thin line above the gate in Raza's south-east corner (`ReferenceImages/issues/line-above-back-corner-fence.png`). There were two causes:
+- **Geometry.** A cut-out wall exactly one texture tall has the next texture repeat starting on its top edge. Clipped to the wall, that repeat left zero-height triangles, and their outline side faces made a flat strip along the full top: 3 m strips on the gate (`grd09622`), and 2–7 m on the picket fence (`grd09632`). `cutout_solid` now skips clipped pieces with no height.
+- **Texture sampling.** The tree-line cards and the other flat cut-outs drew a faint line along their top edge against the sky. Their UVs run exactly 0–1 vertically, and wrap addressing blends the opaque bottom row into the clear top row, worst in distant mips. Masked textures now clamp vertically, unless a blockout tiles them up a wall (`vertically_tiled`: only the wall torches).
+
+Camera: `gate_back_corner`.
+
+**Ground normals (2026-10-05, user).** The ground already had normal maps (Marigold, at `M_Ground`'s 0.8), but they barely showed: Marigold's ground maps are nearly flat, and the afternoon sun is high. `tools/lookdev/ground_normals_test.ps1` compared three variants under the afternoon and morning moods:
+- the current maps
+- the current maps stronger (2.0)
+- the rule-based `stones` maps on the path, stone-path and rocky-ground floors at 1.0
+
+Results (`build/lookdev/compare_gn_*`, `ground_normals_zoom.png`):
+- Stronger Marigold maps barely change anything.
+- The stones maps give every cobble a domed relief with deep joints. They're clearly best on the town square and around the pond.
+- The grass-stone path's flagstones turn a little lumpy, and the square shows a few small pits.
+
+**Decision (user):** stones maps on all four of those floors (`relief.rules_for` names them, and `ground` `normal_strength` 1.0). The user likes the lumpy paths. Grass keeps Marigold's maps.
+
+`make_placeholders.py` now remakes a texture when it moves to or from the rule-based maps (`rule_relief` in its rules). It used to keep the Marigold maps that `ai_maps.py` had written over the rule-based ones.
+
+**Known flake (seen twice).** A capture right after an in-place mesh reimport can show the reimported meshes with their textures stuck at low mips and their Nanite fallback meshes, which shows as blur and dark gaps in parapets. Forgetting those meshes in `Saved/MRBuild/world_cache.json` and building again fixes it. It happened again on 2026-10-05 after the parapet and roof changes.
 
 ### How to run the loop
 ```

@@ -100,7 +100,7 @@
       }
     },
     "raza_morning": {
-      "_doc": "Early morning: low sun from the east-south-east, cool and hazy, mist in the low ground; long soft shadows across the square.",
+      "_doc": "Early morning: low sun from the east-south-east, cool and hazy, a thin ground mist (fog dense near the ground, falling off fast with height, clear for the first 12 m; forward-scattering toward the sun) that softens the distance without hiding anything; long soft shadows across the square. Mist chosen 2026-10-05 over a fuller haze (look-dev mood_raza_morning_fogA/fogB).",
       "inherit": "raza_afternoon",
       "Sun": {
         "rotation": [
@@ -114,9 +114,11 @@
         "intensity": 1.5
       },
       "HeightFog": {
-        "fog_density": 0.06,
-        "fog_height_falloff": 0.45,
-        "start_distance": 800,
+        "fog_density": 0.12,
+        "fog_height_falloff": 0.9,
+        "start_distance": 1200,
+        "fog_max_opacity": 0.65,
+        "volumetric_fog_scattering_distribution": 0.75,
         "fog_inscattering_luminance": [
           0.5,
           0.55,

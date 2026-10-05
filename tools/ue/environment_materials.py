@@ -247,36 +247,54 @@ def import_textures(files):
     asset_tools.import_asset_tasks(tasks)
 
 
-def _texture_settings(tex, srgb, normal):
+def _texture_settings(tex, srgb, normal, clamp_v=False):
     tex.set_editor_property("srgb", srgb)
     if normal:
         tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_NORMALMAP)
         tex.set_editor_property("flip_green_channel", False)  # written DirectX-style already
+    # cut-outs mapped once vertically: wrapping would blend the opaque bottom row into the clear top
+    # row at the wall's top edge (a thin line along the top of tree lines, worst in distant mips)
+    tex.set_editor_property("address_y", unreal.TextureAddress.TA_CLAMP if clamp_v else unreal.TextureAddress.TA_WRAP)
+
+
+def vertically_tiled():
+    """Texture ids whose blockout UVs leave 0..1 vertically anywhere (build/zones/*.glb): those
+    repeat up a wall and must keep wrapping (wall torches, for one)."""
+    import glob
+    import blockout
+    tiled = set()
+    for f in sorted(glob.glob(os.path.join(REPO, "build", "zones", "*.glb"))):
+        for name, prim in blockout.read_glb(f).items():
+            vs = [uv[1] for uv in prim.uvs or []]
+            if vs and (min(vs) < -0.01 or max(vs) > 1.01):
+                tiled.add(name.split("__")[0])
+    return tiled
 
 
 def ensure_textures(specs):
-    """specs: [(file in build/textures_placeholder, srgb, normal map)] -> {file: texture asset path}.
-    Imports, in one batch, only the files whose contents (or settings) changed since the last build."""
+    """specs: [(file in build/textures_placeholder, srgb, normal map[, clamp V])] -> {file: texture
+    asset path}. Imports, in one batch, only the files whose contents (or settings) changed since
+    the last build."""
     cache = build_cache.CACHE
     out, stale = {}, []
-    for f, srgb, normal in dict(((s[0], s) for s in specs)).values():
+    for f, srgb, normal, clamp_v in dict(((s[0], tuple(s) + (False,) * (4 - len(s))) for s in specs)).values():
         path = "%s/%s" % (TEX_DIR, os.path.splitext(f)[0])
-        key = cache.key(build_cache.file_digest(os.path.join(PLACEHOLDERS, f)), srgb, normal,
+        key = cache.key(build_cache.file_digest(os.path.join(PLACEHOLDERS, f)), srgb, normal, clamp_v,
                         build_cache.source(_texture_settings))
         out[f] = path
         if cache.fresh(path, key):
             cache.done(path, key, "textures", False)
         else:
-            stale.append((f, srgb, normal, path, key))
+            stale.append((f, srgb, normal, clamp_v, path, key))
     if stale:
         import_textures([s[0] for s in stale])
-        for f, srgb, normal, path, key in stale:
+        for f, srgb, normal, clamp_v, path, key in stale:
             tex = eal.load_asset(path)
             if not tex:
                 log("WARNING: %s did not import" % f)
                 out.pop(f)
                 continue
-            _texture_settings(tex, srgb, normal)
+            _texture_settings(tex, srgb, normal, clamp_v)
             eal.save_loaded_asset(tex)
             cache.done(path, key, "textures", True)
     return out
@@ -673,8 +691,11 @@ def build_placeholders(normals_for=lambda key, entry: True, glow=None):
         return masters[key]
 
     specs = []
-    for t in textures.values():
-        specs += [(t["d"], True, False), (t["n"], False, True)] + ([(t["height"], False, False)] if "height" in t else [])
+    tiled = vertically_tiled()
+    for key, t in textures.items():
+        clamp = bool(t["masked"]) and key not in tiled  # cut-outs mapped once up the wall
+        specs += [(t["d"], True, False, clamp), (t["n"], False, True, clamp)]
+        specs += [(t["height"], False, False, clamp)] if "height" in t else []
         specs += [(t["emissive"], False, False)] if t.get("emissive") and glow else []
     paths = ensure_textures(specs)
     out, loaded = {}, {}
@@ -825,6 +846,8 @@ class ZoneMaterials:
         t, d, n, h, _ = self.textures[key]
         tile = float(cfg.get("tile_m", 2.2)) * 100.0
         scalars = {"TileCm": tile, "TileCm2": tile * 2.73, "Roughness": t["roughness"]}
+        if "normal_strength" in cfg:
+            scalars["NormalStrength"] = float(cfg["normal_strength"])  # else M_Ground's default (0.8)
         if not self.normals_for(key, t):
             scalars["NormalStrength"] = 0.0
         self.ground[key] = _instance("MI_%s__ground" % key, self.ground_master, textures={"BaseColor": d, "Normal": n},

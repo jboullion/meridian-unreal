@@ -30,6 +30,12 @@
     {"name": "roofs_inn", "location_cm": [5600, 2600, 900], "rotation": [-22.0, -90.0], "fov": 70},
     {"name": "roofs_west", "location_cm": [3200, 2000, 1000], "rotation": [-22.0, 180.0], "fov": 70},
     {"name": "roofs_barn", "location_cm": [12300, 3700, 900], "rotation": [-20.0, 0.0], "fov": 70},
-    {"name": "hall_clock", "location_cm": [6875, 4450, 420], "rotation": [16.0, 90.0], "fov": 45}
+    {"name": "hall_clock", "location_cm": [6875, 4450, 420], "rotation": [16.0, 90.0], "fov": 45},
+    {"name": "hall_parapet_corner", "location_cm": [5950, 4880, 350], "rotation": [18.6, 42.5], "fov": 75},
+    {"name": "hall_tower_join", "location_cm": [6350, 4750, 400], "rotation": [7.6, 51.5], "fov": 75},
+    {"name": "townwall_piers", "location_cm": [3000, 850, 180], "rotation": [-2.0, -165.8], "fov": 75},
+    {"name": "gate_back_corner", "location_cm": [13100, 5700, 160], "rotation": [11.5, 49.0], "fov": 75},
+    {"name": "ground_square", "location_cm": [3700, 3300, 160], "rotation": [-24.0, 150.0], "fov": 70},
+    {"name": "ground_path", "location_cm": [8220, 1500, 150], "rotation": [-22.0, -90.0], "fov": 70}
   ]
 }
