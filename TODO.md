@@ -22,6 +22,7 @@
 ## Creatures / Monsters
 
 - We need to take some time and care to develop our creature pipeline. Models, animations, and AI state machines
+  - Model and animation pipeline plan: [docs/research/ai-monster-prop-pipeline.md](docs/research/ai-monster-prop-pipeline.md)
 
 
 
