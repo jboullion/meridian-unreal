@@ -1,6 +1,8 @@
 {
   "_doc": "Features painted into original facade textures, in the texture's own pixels (x right, y down from the top-left of build/textures/<grd>.png). tools/blender/build_zone_art.py rebuilds them as geometry wherever a wall uses the texture: openings are cut and recessed (glass/door panel at the back keeps the painted image), frame_px wide surrounds, bands (horizontal) and piers (vertical) stand proud of the wall, crenels become solid merlons, roofs get thickness and overhangs. Timber framing and masonry relief come from Nanite displacement instead (height modes in tools/textures/make_placeholders.py, strengths in materials.json). Check alignment with: python tools/environment/facades.py. Sizes in metres; 'trim' names the texture used for reveals and the stone faces the painting doesn't cover.",
   "defaults": {
+    "cut_openings": false,
+    "_cut_openings_doc": "false (2026-10-05): windows and doors are not cut and recessed; Marigold height maps at the full displacement range give them their depth. The openings below still stop the plinth at doors, and true brings the cut recesses back.",
     "trim": "grd09670",
     "reveal_depth_m": 0.22,
     "frame_proud_m": 0.035,
@@ -25,6 +27,11 @@
     "default_m": 0.03
   },
   "textures": {
+    "grd09666": {
+      "name": "Raza Clock Face",
+      "clock": {"shape": "circle", "x": [28, 99], "y": [16, 87],
+                "_doc": "The dial (glows at night). The original's 12 frames show the hours: the server picks frame hour mod 12 of the game hour (kod raza.kod RecalcLightAndWeather); make_placeholders.py packs them into an atlas and the material picks the frame from MPC_Environment.GameHour (UMRGameTimeSubsystem)."}
+    },
     "grd09663": {
       "name": "raz-bldg-h A wl w/ stainedglss",
       "openings": [

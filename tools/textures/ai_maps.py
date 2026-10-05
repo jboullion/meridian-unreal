@@ -47,6 +47,7 @@ import hashlib
 import inspect
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -292,41 +293,73 @@ def _digest(path):
     return hashlib.sha1(open(path, "rb").read()).hexdigest()
 
 
+RAW = os.path.join(REPO, "build", "texai", "relief_raw")
+
+
+def finish_maps(grd, raw_dir, d_path, h_path, n_path):
+    """Marigold's maps (in raw_dir) -> the placeholder maps: flat normals in cut-out holes, and flat
+    glass in painted windows (make_placeholders.flatten_windows), like make_placeholders.py."""
+    from make_placeholders import flatten_windows, source_size, window_outlines
+    h_img = Image.open(os.path.join(raw_dir, "T_%s_H.png" % grd)).convert("L")
+    n_img = Image.open(os.path.join(raw_dir, "T_%s_N.png" % grd)).convert("RGB")
+    d_img = Image.open(d_path)
+    if d_img.mode == "RGBA":
+        hole = np.asarray(d_img.getchannel("A")) < 128
+        nm = np.asarray(n_img).copy()
+        nm[hole] = (128, 128, 255)
+        n_img = Image.fromarray(nm)
+    h_img, n_img = flatten_windows(h_img, n_img, window_outlines(grd), source_size(grd))
+    h_img.save(h_path)
+    n_img.save(n_path)
+
+
 def apply_relief(force=False):
-    """Marigold height + normal maps for every placeholder texture, in place (see the docstring)."""
+    """Marigold height + normal maps for every placeholder texture, in place (see the docstring).
+    Marigold's own output is kept in build/texai/relief_raw/<key>/ (one per base colour, model and
+    settings), so changing only the finishing (finish_maps, facades.json windows), or going back to
+    a base colour seen before, does not rerun the model."""
+    sys.path.insert(0, os.path.join(REPO, "tools", "textures"))
+    from make_placeholders import flatten_windows, window_outlines
     textures = json.load(open(os.path.join(PLACEHOLDERS, "placeholders.json")))["textures"]
+    # materials.json "relief" "rules_for": names that keep make_placeholders.py's rule-based maps
+    # (Marigold gives roofs nearly flat normals)
+    relief = json.load(open(os.path.join(REPO, "data", "environment", "materials.json"), encoding="utf-8")).get("relief", {})
+    rules_for = re.compile(relief.get("rules_for") or "$^", re.I) if isinstance(relief, dict) else re.compile("$^")
+    kept = sorted(k for k, t in textures.items() if rules_for.search(t.get("name", "")))
+    textures = {k: t for k, t in textures.items() if k not in kept}
     cache = {} if force or not os.path.exists(RELIEF_CACHE) else json.load(open(RELIEF_CACHE))
     code = hashlib.sha1("".join(inspect.getsource(f) for f in (
-        maps, marigold_normals, height_from_normals, finish_height, wrap_pad, crop, load_rgb, save, apply_relief)
+        maps, marigold_normals, height_from_normals, finish_height, wrap_pad, crop, load_rgb, save)
     ).encode()).hexdigest()
-    started, done = time.time(), 0
+    finish_code = hashlib.sha1("".join(inspect.getsource(f) for f in (finish_maps, flatten_windows)).encode()).hexdigest()
+    started, done, finished = time.time(), 0, 0
     out = {}
     for grd in sorted(textures):
         d_path = os.path.join(PLACEHOLDERS, "T_%s_D.png" % grd)
         h_path, n_path = (os.path.join(PLACEHOLDERS, "T_%s_%s.png" % (grd, k)) for k in ("H", "N"))
         key = hashlib.sha1(json.dumps([_digest(d_path), APPLY_METHOD, code, MODEL_SIDE, PAD, HIGHPASS]).encode()).hexdigest()
+        raw_dir = os.path.join(RAW, key[:16])  # per base colour: comparing upscalers doesn't redo the model
+        raw = [os.path.join(raw_dir, "T_%s_%s.png" % (grd, k)) for k in ("H", "N")]
+        fkey = hashlib.sha1(json.dumps([key, finish_code, window_outlines(grd)]).encode()).hexdigest()
         old = cache.get(grd, {})
-        if (old.get("key") == key and os.path.exists(h_path) and os.path.exists(n_path)
+        if (old.get("fkey") == fkey and os.path.exists(h_path) and os.path.exists(n_path)
                 and old.get("h") == _digest(h_path) and old.get("n") == _digest(n_path)):
             out[grd] = old
             continue
-        rgb, full = load_rgb(grd)
-        h, n = maps(APPLY_METHOD, rgb)
-        save(APPLY_METHOD, grd, h, n, full, folder=PLACEHOLDERS)
-        d_img = Image.open(d_path)
-        if d_img.mode == "RGBA":
-            # cut-outs: flat normals in the holes, like make_placeholders.py
-            hole = np.asarray(d_img.getchannel("A")) < 128
-            nm = np.asarray(Image.open(n_path).convert("RGB")).copy()
-            nm[hole] = (128, 128, 255)
-            Image.fromarray(nm).save(n_path)
-        out[grd] = {"key": key, "h": _digest(h_path), "n": _digest(n_path)}
-        done += 1
-        if done % 25 == 0:
+        if not all(os.path.exists(f) for f in raw):
+            rgb, full = load_rgb(grd)
+            h, n = maps(APPLY_METHOD, rgb)
+            save(APPLY_METHOD, grd, h, n, full, folder=raw_dir)
+            done += 1
+        finish_maps(grd, raw_dir, d_path, h_path, n_path)
+        finished += 1
+        out[grd] = {"key": key, "fkey": fkey, "h": _digest(h_path), "n": _digest(n_path)}
+        if finished % 25 == 0:
             json.dump(out | {k: v for k, v in cache.items() if k not in out}, open(RELIEF_CACHE, "w"), indent=0)
     json.dump(out, open(RELIEF_CACHE, "w"), indent=0, sort_keys=True)
-    print("relief: Marigold maps for %d textures: %d made, %d unchanged (%.0f s)"
-          % (len(textures), done, len(textures) - done, time.time() - started))
+    print("relief: Marigold maps for %d textures: %d from the model, %d refinished, %d unchanged; %d keep the "
+          "rule-based maps (%.0f s)" % (len(textures), done, finished - done, len(textures) - finished, len(kept),
+                                          time.time() - started))
 
 
 def main():

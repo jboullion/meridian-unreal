@@ -291,42 +291,102 @@ def cutout_solid(out, wall, grd, thickness, add_face_st, ups, tol=0.75):
     if _signed_area(clip) < 0:
         clip = clip[::-1]
     mat, half, count = grd + "__solid", thickness / 2.0, 0
+    # Triangulate each whole outline first, then clip the triangles to the wall. Clipping the
+    # outline and its holes first (as this used to) leaves holes touching the outline wherever the
+    # wall ends mid-texture, and tessellate_polygon then drops most of the face: half a gate showed
+    # only its edges.
+    tris_px = []
+    for outer_px, holes_px in polys:
+        loops = [outer_px] + holes_px
+        flat = [Vector((x, y, 0.0)) for loop in loops for x, y in loop]
+        tris = geometry.tessellate_polygon([[Vector((x, y, 0.0)) for x, y in loop] for loop in loops])
+        want = abs(_signed_area([Vector(p) for p in outer_px])) - sum(abs(_signed_area([Vector(p) for p in h]))
+                                                                      for h in holes_px)
+        got = sum(geometry.area_tri(flat[a], flat[b], flat[c]) for a, b, c in tris)
+        if abs(got - want) > 0.02 * max(want, 1.0):
+            print("[zone_detail] WARNING: %s outline of %.0f px2 triangulated to %.0f px2" % (grd, want, got))
+        tris_px.append([[(flat[i].x, flat[i].y) for i in t] for t in tris])
+
+    def side(a, b, solid_left):
+        """An outline side between st points a and b, facing out of the solid."""
+        seg = b - a
+        if seg.length < 1e-5:
+            return
+        perp = Vector((-seg.y, seg.x)) / seg.length  # left of a->b
+        if solid_left:
+            perp = -perp
+        want = wall.r * perp.x + ups * perp.y
+        pts = [wall.p3(a.x, a.y, -half), wall.p3(b.x, b.y, -half), wall.p3(b.x, b.y, half), wall.p3(a.x, a.y, half)]
+        at = (a.x + b.x) / 2
+        out.poly(pts, [wall.uv(a, at), wall.uv(b, at), wall.uv(b, at), wall.uv(a, at)], mat, want)
+
     for _ in wall.frames():
         for ku, kv in wall.repeats():
-            for outer_px, holes_px in polys:
-                outer = clip_convex([wall.st_of_px(p, ku, kv) for p in outer_px], clip)
-                if len(outer) < 3 or abs(_signed_area(outer)) < 1e-5:
+            for (outer_px, holes_px), tris in zip(polys, tris_px):
+                outer = [wall.st_of_px(p, ku, kv) for p in outer_px]
+                holes = [[wall.st_of_px(p, ku, kv) for p in hp] for hp in holes_px]
+                built = False
+                for tri in tris:
+                    piece = clip_convex([wall.st_of_px(p, ku, kv) for p in tri], clip)
+                    if len(piece) >= 3 and abs(_signed_area(piece)) > 1e-7:
+                        add_face_st(out, wall, [piece], half, mat, wall.n)
+                        add_face_st(out, wall, [piece], -half, mat, -wall.n)
+                        built = True
+                if not built:
                     continue
-                holes = []
-                for hp in holes_px:
-                    hl = clip_convex([wall.st_of_px(p, ku, kv) for p in hp], clip)
-                    if len(hl) >= 3 and abs(_signed_area(hl)) > 1e-5:
-                        holes.append(hl)
-                loops = [outer] + holes
-                add_face_st(out, wall, loops, half, mat, wall.n)
-                add_face_st(out, wall, loops, -half, mat, -wall.n)
                 outer2 = [(q.x, q.y) for q in outer]
                 holes2 = [[(q.x, q.y) for q in hl] for hl in holes]
-                for loop in loops:
+
+                def solid(p):
+                    return point_in_loop((p.x, p.y), outer2) and not any(point_in_loop((p.x, p.y), h) for h in holes2)
+
+                for loop in [outer] + holes:
                     n = len(loop)
                     for i in range(n):
                         a, b = loop[i], loop[(i + 1) % n]
-                        seg = b - a
-                        if seg.length < 1e-5:
-                            continue
-                        perp = Vector((-seg.y, seg.x)) / seg.length
-                        probe = (a + b) / 2 + perp * 0.002
-                        inside = point_in_loop((probe.x, probe.y), outer2) and                             not any(point_in_loop((probe.x, probe.y), h) for h in holes2)
-                        if inside:
-                            perp = -perp  # face out of the solid
-                        want = wall.r * perp.x + ups * perp.y
-                        pts = [wall.p3(a.x, a.y, -half), wall.p3(b.x, b.y, -half),
-                               wall.p3(b.x, b.y, half), wall.p3(a.x, a.y, half)]
-                        at = (a.x + b.x) / 2
-                        uvs = [wall.uv(a, at), wall.uv(b, at), wall.uv(b, at), wall.uv(a, at)]
-                        out.poly(pts, uvs, mat, want)
+                        part = _clip_segment(a, b, clip)
+                        if part:
+                            seg = b - a
+                            probe = (a + b) / 2 + Vector((-seg.y, seg.x)).normalized() * 0.002
+                            side(*part, solid(probe))
+                # caps where the wall's own edge cuts through the solid
+                for i in range(len(clip)):
+                    p, q = clip[i], clip[(i + 1) % len(clip)]
+                    ts = [0.0, 1.0]
+                    for loop in [outer] + holes:
+                        for j in range(len(loop)):
+                            x = geometry.intersect_line_line_2d(p, q, loop[j], loop[(j + 1) % len(loop)])
+                            if x is not None:
+                                ts.append((x - p).length / max((q - p).length, 1e-9))
+                    ts.sort()
+                    for t0, t1 in zip(ts, ts[1:]):
+                        if t1 - t0 > 1e-6 and solid(p.lerp(q, (t0 + t1) / 2)):
+                            # clip is counter-clockwise: the solid lies left of p->q
+                            side(p.lerp(q, t0), p.lerp(q, t1), True)
                 count += 1
     return count
+
+
+def _clip_segment(a, b, clip):
+    """The part of segment a-b inside the convex counter-clockwise polygon `clip` (Cyrus-Beck)."""
+    t0, t1, d = 0.0, 1.0, b - a
+    for i in range(len(clip)):
+        p, q = clip[i], clip[(i + 1) % len(clip)]
+        e = q - p
+        num = e.x * (a.y - p.y) - e.y * (a.x - p.x)  # >= 0 inside
+        den = e.x * d.y - e.y * d.x
+        if abs(den) < 1e-12:
+            if num < -1e-9:
+                return None
+            continue
+        t = -num / den
+        if den > 0:
+            t0 = max(t0, t)
+        else:
+            t1 = min(t1, t)
+        if t1 - t0 < 1e-9:
+            return None
+    return a + d * t0, a + d * t1
 
 
 # --------------------------------------------------------------------------------- roof tiles

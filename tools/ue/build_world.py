@@ -200,7 +200,8 @@ def write_render_blockout(glb, render_glb, config):
 
 def import_zone_parts(zone, materials):
     """-> [(mesh path, label, role)], role "geometry" (render + collision), "collision" (hidden),
-    "render" (no collision) or "art" (Nanite, no collision)."""
+    "render" (no collision), "art" (Nanite, no collision) or "decal" (mesh decals: not Nanite, no
+    collision, no shadows)."""
     rid, cls = zone["rid"], zone["class"]
     base = "%s/Zones/Z%d" % (GENERATED, rid)
     glb = os.path.join(REPO, zone["mesh"])
@@ -221,9 +222,9 @@ def import_zone_parts(zone, materials):
              (render, "ZoneGeometry_%d_%s" % (rid, cls), "render")]
     for m in manifest["meshes"]:
         mesh = import_zone_mesh(os.path.join(art_dir, m["file"]), "%s/Art/%s" % (base, m["name"]),
-                                nanite=not m.get("water"), collision=False)
+                                nanite=not (m.get("water") or m.get("decal")), collision=False)
         materials.apply(mesh, art=True, flat=m.get("displacement", "runtime") != "runtime")
-        parts.append((mesh, "ZoneArt_%d_%s" % (rid, m["building"]), "art"))
+        parts.append((mesh, "ZoneArt_%d_%s" % (rid, m["building"]), "decal" if m.get("decal") else "art"))
     return parts, "%d art meshes, %d blockout triangles hidden under art" % (len(manifest["meshes"]), hidden)
 
 
@@ -232,7 +233,7 @@ def prune_art(zone, parts):
     folder = "%s/Zones/Z%d/Art" % (GENERATED, zone["rid"])
     if not eal.does_directory_exist(folder):
         return
-    keep = {p[0].split("/Art/")[1].split("/")[0] for p in parts if p[2] == "art"}
+    keep = {p[0].split("/Art/")[1].split("/")[0] for p in parts if p[2] in ("art", "decal")}
     gone = {p.split("/Art/")[1].split("/")[0] for p in eal.list_assets(folder, recursive=True, include_folder=False)} - keep
     for name in sorted(gone):
         log("zone %d: removing art %s (no longer in the manifest)" % (zone["rid"], name))
@@ -366,9 +367,11 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
         comp.set_mobility(unreal.ComponentMobility.STATIC)
         if role == "collision":
             comp.set_visibility(False)  # still blocks; not rendered, no shadows, no Lumen
-        elif role in ("render", "art"):
+        elif role in ("render", "art", "decal"):
             comp.set_collision_profile_name("NoCollision")
             comp.set_collision_enabled(unreal.CollisionEnabled.NO_COLLISION)
+        if role == "decal":
+            comp.set_cast_shadow(False)
         a.tags = [unreal.Name("Zone" + role.capitalize())] + zone_tags
     for label, mesh, transforms, rule in compute_scatter():
         a = actors.spawn_actor_from_class(unreal.MRScatterActor, origin, unreal.Rotator(0, 0, 0))

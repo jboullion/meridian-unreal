@@ -19,6 +19,7 @@ import unreal
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 MOODS = os.path.join(REPO, "data", "environment", "moods.json")
 WORLD_PATH = "/Game/Generated/Maps/L_World"
+MPC_PATH = "/Game/Generated/Environment/Materials/MPC_Environment"  # environment_materials.ensure_mpc
 
 
 def log(msg):
@@ -82,13 +83,33 @@ def resolve_mood(moods, name):
     return merged
 
 
+def _apply_collection(values):
+    """moods.json "Collection": {scalar: value} -> MPC_Environment's defaults (WindowGlow, ...)."""
+    mpc = unreal.EditorAssetLibrary.load_asset(MPC_PATH)
+    if not mpc:
+        log("WARNING: no %s (build_world.py makes it)" % MPC_PATH)
+        return
+    params = list(mpc.get_editor_property("scalar_parameters"))
+    by_name = {str(p.get_editor_property("parameter_name")): p for p in params}
+    for name, value in values.items():
+        if name.startswith("_"):
+            continue
+        if name not in by_name:
+            log("WARNING: MPC_Environment has no %s" % name)
+            continue
+        by_name[name].set_editor_property("default_value", float(value))
+    mpc.set_editor_property("scalar_parameters", params)
+    unreal.EditorAssetLibrary.save_loaded_asset(mpc)
+
+
 def apply_mood(world_actors, mood_name):
     """Apply one mood to the actors (by label) of the current level. Returns the number of actors changed."""
     mood = resolve_mood(json.load(open(MOODS, encoding="utf-8"))["moods"], mood_name)
     by_label = {a.get_actor_label(): a for a in world_actors}
     changed = 0
+    _apply_collection(dict({"WindowGlow": 0.0}, **mood.get("Collection", {})))
     for label, block in mood.items():
-        if label.startswith("_"):
+        if label.startswith("_") or label == "Collection":
             continue
         actor = by_label.get(label)
         if not actor:

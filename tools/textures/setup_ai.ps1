@@ -26,8 +26,20 @@ $venv = Join-Path $texai ".venv"
 $py = Join-Path $venv "Scripts\python.exe"
 if (-not (Test-Path $py)) { uv venv --python 3.12 $venv }
 uv pip install --python $py torch torchvision --index-url https://download.pytorch.org/whl/cu128
-uv pip install --python $py diffusers transformers accelerate onnxruntime opencv-python-headless numpy scipy pillow huggingface_hub
+uv pip install --python $py diffusers transformers accelerate onnxruntime opencv-python-headless numpy scipy pillow huggingface_hub spandrel
 & $py -c "import torch; print('torch', torch.__version__, 'cuda', torch.cuda.is_available())"
+
+# Base colour upscaler (make_placeholders.py ESRGAN_MODEL): Phips' 4xTextures_GTAV_rgt-s_dither,
+# CC-BY-4.0 (https://huggingface.co/Phips/4xTextures_GTAV_rgt-s_dither), 136 MB, run through spandrel.
+# Other openmodeldb models can be dropped into build/texai/models/ as <name>.safetensors to compare
+# (tools/lookdev/upscaler_test.ps1).
+$models = Join-Path $texai "models"
+New-Item -ItemType Directory -Force $models | Out-Null
+$upscaler = Join-Path $models "4xTextures_GTAV_rgt-s_dither.safetensors"
+if (-not (Test-Path $upscaler)) {
+    Invoke-WebRequest -UseBasicParsing -OutFile $upscaler `
+        "https://huggingface.co/Phips/4xTextures_GTAV_rgt-s_dither/resolve/main/4xTextures_GTAV_rgt-s_dither.safetensors"
+}
 
 # DeepBump (only for ai_maps.py's comparison test)
 $deepbump = Join-Path $texai "DeepBump"

@@ -80,16 +80,17 @@ def opening_outline(op, grow=0.0, segments=8):
     return pts
 
 
-def cutout_thickness(grd, data=None, catalog=None):
+def cutout_thickness(grd, data=None, catalog=None, crenels=False):
     """Thickness (m) to rebuild a cut-out (alpha) original as a solid, or None when it stays a flat
-    cut-out: not transparent, foliage ("cutouts" "exclude"), or crenellations (built as parapets)."""
+    cut-out: not transparent, foliage ("cutouts" "exclude"), or crenellations (built as parapets,
+    unless `crenels`: zone art "cutouts" mode, where there are no parapets)."""
     import re
     data = data or load()
     if catalog is None:
         catalog = json.load(open(os.path.join(TEXTURES, "catalog.json"), encoding="utf-8"))["textures"]
     info = catalog.get(grd.split("__")[0])
     rules = data.get("cutouts", {})
-    if not info or not info.get("has_transparency") or "crenels" in data["textures"].get(grd, {}):
+    if not info or not info.get("has_transparency") or ("crenels" in data["textures"].get(grd, {}) and not crenels):
         return None
     name = info["name"]
     if rules.get("exclude") and re.search(rules["exclude"], name, re.I):

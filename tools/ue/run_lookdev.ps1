@@ -14,6 +14,8 @@
 param(
     [Parameter(Mandatory = $true)][string]$Label,
     [string]$Compare = "",
+    # Meridian game hour for the clock faces (MRGameTimeSubsystem); pinned so captures compare, -1 = real time
+    [double]$GameHour = 15,
     [string[]]$Only = @(),
     [switch]$Profile,
     [int]$ResX = 1600,
@@ -35,6 +37,7 @@ $gameArgs = "`"$proj`" /Game/Generated/Maps/L_World -game -windowed -resx=$ResX 
 if ($Only) { $gameArgs += " -MRLookDevOnly=" + ($Only -join ",") }
 if ($Profile) { $gameArgs += " -MRLookDevProfile" }
 if ($Settle -gt 0) { $gameArgs += " -MRLookDevSettle=$Settle" }
+if ($GameHour -ge 0) { $gameArgs += " -MRGameHour=$GameHour" }
 
 $started = Get-Date
 for ($attempt = 1; $attempt -le 2; $attempt++) {
