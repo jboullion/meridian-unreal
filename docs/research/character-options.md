@@ -76,6 +76,7 @@ The same point applies to **any** non-native mesh below (Quaternius, Meshy). Re-
 
   Expect hours per head, not minutes.
 - Generating whole modular characters doesn't work: the parts won't share seams or proportions.
+- **Update:** whole-outfit generation *can* work if every piece is fitted back onto one base body that owns the proportions, seams and weights. See [ai-character-pipeline.md](ai-character-pipeline.md).
 
 ## Recommendation (for discussion)
 - **If the public repo matters:** use **Quaternius Universal Base Characters + Fantasy outfits** as the committed default.
