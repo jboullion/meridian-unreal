@@ -1,8 +1,17 @@
 """
-Placeholder PBR textures from the extracted originals, for lighting / post-process / VFX tests
-(ADR 0003, Phase 0). Needs only Pillow. Run after tools/bgf2png --textures-for-zones:
+PBR textures from the extracted originals (ADR 0003). Needs Pillow; uses Real-ESRGAN and the AI
+relief environment when they are installed (README, "Environment art"). Run after
+tools/bgf2png --textures-for-zones:
 
-    python tools/textures/make_placeholders.py [--scale 4] [--max 2048] [--esrgan PATH] [--force] [--jobs N]
+    python tools/textures/make_placeholders.py [--scale 4] [--max 2048] [--esrgan PATH | --no-esrgan]
+                                               [--relief auto|rules] [--force] [--jobs N]
+
+  base colour   Real-ESRGAN (realesrgan-x4plus) 4x of the original, wrap-padded so tiling textures
+                stay seamless, when build/texai/realesrgan/realesrgan-ncnn-vulkan.exe exists (or
+                --esrgan PATH); otherwise Lanczos + sharpening (--no-esrgan forces that).
+  relief        --relief auto (default): after this script, tools/textures/ai_maps.py --apply (in
+                build/texai/.venv, when it exists) replaces every height and normal map with Marigold's,
+                made from the base colour, incrementally. --relief rules keeps the rule-based maps below.
 
 Incremental: a texture set is remade only when its inputs change (the original's pixels, its catalog
 entry, the rules that apply to it, the options, or the code that makes it); the rest are kept from
@@ -10,10 +19,10 @@ the last run (build/textures_placeholder/cache.json). Changed sets are made in p
 remakes everything.
 
 For every texture in build/textures/catalog.json it writes, to build/textures_placeholder/:
-  T_<grd>_D.png   base colour: upscaled (Lanczos, or Real-ESRGAN when --esrgan points at
-                  realesrgan-ncnn-vulkan.exe) and resized to power-of-two sides so UE gets mips.
+  T_<grd>_D.png   base colour: upscaled (see above) and resized to power-of-two sides so UE gets mips.
                   The UVs from roo2gltf span one texture repeat, so the stretch doesn't change the mapping.
-  T_<grd>_H.png   height (0 = deepest), for normals and Nanite displacement. Two modes:
+  T_<grd>_H.png   height (0 = deepest), for normals and Nanite displacement (rule-based here; Marigold's
+                  with --relief auto). Modes:
                   "luma": blurred luminance (dark cracks = low);
                   "stones" (masonry: cobble, ashlar, paths): the mortar is found as the minority side of
                   an Otsu threshold (it is light on some originals and dark on others, so luminance
@@ -253,14 +262,22 @@ def fill_cutout(img: Image.Image) -> Image.Image:
     return out
 
 
+ESRGAN_DEFAULT = ROOT / "build" / "texai" / "realesrgan" / "realesrgan-ncnn-vulkan.exe"
+ESRGAN_PAD = 8  # texels of wrap-around context on each side, so tile edges upscale seamlessly
+RELIEF_PYTHON = ROOT / "build" / "texai" / ".venv" / "Scripts" / "python.exe"
+
+
 def esrgan_upscale(exe: Path, src: Image.Image) -> Image.Image:
-    """4x with realesrgan-ncnn-vulkan; alpha is upscaled separately by Lanczos (ESRGAN drops it)."""
+    """4x with realesrgan-ncnn-vulkan (realesrgan-x4plus) of the wrap-padded image, cropped back;
+    alpha is handled separately (ESRGAN drops it)."""
     with tempfile.TemporaryDirectory() as tmp:
         rgb_in, rgb_out = Path(tmp) / "in.png", Path(tmp) / "out.png"
-        src.convert("RGB").save(rgb_in)
-        subprocess.run([str(exe), "-i", str(rgb_in), "-o", str(rgb_out), "-n", "realesrgan-x4plus"],
+        wrap_crop(src.convert("RGB"), ESRGAN_PAD).save(rgb_in)
+        subprocess.run([str(exe), "-i", str(rgb_in), "-o", str(rgb_out), "-n", "realesrgan-x4plus", "-s", "4"],
                        check=True, capture_output=True)
-        return Image.open(rgb_out).convert("RGB")
+        up = Image.open(rgb_out).convert("RGB")
+        p = ESRGAN_PAD * 4
+        return up.crop((p, p, up.width - p, up.height - p))
 
 
 def wrap_crop(img: Image.Image, pad: int) -> Image.Image:
@@ -383,7 +400,10 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--scale", type=int, default=4, help="upscale factor before power-of-two rounding")
     ap.add_argument("--max", type=int, default=2048, help="largest side in pixels")
-    ap.add_argument("--esrgan", type=Path, help="path to realesrgan-ncnn-vulkan.exe (optional)")
+    ap.add_argument("--esrgan", type=Path, help="realesrgan-ncnn-vulkan.exe (default: %s, if present)" % ESRGAN_DEFAULT)
+    ap.add_argument("--no-esrgan", action="store_true", help="Lanczos upscaling even when Real-ESRGAN is installed")
+    ap.add_argument("--relief", choices=("auto", "rules"), default="auto",
+                    help="auto: Marigold height/normal maps (tools/textures/ai_maps.py --apply) when installed")
     ap.add_argument("--force", action="store_true", help="remake every texture set")
     ap.add_argument("--jobs", type=int, default=os.cpu_count() or 4, help="parallel processes")
     args = ap.parse_args()
@@ -394,6 +414,10 @@ def main():
     catalog = json.loads(catalog_path.read_text())["textures"]
     if args.esrgan and not args.esrgan.exists():
         sys.exit("--esrgan: %s not found" % args.esrgan)
+    if not args.esrgan and not args.no_esrgan and ESRGAN_DEFAULT.exists():
+        args.esrgan = ESRGAN_DEFAULT
+    if args.esrgan:
+        args.jobs = min(args.jobs, 3)  # the upscales share one GPU
 
     started = time.time()
     OUT.mkdir(parents=True, exist_ok=True)
@@ -431,7 +455,7 @@ def main():
     new_cache["_extras"] = {"key": extras_code, "files": list(extras.values())}
 
     # anything else in the folder is from a texture no longer in the catalog
-    keep = {f for entry in new_cache.values() for f in entry.get("files", [])} | {"placeholders.json", "cache.json"}
+    keep = {f for entry in new_cache.values() for f in entry.get("files", [])} | {"placeholders.json", "cache.json", "relief.json"}
     for f in OUT.iterdir():
         if f.is_file() and f.name not in keep:
             f.unlink()
@@ -439,8 +463,17 @@ def main():
     manifest = dict(sorted(manifest.items()))
     (OUT / "placeholders.json").write_text(json.dumps({"textures": manifest, "extras": extras}, indent=1, sort_keys=True))
     cache_path.write_text(json.dumps(new_cache, indent=0, sort_keys=True))
-    print("%d placeholder texture sets in %s: %d remade, %d unchanged (%.0f s)"
-          % (len(manifest), OUT.relative_to(ROOT), len(jobs), len(manifest) - len(jobs), time.time() - started))
+    print("%d placeholder texture sets in %s: %d remade, %d unchanged, base colour %s (%.0f s)"
+          % (len(manifest), OUT.relative_to(ROOT), len(jobs), len(manifest) - len(jobs),
+             "Real-ESRGAN" if args.esrgan else "Lanczos", time.time() - started))
+
+    if args.relief == "auto":
+        if RELIEF_PYTHON.exists():
+            cmd = [str(RELIEF_PYTHON), str(ROOT / "tools" / "textures" / "ai_maps.py"), "--apply"]
+            subprocess.run(cmd + (["--force"] if args.force else []), check=True)
+        else:
+            print("relief: rule-based height/normal maps (no %s; see README to install the AI relief step)"
+                  % RELIEF_PYTHON.relative_to(ROOT))
 
 
 if __name__ == "__main__":

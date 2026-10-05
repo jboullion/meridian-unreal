@@ -80,6 +80,33 @@ def opening_outline(op, grow=0.0, segments=8):
     return pts
 
 
+def cutout_thickness(grd, data=None, catalog=None):
+    """Thickness (m) to rebuild a cut-out (alpha) original as a solid, or None when it stays a flat
+    cut-out: not transparent, foliage ("cutouts" "exclude"), or crenellations (built as parapets)."""
+    import re
+    data = data or load()
+    if catalog is None:
+        catalog = json.load(open(os.path.join(TEXTURES, "catalog.json"), encoding="utf-8"))["textures"]
+    info = catalog.get(grd.split("__")[0])
+    rules = data.get("cutouts", {})
+    if not info or not info.get("has_transparency") or "crenels" in data["textures"].get(grd, {}):
+        return None
+    name = info["name"]
+    if rules.get("exclude") and re.search(rules["exclude"], name, re.I):
+        return None
+    for pattern, metres in rules.get("thickness_m", []):
+        if re.search(pattern, name, re.I):
+            return metres
+    return rules.get("default_m", 0.03)
+
+
+def cutout_materials():
+    """Every texture that cutout_thickness() rebuilds as a solid."""
+    data = load()
+    catalog = json.load(open(os.path.join(TEXTURES, "catalog.json"), encoding="utf-8"))["textures"]
+    return {grd for grd in catalog if cutout_thickness(grd, data, catalog)}
+
+
 def check_overlays():
     """Draw every described feature over its texture (4x) for a visual check."""
     from PIL import Image, ImageDraw

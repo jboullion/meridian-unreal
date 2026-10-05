@@ -1,6 +1,9 @@
 {
  "_doc": "Original texture id (blockout material slot) -> real material asset. Slots not listed use the generated placeholder MI_<grd> (tools/textures/make_placeholders.py). Zone-art slots named <grd>__<variant> use <grd>'s material with the parameters of `variants`. See docs/adr/0003-environment-art-pipeline.md.",
  "materials": {},
+ "displacement_range_cm": 14,
+ "displacement_facade_scale": 0.5,
+ "_displacement_range_doc": "Full Nanite displacement range in cm at DisplacementStrength 1 (Marigold height maps, docs/adr/0003 AI relief maps). Walls whose texture facades.json describes (rebuilt with real openings and trims) displace displacement_facade_scale as much, so the geometry and the height map don't both push windows back.",
  "variants": {
   "_doc": "Material parameter overrides for <grd>__<variant> slots (written by tools/blender/build_zone_art.py): glass = stained glass panels, panel = door leaves, solid = cut-out originals rebuilt as solid geometry (merlons).",
   "glass": {
@@ -15,7 +18,7 @@
   "solid": {}
  },
  "displacement": {
-  "_doc": "Nanite displacement strength (0..1, full range +-2.5 cm) for zone-art (Nanite) meshes using these textures; unlisted textures don't displace. Heights come from T_<grd>_H (make_placeholders.py): timber facades raise their beams, masonry and roof tiles dome.",
+  "_doc": "Nanite displacement strength (0..1 of displacement_range_cm) for zone-art (Nanite) meshes using these textures; unlisted textures don't displace. Heights come from T_<grd>_H (Marigold via make_placeholders.py --relief auto, else rule-based).",
   "grd09663": 1.0,
   "grd09665": 1.0,
   "grd09667": 0.8,

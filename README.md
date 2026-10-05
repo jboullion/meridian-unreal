@@ -50,7 +50,8 @@ Run `bgf2png` before `roo2gltf` so the blockouts pick up the real texture sizes 
 Environment art for the world build (see [ADR 0003](docs/adr/0003-environment-art-pipeline.md), "Raza look-dev"):
 
 ```bash
-python tools/textures/make_placeholders.py                                   # textures, normals, heights, macro noise (incremental; --force)
+powershell -File tools/textures/setup_ai.ps1                                  # once: Real-ESRGAN + Marigold environment (build/texai/, ~5 GB)
+python tools/textures/make_placeholders.py                                   # textures (Real-ESRGAN), Marigold height/normal maps, macro noise (incremental; --force)
 blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 # rebuilt buildings (the Hall) -> build/environment/
 blender -b --factory-startup -P tools/blender/build_grass_kit.py              # grass tufts -> build/environment/kit/
 blender -b --factory-startup -P tools/blender/build_prop_kit.py               # lamp post, brazier -> build/environment/kit/
@@ -136,7 +137,8 @@ The game reads `data/zones.json` and `data/zone_layout.json` directly from the r
 - **`tools/blender/build_grass_kit.py`**: grass tuft meshes for the ground scatter.
 - **`tools/blender/build_prop_kit.py`**: meshes for Kod-placed objects listed in `data/environment/props.json` (lamp posts, braziers), spawned with their lights by the world build.
 - **`tools/environment/`**: shared pure-Python helpers: blockout glb reading and the rebuilt-face selection (`blockout.py`), facade outlines with an overlay per texture and a one-image review sheet of every opening (`facades.py`, writes `build/environment/facade_check/`), and seeded ground scatter (`scatter.py`).
-- **`tools/textures/make_placeholders.py`**: tier-0 textures from the originals: upscaled base colour, normal and height maps (masonry heights from a mortar/stone split), and the macro-variation noise.
+- **`tools/textures/make_placeholders.py`**: textures from the originals. Base colour is upscaled with Real-ESRGAN (`realesrgan-x4plus`). Height and normal maps come from Marigold (`ai_maps.py --apply`), and from rules by brightness and texture name when the AI tools aren't installed. It also makes the macro-variation noise. Both steps are incremental.
+- **`tools/textures/ai_maps.py`**: height and normal maps from learned models (DeepBump, Marigold normals, Depth Anything V2) for comparison with `make_placeholders.py`'s. It runs in its own environment, `build/texai/.venv` (PyTorch CUDA, diffusers, onnxruntime, DeepBump cloned into `build/texai/DeepBump`). `--sheet` draws a per-texture comparison. `tools/lookdev/ai_maps_test.ps1` swaps each method into the world and captures look-dev images.
 - **`tools/ue/zone_mood.py`**, **`tools/ue/run_lookdev.ps1`**, **`tools/lookdev/compare.py`**: lighting moods from `data/environment/moods.json`, and the look-dev capture and comparison loop.
 - **`tools/blender/install_mpfb_packs.py`**: installs MakeHuman asset packs (zips) into Blender's MPFB extension.
 - **`tools/blender/mpfb_character.py`**: builds a MakeHuman character kit on the UE5 mannequin skeleton: one body mesh with head-slider morph targets, hairstyles, textures and a manifest. Settings live in `tools/blender/characters/*.json`.

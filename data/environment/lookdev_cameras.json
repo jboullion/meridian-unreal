@@ -22,6 +22,8 @@
     {"name": "hut_door", "location_cm": [3677, 1468, 170], "rotation": [-5.0, -90.0], "fov": 70},
     {"name": "shops_corner", "location_cm": [10077, 2435, 170], "rotation": [0.9, -45.0], "fov": 70},
     {"name": "shops_side", "location_cm": [10495, 3493, 170], "rotation": [30.0, 0.0], "fov": 70},
-    {"name": "temple_rose", "location_cm": [3150, 5258, 170], "rotation": [28.0, 104.0], "fov": 60}
+    {"name": "temple_rose", "location_cm": [3150, 5258, 170], "rotation": [28.0, 104.0], "fov": 60},
+    {"name": "fence_angle", "location_cm": [4200, 5040, 140], "rotation": [-6.0, 23.0], "fov": 60},
+    {"name": "sign_angle", "location_cm": [10772, 4095, 180], "rotation": [8.0, 175.0], "fov": 50}
   ]
 }

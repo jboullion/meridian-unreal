@@ -216,6 +216,55 @@ Two more recesses didn't match the paint, and both were data errors in `facades.
 
 An automatic edge-fitting check was tried and dropped. On these textures, mortar lines, frame edges and leading all score as well as the real outline, so it flagged every opening. Instead, `python tools/environment/facades.py` now also writes `build/environment/facade_check/openings_sheet.png`. It shows all 34 described openings, cropped from their textures, with the opening outline (magenta) and frame (cyan) drawn over them. A misplaced outline is obvious there at a glance. Check it after editing `facades.json`. The look-dev camera `temple_rose` covers the rose window.
 
+### Cut-out solids (2026-10-04)
+The original's fences, gates, signs, cage and torches are flat cut-outs: a quad with a see-through texture. `build_zone_art.py` now rebuilds them as solids:
+- **Shape.** The original texture's alpha mask is traced into outlines (`zone_detail.cutout_solid`, the same tracer as the timber beams), clipped to the wall and extruded, centred on the blockout plane. Front and back keep the texture mapping and the sides stretch it. From the front they look exactly like before; from an angle they have thickness and catch light.
+- **Thickness.** Set by texture name in `facades.json` `"cutouts"`: iron 3.5 cm, signs and doors 5 cm, otherwise 3 cm. Foliage cut-outs (tree lines, forest walls, field tops) are excluded and stay flat, and crenellations stay parapets.
+- **Where they're built.** Cut-outs inside a building's region are rebuilt as part of that building. A `"kind": "cutouts"` entry (last in `zone_300.json`, no displacement) picks up the rest into `SM_Z300_Cutouts`: 94 walls, 88k triangles.
+- **Material.** They use the opaque `<grd>__solid` material, like the merlons. That's also cheaper for Nanite than masked materials. Collision is still the blockout's.
+- **Not yet done.** Interiors (wall torches) have no zone art config yet.
+- **Look-dev cameras:** `fence_angle`, `sign_angle`.
+
+### AI relief maps test (2026-10-05)
+`make_placeholders.py` guesses height from brightness, with rules per texture name (stones, timber). This test asked learned models for the surface shape instead (`tools/textures/ai_maps.py`, in its own environment under `build/texai/`), on the 47 displaced textures.
+
+The methods:
+- **DeepBump** (colour → normals → height).
+- **Marigold normals v1.1**.
+- **Depth Anything V2 Small** (`dav2`).
+- **A combo:** `dav2` for the large shapes plus the rule-based fine detail.
+
+It was compared in-engine with `tools/lookdev/ai_maps_test.ps1` (look-dev labels `ai_current`, `ai_marigold`, `ai_dav2`, `ai_combo`; zoomed crops `build/lookdev/ai_zoom_*.png`; per-texture sheet `ai_maps_sheet.png`).
+
+Findings:
+- **DeepBump:** low-frequency mush. Dropped.
+- **`dav2` gets the large structure right on nearly every facade.** Windows and doors sit back; beams, pilasters, arches and bands stand forward; walls are flat between them. The rules get some of these backwards (beams as grooves on the Shops tall wall, raised Hall windows). It has no fine detail, though, and nothing on roof tiles.
+- **Marigold is the cleanest overall.** No artefacts, and plausible stone and plank shapes. The rules' pits disappear (dark speckles that the stone rule digs in as mortar), which is what fuzzy textures need. It's flatter than the rules on crisp masonry like the Hall's cobble.
+- **The rules still give the strongest relief on clean, high-contrast masonry.** On speckled or fuzzy textures they make artefacts.
+- **The combo** keeps the rules' detail, including their artefacts.
+- **Range limits structure.** At the current displacement range (5 cm total) the large-scale structure barely shows in-engine. A recessed window needs about 10–20 cm, so `dav2`'s strength only pays off with a larger range for the large shapes.
+
+**Plain walls (second run).** The first run was on the facade-relief buildings, whose geometry already sets windows back and so hid what the maps do on their own. It was repeated on the original blockout geometry (`build_zone_art.py --plain`, `ai_maps_test.ps1 -Plain`) at the 5 cm range and at 15 cm (`MR_DISPLACEMENT_RANGE_CM`). Labels are `ai_<method>_<range>cm_plain`, with zoomed crops in `build/lookdev/ai_plain15_zoom_*.png`.
+- **At 15 cm, Marigold and `dav2` set windows back with a curved reveal and raise the beams, with no outlines and no cut geometry.** Both are clean. Marigold also gives beams a rounded profile and stones some shape; `dav2`'s stones stay flat.
+- **The rule-based maps break at 15 cm.** They give melted, stretched stone, distorted glass and dark crust. The combo inherits that, so it's out.
+- **The facade relief still wins where it has data:** crisp reveals, sills and frames. But Marigold at a larger range gives a reasonable automatic version for any texture, including buildings with no `facades.json` entry.
+
+**Sharper input (third run).** Marigold was fed Real-ESRGAN 4× upscales of the originals (`realesrgan-x4plus` and `-x4plus-anime`; `ai_maps.py --esrgan`, then `--input`) instead of the Lanczos upscales. The game kept its own base colour. The upscales themselves are much sharper and cleaner: crisp stone edges, and the dithered plaster becomes smooth. In-game, on plain walls at 15 cm, the depth gain is marginal: slightly crisper beam edges, arch stones and planks, and identical window recesses (`build/lookdev/esr_zoom.png`, `esr_marigold_sheet.png`). Marigold already finds the large shapes and works at 768 px, so sharper input adds little depth. The remaining fuzziness is in the visible base colour, which is a separate decision.
+
+**Cleaned textures in game (fourth run, 2026-10-05).** All 150 textures were upscaled with Real-ESRGAN (`ai_maps.py --all --esrgan <model>`; cut-outs keep their hard alpha), with Marigold maps made from the same images (`--all --methods marigold --input <model>`). Both were used in game together (look-dev bundles `build/texai/out/esr_<model>/`). The comparisons:
+- **Plain walls at 15 cm** (`build/lookdev/esr_colour_plain_zoom.png`).
+- **The current town at 5 cm, all cameras** (`ai_current_5cm` and `ai_esr_*_5cm`; `esr_colour_town.png` and the full compare sheet).
+
+The cleaned colour removes the dithered speckle: plaster is smooth, and stones, planks and the carved door surround are crisp. Marigold's relief reads better on top of it. `x4plus` keeps fine cracks and grain. `x4plus-anime` is smoother and more painterly, slightly cel-shaded. From a distance the change is modest; close up it is large. The user liked the cleaned look and judged it close enough to the original.
+
+Costs: 47 textures take 2 min with DeepBump, 1.5 min with Marigold and 40 s with `dav2` on an RTX 3070.
+
+**Decision (2026-10-05): Real-ESRGAN base colour plus Marigold relief is the default.**
+- **Base colour.** `make_placeholders.py` upscales every original with Real-ESRGAN `realesrgan-x4plus`, the general model, chosen over `-anime` as closer to the original. Each texture is wrap-padded so tiles stay seamless, with the cut-out key colour filled first. It falls back to Lanczos when Real-ESRGAN isn't installed (`--no-esrgan`).
+- **Relief.** Then `ai_maps.py --apply` replaces every height and normal map with Marigold's, made from that base colour. It's incremental (`relief.json`). The rule-based maps remain as the fallback (`--relief rules`).
+- **Displacement range.** `materials.json` sets `displacement_range_cm` to 14. Walls rebuilt from `facades.json` displace at `displacement_facade_scale` 0.5, so geometry and height map don't both set windows back.
+- **Setup.** `tools/textures/setup_ai.ps1` installs both into `build/texai/`. Swapping a full map set in-engine takes about 1 minute with the incremental build.
+
 ### How to run the loop
 ```
 python tools/textures/make_placeholders.py                                   # textures, heights, macro noise

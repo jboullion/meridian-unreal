@@ -30,7 +30,8 @@ OVERRIDES = os.path.join(REPO, "data", "environment", "materials.json")
 ENV = "/Game/Generated/Environment"
 MAT_DIR = ENV + "/Materials"
 TEX_DIR = ENV + "/Textures"
-DISPLACEMENT_CM = 5.0  # full range of Nanite displacement at DisplacementStrength 1 (+-2.5 cm)
+# full range of Nanite displacement at DisplacementStrength 1 (5 cm: +-2.5 cm); see displacement_range_cm()
+DISPLACEMENT_CM = 5.0
 
 asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
 eal = unreal.EditorAssetLibrary
@@ -185,7 +186,7 @@ def ensure_textures(specs):
     return out
 
 
-def build_displaced_master(name, default_height, tessellation=True):
+def build_displaced_master(name, default_height, tessellation=True, range_cm=DISPLACEMENT_CM):
     """M_PlaceholderDisplaced, for Nanite zone-art meshes (docs/adr/0003, displacement test).
     Same inputs as M_Placeholder plus a Height texture; built with Material Attributes because the
     Python MaterialProperty enum has no Displacement pin:
@@ -198,7 +199,7 @@ def build_displaced_master(name, default_height, tessellation=True):
     mat.set_editor_property("used_with_nanite", True)
     mat.set_editor_property("enable_tessellation", tessellation)
     scaling = mat.get_editor_property("displacement_scaling")
-    scaling.set_editor_property("magnitude", DISPLACEMENT_CM)
+    scaling.set_editor_property("magnitude", range_cm)
     scaling.set_editor_property("center", 0.5)
     mat.set_editor_property("displacement_scaling", scaling)
     attrs = _expr(mat, unreal.MaterialExpressionMakeMaterialAttributes, 0, 0)
@@ -546,6 +547,22 @@ def _materials_json(section):
     return {k: v for k, v in json.load(open(OVERRIDES, encoding="utf-8")).get(section, {}).items() if not k.startswith("_")}
 
 
+def _materials_value(key, default):
+    if not os.path.exists(OVERRIDES):
+        return default
+    return json.load(open(OVERRIDES, encoding="utf-8")).get(key, default)
+
+
+def displacement_range_cm():
+    """materials.json "displacement_range_cm" (default DISPLACEMENT_CM); the MR_DISPLACEMENT_RANGE_CM
+    environment variable overrides it for experiments (tools/lookdev/ai_maps_test.ps1)."""
+    if os.environ.get("MR_DISPLACEMENT_RANGE_CM"):
+        return float(os.environ["MR_DISPLACEMENT_RANGE_CM"])
+    if not os.path.exists(OVERRIDES):
+        return DISPLACEMENT_CM
+    return float(json.load(open(OVERRIDES, encoding="utf-8")).get("displacement_range_cm", DISPLACEMENT_CM))
+
+
 def load_variants():
     """data/environment/materials.json "variants": {name: {material parameter: value}}"""
     return _materials_json("variants")
@@ -557,6 +574,9 @@ class ZoneMaterials:
         self.overrides = load_overrides()
         self.variants = load_variants()
         self.displacement = _materials_json("displacement")
+        facades_json = os.path.join(REPO, "data", "environment", "facades.json")
+        self.facade_textures = (set(json.load(open(facades_json, encoding="utf-8")).get("textures", {}))
+                                if os.path.exists(facades_json) else set())
         self.art = {}  # slot -> material for zone-art meshes
         self.displaced_master = None
         self.ground_config = _materials_json("ground")
@@ -582,6 +602,14 @@ class ZoneMaterials:
             log("no %s (run make_placeholders.py)" % path)
             return None
         return ensure_textures([(filename, srgb, normal)]).get(filename)
+
+    def displacement_strength(self, base):
+        """materials.json "displacement" for the texture, scaled by "displacement_facade_scale" when
+        facades.json describes it (the wall is rebuilt with real openings and trims)."""
+        strength = float(self.displacement.get(base, 0.0))
+        if base in self.facade_textures:
+            strength *= float(_materials_value("displacement_facade_scale", 1.0))
+        return strength
 
     def ground_instance(self, key):
         """MI_<grd>__ground on M_Ground for floors listed in materials.json "ground"."""
@@ -656,11 +684,11 @@ class ZoneMaterials:
                 master, suffix = self.flat_master, "__flat"
             else:
                 if not self.displaced_master:
-                    self.displaced_master = _master("M_PlaceholderDisplaced", build_displaced_master, h, True)
+                    self.displaced_master = _master("M_PlaceholderDisplaced", build_displaced_master, h, True, displacement_range_cm())
                 master, suffix = self.displaced_master, "__art"
             cache[base] = _instance("MI_%s%s" % (base, suffix), master, textures={"BaseColor": d, "Normal": n, "Height": h},
                                     scalars={"Roughness": t["roughness"], "NormalStrength": 1.0,
-                                             "DisplacementStrength": 0.0 if flat else float(self.displacement.get(base, 0.0))})
+                                             "DisplacementStrength": 0.0 if flat else self.displacement_strength(base)})
         if variant:
             cache[key] = self.variant_instance(base, variant, parent=cache[base], suffix="__flat" if flat else "__art")
         return cache[key], 1

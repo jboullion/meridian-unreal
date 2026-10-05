@@ -3,7 +3,10 @@ Zone art pass (docs/adr/0003 pass 3): rebuild the buildings listed in data/envir
 as real geometry, from the roo2gltf blockout and the painted-feature descriptions in
 data/environment/facades.json. Runs in headless Blender:
 
-    blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 [--preview] [--strict]
+    blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 [--preview] [--strict] [--plain]
+
+--plain skips all the rebuilding: every building is the original blockout geometry as it is (still
+cut into the displacement grid), for judging what height maps alone do (tools/lookdev/ai_maps_test.ps1).
 
 For each building, every blockout face in its region is either rebuilt or copied:
   - facade walls (texture described in facades.json): the outward face keeps the original texture
@@ -13,8 +16,12 @@ For each building, every blockout face in its region is either rebuilt or copied
   - crenellation strips (alpha-cut merlons) become a solid parapet with real merlons;
   - sloped roofs (facades.json "roofs") get thickness and eave/verge overhangs;
   - water bodies (kind "water") become a sunken bed with a separate water surface mesh;
-  - everything else (flat roofs, the clock tower, signs) is copied as is; cut-out (masked)
-    originals keep their slot so they stay cut-out, rebuilt crenels use "<grd>__solid".
+  - cut-out (alpha) originals - fences, gates, signs - become solids traced from their alpha mask
+    and extruded a few cm (facades.json "cutouts"), in the "<grd>__solid" slot; foliage cut-outs
+    (tree lines, field tops) stay flat cut-outs. A "kind": "cutouts" entry picks up the ones
+    outside buildings;
+  - everything else (flat roofs, the clock tower) is copied as is; rebuilt crenels use
+    "<grd>__solid".
 The wall's outer surface stays exactly on the blockout plane, so the hidden blockout collision
 still matches; only trims (a few cm) stand proud.
 
@@ -65,7 +72,9 @@ import zone_detail  # noqa: E402
 
 M_PER_SQUARE = 2.2
 GRID_M = 0.25  # art meshes are cut into this grid so displacement has interior vertices to move
-DISPLACEMENT_M = 0.05  # full range of the displacement (must match environment_materials.DISPLACEMENT_CM)
+# full range of the displacement, as the UE materials use it (materials.json "displacement_range_cm")
+DISPLACEMENT_M = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "data", "environment",
+                                             "materials.json"), encoding="utf-8")).get("displacement_range_cm", 5.0) / 100.0
 OVERRIDES = os.path.join(REPO, "art_src", "environment", "zones")
 DETAIL = set()  # optional detail for the building being built (zone_<rid>.json "detail")
 UP = Vector((0.0, 1.0, 0.0))  # glTF space: x east, y up, z south
@@ -886,6 +895,16 @@ def note_unbuilt_wall(poly, desc, catalog, result, reason):
                     note_opening(BUILDING, wall, op, i, ku, kv, inner, result, reason)
 
 
+def build_cutout(out, poly, thickness, catalog, done):
+    """A vertical cut-out (fence, gate, sign) as a solid; its back-side copy in the blockout is the
+    same solid, so each wall is built once. Returns the outlines built (0 for a repeat)."""
+    key = poly_key(poly)
+    if key in done:
+        return 0
+    done.add(key)
+    return zone_detail.cutout_solid(out, Wall(poly, catalog[poly.material]), poly.material, thickness, add_face_st, UP)
+
+
 def copy_poly(out, poly):
     for part in getattr(poly, "parts", None) or [poly]:
         out.poly(list(part.pts), list(part.uvs), part.material)
@@ -1035,6 +1054,7 @@ def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     rid = int(argv[argv.index("--rid") + 1]) if "--rid" in argv else 300
     preview = "--preview" in argv
+    plain = "--plain" in argv
     i = argv.index("--preview") if preview else -1
     preview_only = set(argv[i + 1].split(",")) if preview and i + 1 < len(argv) and not argv[i + 1].startswith("--") else None
     seed = set(argv[argv.index("--seed-override") + 1].split(",")) if "--seed-override" in argv else set()
@@ -1065,6 +1085,9 @@ def main():
     bpy.context.scene.collection.children.link(ref_col)
 
     manifest = {"rid": rid, "meshes": []}
+    cutouts = {grd: facades.cutout_thickness(grd, fac, catalog) for grd in catalog}
+    cutouts = {grd: t for grd, t in cutouts.items() if t}
+    cut_done = set()
     global DETAIL, BUILDING
     for b, sel in blockout.assign_buildings(prims, config):
         name = "SM_Z%d_%s" % (rid, b["name"])
@@ -1101,10 +1124,32 @@ def main():
                                            "water": suffix == "_Water"})
                 log("%s: %d triangles, slots %s" % (name, len(obj.data.polygons), ", ".join(mesh_out.slots)))
             continue
+        if b.get("kind") == "cutouts":
+            out, n_walls, n_outlines = MeshOut(), 0, 0
+            for poly in (poly for mat, tris in sorted(sel.items()) for poly in polys_of(prims[mat], tris)):
+                if poly.vertical and poly.material in cutouts and not plain:
+                    built = build_cutout(out, poly, cutouts[poly.material], catalog, cut_done)
+                    n_walls += 1 if built else 0
+                    n_outlines += built
+                else:
+                    copy_poly(out, poly)
+            obj = make_object(name, out, art_col, grid=False)
+            obj["displacement"] = "none"
+            path = os.path.join(out_dir, name + ".glb")
+            export_glb(obj, path)
+            manifest["meshes"].append({"name": name, "file": os.path.basename(path), "building": b["name"],
+                                       "displacement": "none"})
+            log("%s: %d cut-out walls as solids (%d outlines) -> %d triangles, slots %s"
+                % (name, n_walls, n_outlines, len(obj.data.polygons), ", ".join(out.slots)))
+            continue
         floors = Floors(prims, b["region_m"])
         out = MeshOut()
-        counts = {"rebuilt": 0, "parapet": 0, "roof": 0, "copied": 0, "dropped": 0}
+        counts = {"rebuilt": 0, "parapet": 0, "roof": 0, "copied": 0, "dropped": 0, "cut-outs": 0}
         all_polys = [poly for name, tris in sorted(sel.items()) for poly in polys_of(prims[name], tris)]
+        if plain:
+            for poly in all_polys:
+                copy_poly(out, poly)
+            all_polys = []  # nothing left to rebuild
         all_polys, joins, mirrors = merge_wall_runs(
             all_polys, lambda p: described.get(p.material) or timber_only(p),
             lambda p: bool(described.get(p.material, {}).get("openings")) and "crenels" not in described.get(p.material, {}))
@@ -1119,6 +1164,9 @@ def main():
                 sides.setdefault(poly_key(poly), []).append(outward(poly, floors))
         keep_as_is = {k for k, flags in sides.items() if not any(flags)}
         for poly in all_polys:
+            if poly.vertical and poly.material in cutouts:
+                counts["cut-outs"] += 1 if build_cutout(out, poly, cutouts[poly.material], catalog, cut_done) else 0
+                continue
             if poly.vertical and (described.get(poly.material) or timber_only(poly)) and poly_key(poly) in keep_as_is:
                 note_unbuilt_wall(poly, described.get(poly.material), catalog, "flat",
                                   "wall copied as is: neither side faces open ground (no outward side found)")
@@ -1160,8 +1208,8 @@ def main():
             obj["displacement"] = "none" if mode == "runtime" else mode
             bpy.data.libraries.write(override, {obj}, fake_user=True)
             log("%s: seeded override %s (edit it in Blender; the generator now uses it)" % (name, override))
-        log("%s: %d walls rebuilt, %d parapets, %d roofs, %d polygons copied, %d inner faces dropped -> %d triangles"
-            % (name, counts["rebuilt"], counts["parapet"], counts["roof"], counts["copied"], counts["dropped"],
+        log("%s: %d walls rebuilt, %d parapets, %d roofs, %d cut-outs as solids, %d polygons copied, %d inner faces dropped -> %d triangles"
+            % (name, counts["rebuilt"], counts["parapet"], counts["roof"], counts["cut-outs"], counts["copied"], counts["dropped"],
                len(obj.data.polygons)))
         mine = [o for o in OPENINGS if o["building"] == b["name"]]
         missed = [o for o in mine if o["result"] != "built"]

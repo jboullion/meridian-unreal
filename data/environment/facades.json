@@ -18,6 +18,12 @@
     "grd09624": {},
     "grd09613": {}
   },
+  "cutouts": {
+    "_doc": "Cut-out (alpha) originals rebuilt as solids by tools/blender/build_zone_art.py: the alpha mask is traced into outlines and extruded this thick (metres, centred on the blockout plane), first matching rule by texture name. Names matching exclude stay flat cut-outs (foliage).",
+    "exclude": "tree|forest|field",
+    "thickness_m": [["fence|gate|cage|grate|bars", 0.035], ["sign", 0.05], ["door", 0.05], ["torch", 0.03]],
+    "default_m": 0.03
+  },
   "textures": {
     "grd09663": {
       "name": "raz-bldg-h A wl w/ stainedglss",
