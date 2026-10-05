@@ -230,9 +230,14 @@ Measured on Raza (RTX 3070):
 | Everything (cold cache, assets exist) | — | 7.3 min of work | — |
 | `-Clean` (from scratch) | — | about 9 min (estimated; deletes files before the editor starts) | — |
 
-Still slow and not addressed yet:
-- `make_placeholders.py` (96 s) redoes every texture.
-- Look-dev captures start a fresh `-game` process (about 60 s of their 2 minutes).
+Textures and look-dev got the same treatment:
+- **`make_placeholders.py` is incremental and parallel.** A texture set is remade only when its original, its catalog entry, the rules that apply to it (resolved per texture, so editing one rule remakes only the textures it affects), the options or its code change. Changed sets are made on all cores. Unchanged: 0 s. Everything (`--force`): 22 s, was 96 s. The output is byte-identical to before.
+- **Look-dev settles per camera instead of waiting a fixed time.**
+  - *Freeze time.* While capturing, world time runs at 1/1000, so clouds, grass wind and water hold still. Lumen, shadows and TSR converge per frame and are unaffected.
+  - *Two camera cuts.* Each camera is cut to and sampled every 0.1 s until a coarse brightness grid stops changing. Then it is cut to again: the engine snaps auto exposure to its target on a cut, so exposure comes from the settled lighting. It settles once more and is saved.
+  - *Result.* 14 cameras take about 1.3–2.9 s each instead of a fixed 3.5 s. A run takes 44 s (was 72 s), and two runs differ by about as much as two old runs did (mean 1.3/255).
+  - *New baseline needed.* Frozen clouds differ from the old drifting ones, so compare new captures with new ones. `-Settle 3` brings back the fixed wait.
+- **Look-dev survives a GPU crash.** One capture hit a GPU crash (D3D12 page fault in Nanite virtual-shadow-map drawing) on its second rendered frame, before the tour started. It looks like the same early-frame crash a headless editor had when opening `L_World`. Captures now run `-unattended`, so the crash exits instead of waiting on a dialog, and `run_lookdev.ps1` keeps that log and retries once. The crash itself is still open.
 
 ## Options considered
 

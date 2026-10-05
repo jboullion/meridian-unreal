@@ -15,8 +15,6 @@
 
 ## Development
 
-- Currently the building takes about 20 minutes every time we make a change.
-  - Is there any way to using caching or hot reloading or some other technique to improve the build speeds when making and testing levels?
 
 
 

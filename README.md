@@ -50,7 +50,7 @@ Run `bgf2png` before `roo2gltf` so the blockouts pick up the real texture sizes 
 Environment art for the world build (see [ADR 0003](docs/adr/0003-environment-art-pipeline.md), "Raza look-dev"):
 
 ```bash
-python tools/textures/make_placeholders.py                                   # textures, normals, heights, macro noise
+python tools/textures/make_placeholders.py                                   # textures, normals, heights, macro noise (incremental; --force)
 blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 # rebuilt buildings (the Hall) -> build/environment/
 blender -b --factory-startup -P tools/blender/build_grass_kit.py              # grass tufts -> build/environment/kit/
 blender -b --factory-startup -P tools/blender/build_prop_kit.py               # lamp post, brazier -> build/environment/kit/
@@ -82,7 +82,7 @@ Run the network smoke test. It starts a dedicated server and a headless client, 
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_zone_test.ps1
 ```
 
-Environment look-dev: render the camera bookmarks in `data/environment/lookdev_cameras.json` and compare against an earlier label. Change only the lighting with `build_world.ps1 -Script zone_mood.py`, which skips the full rebuild:
+Environment look-dev: render the camera bookmarks in `data/environment/lookdev_cameras.json` and compare against an earlier label (about 45 s). Each camera is saved once its image has settled, with clouds and wind frozen so runs are comparable; `-Settle 3` waits a fixed 3 s per camera instead. Change only the lighting with `build_world.ps1 -Script zone_mood.py`, which skips the full rebuild:
 
 ```bash
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_lookdev.ps1 -Label mytest -Compare baseline

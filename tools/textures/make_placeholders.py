@@ -2,7 +2,12 @@
 Placeholder PBR textures from the extracted originals, for lighting / post-process / VFX tests
 (ADR 0003, Phase 0). Needs only Pillow. Run after tools/bgf2png --textures-for-zones:
 
-    python tools/textures/make_placeholders.py [--scale 4] [--max 2048] [--esrgan PATH]
+    python tools/textures/make_placeholders.py [--scale 4] [--max 2048] [--esrgan PATH] [--force] [--jobs N]
+
+Incremental: a texture set is remade only when its inputs change (the original's pixels, its catalog
+entry, the rules that apply to it, the options, or the code that makes it); the rest are kept from
+the last run (build/textures_placeholder/cache.json). Changed sets are made in parallel. --force
+remakes everything.
 
 For every texture in build/textures/catalog.json it writes, to build/textures_placeholder/:
   T_<grd>_D.png   base colour: upscaled (Lanczos, or Real-ESRGAN when --esrgan points at
@@ -30,12 +35,17 @@ These are throwaway: tools/ue/build_world.py turns them into material instances 
 /Game/Generated, and data/environment/materials.json overrides any slot with a real material.
 """
 import argparse
+import hashlib
+import inspect
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
 import tempfile
+import time
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 from PIL import Image, ImageChops, ImageFilter
@@ -264,11 +274,89 @@ def normal_map(height_img: Image.Image, strength: float, texel_scale: float) -> 
     return Image.merge("RGB", (r, g, b))
 
 
+def make_set(key: str, info: dict, rules: dict, scale: int, max_side: int, esrgan: str | None) -> tuple[dict, list[str]]:
+    """One texture set (D, N, H and, for timber, M) -> (manifest entry, files written). `rules` holds
+    what the name-based rules resolved to, so editing a rule only remakes the textures it changes."""
+    src = SRC / (key + ".png")
+    orig = Image.open(src).convert("RGBA")
+    size = target_size(*orig.size, scale, max_side)
+    if esrgan:
+        rgb = esrgan_upscale(Path(esrgan), src).resize(size, Image.Resampling.LANCZOS)
+    else:
+        src_rgb = orig.convert("RGB")
+        if rules["dedither"]:
+            # 64 px grass/field art is mostly dither; upscaled, it reads as coloured noise
+            src_rgb = src_rgb.filter(ImageFilter.MedianFilter(3))
+            rgb = src_rgb.resize(size, Image.Resampling.BICUBIC)
+        else:
+            rgb = src_rgb.resize(size, Image.Resampling.LANCZOS)
+            rgb = rgb.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=2))
+    # alpha stays hard-edged (the originals are 1-bit cut-outs)
+    alpha = orig.getchannel("A").resize(size, Image.Resampling.BILINEAR).point(lambda a: 255 if a >= 128 else 0)
+    masked = bool(info.get("has_transparency"))
+    if masked:
+        # fill cut-out texels with the surrounding opaque colour (alpha-weighted blur), so mips,
+        # filtering and solid rebuilds (zone art merlons) never show the palette's key colour
+        fill = Image.new("RGB", size)
+        for radius in (32, 8, 2):
+            premul = ImageChops.multiply(rgb, Image.merge("RGB", (alpha,) * 3)).filter(ImageFilter.GaussianBlur(radius))
+            weight = alpha.filter(ImageFilter.GaussianBlur(radius))
+            layer = _normalise(premul, weight)
+            fill = Image.composite(layer, fill, weight.point(lambda a: 255 if a > 8 else 0))
+        rgb = Image.composite(rgb, fill, alpha)
+    rough, strength, mode = rules["roughness"], rules["normal_strength"], rules["height_mode"]
+    texel_scale = size[0] / orig.size[0]
+    height = height_map(rgb, mode, texel_scale)
+    nrm = normal_map(height, strength, texel_scale)
+    if masked:
+        # flat normals in the holes so the cut edge doesn't shade as a cliff
+        nrm = Image.composite(nrm, Image.new("RGB", size, (128, 128, 255)), alpha)
+
+    d_name, n_name, h_name = "T_%s_D.png" % key, "T_%s_N.png" % key, "T_%s_H.png" % key
+    (Image.merge("RGBA", (*rgb.split(), alpha)) if masked else rgb).save(OUT / d_name)
+    nrm.save(OUT / n_name)
+    height.save(OUT / h_name)
+    files = [d_name, n_name, h_name]
+    if mode == "timber":
+        files.append("T_%s_M.png" % key)
+        beam_mask(rgb, texel_scale, orig.size).save(OUT / files[-1])
+    entry = {"name": info["name"], "d": d_name, "n": n_name, "height": h_name, "w": size[0], "h": size[1],
+             "height_mode": mode, "masked": masked, "roughness": rough, "normal_strength": strength}
+    return entry, files
+
+
+# the code a texture set depends on (rule tables are resolved per texture instead, see set_rules)
+SET_CODE = (make_set, height_map, normal_map, beam_mask, _beam_mask, otsu, _normalise, target_size, pow2,
+            wrap_crop, esrgan_upscale)
+
+
+def set_rules(info: dict) -> dict:
+    rough, strength = surface(info["name"])
+    return {"roughness": rough, "normal_strength": strength, "height_mode": height_mode(info["name"]),
+            "dedither": bool(re.search(DEDITHER, info["name"], re.I))}
+
+
+def file_digest(path: Path) -> str:
+    return hashlib.sha1(path.read_bytes()).hexdigest()
+
+
+def set_key(key: str, info: dict, rules: dict, options: list, code: str) -> str:
+    blob = json.dumps([file_digest(SRC / (key + ".png")), info.get("name"), bool(info.get("has_transparency")),
+                       rules, options, code], sort_keys=True)
+    return hashlib.sha1(blob.encode("utf-8")).hexdigest()
+
+
+def _make_job(job):
+    return job[0], make_set(*job)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--scale", type=int, default=4, help="upscale factor before power-of-two rounding")
     ap.add_argument("--max", type=int, default=2048, help="largest side in pixels")
     ap.add_argument("--esrgan", type=Path, help="path to realesrgan-ncnn-vulkan.exe (optional)")
+    ap.add_argument("--force", action="store_true", help="remake every texture set")
+    ap.add_argument("--jobs", type=int, default=os.cpu_count() or 4, help="parallel processes")
     args = ap.parse_args()
 
     catalog_path = SRC / "catalog.json"
@@ -278,62 +366,52 @@ def main():
     if args.esrgan and not args.esrgan.exists():
         sys.exit("--esrgan: %s not found" % args.esrgan)
 
-    shutil.rmtree(OUT, ignore_errors=True)
-    OUT.mkdir(parents=True)
-    manifest = {}
+    started = time.time()
+    OUT.mkdir(parents=True, exist_ok=True)
+    cache_path = OUT / "cache.json"
+    cache = {} if args.force or not cache_path.exists() else json.loads(cache_path.read_text())
+    code = hashlib.sha1(("".join(inspect.getsource(f) for f in SET_CODE) + repr((STONE_RADIUS, BUMP))).encode()).hexdigest()
+    esrgan = str(args.esrgan) if args.esrgan else None
+    options = [args.scale, args.max, esrgan, args.esrgan.stat().st_mtime if args.esrgan else None]
+
+    manifest, new_cache, jobs = {}, {}, []
     for key, info in sorted(catalog.items()):
-        src = SRC / (key + ".png")
-        orig = Image.open(src).convert("RGBA")
-        size = target_size(*orig.size, args.scale, args.max)
-        if args.esrgan:
-            rgb = esrgan_upscale(args.esrgan, src).resize(size, Image.Resampling.LANCZOS)
+        rules = set_rules(info)
+        k = set_key(key, info, rules, options, code)
+        old = cache.get(key)
+        if old and old["key"] == k and all((OUT / f).exists() for f in old["files"]):
+            manifest[key], new_cache[key] = old["entry"], old
         else:
-            src_rgb = orig.convert("RGB")
-            if re.search(DEDITHER, info["name"], re.I):
-                # 64 px grass/field art is mostly dither; upscaled, it reads as coloured noise
-                src_rgb = src_rgb.filter(ImageFilter.MedianFilter(3))
-                rgb = src_rgb.resize(size, Image.Resampling.BICUBIC)
-            else:
-                rgb = src_rgb.resize(size, Image.Resampling.LANCZOS)
-                rgb = rgb.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=2))
-        # alpha stays hard-edged (the originals are 1-bit cut-outs)
-        alpha = orig.getchannel("A").resize(size, Image.Resampling.BILINEAR).point(lambda a: 255 if a >= 128 else 0)
-        masked = bool(info.get("has_transparency"))
-        if masked:
-            # fill cut-out texels with the surrounding opaque colour (alpha-weighted blur), so mips,
-            # filtering and solid rebuilds (zone art merlons) never show the palette's key colour
-            fill = Image.new("RGB", size)
-            for radius in (32, 8, 2):
-                premul = ImageChops.multiply(rgb, Image.merge("RGB", (alpha,) * 3)).filter(ImageFilter.GaussianBlur(radius))
-                weight = alpha.filter(ImageFilter.GaussianBlur(radius))
-                layer = _normalise(premul, weight)
-                fill = Image.composite(layer, fill, weight.point(lambda a: 255 if a > 8 else 0))
-            rgb = Image.composite(rgb, fill, alpha)
-        rough, strength = surface(info["name"])
-        texel_scale = size[0] / orig.size[0]
-        mode = height_mode(info["name"])
-        height = height_map(rgb, mode, texel_scale)
-        nrm = normal_map(height, strength, texel_scale)
-        if masked:
-            # flat normals in the holes so the cut edge doesn't shade as a cliff
-            nrm = Image.composite(nrm, Image.new("RGB", size, (128, 128, 255)), alpha)
+            jobs.append((key, info, rules, args.scale, args.max, esrgan))
+            new_cache[key] = {"key": k}
 
-        d_name, n_name, h_name = "T_%s_D.png" % key, "T_%s_N.png" % key, "T_%s_H.png" % key
-        (Image.merge("RGBA", (*rgb.split(), alpha)) if masked else rgb).save(OUT / d_name)
-        nrm.save(OUT / n_name)
-        height.save(OUT / h_name)
-        if mode == "timber":
-            beam_mask(rgb, texel_scale, orig.size).save(OUT / ("T_%s_M.png" % key))
-        manifest[key] = {"name": info["name"], "d": d_name, "n": n_name, "height": h_name, "w": size[0], "h": size[1],
-                         "height_mode": mode, "masked": masked, "roughness": rough, "normal_strength": strength}
-        print("%s %-34s %4dx%-4d %s rough %.2f %s" % (key, info["name"][:34], size[0], size[1],
-                                                      "masked" if masked else "      ", rough, mode))
+    if jobs:
+        with ProcessPoolExecutor(max_workers=max(1, min(args.jobs, len(jobs)))) as pool:
+            for key, (entry, files) in pool.map(_make_job, jobs):
+                manifest[key] = entry
+                new_cache[key].update(entry=entry, files=files)
+                print("%s %-34s %4dx%-4d %s rough %.2f %s" % (key, entry["name"][:34], entry["w"], entry["h"],
+                                                              "masked" if entry["masked"] else "      ",
+                                                              entry["roughness"], entry["height_mode"]))
 
-    macro_noise().save(OUT / "T_MacroNoise.png")
-    water_normal().save(OUT / "T_WaterNormal.png")
     extras = {"macro": "T_MacroNoise.png", "water_normal": "T_WaterNormal.png"}
-    (OUT / "placeholders.json").write_text(json.dumps({"textures": manifest, "extras": extras}, indent=1))
-    print("wrote %d placeholder texture sets to %s" % (len(manifest), OUT.relative_to(ROOT)))
+    extras_code = hashlib.sha1("".join(inspect.getsource(f) for f in (macro_noise, water_normal)).encode()).hexdigest()
+    if cache.get("_extras", {}).get("key") != extras_code or not all((OUT / f).exists() for f in extras.values()):
+        macro_noise().save(OUT / extras["macro"])
+        water_normal().save(OUT / extras["water_normal"])
+    new_cache["_extras"] = {"key": extras_code, "files": list(extras.values())}
+
+    # anything else in the folder is from a texture no longer in the catalog
+    keep = {f for entry in new_cache.values() for f in entry.get("files", [])} | {"placeholders.json", "cache.json"}
+    for f in OUT.iterdir():
+        if f.is_file() and f.name not in keep:
+            f.unlink()
+
+    manifest = dict(sorted(manifest.items()))
+    (OUT / "placeholders.json").write_text(json.dumps({"textures": manifest, "extras": extras}, indent=1, sort_keys=True))
+    cache_path.write_text(json.dumps(new_cache, indent=0, sort_keys=True))
+    print("%d placeholder texture sets in %s: %d remade, %d unchanged (%.0f s)"
+          % (len(manifest), OUT.relative_to(ROOT), len(jobs), len(manifest) - len(jobs), time.time() - started))
 
 
 if __name__ == "__main__":

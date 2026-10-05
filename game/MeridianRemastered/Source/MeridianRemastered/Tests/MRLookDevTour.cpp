@@ -2,11 +2,14 @@
 
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
+#include "Camera/PlayerCameraManager.h"
 #include "Dom/JsonObject.h"
+#include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "HAL/FileManager.h"
+#include "ImageUtils.h"
 #include "MeridianRemastered.h"
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
@@ -17,14 +20,67 @@
 #include "DynamicRHI.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
-#include "TimerManager.h"
+#include "Containers/Ticker.h"
+#include "Kismet/GameplayStatics.h"
 #include "UnrealClient.h"
 #include "Zones/MRZoneSubsystem.h"
 
 namespace
 {
-	/** Seconds after a camera cut before capturing (Lumen, virtual shadow maps and auto exposure settle). */
-	constexpr float SettleSeconds = 3.f;
+	/** After a camera cut, Lumen, virtual shadow maps and auto exposure need time to settle. The frame
+	 *  is sampled every SampleSeconds from MinSettleSeconds on; it has settled when a GridX x GridY
+	 *  brightness grid differs from the sample CompareBack samples earlier by less than SettledDiff
+	 *  (0..255, mean over cells) StableSamples times in a row. The coarse grid ignores grass blowing in
+	 *  the wind but sees exposure, GI and shadows still moving. MaxSettleSeconds caps it. */
+	constexpr float MinSettleSeconds = 0.3f;
+	constexpr float MaxSettleSeconds = 8.f;
+	constexpr float SampleSeconds = 0.1f;
+	constexpr int32 CompareBack = 2;
+	constexpr int32 StableSamples = 2;
+	constexpr float SettledDiff = 0.25f;
+	constexpr int32 GridX = 48, GridY = 27;
+
+	/** World time runs this much slower while capturing: clouds, grass wind and water hold still, so
+	 *  a camera looks the same however long it took to settle (and from run to run), while Lumen,
+	 *  shadows and TSR, which converge per frame, are unaffected. Auto exposure adapts on world time,
+	 *  so it holds still too, except on a camera cut, where the engine sets it straight to the target
+	 *  for the current frame: each camera is cut to, settled, cut to again (exposure for the settled
+	 *  lighting) and settled again before it is saved. */
+	constexpr float CaptureTimeDilation = 0.001f;
+
+	TArray<float> BrightnessGrid(int32 Width, int32 Height, const TArray<FColor>& Pixels)
+	{
+		TArray<float> Sum;
+		TArray<int32> Count;
+		Sum.SetNumZeroed(GridX * GridY);
+		Count.SetNumZeroed(GridX * GridY);
+		for (int32 Y = 0; Y < Height; ++Y)
+		{
+			const int32 Row = FMath::Min(Y * GridY / Height, GridY - 1) * GridX;
+			for (int32 X = 0; X < Width; ++X)
+			{
+				const FColor& C = Pixels[Y * Width + X];
+				const int32 Cell = Row + FMath::Min(X * GridX / Width, GridX - 1);
+				Sum[Cell] += (C.R + C.G + C.B) / 3.f;
+				++Count[Cell];
+			}
+		}
+		for (int32 i = 0; i < Sum.Num(); ++i)
+		{
+			Sum[i] /= FMath::Max(Count[i], 1);
+		}
+		return Sum;
+	}
+
+	float MeanDiff(const TArray<float>& A, const TArray<float>& B)
+	{
+		double D = 0;
+		for (int32 i = 0; i < A.Num(); ++i)
+		{
+			D += FMath::Abs(A[i] - B[i]);
+		}
+		return A.Num() ? D / A.Num() : 0.f;
+	}
 
 	/** Profile mode: settle time after switching a variant, and frames averaged per variant. */
 	constexpr float VariantSettleSeconds = 2.5f;
@@ -97,6 +153,7 @@ void UMRLookDevTour::Start(APlayerController* InController)
 		InController->ConsoleCommand(TEXT("quit"));
 		return;
 	}
+	FParse::Value(FCommandLine::Get(), TEXT("MRLookDevSettle="), FixedSettle);
 	bProfile = FParse::Param(FCommandLine::Get(), TEXT("MRLookDevProfile"));
 	if (bProfile)
 	{
@@ -112,8 +169,18 @@ void UMRLookDevTour::Start(APlayerController* InController)
 		};
 	}
 	Index = -1;
-	// give zone streaming and the first Lumen pass time to settle
-	InController->GetWorldTimerManager().SetTimer(Timer, FTimerDelegate::CreateUObject(this, &UMRLookDevTour::Next), 6.f, false);
+	// give zone streaming a moment; the first camera's settle check covers the rest
+	After(FixedSettle > 0.f ? 6.f : 2.f, &UMRLookDevTour::Next);
+}
+
+void UMRLookDevTour::After(float Seconds, void (UMRLookDevTour::*Step)())
+{
+	// real time (FTSTicker), not world timers: world time is slowed down while capturing
+	FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateWeakLambda(this, [this, Step](float)
+	{
+		(this->*Step)();
+		return false;
+	}), Seconds);
 }
 
 void UMRLookDevTour::Next()
@@ -127,6 +194,11 @@ void UMRLookDevTour::Next()
 	{
 		Camera = PC->GetWorld()->SpawnActor<ACameraActor>();
 		Camera->GetCameraComponent()->bConstrainAspectRatio = false;
+		if (FixedSettle <= 0.f)
+		{
+			// from the first camera on, not from BeginPlay: the game's first frames render at normal speed
+			UGameplayStatics::SetGlobalTimeDilation(PC, CaptureTimeDilation);
+		}
 	}
 	if (APawn* Pawn = PC->GetPawn())
 	{
@@ -135,6 +207,7 @@ void UMRLookDevTour::Next()
 	if (++Index >= Shots.Num())
 	{
 		UE_LOG(LogMeridian, Display, TEXT("MRLookDev: done, %d shots in %s"), Shots.Num(), *OutDir);
+		UGameViewportClient::OnScreenshotCaptured().Remove(FrameHandle);
 		PC->ConsoleCommand(TEXT("quit"));
 		return;
 	}
@@ -142,19 +215,82 @@ void UMRLookDevTour::Next()
 	Camera->SetActorLocationAndRotation(Shot.Location, Shot.Rotation);
 	Camera->GetCameraComponent()->SetFieldOfView(Shot.Fov);
 	PC->SetViewTarget(Camera);
-
-	const FString File = FPaths::Combine(OutDir, Shot.Name + TEXT(".png"));
-	PC->GetWorldTimerManager().SetTimer(Timer, FTimerDelegate::CreateWeakLambda(this, [this, File]()
+	if (PC->PlayerCameraManager)
 	{
-		FScreenshotRequest::RequestScreenshot(File, false, false);
-		UE_LOG(LogMeridian, Display, TEXT("MRLookDev: %s"), *File);
-		if (APlayerController* P = Controller.Get())
+		PC->PlayerCameraManager->SetGameCameraCutThisFrame();  // drop history from the last camera
+	}
+
+	ShotStart = FPlatformTime::Seconds();
+	bExposureCut = false;
+	Grids.Reset();
+	StableCount = 0;
+	After(FixedSettle > 0.f ? FixedSettle : MinSettleSeconds, &UMRLookDevTour::Sample);
+}
+
+void UMRLookDevTour::Sample()
+{
+	if (!FrameHandle.IsValid())
+	{
+		// while bound, screenshots come here as pixels instead of going to disk
+		FrameHandle = UGameViewportClient::OnScreenshotCaptured().AddUObject(this, &UMRLookDevTour::OnFrame);
+	}
+	FScreenshotRequest::RequestScreenshot(false, false);
+}
+
+void UMRLookDevTour::OnFrame(int32 Width, int32 Height, const TArray<FColor>& Pixels)
+{
+	APlayerController* PC = Controller.Get();
+	if (!PC || !Shots.IsValidIndex(Index) || Pixels.Num() != Width * Height)
+	{
+		return;
+	}
+	const FShot& Shot = Shots[Index];
+	const double Elapsed = FPlatformTime::Seconds() - ShotStart;
+	Grids.Add(BrightnessGrid(Width, Height, Pixels));
+	const float Diff = Grids.Num() > CompareBack ? MeanDiff(Grids.Last(), Grids[Grids.Num() - 1 - CompareBack]) : -1.f;
+	StableCount = Diff >= 0.f && Diff < SettledDiff ? StableCount + 1 : 0;
+	UE_LOG(LogMeridian, Log, TEXT("MRLookDev: %s t=%.2fs diff=%.2f"), *Shot.Name, Elapsed, Diff);
+
+	const bool bSettled = StableCount >= StableSamples;
+	if (bSettled && !bExposureCut && FixedSettle <= 0.f)
+	{
+		// lighting has settled under the exposure picked at the first cut; cut again so exposure is
+		// picked from this frame, then wait for the (shorter) second settle
+		bExposureCut = true;
+		Grids.Reset();
+		StableCount = 0;
+		if (PC->PlayerCameraManager)
 		{
-			VariantIndex = -1;
-			P->GetWorldTimerManager().SetTimer(Timer, FTimerDelegate::CreateUObject(
-				this, bProfile ? &UMRLookDevTour::NextVariant : &UMRLookDevTour::Next), 0.5f, false);
+			PC->PlayerCameraManager->SetGameCameraCutThisFrame();
 		}
-	}), SettleSeconds, false);
+		After(MinSettleSeconds, &UMRLookDevTour::Sample);
+		return;
+	}
+	const bool bDone = FixedSettle > 0.f || bSettled || Elapsed >= MaxSettleSeconds;
+	if (!bDone)
+	{
+		After(SampleSeconds, &UMRLookDevTour::Sample);
+		return;
+	}
+	const FString File = FPaths::Combine(OutDir, Shot.Name + TEXT(".png"));
+	TArray64<uint8> Png;
+	FImageUtils::PNGCompressImageArray(Width, Height, TArrayView64<const FColor>(Pixels.GetData(), Pixels.Num()), Png);
+	if (!FFileHelper::SaveArrayToFile(Png, *File))
+	{
+		UE_LOG(LogMeridian, Error, TEXT("MRLookDev: could not write %s"), *File);
+	}
+	UE_LOG(LogMeridian, Display, TEXT("MRLookDev: %s (%s after %.1f s)"), *File,
+		FixedSettle > 0.f ? TEXT("fixed wait") : StableCount >= StableSamples ? TEXT("settled") : TEXT("NOT settled, gave up"), Elapsed);
+	After(0.f, &UMRLookDevTour::Captured);
+}
+
+void UMRLookDevTour::Captured()
+{
+	if (APlayerController* P = Controller.Get())
+	{
+		VariantIndex = -1;
+		After(0.1f, bProfile ? &UMRLookDevTour::NextVariant : &UMRLookDevTour::Next);
+	}
 }
 
 void UMRLookDevTour::NextVariant()
@@ -170,14 +306,14 @@ void UMRLookDevTour::NextVariant()
 		{
 			PC->ConsoleCommand(Cmd);  // back to everything on for the next camera's screenshot
 		}
-		PC->GetWorldTimerManager().SetTimer(Timer, FTimerDelegate::CreateUObject(this, &UMRLookDevTour::Next), 0.2f, false);
+		After(0.2f, &UMRLookDevTour::Next);
 		return;
 	}
 	for (const FString& Cmd : Variants[VariantIndex].Commands)
 	{
 		PC->ConsoleCommand(Cmd);
 	}
-	PC->GetWorldTimerManager().SetTimer(Timer, FTimerDelegate::CreateUObject(this, &UMRLookDevTour::StartSampling), VariantSettleSeconds, false);
+	After(VariantSettleSeconds, &UMRLookDevTour::StartSampling);
 }
 
 void UMRLookDevTour::StartSampling()
@@ -193,7 +329,7 @@ void UMRLookDevTour::StartSampling()
 	FCsvProfiler::Get()->BeginCapture(SampleFrames, OutDir,
 		FString::Printf(TEXT("%s__%s.csv"), *Shots[Index].Name, *Variants[VariantIndex].Name));
 #endif
-	PC->GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UMRLookDevTour::SampleFrame));
+	After(0.f, &UMRLookDevTour::SampleFrame);
 }
 
 void UMRLookDevTour::SampleFrame()
@@ -208,12 +344,12 @@ void UMRLookDevTour::SampleFrame()
 	GpuMs += FPlatformTime::ToMilliseconds(RHIGetGPUFrameCycles(0));
 	if (++Frames < SampleFrames)
 	{
-		PC->GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &UMRLookDevTour::SampleFrame));
+		After(0.f, &UMRLookDevTour::SampleFrame);
 		return;
 	}
 	const double N = FMath::Max(Frames, 1);
 	UE_LOG(LogMeridian, Display, TEXT("MRLookDevProfile: camera=%s variant=%s game=%.2fms render=%.2fms gpu=%.2fms (avg of %d frames)"),
 		*Shots[Index].Name, *Variants[VariantIndex].Name, GameMs / N, RenderMs / N, GpuMs / N, Frames);
 	// the capture ends itself after SampleFrames; give it a moment to write
-	PC->GetWorldTimerManager().SetTimer(Timer, FTimerDelegate::CreateUObject(this, &UMRLookDevTour::NextVariant), 0.5f, false);
+	After(0.5f, &UMRLookDevTour::NextVariant);
 }
