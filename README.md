@@ -6,6 +6,7 @@ This is a free fan remaster of Meridian 59, built on the Server 104 ruleset, usi
 - **Findings from the original data** (scale, zone layout, missing assets): [docs/findings.md](docs/findings.md)
 - **Environment art pipeline** (terrain, buildings, materials, lighting): [docs/adr/0003-environment-art-pipeline.md](docs/adr/0003-environment-art-pipeline.md)
 - **Characters** (appearance system, MetaHumans, first person): [docs/characters.md](docs/characters.md)
+- **Hosting** (game server, Supabase, costs): [docs/adr/0004-hosting-and-operations.md](docs/adr/0004-hosting-and-operations.md)
 
 > The Server 104 team has approved the "Meridian" name for this project. "104" must not be used in the product's name or branding. The original art and audio are not covered by the GPL. This repo contains no original art. Extracted assets go to `build/`, which is git-ignored, and are used only as reference.
 
