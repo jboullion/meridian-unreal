@@ -7,6 +7,13 @@
     {"name": "square_overview", "location_cm": [9900, 5200, 700], "rotation": [-10.5, -146.3], "fov": 90},
     {"name": "west_street", "location_cm": [4100, 4000, 205], "rotation": [1.2, 180.0], "fov": 90},
     {"name": "north_gate", "location_cm": [8220, 1700, 205], "rotation": [1.8, -90.0], "fov": 90},
-    {"name": "outskirts", "location_cm": [8220, -600, 205], "rotation": [0.8, -90.0], "fov": 90}
+    {"name": "outskirts", "location_cm": [8220, -600, 205], "rotation": [0.8, -90.0], "fov": 90},
+    {"name": "pond", "location_cm": [6900, 4750, 200], "rotation": [-5.3, -48.1], "fov": 90},
+    {"name": "inn_front", "location_cm": [5750, 2500, 200], "rotation": [4.4, -92.2], "fov": 90},
+    {"name": "temple_front", "location_cm": [3000, 4500, 200], "rotation": [10.9, 90.0], "fov": 90},
+    {"name": "tavern_front", "location_cm": [3400, 3100, 200], "rotation": [7.1, 177.6], "fov": 90},
+    {"name": "shops_row", "location_cm": [9250, 2500, 200], "rotation": [3.1, 38.0], "fov": 90},
+    {"name": "inn_close", "location_cm": [5200, 1700, 180], "rotation": [6.4, -24.8], "fov": 75},
+    {"name": "inn_roof", "location_cm": [6100, 2100, 750], "rotation": [-11.3, -118.6], "fov": 70}
   ]
 }

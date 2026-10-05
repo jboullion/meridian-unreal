@@ -5,7 +5,7 @@ Apply a lighting mood from data/environment/moods.json to the lighting actors in
 build_world.py calls apply_level_mood() after spawning the lights. To iterate on a mood without
 rebuilding the world, run this file on its own; it loads L_World, applies the mood and saves:
 
-    UnrealEditor-Cmd.exe <project>.uproject -ExecutePythonScript="<repo>/tools/ue/zone_mood.py" -unattended -nosplash -RenderOffscreen
+    powershell -File tools/ue/build_world.ps1 -Script zone_mood.py   (in the open editor, else headless)
 
 then re-render the look-dev cameras (tools/ue/run_lookdev.ps1). Set MR_MOOD=<name> to try another mood
 from moods.json without changing its "levels" entry. A mood only sets what it lists; values from an
@@ -136,5 +136,7 @@ if __name__ == "__main__":
     try:
         main()
     finally:
-        if "-keep-open" not in os.environ.get("MR_BUILD_WORLD_ARGS", ""):
+        # quit only an editor started for this script (build_world.ps1 headless), not an open one
+        if ("-executepythonscript" in unreal.SystemLibrary.get_command_line().lower()
+                and "-keep-open" not in os.environ.get("MR_BUILD_WORLD_ARGS", "")):
             unreal.SystemLibrary.quit_editor()

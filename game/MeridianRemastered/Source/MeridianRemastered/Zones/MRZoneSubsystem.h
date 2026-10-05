@@ -55,6 +55,9 @@ struct FMRZoneInfo
 	UPROPERTY(BlueprintReadOnly) int32 TeleportRow = 0;
 	UPROPERTY(BlueprintReadOnly) int32 TeleportCol = 0;
 	UPROPERTY(BlueprintReadOnly) float TeleportYaw = 0.f;
+	/** Arrival point on the floor, zone-local UE cm, from zone_layout.json "teleport.pos". */
+	UPROPERTY(BlueprintReadOnly) FVector TeleportLocal = FVector::ZeroVector;
+	UPROPERTY(BlueprintReadOnly) bool bHasTeleportLocal = false;
 	/** Another zone drawn from the same geometry (e.g. Raza town and its Outskirts), or 0. */
 	UPROPERTY(BlueprintReadOnly) int32 SharesGeometryWith = 0;
 	/** Zone whose streaming level holds this zone's geometry (itself unless it shares). */

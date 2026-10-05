@@ -1,12 +1,19 @@
 """
-Build the streamed world from the zone blockouts. Runs inside the Unreal Editor (Python):
+Build the streamed world from the zone blockouts. Runs inside the Unreal Editor (Python). Use
+tools/ue/build_world.ps1, which runs it in the editor you have open on the project (remote
+execution, tools/ue/run_in_editor.py) or else starts a headless one:
 
-    UnrealEditor-Cmd.exe <project>.uproject -ExecutePythonScript="<repo>/tools/ue/build_world.py" -unattended -nosplash -RenderOffscreen
+    UnrealEditor-Cmd.exe <project>.uproject /Engine/Maps/Entry -ExecutePythonScript="<repo>/tools/ue/build_world.py" -unattended -nosplash -RenderOffscreen
 
 (It needs a real editor world, so it runs as -ExecutePythonScript rather than the pythonscript
-commandlet, and quits the editor when it finishes; set MR_BUILD_WORLD_ARGS=-keep-open to stay.)
+commandlet. Started that way it quits the editor when it finishes.)
 
-Output (everything under /Game/Generated, git-ignored, rebuilt from scratch each run):
+Incremental: every asset and level below is stored with a hash of its inputs (tools/ue/build_cache.py)
+and rebuilt, in place, only when those change. Editing one building re-imports that building's mesh
+and nothing else; the levels that place it don't change, so an open editor shows the new mesh at once.
+`--clean` (build_world.ps1 -Clean) deletes everything below and builds it from scratch.
+
+Output (everything under /Game/Generated, git-ignored):
   /Game/Generated/Zones/Z<rid>/...          imported blockout mesh + materials (complex-as-simple collision).
                                             Zones with art (data/environment/zone_<rid>.json + the meshes
                                             tools/blender/build_zone_art.py wrote to build/environment/zone_<rid>/)
@@ -27,22 +34,32 @@ Output (everything under /Game/Generated, git-ignored, rebuilt from scratch each
                                             of them and each client streams its zone + neighbours
                                             (UMRZoneSubsystem / AMRPlayerController).
 """
+import importlib
 import json
 import os
 import shutil
 import sys
+import time
 
 import unreal
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(REPO, "tools", "environment"))
+for _p in (os.path.dirname(os.path.abspath(__file__)), os.path.join(REPO, "tools", "environment")):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+# an editor that stays open (run_in_editor.py) keeps modules from the last run; pick up edits
+for _m in ("build_cache", "blockout", "scatter", "zone_mood", "environment_materials"):
+    if _m in sys.modules:
+        importlib.reload(sys.modules[_m])
 import blockout  # noqa: E402
+import build_cache  # noqa: E402
 import scatter  # noqa: E402
-from environment_materials import ENV as ENVIRONMENT_DIR, ZoneMaterials  # noqa: E402
-from zone_mood import apply_level_mood  # noqa: E402
+from build_cache import file_digest, source  # noqa: E402
+from environment_materials import ENV as ENVIRONMENT_DIR, ZoneMaterials, assign_materials  # noqa: E402
+from zone_mood import MOODS, apply_level_mood  # noqa: E402
 
 LAYOUT = os.path.join(REPO, "data", "zone_layout.json")
+PROPS = os.path.join(REPO, "data", "environment", "props.json")
 GENERATED = "/Game/Generated"
 WORLD_PATH = GENERATED + "/Maps/L_World"
 ZONE_LEVEL_DIR = GENERATED + "/Maps/Zones"
@@ -64,11 +81,10 @@ def zone_level_path(rid):
 
 
 def reset_generated():
-    """Switch to a blank map so nothing this script made is in use, then delete what it owns
-    (the maps, zone meshes and zone materials; other generated content under /Game/Generated is
-    left alone)."""
-    # The editor opens L_World at startup with every zone sublevel loaded; unload them so the
-    # blank map + garbage collection frees them before their files go.
+    """--clean in a running editor: switch to a blank map so nothing this script made is in use,
+    then delete what it owns (the maps, zone meshes and zone materials; other generated content
+    under /Game/Generated is left alone). Slow (the editor gathers references for every asset it
+    deletes); build_world.ps1 -Clean deletes the files before a headless editor starts instead."""
     world = editor_sub.get_editor_world()
     if world:
         for level in unreal.EditorLevelUtils.get_levels(world)[1:]:
@@ -97,7 +113,23 @@ def reset_generated():
     unreal.SystemLibrary.collect_garbage()
 
 
+def _static_meshes(folder):
+    """StaticMesh package paths in a content folder, from the asset registry (nothing is loaded)."""
+    out = []
+    for p in eal.list_assets(folder, recursive=True, include_folder=False):
+        if str(eal.find_asset_data(p).asset_class_path.asset_name) == "StaticMesh":
+            out.append(p.split(".")[0])
+    return out
+
+
 def import_zone_mesh(glb_path, dest_dir, nanite=False, collision=True):
+    """-> StaticMesh asset path. Re-imports (in place) only when the glb or these settings changed."""
+    cache = build_cache.CACHE
+    key = cache.key(file_digest(glb_path), nanite, collision, source(import_zone_mesh))
+    mesh = cache.info(dest_dir).get("mesh")
+    if mesh and cache.fresh(dest_dir, key, exists=lambda: eal.does_asset_exist(mesh)):
+        cache.done(dest_dir, key, "meshes", False)
+        return mesh
     task = unreal.AssetImportTask()
     task.filename = glb_path
     task.destination_path = dest_dir
@@ -105,24 +137,27 @@ def import_zone_mesh(glb_path, dest_dir, nanite=False, collision=True):
     task.replace_existing = True
     task.save = True
     asset_tools.import_asset_tasks([task])
-    meshes = [p for p in eal.list_assets(dest_dir, recursive=True, include_folder=False)
-              if isinstance(eal.load_asset(p), unreal.StaticMesh)]
+    meshes = _static_meshes(dest_dir)
     if not meshes:
         raise RuntimeError("no static mesh imported from " + glb_path)
-    mesh = eal.load_asset(meshes[0])
+    mesh = meshes[0]
+    obj = eal.load_asset(mesh)
     # The importer enables Nanite, but its glTF materials lack the Nanite usage flag, so a
     # standalone game would render them with the default grey material. Blockouts are small
     # and temporary; plain static meshes are fine. Art meshes get our own materials (which have
     # the flag) and need Nanite for displacement.
-    settings = mesh.get_editor_property("nanite_settings")
+    settings = obj.get_editor_property("nanite_settings")
     settings.set_editor_property("enabled", nanite)
-    mesh.set_editor_property("nanite_settings", settings)
-    body = mesh.get_editor_property("body_setup")
+    obj.set_editor_property("nanite_settings", settings)
+    body = obj.get_editor_property("body_setup")
     if body:
         body.set_editor_property("collision_trace_flag",
                                  unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE if collision
                                  else unreal.CollisionTraceFlag.CTF_USE_SIMPLE_AS_COMPLEX)
-    eal.save_loaded_asset(mesh)
+    eal.save_loaded_asset(obj)
+    cache.forget(mesh + "#materials")  # the import put the glTF materials back
+    cache.done(dest_dir, key, "meshes", True, mesh=mesh)
+    log("imported %s" % mesh)
     return mesh
 
 
@@ -130,11 +165,11 @@ def check_orientation(zone, mesh):
     """The importer must map glTF (x east, y up, z south) to UE (X east, Y south, Z up)."""
     lo, hi = zone["bounds_m"]["min"], zone["bounds_m"]["max"]
     ex0, ey0, ex1, ey1 = lo[0] * 100, lo[2] * 100, hi[0] * 100, hi[2] * 100
-    b = mesh.get_bounding_box()
+    b = eal.load_asset(mesh).get_bounding_box()
     ok = all(abs(a - e) < 50 for a, e in ((b.min.x, ex0), (b.max.x, ex1), (b.min.y, ey0), (b.max.y, ey1)))
-    log("zone %d %-14s bounds X[%.0f..%.0f] Y[%.0f..%.0f] Z[%.0f..%.0f] %s"
-        % (zone["rid"], zone["class"], b.min.x, b.max.x, b.min.y, b.max.y, b.min.z, b.max.z,
-           "OK" if ok else "ORIENTATION MISMATCH (expected X[%.0f..%.0f] Y[%.0f..%.0f])" % (ex0, ex1, ey0, ey1)))
+    if not ok:
+        log("zone %d %-14s bounds X[%.0f..%.0f] Y[%.0f..%.0f] ORIENTATION MISMATCH (expected X[%.0f..%.0f] Y[%.0f..%.0f])"
+            % (zone["rid"], zone["class"], b.min.x, b.max.x, b.min.y, b.max.y, ex0, ex1, ey0, ey1))
     return ok
 
 
@@ -151,8 +186,20 @@ def zone_art(zone):
     return config, json.load(open(manifest, encoding="utf-8"))
 
 
+def write_render_blockout(glb, render_glb, config):
+    """The blockout minus the triangles the zone's art replaces (skipped when its inputs are unchanged)."""
+    cache = build_cache.CACHE
+    key = cache.key(file_digest(glb), config, file_digest(blockout.__file__))
+    if cache.fresh(render_glb, key, exists=lambda: os.path.exists(render_glb)):
+        cache.done(render_glb, key, "render blockouts", False)
+        return cache.info(render_glb).get("hidden", 0)
+    hidden = blockout.write_render_blockout(glb, render_glb, blockout.all_building_triangles(blockout.read_glb(glb), config))
+    cache.done(render_glb, key, "render blockouts", True, hidden=hidden)
+    return hidden
+
+
 def import_zone_parts(zone, materials):
-    """-> [(mesh, label, role)], role "geometry" (render + collision), "collision" (hidden),
+    """-> [(mesh path, label, role)], role "geometry" (render + collision), "collision" (hidden),
     "render" (no collision) or "art" (Nanite, no collision)."""
     rid, cls = zone["rid"], zone["class"]
     base = "%s/Zones/Z%d" % (GENERATED, rid)
@@ -160,85 +207,160 @@ def import_zone_parts(zone, materials):
     art = zone_art(zone)
     if not art:
         mesh = import_zone_mesh(glb, base)
-        log("zone %d materials: %d real, %d placeholder, %d left as imported" % ((rid,) + tuple(materials.apply(mesh))))
-        return [(mesh, "ZoneGeometry_%d_%s" % (rid, cls), "geometry")]
+        counts = materials.apply(mesh)
+        return [(mesh, "ZoneGeometry_%d_%s" % (rid, cls), "geometry")], "materials %s" % counts
 
     config, manifest = art
-    art_dir = os.path.dirname(os.path.join(REPO, "build", "environment", "zone_%d" % rid, "manifest.json"))
-    prims = blockout.read_glb(glb)
+    art_dir = os.path.join(REPO, "build", "environment", "zone_%d" % rid)
     render_glb = os.path.join(art_dir, "blockout_render.glb")
-    hidden = blockout.write_render_blockout(glb, render_glb, blockout.all_building_triangles(prims, config))
+    hidden = write_render_blockout(glb, render_glb, config)
     collision = import_zone_mesh(glb, base + "/Collision")
     render = import_zone_mesh(render_glb, base + "/Render", collision=False)
-    log("zone %d render blockout: %d triangles hidden under art; materials %s"
-        % (rid, hidden, materials.apply(render)))
+    materials.apply(render)
     parts = [(collision, "ZoneCollision_%d_%s" % (rid, cls), "collision"),
              (render, "ZoneGeometry_%d_%s" % (rid, cls), "render")]
     for m in manifest["meshes"]:
         mesh = import_zone_mesh(os.path.join(art_dir, m["file"]), "%s/Art/%s" % (base, m["name"]),
-                                nanite=True, collision=False)
-        log("zone %d art %s: materials %s" % (rid, m["name"], materials.apply(mesh, art=True)))
+                                nanite=not m.get("water"), collision=False)
+        materials.apply(mesh, art=True, flat=m.get("displacement", "runtime") != "runtime")
         parts.append((mesh, "ZoneArt_%d_%s" % (rid, m["building"]), "art"))
-    return parts
+    return parts, "%d art meshes, %d blockout triangles hidden under art" % (len(manifest["meshes"]), hidden)
+
+
+def prune_art(zone, parts):
+    """Delete art meshes of buildings no longer in the zone's manifest (after the level stopped using them)."""
+    folder = "%s/Zones/Z%d/Art" % (GENERATED, zone["rid"])
+    if not eal.does_directory_exist(folder):
+        return
+    keep = {p[0].split("/Art/")[1].split("/")[0] for p in parts if p[2] == "art"}
+    gone = {p.split("/Art/")[1].split("/")[0] for p in eal.list_assets(folder, recursive=True, include_folder=False)} - keep
+    for name in sorted(gone):
+        log("zone %d: removing art %s (no longer in the manifest)" % (zone["rid"], name))
+        eal.delete_directory("%s/%s" % (folder, name))
+        build_cache.CACHE.forget("%s/%s" % (folder, name))
 
 
 KIT_DIR = os.path.join(REPO, "build", "environment", "kit")
+_kit = {}
 
 
-def import_kit_mesh(name, materials):
-    """A scatter mesh from build/environment/kit/<name>.glb, imported once, with M_Grass."""
-    dest = "%s/Kit/%s" % (ENVIRONMENT_DIR, name)
-    existing = [p for p in eal.list_assets(dest, recursive=True, include_folder=False)
-                if isinstance(eal.load_asset(p), unreal.StaticMesh)] if eal.does_directory_exist(dest) else []
-    if existing:
-        return eal.load_asset(existing[0])
+def import_kit_mesh(name, materials, slot_materials=None):
+    """A kit mesh from build/environment/kit/<name>.glb. Scatter meshes get M_Grass; props get their
+    slots' materials from props.json (`slot_materials`)."""
+    if name in _kit:
+        return _kit[name]
     path = os.path.join(KIT_DIR, name + ".glb")
     if not os.path.exists(path):
         log("WARNING: %s missing; run tools/blender/build_grass_kit.py" % path)
         return None
-    mesh = import_zone_mesh(path, dest, collision=False)
-    if materials.grass:
-        slots = list(mesh.get_editor_property("static_materials"))
-        for slot in slots:
-            slot.set_editor_property("material_interface", materials.grass)
-        mesh.set_editor_property("static_materials", slots)
-        eal.save_loaded_asset(mesh)
+    mesh = import_zone_mesh(path, "%s/Kit/%s" % (ENVIRONMENT_DIR, name), collision=False)
+    if slot_materials is None:
+        assign_materials(mesh, lambda slot: (materials.grass, 1) if materials.grass else (None, 2))
+    else:
+        assign_materials(mesh, lambda slot: (slot_materials[slot], 1) if slot_materials.get(slot) else (None, 2))
+    _kit[name] = mesh
     return mesh
 
 
-def zone_scatter(zone, materials):
-    """-> [(label, mesh, [Transform], rule)] from data/environment/zone_<rid>.json "scatter"."""
-    config = blockout.zone_art_config(zone["rid"])
-    rules = (config or {}).get("scatter", [])
-    if not rules:
+def zone_props(zone, materials, prop_materials):
+    """-> [(label, mesh path or None, [x, y, z] cm, light config or None)] for the zone's Kod objects
+    whose class is in data/environment/props.json."""
+    if not os.path.exists(PROPS):
         return []
-    prims = blockout.read_glb(os.path.join(REPO, zone["mesh"]))
+    classes = json.load(open(PROPS, encoding="utf-8")).get("classes", {})
     out = []
-    for rule in rules:
-        for name, points in scatter.scatter(prims, rule).items():
-            mesh = import_kit_mesh(name, materials)
-            if not mesh or not points:
-                continue
-            transforms = [unreal.Transform(location=unreal.Vector(x * 100.0, z * 100.0, y * 100.0),
-                                           rotation=unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw),
-                                           scale=unreal.Vector(sc, sc, sc))
-                          for x, y, z, yaw, sc in points]
-            out.append(("Scatter_%d_%s_%s" % (zone["rid"], rule["name"], name), mesh, transforms, rule))
-            log("zone %d scatter %s/%s: %d instances" % (zone["rid"], rule["name"], name, len(points)))
+    for i, obj in enumerate(zone.get("objects", [])):
+        cfg = classes.get(obj["class"])
+        if not cfg:
+            continue
+        x, y, z = obj["pos"]
+        mesh = import_kit_mesh(cfg["mesh"], materials, prop_materials) if cfg.get("mesh") else None
+        out.append(("Prop_%d_%s_%d" % (zone["rid"], obj["class"], i), mesh, [x * 100.0, z * 100.0, y * 100.0], cfg.get("light")))
     return out
 
 
-def new_level(path):
-    if not level_sub.new_level(path):
+def zone_scatter(zone, materials):
+    """-> (inputs, compute): JSON-able inputs of the zone's ground scatter (data/environment/zone_<rid>.json
+    "scatter"), and compute() -> [(label, mesh, [Transform], rule)], run only when a level needs them."""
+    config = blockout.zone_art_config(zone["rid"])
+    rules = (config or {}).get("scatter", []) if hasattr(unreal, "MRScatterActor") else []
+    if not rules:
+        return None, lambda: []
+    glb = os.path.join(REPO, zone["mesh"])
+    meshes = {name: import_kit_mesh(name, materials) for rule in rules for name in rule["meshes"]}
+    inputs = [file_digest(glb), rules, meshes, file_digest(scatter.__file__)]
+
+    def compute():
+        prims = blockout.read_glb(glb)
+        out = []
+        for rule in rules:
+            for name, points in scatter.scatter(prims, rule).items():
+                if not meshes.get(name) or not points:
+                    continue
+                transforms = [unreal.Transform(location=unreal.Vector(x * 100.0, z * 100.0, y * 100.0),
+                                               rotation=unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw),
+                                               scale=unreal.Vector(sc, sc, sc))
+                              for x, y, z, yaw, sc in points]
+                out.append(("Scatter_%d_%s_%s" % (zone["rid"], rule["name"], name), meshes[name], transforms, rule))
+                log("zone %d scatter %s/%s: %d instances" % (zone["rid"], rule["name"], name, len(points)))
+        return out
+    return inputs, compute
+
+
+class MapSwitch:
+    """Rebuilding a level means opening it. The first time, leave whatever map the editor has open
+    (discarding unsaved changes: our maps are generated) so the old world lets go of the levels;
+    restore() reopens it at the end when it was one of ours or any other project map."""
+
+    def __init__(self):
+        world = editor_sub.get_editor_world()
+        self.start = world.get_path_name().split(".")[0] if world else None
+        self.left = False
+
+    def leave(self):
+        if not self.left:
+            unreal.EditorLoadingAndSavingUtils.new_blank_map(False)
+            unreal.SystemLibrary.collect_garbage()
+            self.left = True
+
+    def restore(self):
+        if not (self.left and self.start and self.start.startswith("/Game/") and eal.does_asset_exist(self.start)):
+            return
+        world = editor_sub.get_editor_world()
+        if not world or world.get_path_name().split(".")[0] != self.start:
+            level_sub.load_level(self.start)
+
+
+def open_level(path, maps):
+    """Make `path` the editor's level, empty. An existing level is opened and its actors removed:
+    rebuilding in place keeps the package, so the world that streams it stays valid."""
+    maps.leave()
+    if eal.does_asset_exist(path):
+        if not level_sub.load_level(path):
+            raise RuntimeError("could not open " + path)
+        actors.destroy_actors([a for a in actors.get_all_level_actors()
+                               if not isinstance(a, (unreal.WorldSettings, unreal.Brush))])
+    elif not level_sub.new_level(path):
         raise RuntimeError("could not create " + path)
 
 
-def build_zone_level(zone, parts, sharers, scatters=()):
+def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, props, maps):
+    """Rebuild L_Zone_<rid> when what it places changed (not when a mesh it places was re-imported:
+    actors reference the asset, so they show the new mesh as is)."""
     path = zone_level_path(zone["rid"])
-    new_level(path)
+    cache = build_cache.CACHE
+    recipe = {"origin": zone["world_origin_cm"], "sharers": sharers, "parts": parts, "scatter": scatter_inputs,
+              "props": props, "code": source(build_zone_level)}
+    key = cache.key(recipe, deps=False)
+    if cache.fresh(path, key):
+        cache.done(path, key, "levels", False)
+        return path, False
+    open_level(path, maps)
     ox, oy, oz = zone["world_origin_cm"]
+    origin = unreal.Vector(ox, oy, oz)
+    zone_tags = [unreal.Name("Zone%d" % r) for r in [zone["rid"]] + sharers]
     for mesh, label, role in parts:
-        a = actors.spawn_actor_from_object(mesh, unreal.Vector(ox, oy, oz), unreal.Rotator(0, 0, 0))
+        a = actors.spawn_actor_from_object(eal.load_asset(mesh), origin, unreal.Rotator(0, 0, 0))
         a.set_actor_label(label)
         comp = a.get_component_by_class(unreal.StaticMeshComponent)
         comp.set_mobility(unreal.ComponentMobility.STATIC)
@@ -247,16 +369,38 @@ def build_zone_level(zone, parts, sharers, scatters=()):
         elif role in ("render", "art"):
             comp.set_collision_profile_name("NoCollision")
             comp.set_collision_enabled(unreal.CollisionEnabled.NO_COLLISION)
-        a.tags = [unreal.Name("Zone" + role.capitalize())] + [unreal.Name("Zone%d" % r) for r in [zone["rid"]] + sharers]
-    for label, mesh, transforms, rule in scatters:
-        a = actors.spawn_actor_from_class(unreal.MRScatterActor, unreal.Vector(ox, oy, oz), unreal.Rotator(0, 0, 0))
+        a.tags = [unreal.Name("Zone" + role.capitalize())] + zone_tags
+    for label, mesh, transforms, rule in compute_scatter():
+        a = actors.spawn_actor_from_class(unreal.MRScatterActor, origin, unreal.Rotator(0, 0, 0))
         a.set_actor_label(label)
         cull = rule.get("cull_m", [40, 60])
-        a.set_scatter(mesh, transforms, cull[0] * 100.0, cull[1] * 100.0, bool(rule.get("shadows", True)))
-        a.tags = [unreal.Name("ZoneScatter")] + [unreal.Name("Zone%d" % r) for r in [zone["rid"]] + sharers]
+        a.set_scatter(eal.load_asset(mesh), transforms, cull[0] * 100.0, cull[1] * 100.0, bool(rule.get("shadows", True)))
+        a.tags = [unreal.Name("ZoneScatter")] + zone_tags
+    for label, mesh, (x, y, z), light in props:
+        loc = origin + unreal.Vector(x, y, z)
+        if mesh:
+            a = actors.spawn_actor_from_object(eal.load_asset(mesh), loc, unreal.Rotator(0, 0, 0))
+            a.set_actor_label(label)
+            comp = a.get_component_by_class(unreal.StaticMeshComponent)
+            comp.set_mobility(unreal.ComponentMobility.STATIC)
+            comp.set_collision_profile_name("NoCollision")
+            a.tags = [unreal.Name("ZoneProp"), unreal.Name("Zone%d" % zone["rid"])]
+        if light:
+            pl = actors.spawn_actor_from_class(unreal.PointLight, loc + unreal.Vector(0, 0, light["offset_m"] * 100.0))
+            pl.set_actor_label(label + "_Light")
+            lc = pl.light_component
+            lc.set_mobility(unreal.ComponentMobility.MOVABLE)
+            lc.set_editor_property("intensity_units", unreal.LightUnits.CANDELAS)
+            lc.set_editor_property("intensity", float(light["candela"]))
+            lc.set_editor_property("attenuation_radius", float(light["radius_m"]) * 100.0)
+            lc.set_editor_property("use_temperature", True)
+            lc.set_editor_property("temperature", float(light["temperature"]))
+            lc.set_editor_property("source_radius", float(light.get("source_radius_cm", 5)))
+            pl.tags = [unreal.Name("ZoneLight"), unreal.Name("Zone%d" % zone["rid"])]
     if not level_sub.save_current_level():
         raise RuntimeError("could not save " + path)
-    return path
+    cache.done(path, key, "levels", True)
+    return path, True
 
 
 def spawn(cls, loc=unreal.Vector(0, 0, 0), rot=unreal.Rotator(0, 0, 0), label=None):
@@ -266,8 +410,25 @@ def spawn(cls, loc=unreal.Vector(0, 0, 0), rot=unreal.Rotator(0, 0, 0), label=No
     return a
 
 
-def build_persistent_level(zone_levels):
-    new_level(WORLD_PATH)
+def build_persistent_level(zone_levels, maps):
+    cache = build_cache.CACHE
+    recipe = {"levels": zone_levels, "code": source(build_persistent_level, spawn, apply_level_mood),
+              "moods": file_digest(MOODS), "mood": os.environ.get("MR_MOOD")}
+    key = cache.key(recipe, deps=False)
+    if cache.fresh(WORLD_PATH, key):
+        cache.done(WORLD_PATH, key, "levels", False)
+        return False
+    if eal.does_asset_exist(WORLD_PATH):
+        maps.leave()
+        if not level_sub.load_level(WORLD_PATH):
+            raise RuntimeError("could not open " + WORLD_PATH)
+        world = editor_sub.get_editor_world()
+        for level in unreal.EditorLevelUtils.get_levels(world)[1:]:
+            unreal.EditorLevelUtils.remove_level_from_world(level)
+        actors.destroy_actors([a for a in actors.get_all_level_actors()
+                               if not isinstance(a, (unreal.WorldSettings, unreal.Brush))])
+    else:
+        open_level(WORLD_PATH, maps)
     # one sun + sky for the outdoor zones (interiors get their own lights later)
     sun = spawn(unreal.DirectionalLight, rot=unreal.Rotator(roll=0, pitch=-40, yaw=-30), label="Sun")
     sun.light_component.set_editor_property("atmosphere_sun_light", True)
@@ -302,13 +463,23 @@ def build_persistent_level(zone_levels):
     log("saved %s; on reload it has %d zone sublevels (expected %d)" % (WORLD_PATH, sublevels, len(zone_levels)))
     if sublevels != len(zone_levels):
         raise RuntimeError("streaming levels were not saved into " + WORLD_PATH)
+    cache.done(WORLD_PATH, key, "levels", True)
+    return True
 
 
-def main():
+def main(args):
+    if level_sub.is_in_play_in_editor():
+        raise RuntimeError("stop Play-In-Editor before building the world")
+    started = time.time()
+    clean = "--clean" in args
+    cache = build_cache.begin(clean)
+    if clean:
+        reset_generated()
+    maps = MapSwitch()
     layout = json.load(open(LAYOUT, encoding="utf-8"))
     zones = layout["zones"]
-    reset_generated()
     materials = ZoneMaterials()
+    prop_materials = materials.props
 
     # which zones reuse another zone's geometry
     sharers = {}
@@ -318,22 +489,37 @@ def main():
             sharers.setdefault(sg["rid"], []).append(z["rid"])
 
     zone_levels, bad = [], 0
-    for z in zones:
-        if "shares_geometry_with" in z:
-            log("zone %d uses the geometry level of zone %d" % (z["rid"], z["shares_geometry_with"]["rid"]))
-            continue
-        parts = import_zone_parts(z, materials)
-        bad += 0 if check_orientation(z, parts[0][0]) else 1
-        scatters = zone_scatter(z, materials) if hasattr(unreal, "MRScatterActor") else []
-        zone_levels.append(build_zone_level(z, parts, sharers.get(z["rid"], []), scatters))
-
-    build_persistent_level(zone_levels)
+    try:
+        for z in zones:
+            if "shares_geometry_with" in z:
+                continue
+            parts, summary = import_zone_parts(z, materials)
+            if any(parts[0][0].startswith(d + "/") for d in cache.built.get("meshes", [])):  # re-imported
+                bad += 0 if check_orientation(z, parts[0][0]) else 1
+            scatter_inputs, compute_scatter = zone_scatter(z, materials)
+            props = zone_props(z, materials, prop_materials)
+            path, rebuilt = build_zone_level(z, parts, sharers.get(z["rid"], []), scatter_inputs, compute_scatter, props, maps)
+            zone_levels.append(path)
+            prune_art(z, parts)
+            if rebuilt:
+                log("zone %d %s: level rebuilt (%s)" % (z["rid"], z["class"], summary))
+        build_persistent_level(zone_levels, maps)
+    finally:
+        cache.save()
     if bad:
         raise RuntimeError("%d zone meshes imported with the wrong orientation" % bad)
+    maps.restore()
+    log("done in %.0f s; rebuilt/total: %s" % (time.time() - started, cache.summary()))
 
 
-try:
-    main()
-finally:
-    if "-keep-open" not in os.environ.get("MR_BUILD_WORLD_ARGS", ""):
-        unreal.SystemLibrary.quit_editor()
+def _launched_for_this_script():
+    """True when this editor was started just to run a script (-ExecutePythonScript): quit after."""
+    return "-executepythonscript" in unreal.SystemLibrary.get_command_line().lower()
+
+
+if __name__ == "__main__":
+    try:
+        main(sys.argv[1:])
+    finally:
+        if _launched_for_this_script() and "-keep-open" not in os.environ.get("MR_BUILD_WORLD_ARGS", ""):
+            unreal.SystemLibrary.quit_editor()

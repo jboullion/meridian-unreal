@@ -11,9 +11,25 @@ For each building, every blockout face in its region is either rebuilt or copied
     stone reveal, showing the painted image), painted surrounds and bands stand proud of the wall,
     and a plinth runs along the base;
   - crenellation strips (alpha-cut merlons) become a solid parapet with real merlons;
-  - everything else (roofs, the clock tower, pilasters) is copied as is.
+  - sloped roofs (facades.json "roofs") get thickness and eave/verge overhangs;
+  - water bodies (kind "water") become a sunken bed with a separate water surface mesh;
+  - everything else (flat roofs, the clock tower, signs) is copied as is; cut-out (masked)
+    originals keep their slot so they stay cut-out, rebuilt crenels use "<grd>__solid".
 The wall's outer surface stays exactly on the blockout plane, so the hidden blockout collision
 still matches; only trims (a few cm) stand proud.
+
+Per building in zone_<rid>.json:
+  "displacement": "runtime" (default; Nanite tessellation in UE) | "baked" (applied to real geometry
+                  here, no tessellation in UE) | "none"
+  "detail": ["timber", "tiles", "window_boxes"]  (tools/blender/zone_detail.py)
+
+Overrides (the hybrid workflow): art_src/environment/zones/<rid>/<Building>.blend, when present, is
+used for that building instead of generating it. Its object SM_Z<rid>_<Building> is exported as is
+(custom property "displacement" on the object, default "none"). Start one from the generated mesh:
+
+    blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 --seed-override Inn
+
+then edit it in Blender; re-running the generator never touches it (--force re-seeds).
 
 Output, build/environment/zone_<rid>/ (git-ignored, regenerate any time):
   SM_Z<rid>_<Building>.glb   art mesh in zone space (glTF metres), material slots = texture ids,
@@ -37,8 +53,14 @@ sys.path.insert(0, os.path.join(REPO, "tools", "environment"))
 import blockout  # noqa: E402
 import facades  # noqa: E402
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import zone_detail  # noqa: E402
+
 M_PER_SQUARE = 2.2
 GRID_M = 0.25  # art meshes are cut into this grid so displacement has interior vertices to move
+DISPLACEMENT_M = 0.05  # full range of the displacement (must match environment_materials.DISPLACEMENT_CM)
+OVERRIDES = os.path.join(REPO, "art_src", "environment", "zones")
+DETAIL = set()  # optional detail for the building being built (zone_<rid>.json "detail")
 UP = Vector((0.0, 1.0, 0.0))  # glTF space: x east, y up, z south
 EPS = 1e-4
 
@@ -106,6 +128,16 @@ class Floors:
             if y <= cap + 0.01 and geometry.intersect_point_tri_2d(p, Vector(a), Vector(b), Vector(c)):
                 best = y if best is None else max(best, y)
         return best
+
+
+def timber_only(poly):
+    """A timber texture without a facades.json entry, on a building with timber detail."""
+    return "timber" in DETAIL and zone_detail.beam_mask(poly.material) is not None
+
+
+def poly_key(poly):
+    """Same key for a polygon and its reversed (back-side) copy."""
+    return frozenset((round(p.x, 2), round(p.y, 2), round(p.z, 2)) for p in poly.pts)
 
 
 def outward(poly, floors):
@@ -328,7 +360,11 @@ def build_facade_wall(out, wall, desc, defaults, catalog):
                 add_strip(out, wall, inner, front, -depth, trim, trim_uv, centre, closed=True)
             # panel at the back: painted glass or door leaf
             add_face_st(out, wall, [inner], -depth, mat + ("__panel" if door else "__glass"), wall.n)
-            if fw:
+            if fw and op.get("shape") == "circle":
+                # closed ring (rose window)
+                add_face_st(out, wall, [outer, inner], proud, mat, wall.n)
+                add_strip(out, wall, outer, 0.0, proud, trim, trim_uv, centre, facing="out", closed=True)
+            elif fw:
                 # U-shaped surround open at the bottom (sill or ground below it)
                 oc, ic = open_chain(outer), open_chain(inner)
                 add_face_st(out, wall, [oc + ic[::-1]], proud, mat, wall.n)
@@ -339,6 +375,14 @@ def build_facade_wall(out, wall, desc, defaults, catalog):
                 foot = min(p.y for p in edge)
                 over = 0.06
                 add_box(out, wall, left - over, right + over, foot - 0.09, foot + 0.015, 0.0, 0.08, trim)
+                if "window_boxes" in DETAIL and not door:
+                    zone_detail.window_box(out, wall, left - 0.02, right + 0.02, foot - 0.09,
+                                           hash((round(left, 2), round(foot, 2), mat)) & 0xFFFF, UP)
+
+    # timber frame as real beams (zone_detail.timber_relief), clear of the openings
+    if "timber" in DETAIL:
+        outlines = [facades.opening_outline(op, op.get("frame_px", 0) + 1) for op in desc.get("openings", [])]
+        zone_detail.timber_relief(out, wall, mat, outlines, add_face_st, UP)
 
     # the wall face itself, with holes and door notches
     corners = sorted(wall.st, key=lambda p: (p.y, p.x))
@@ -354,9 +398,19 @@ def build_facade_wall(out, wall, desc, defaults, catalog):
         loop = corners  # unusual (sloped) wall: no notches
     add_face_st(out, wall, [loop] + holes, 0.0, mat, wall.n)
 
+    # piers (pilasters): full-height proud strips
+    for pier in desc.get("piers", []):
+        proud = pier.get("proud_m", defaults["pier_proud_m"])
+        for ku, kv in wall.repeats():
+            a = wall.st_of_px((pier["x"][0], 0), ku, kv).x
+            b = wall.st_of_px((pier["x"][1], 0), ku, kv).x
+            a, b = max(min(a, b), wall.s0), min(max(a, b), wall.s1)
+            if b - a > 0.05 and kv == math.floor(wall.v_range[0]):
+                add_box(out, wall, a, b, wall.t0, wall.t1, 0.0, proud, mat)
+
     # bands (string courses) across the whole wall, extended past the ends to close corners
-    band_proud = desc.get("band_proud_m", defaults["band_proud_m"])
     for band in desc.get("bands", []):
+        band_proud = band.get("proud_m", desc.get("band_proud_m", defaults["band_proud_m"]))
         done = set()
         for ku, kv in wall.repeats():
             if kv in done:
@@ -385,7 +439,7 @@ def build_parapet(out, wall, desc, defaults):
     """Alpha-cut crenellation strip -> solid parapet with merlons, built inward from the wall plane."""
     cren = desc["crenels"]
     T = desc.get("parapet_thickness_m", defaults["parapet_thickness_m"])
-    mat = wall.poly.material
+    mat = wall.poly.material + "__solid"  # the cut-out original rebuilt as solid stone
     cut_t = None
     gaps = []
     for ku, kv in wall.repeats():
@@ -411,6 +465,130 @@ def build_parapet(out, wall, desc, defaults):
         s = max(s, b)
 
 
+def build_roof(out, poly, cfg):
+    """Sloped roof polygon -> slab with thickness, eave overhang on its low edge and verge
+    overhangs along the slope; UVs continue the blockout's mapping."""
+    n = poly.normal.normalized()
+    down = (-UP) - n * (-UP).dot(n)
+    if down.length < 1e-4:
+        copy_poly(out, poly)
+        return
+    d = down.normalized()
+    r = n.cross(d).normalized()
+    c = sum(poly.pts, Vector()) / len(poly.pts)
+    ab = [((p - c).dot(r), (p - c).dot(d)) for p in poly.pts]
+    amin, amax = min(a for a, _ in ab), max(a for a, _ in ab)
+    bmax = max(b for _, b in ab)
+    eps = 0.05
+    grown = []
+    for p, (a, b) in zip(poly.pts, ab):
+        q = p.copy()
+        if a > amax - eps:
+            q += r * cfg["verge_m"]
+        elif a < amin + eps:
+            q -= r * cfg["verge_m"]
+        if b > bmax - eps:
+            q += d * cfg["eave_m"]
+        grown.append(q)
+    # affine (a, b) -> uv from the original corners
+    best, tri = -1.0, (0, 1, 2)
+    k = len(ab)
+    for i in range(k):
+        for j in range(i + 1, k):
+            for m in range(j + 1, k):
+                area = abs((ab[j][0] - ab[i][0]) * (ab[m][1] - ab[i][1]) - (ab[m][0] - ab[i][0]) * (ab[j][1] - ab[i][1]))
+                if area > best:
+                    best, tri = area, (i, j, m)
+    M = Matrix([[ab[i][0], ab[i][1], 1.0] for i in tri]).inverted()
+    cu = M @ Vector([poly.uvs[i].x for i in tri])
+    cv = M @ Vector([poly.uvs[i].y for i in tri])
+
+    def uv(p):
+        a, b = (p - c).dot(r), (p - c).dot(d)
+        return Vector((cu[0] * a + cu[1] * b + cu[2], cv[0] * a + cv[1] * b + cv[2]))
+
+    T = cfg["thickness_m"]
+    top = [q + n * T for q in grown]
+    out.poly(top, [uv(q) for q in grown], poly.material, n)
+    if "tiles" in DETAIL:
+        zone_detail.roof_tiles(out, grown, n, r, d, c, uv, T, poly.material)
+    out.poly(grown[::-1], [uv(q) for q in grown[::-1]], poly.material, -n)
+    for i in range(len(grown)):
+        a, b = grown[i], grown[(i + 1) % len(grown)]
+        edge = b - a
+        side = edge.cross(n).normalized()
+        if side.dot(((a + b) / 2) - c) < 0:
+            side = -side
+        out.poly([a, b, b + n * T, a + n * T], [uv(a), uv(b), uv(b) + Vector((0, 0.04)), uv(a) + Vector((0, 0.04))],
+                 poly.material, side)
+
+
+def build_water(out, water_out, polys, entry):
+    """Water floor polygons -> a sunken bed (the entry's bed_texture), skirts down to it from the
+    original floor height, and a flat water surface (slot "water") a little below the rim."""
+    bed_tex = entry.get("bed_texture", "grd09629")
+    depth = entry.get("bed_depth_m", 0.9)
+    level = entry.get("surface_m", 0.12)
+    # boundary edges: used by one polygon only
+    count = {}
+    for poly in polys:
+        k = len(poly.pts)
+        for i in range(k):
+            a, b = poly.pts[i], poly.pts[(i + 1) % k]
+            key = tuple(sorted(((round(a.x, 3), round(a.z, 3)), (round(b.x, 3), round(b.z, 3)))))
+            count[key] = count.get(key, 0) + 1
+    edges = [key for key, n in count.items() if n == 1]
+
+    def edge_dist(x, z):
+        best = 1e9
+        for (ax, az), (bx, bz) in edges:
+            dx, dz = bx - ax, bz - az
+            l2 = dx * dx + dz * dz
+            t = 0.0 if l2 < 1e-9 else max(0.0, min(1.0, ((x - ax) * dx + (z - az) * dz) / l2))
+            best = min(best, math.hypot(ax + dx * t - x, az + dz * t - z))
+        return best
+
+    def bed_y(p):
+        # shelving bed: shallow at the rim, full depth ~2.5 m in
+        return p.y - min(depth, 0.2 + depth * edge_dist(p.x, p.z) / 2.5)
+
+    for poly in polys:
+        # subdivide each floor polygon into a fan of small triangles so the bed can shelve
+        c = sum(poly.pts, Vector()) / len(poly.pts)
+        k = len(poly.pts)
+        for i in range(k):
+            a, b = poly.pts[i], poly.pts[(i + 1) % k]
+            steps = max(1, int(max((a - c).length, (b - c).length) / 0.75))
+            for si in range(steps):
+                for sj in range(steps - si):
+                    def at(u, v):
+                        return c + (a - c) * (u / steps) + (b - c) * (v / steps)
+                    tris = [(at(si, sj), at(si + 1, sj), at(si, sj + 1))]
+                    if sj + si + 1 < steps:
+                        tris.append((at(si + 1, sj), at(si + 1, sj + 1), at(si, sj + 1)))
+                    for t in tris:
+                        pts = [Vector((p.x, bed_y(p), p.z)) for p in t]
+                        out.tri(pts, [Vector((p.x / M_PER_SQUARE, p.z / M_PER_SQUARE)) for p in pts], bed_tex, UP)
+        water_out.poly([Vector((p.x, p.y + level, p.z)) for p in poly.pts],
+                       [Vector((p.x / M_PER_SQUARE, p.z / M_PER_SQUARE)) for p in poly.pts], "water", UP)
+    y0 = polys[0].pts[0].y
+    for (ax, az), (bx, bz) in edges:
+        a_top, b_top = Vector((ax, y0, az)), Vector((bx, y0, bz))
+        a_bot, b_bot = Vector((ax, bed_y(a_top), az)), Vector((bx, bed_y(b_top), bz))
+        mid = (a_top + b_top) / 2
+        inward = Vector((-(bz - az), 0.0, bx - ax)).normalized()
+        # face the skirt towards the water: probe which side has bed below the rim
+        probe = mid + inward * 0.3
+        if not any(geometry.intersect_point_tri_2d(
+                Vector((probe.x, probe.z)), Vector((q.pts[0].x, q.pts[0].z)), Vector((q.pts[i].x, q.pts[i].z)),
+                Vector((q.pts[i + 1].x, q.pts[i + 1].z))) for q in polys for i in range(1, len(q.pts) - 1)):
+            inward = -inward
+        length = (b_top - a_top).length
+        out.poly([a_top, b_top, b_bot, a_bot],
+                 [Vector((0, 0)), Vector((length / M_PER_SQUARE, 0)), Vector((length / M_PER_SQUARE, 0.4)), Vector((0, 0.4))],
+                 bed_tex, inward)
+
+
 def copy_poly(out, poly):
     out.poly(list(poly.pts), list(poly.uvs), poly.material)
 
@@ -422,7 +600,7 @@ def to_blender(v):
     return Vector((v.x, -v.z, v.y))
 
 
-def make_object(name, out, collection):
+def make_object(name, out, collection, grid=True, bake=None):
     mesh = bpy.data.meshes.new(name)
     verts, faces = [], []
     for tri in out.verts:
@@ -441,18 +619,32 @@ def make_object(name, out, collection):
     bm = bmesh.new()
     bm.from_mesh(mesh)
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0005)
-    grid_cut(bm)
+    if grid:
+        grid_cut(bm, GRID_M if grid is True else grid)
+    mask = displacement_mask(bm)
+    if bake:
+        moved = zone_detail.bake_displacement(bm, out.slots, bake, DISPLACEMENT_M, mask)
+        log("%s: baked displacement into %d vertices" % (name, moved))
+    weights = [v[mask] for v in bm.verts]
     bm.to_mesh(mesh)
     bm.free()
-    for poly in mesh.polygons:
-        poly.use_smooth = False
-    displacement_mask(mesh)
+    if bake:
+        for poly in mesh.polygons:
+            poly.use_smooth = True
+        mesh.set_sharp_from_angle(angle=math.radians(35))
+    else:
+        for poly in mesh.polygons:
+            poly.use_smooth = False
+    attr = mesh.color_attributes.new(name="Mask", type="BYTE_COLOR", domain="POINT")
+    for i, w in enumerate(weights):
+        attr.data[i].color = (w, w, w, 1.0)
+    mesh.color_attributes.active_color = attr
     obj = bpy.data.objects.new(name, mesh)
     collection.objects.link(obj)
     return obj
 
 
-def grid_cut(bm):
+def grid_cut(bm, size=GRID_M):
     """Cut everything along axis planes every GRID_M, so large flat faces get interior vertices
     (Nanite displacement moves vertices along their normals; the mask below pins the edges)."""
     lo = Vector((min(v.co.x for v in bm.verts), min(v.co.y for v in bm.verts), min(v.co.z for v in bm.verts)))
@@ -460,32 +652,28 @@ def grid_cut(bm):
     for axis in range(3):
         normal = Vector((0, 0, 0))
         normal[axis] = 1.0
-        k = math.floor(lo[axis] / GRID_M) + 1
-        while k * GRID_M < hi[axis]:
+        k = math.floor(lo[axis] / size) + 1
+        while k * size < hi[axis]:
             co = Vector((0, 0, 0))
-            co[axis] = k * GRID_M
+            co[axis] = k * size
             geom = bm.verts[:] + bm.edges[:] + bm.faces[:]
             bmesh.ops.bisect_plane(bm, geom=geom, dist=0.0001, plane_co=co, plane_no=normal)
             k += 1
     bmesh.ops.triangulate(bm, faces=bm.faces[:])
 
 
-def displacement_mask(mesh):
-    """Vertex colour R = 1 where a vertex lies inside one flat face (free to displace), 0 on
-    corners, creases, openings and open edges, so displaced faces stay joined."""
-    bm = bmesh.new()
-    bm.from_mesh(mesh)
-    free = {}
+def displacement_mask(bm):
+    """Per-vertex float layer: 1 where a vertex lies inside one flat face (free to displace), 0 on
+    corners, creases, openings and open edges, so displaced faces stay joined. Written to the mesh
+    as vertex colour R (runtime displacement); subdivision interpolates it (baked displacement)."""
+    bm.normal_update()
+    layer = bm.verts.layers.float.new("dmask")
     for v in bm.verts:
         normals = [f.normal for f in v.link_faces]
-        flat = all(n.dot(normals[0]) > 0.999 for n in normals)
+        flat = bool(normals) and all(n.dot(normals[0]) > 0.999 for n in normals)
         closed = all(not e.is_boundary for e in v.link_edges)
-        free[v.index] = 1.0 if (flat and closed and normals) else 0.0
-    bm.free()
-    attr = mesh.color_attributes.new(name="Mask", type="BYTE_COLOR", domain="POINT")
-    for i, w in free.items():
-        attr.data[i].color = (w, w, w, 1.0)
-    mesh.color_attributes.active_color = attr
+        v[layer] = 1.0 if (flat and closed) else 0.0
+    return layer
 
 
 def preview_material(slot):
@@ -549,6 +737,13 @@ def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     rid = int(argv[argv.index("--rid") + 1]) if "--rid" in argv else 300
     preview = "--preview" in argv
+    i = argv.index("--preview") if preview else -1
+    preview_only = set(argv[i + 1].split(",")) if preview and i + 1 < len(argv) and not argv[i + 1].startswith("--") else None
+    seed = set(argv[argv.index("--seed-override") + 1].split(",")) if "--seed-override" in argv else set()
+    force = "--force" in argv
+    strengths = {k: v for k, v in json.load(open(os.path.join(REPO, "data", "environment", "materials.json"),
+                                                 encoding="utf-8")).get("displacement", {}).items() if not k.startswith("_")}
+    override_dir = os.path.join(OVERRIDES, str(rid))
 
     layout = json.load(open(os.path.join(REPO, "data", "zone_layout.json"), encoding="utf-8"))
     zone = next(z for z in layout["zones"] if z["rid"] == rid)
@@ -557,6 +752,7 @@ def main():
         raise SystemExit("no data/environment/zone_%d.json" % rid)
     fac = facades.load()
     defaults, described = fac["defaults"], fac["textures"]
+    roofs = {k: dict(defaults["roof"], **v) for k, v in fac.get("roofs", {}).items() if not k.startswith("_")}
     catalog = texture_catalog()
 
     glb = os.path.join(REPO, zone["mesh"])
@@ -571,36 +767,95 @@ def main():
     bpy.context.scene.collection.children.link(ref_col)
 
     manifest = {"rid": rid, "meshes": []}
-    for b in config["buildings"]:
-        sel = blockout.building_triangles(prims, b)
+    global DETAIL
+    for b, sel in blockout.assign_buildings(prims, config):
+        name = "SM_Z%d_%s" % (rid, b["name"])
+        override = os.path.join(override_dir, b["name"] + ".blend")
+        if os.path.exists(override) and not (b["name"] in seed and force):
+            with bpy.data.libraries.load(override, link=False) as (src, dst):
+                dst.objects = [n for n in src.objects if n == name]
+            if not dst.objects:
+                raise SystemExit("%s has no object %s" % (override, name))
+            obj = dst.objects[0]
+            art_col.objects.link(obj)
+            path = os.path.join(out_dir, name + ".glb")
+            export_glb(obj, path)
+            mode = obj.get("displacement", "none")
+            manifest["meshes"].append({"name": name, "file": os.path.basename(path), "building": b["name"],
+                                       "displacement": mode, "override": True})
+            log("%s: from override %s (%d triangles, displacement %s)" % (name, override, len(obj.data.polygons), mode))
+            continue
+        DETAIL = set(b.get("detail", []))
+        if not sel:
+            log("%s: no blockout faces in its region" % b["name"])
+            continue
+        if b.get("kind") == "water":
+            out, water_out = MeshOut(), MeshOut()
+            polys = [poly for name, tris in sorted(sel.items()) for poly in polys_of(prims[name], tris)]
+            build_water(out, water_out, polys, b)
+            for suffix, mesh_out, grid in (("", out, False), ("_Water", water_out, False)):
+                name = "SM_Z%d_%s%s" % (rid, b["name"], suffix)  # noqa: F841
+                obj = make_object(name, mesh_out, art_col, grid=grid)
+                path = os.path.join(out_dir, name + ".glb")
+                export_glb(obj, path)
+                manifest["meshes"].append({"name": name, "file": os.path.basename(path), "building": b["name"] + suffix,
+                                           "water": suffix == "_Water"})
+                log("%s: %d triangles, slots %s" % (name, len(obj.data.polygons), ", ".join(mesh_out.slots)))
+            continue
         floors = Floors(prims, b["region_m"])
         out = MeshOut()
-        counts = {"rebuilt": 0, "parapet": 0, "copied": 0, "dropped": 0}
-        for name, tris in sorted(sel.items()):
-            for poly in polys_of(prims[name], tris):
-                desc = described.get(poly.material)
-                if desc and poly.vertical:
-                    if outward(poly, floors):
-                        wall = Wall(poly, catalog[poly.material])
-                        if "crenels" in desc:
-                            build_parapet(out, wall, desc, defaults)
-                            counts["parapet"] += 1
-                        else:
-                            build_facade_wall(out, wall, desc, defaults, catalog)
-                            counts["rebuilt"] += 1
-                    else:
-                        counts["dropped"] += 1  # the inward copy of a rebuilt wall
-                    continue
+        counts = {"rebuilt": 0, "parapet": 0, "roof": 0, "copied": 0, "dropped": 0}
+        all_polys = [poly for name, tris in sorted(sel.items()) for poly in polys_of(prims[name], tris)]
+        # walls whose two copies both fail the outward test (free-standing, or level floors on
+        # both sides) are copied as they are rather than lost
+        sides = {}
+        for poly in all_polys:
+            if poly.vertical and (described.get(poly.material) or timber_only(poly)):
+                sides.setdefault(poly_key(poly), []).append(outward(poly, floors))
+        keep_as_is = {k for k, flags in sides.items() if not any(flags)}
+        for poly in all_polys:
+            if poly.vertical and (described.get(poly.material) or timber_only(poly)) and poly_key(poly) in keep_as_is:
                 copy_poly(out, poly)
                 counts["copied"] += 1
-        name = "SM_Z%d_%s" % (rid, b["name"])
-        obj = make_object(name, out, art_col)
+                continue
+            if poly.material in roofs and 0.1 < poly.normal.y < 0.97:
+                build_roof(out, poly, roofs[poly.material])
+                counts["roof"] += 1
+                continue
+            desc = described.get(poly.material)
+            if not desc and poly.vertical and timber_only(poly):
+                desc = {"name": poly.material}  # plain timber wall: relief only
+            if desc and poly.vertical:
+                if outward(poly, floors):
+                    wall = Wall(poly, catalog[poly.material])
+                    if "crenels" in desc:
+                        build_parapet(out, wall, desc, defaults)
+                        counts["parapet"] += 1
+                    else:
+                        build_facade_wall(out, wall, desc, defaults, catalog)
+                        counts["rebuilt"] += 1
+                else:
+                    counts["dropped"] += 1  # the inward copy of a rebuilt wall
+                continue
+            copy_poly(out, poly)
+            counts["copied"] += 1
+        mode = b.get("displacement", "runtime")
+        # the grid only serves displacement (interior vertices + the edge mask)
+        obj = make_object(name, out, art_col, grid=b.get("grid_m", GRID_M) if mode != "none" else False,
+                          bake=strengths if mode == "baked" else None)
+        obj["displacement"] = mode
         path = os.path.join(out_dir, name + ".glb")
         export_glb(obj, path)
-        manifest["meshes"].append({"name": name, "file": os.path.basename(path), "building": b["name"]})
-        log("%s: %d walls rebuilt, %d parapets, %d polygons copied, %d inner faces dropped -> %d triangles, slots %s"
-            % (name, counts["rebuilt"], counts["parapet"], counts["copied"], counts["dropped"],
-               len(obj.data.polygons), ", ".join(out.slots)))
+        manifest["meshes"].append({"name": name, "file": os.path.basename(path), "building": b["name"],
+                                   "displacement": mode})
+        if b["name"] in seed:
+            os.makedirs(override_dir, exist_ok=True)
+            obj["displacement"] = "none" if mode == "runtime" else mode
+            bpy.data.libraries.write(override, {obj}, fake_user=True)
+            log("%s: seeded override %s (edit it in Blender; the generator now uses it)" % (name, override))
+        log("%s: %d walls rebuilt, %d parapets, %d roofs, %d polygons copied, %d inner faces dropped -> %d triangles"
+            % (name, counts["rebuilt"], counts["parapet"], counts["roof"], counts["copied"], counts["dropped"],
+               len(obj.data.polygons)))
 
     # the rest of the blockout, for context in the .blend and the preview
     render_glb = os.path.join(out_dir, "blockout_render.glb")
@@ -617,6 +872,8 @@ def main():
     if preview:
         ref_col.hide_render = True
         for m in manifest["meshes"]:
+            if preview_only and m["building"] not in preview_only:
+                continue
             obj = bpy.data.objects[m["name"]]
             render_preview(os.path.join(out_dir, "preview_%s.png" % m["building"]), obj)
     log("wrote %s" % out_dir)

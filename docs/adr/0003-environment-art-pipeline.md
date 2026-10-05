@@ -154,6 +154,49 @@ Pass 3 above planned a modular kit assembled over each footprint. For a faithful
 - Displacement moves vertices along their normals, so flat-shaded corners would crack open. `build_zone_art.py` cuts the art mesh into a 25 cm grid and writes vertex colour R = 0 on corners, openings and open edges (1 inside flat faces); the material multiplies the displacement by it.
 - Project: `r.Nanite.AllowTessellation=1` (DefaultEngine.ini).
 
+### All of Raza (second pass)
+- **Every building** in `zone_300.json`: Hall, Inn, Tavern, west house, Temple, hut, shop row, two barns, shed, crypt entrance, plus the town wall and the pond. Entries can be limited to textures (`materials`), and a face belongs to the first entry that takes it, so the town wall (by texture, whole-town region) goes last.
+- **Openings** for every facade are in `facades.json` (about 30 textures). New feature types: `piers` (the town wall's pilasters), `circle` openings (the Temple's rose window), and per-band `proud_m`.
+- **Timber framing through displacement, not geometry.** Measuring every beam and brace would be slow and brittle. `make_placeholders.py` has a "timber" height mode instead: the dark side of an Otsu split (beams, posts, braces) stands proud of the plaster with rounded edges, and Nanite displacement (`materials.json`) turns it into relief. Roof tiles and chimney bricks use the "stones" mode, because their dark lines are gaps.
+- **Roofs** (`facades.json` `roofs`): sloped roof faces get a 14 cm slab, a 35 cm eave overhang and 22 cm verge overhangs, with UVs continuing the original mapping.
+- **Walls that face nowhere** (both copies fail the outward test, e.g. level floors on both sides) are copied as they are instead of dropped.
+- **Cut-out originals copied into the art** (signs, fences) keep their masked material. Crenels rebuilt as solid merlons use a `<grd>__solid` slot.
+
+### Water
+The pond is a `kind: "water"` entry. `build_zone_art.py` sinks a shelving bed under the original water floor: 0.2 m at the rim, 0.9 m about 2.5 m in, with the `bed_texture`. It adds skirts from the rim down to the bed and a separate flat water surface (slot `water`, not Nanite) 12 cm above the original floor. `M_Water` is a Single Layer Water material: two world-aligned ripple normals (`T_WaterNormal`, generated) panning in different directions, with absorption and scattering from `materials.json` `water` and Lumen reflections. Collision is unchanged (the original floor), so the pond still reads as wadeable. The fence around it still stops players.
+
+### Light in the shade
+- **Ambient floor:** in `moods.json`, `lumen_skylight_leaking` (0.12) keeps occluded corners from going black, and a stronger local exposure (`shadow_contrast_scale` 0.7) lifts deep shade without flattening the sunlit areas.
+- **Light sources:** Raza's Kod-placed `Lamp` and `Brazier` objects now render. `data/environment/props.json` maps a class to a kit mesh (`tools/blender/build_prop_kit.py`: iron lamp post with a glazed lantern, tripod brazier with embers) and a warm point light. `build_world.py` spawns them from `zone_layout.json`. Other `OrnamentalObject` types (trees, benches...) can be added to `props.json` the same way once they have meshes.
+
+### Grass wind
+Calmer base sway (`wind` 0.3 at `wind_speed` 0.3), scaled between `calm` (0.25) and full by a slowly drifting gust field (macro noise, ~90 m across), so gusts roll across the town now and then. Player-driven grass bending is a later step.
+
+### Profile (2026-10-04, RTX 3070, 1920×1080, Development `-game`)
+Measured with `run_lookdev.ps1 -Profile` (per camera: everything on / `r.Nanite.Tessellation 0` / grass hidden, 150 frames each, CSV-profiler GPU passes) and summarised with `tools/lookdev/profile_report.py`.
+
+| | GPU ms (12 cameras) |
+|---|---|
+| Whole frame | 10.8 to 14.6 |
+| Nanite tessellation (displacement) | +0.09 to +0.89, mean +0.50 (NaniteVisBuffer 0.42 → 0.87, shadow depths +0.13) |
+| Grass scatter (137k instances, shadows on) | +0.40 to +2.52, mean +1.38 (shadow depths +0.9, base pass +0.45, velocities +0.33) |
+| Biggest fixed costs | shadow depths 1.8, TSR 1.7, volumetric clouds 1.2, deferred lighting 1.2, volumetric fog 0.7 |
+
+Asset side: the Raza art meshes total 657k base triangles and 21 MB of uasset. Most of those triangles come from the 25 cm grid that the displacement mask needs. Displacement and the triangle count are not the bottleneck; grass shadows, clouds and TSR are bigger levers.
+
+### Decision: runtime displacement everywhere, Blender overrides where needed (2026-10-04)
+We compared three ways of giving the Inn its relief, using the same cameras and profile:
+
+| | Inn mesh | GPU, Inn cameras (ms) | Look |
+|---|---|---|---|
+| **A. Runtime Nanite displacement** (chosen) | 31k triangles, ~1 MB | 11.2 to 14.4 | soft relief from the height maps |
+| B. Displacement baked into geometry in Blender | 770k triangles, 24 MB | 11.2 to 14.6 (same within noise) | identical to A, with no tessellation |
+| C. Blender detail, no displacement: extruded beams traced from the texture, tile-by-tile roof, window boxes | 18k triangles | not finished (stopped) | crisp beams and tiles, flat plaster and stone |
+
+- Runtime displacement covers almost everything at the lowest asset cost and edit effort, so it stays the default for every building (`"displacement": "runtime"`).
+- Baking (B) buys nothing at runtime and costs about 20 times the disk space. It stays available (`"displacement": "baked"`) in case tessellation ever has to be switched off.
+- **Hybrid for hero buildings:** when a building needs more than relief, an override replaces it. `--seed-override <Building>` writes `art_src/environment/zones/<rid>/<Building>.blend` from the generated mesh; edit that in Blender and the generator uses it from then on. The detail options from C (`"detail": ["timber", "tiles", "window_boxes"]`, `tools/blender/zone_detail.py`) are a starting point for such a building. They're opt-in per building and off by default.
+
 ### Texture alignment fix
 Several textures sat slightly wrong: two half clocks on the clock tower, fences drawn as 2.8 m bars, and seams where walls were split. The cause was that `roo2gltf` anchored wall textures at world height 0, restarted them at every wall piece, and ignored the per-side offsets and pegging flags. It now follows the original client's rules (`wall_uvs`, see `docs/findings.md`), and floors tile once per grid square like the client. `facades.json` is in texture pixels, so the rebuilt buildings follow automatically.
 
@@ -162,9 +205,34 @@ Several textures sat slightly wrong: two half clocks on the clock tower, fences 
 python tools/textures/make_placeholders.py                                   # textures, heights, macro noise
 blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 --preview
 blender -b --factory-startup -P tools/blender/build_grass_kit.py
-UnrealEditor-Cmd ... -ExecutePythonScript=tools/ue/build_world.py           # (or zone_mood.py for lighting only)
+blender -b --factory-startup -P tools/blender/build_prop_kit.py
+powershell -File tools/ue/build_world.ps1                                    # (-Script zone_mood.py for lighting only)
 powershell -File tools/ue/run_lookdev.ps1 -Label <name> -Compare baseline
 ```
+
+### Build speed (2026-10-04)
+Every rebuild of the world used to take about 12.5 minutes. It deleted all of `/Game/Generated` (about 200 s, because the editor gathers references for every asset it deletes), then re-imported 450 textures and 32 meshes and rebuilt 13 levels, even when one building had changed.
+
+The build is now incremental, and it can run in the editor you already have open:
+- **Inputs are hashed.** `tools/ue/build_cache.py` stores a key for every generated asset: the hash of its source files, its settings from `data/`, the source of the function that builds it, and the keys of the assets it uses.
+- **Changed assets are rebuilt in place.** A textures re-import, a master material is emptied and rebuilt, an instance is reset, and a mesh is re-imported over itself. Anything that references them stays valid.
+- **Levels change only when their contents do.** A level is rebuilt only when what it places changes, not when a mesh it places is re-imported.
+- **Builds can go to the open editor.** `build_world.ps1` sends the build there through Python remote execution (`run_in_editor.py`). It starts a headless editor only when none is open.
+- **Blender and texture output can be hashed.** Both write byte-identical files when nothing changed, so content hashes are reliable.
+
+Measured on Raza (RTX 3070):
+
+| Change | Before | Headless | In the open editor |
+|---|---|---|---|
+| Nothing | ~12.5 min | 38 s (1 s of work) | 3 s |
+| One building (Blender 22 s + build) | ~13 min | 22 s + 41 s | 22 s + 15 s |
+| A prop light (one level rebuilt) | ~12.5 min | ~45 s (estimated) | 9 s |
+| Everything (cold cache, assets exist) | — | 7.3 min of work | — |
+| `-Clean` (from scratch) | — | about 9 min (estimated; deletes files before the editor starts) | — |
+
+Still slow and not addressed yet:
+- `make_placeholders.py` (96 s) redoes every texture.
+- Look-dev captures start a fresh `-game` process (about 60 s of their 2 minutes).
 
 ## Options considered
 
@@ -236,7 +304,10 @@ Landscape gives painting tools and Landscape Grass. But it's a heightfield that 
 2a. [x] Look-dev loop: camera bookmarks, `-MRLookDev`, compare sheets.
 2b. [x] `roo2gltf` wall/floor texture placement matches the original client (offsets, pegging, no-vtile clipping, floor tiling).
 2c. [x] Facade relief for the Hall + hidden-collision split + Nanite displacement test + grass scatter + first Raza mood.
-2d. [ ] Facade descriptions for the rest of Raza's buildings (timber houses `RAZ-BLDG-*`, the Inn, `raz-DEF-*`, the museum); timber beams as proud trims.
+2d. [x] Facade descriptions for the rest of Raza's buildings; timber framing via the "timber" height mode; roofs with overhangs; town wall piers.
+2h. [x] Pond: shelving bed + Single Layer Water surface. Lamps and braziers with lights (`props.json`). Ambient floor in the mood. Gusty, calmer grass.
+2j. [x] Profiling tools (`run_lookdev.ps1 -Profile`, `profile_report.py`) and the Inn three-way test; runtime displacement kept as the default, Blender overrides for hero buildings when needed.
+2i. [ ] Remaining `OrnamentalObject` props (trees, benches, wells: identify the Kod types) and Niagara fire/flicker for braziers.
 2e. [ ] Decide on displacement after viewing in-game up close (cost on an RTX 3070, the look at grazing angles); then extend `displacement` or drop it.
 2f. [ ] Tune `grd20232` (town wall) stone heights: Otsu splits its mottling, not its mortar.
 2g. [ ] Replace the Outskirts tree-wall cards with real tree lines (they read fine at a distance now that textures are aligned, but are flat up close).

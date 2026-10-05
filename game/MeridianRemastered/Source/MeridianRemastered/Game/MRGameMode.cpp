@@ -75,6 +75,21 @@ void AMRGameMode::RestartPlayer(AController* NewPlayer)
 		SpawnWaitStart.Remove(NewPlayer);
 	}
 	RestartPlayerAtTransform(NewPlayer, Zones->GetStartTransform(StartZone));
+	if (!NewPlayer->GetPawn())
+	{
+		// never leave a player without a character (they'd be stuck with no input): try again shortly
+		UE_LOG(LogMeridian, Warning, TEXT("Spawn in zone %d failed; retrying"), StartZone);
+		FTimerHandle Retry;
+		TWeakObjectPtr<AController> WeakPlayer(NewPlayer);
+		GetWorldTimerManager().SetTimer(Retry, FTimerDelegate::CreateWeakLambda(this, [this, WeakPlayer]()
+		{
+			if (AController* P = WeakPlayer.Get(); P && !P->GetPawn())
+			{
+				RestartPlayer(P);
+			}
+		}), 0.25f, false);
+		return;
+	}
 
 	if (!ZoneSmokeTest && UMRZoneSmokeTest::IsRequested() && NewPlayer->GetPawn())
 	{

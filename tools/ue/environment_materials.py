@@ -8,7 +8,9 @@ Every blockout material slot is named after its original texture ("grdNNNNN"). A
      (upscaled original + luminance normal map), else
   3. whatever the glTF importer made (flat pastel colour).
 
-Generated assets (all under /Game/Generated/Environment, git-ignored, rebuilt each run):
+Generated assets (all under /Game/Generated/Environment, git-ignored). Each is rebuilt only when
+its inputs change (tools/ue/build_cache.py), in place, so meshes and instances that use it stay valid;
+functions here pass assets around by path and load them only to build something:
   Materials/M_Placeholder, M_PlaceholderMasked   masters: BaseColor * Tint, Normal (strength), Roughness
   Materials/MI_<grd>                             one instance per original texture
   Materials/M_PlaceholderDisplaced, MI_<grd>__art   for Nanite zone-art meshes: + Height texture and
@@ -19,6 +21,8 @@ import json
 import os
 
 import unreal
+
+import build_cache
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 PLACEHOLDERS = os.path.join(REPO, "build", "textures_placeholder")
@@ -44,10 +48,60 @@ def _expr(mat, cls, x, y, **props):
     return e
 
 
+# material settings the builders below change; a rebuilt master starts from the defaults again
+RESET_PROPERTIES = ("blend_mode", "shading_model", "two_sided", "use_material_attributes", "used_with_nanite",
+                    "used_with_instanced_static_meshes", "enable_tessellation", "displacement_scaling")
+
+
+def _new_material(name):
+    """The master material to (re)build: a new asset, or the existing one emptied (the same object,
+    so instances and meshes that use it keep pointing at it)."""
+    path = "%s/%s" % (MAT_DIR, name)
+    if not eal.does_asset_exist(path):
+        return asset_tools.create_asset(name, MAT_DIR, unreal.Material, unreal.MaterialFactoryNew())
+    mat = eal.load_asset(path)
+    mel.delete_all_material_expressions(mat)
+    defaults = unreal.get_default_object(unreal.Material)
+    for prop in RESET_PROPERTIES:
+        mat.set_editor_property(prop, defaults.get_editor_property(prop))
+    return mat
+
+
+def _master(name, builder, *args):
+    """-> path of master material <name>; builder(name, *args) runs only when it or its inputs changed."""
+    cache = build_cache.CACHE
+    key = cache.key(build_cache.source(builder, _expr, _world_uv, _srgb_to_linear, _new_material), name, args)
+    return cache.get_or_build("%s/%s" % (MAT_DIR, name), key, "masters", lambda: builder(name, *args))
+
+
+def _instance(name, parent, textures=None, scalars=None, vectors=None):
+    """-> path of material instance <name> on `parent` (textures and parent are asset paths); rebuilt
+    in place when the parent or a value changed."""
+    textures, scalars, vectors = textures or {}, scalars or {}, vectors or {}
+    path = "%s/%s" % (MAT_DIR, name)
+
+    def build():
+        mi = eal.load_asset(path) if eal.does_asset_exist(path) else asset_tools.create_asset(
+            name, MAT_DIR, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+        mel.clear_all_material_instance_parameters(mi)
+        mel.set_material_instance_parent(mi, eal.load_asset(parent))
+        for k, v in sorted(textures.items()):
+            mel.set_material_instance_texture_parameter_value(mi, k, eal.load_asset(v))
+        for k, v in sorted(scalars.items()):
+            mel.set_material_instance_scalar_parameter_value(mi, k, float(v))
+        for k, v in sorted(vectors.items()):
+            mel.set_material_instance_vector_parameter_value(mi, k, unreal.LinearColor(*v))
+        eal.save_loaded_asset(mi)
+
+    cache = build_cache.CACHE
+    key = cache.key(build_cache.source(_instance), parent, textures, scalars, vectors)
+    return cache.get_or_build(path, key, "instances", build)
+
+
 def build_master(name, masked):
     """BaseColor (sRGB) * Tint -> Base Color; lerp(flat, Normal, NormalStrength) -> Normal;
     Roughness scalar; masked variant clips on BaseColor alpha."""
-    mat = asset_tools.create_asset(name, MAT_DIR, unreal.Material, unreal.MaterialFactoryNew())
+    mat = _new_material(name)
     base = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -700, -200,
                  parameter_name="BaseColor", sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR,
                  texture=eal.load_asset("/Engine/EngineResources/DefaultTexture"))
@@ -81,7 +135,6 @@ def build_master(name, masked):
     mat.set_editor_property("used_with_nanite", True)  # zone art meshes are Nanite
     mel.recompile_material(mat)
     eal.save_loaded_asset(mat)
-    return mat
 
 
 def import_textures(files):
@@ -97,7 +150,42 @@ def import_textures(files):
     asset_tools.import_asset_tasks(tasks)
 
 
-def build_displaced_master(default_height):
+def _texture_settings(tex, srgb, normal):
+    tex.set_editor_property("srgb", srgb)
+    if normal:
+        tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_NORMALMAP)
+        tex.set_editor_property("flip_green_channel", False)  # written DirectX-style already
+
+
+def ensure_textures(specs):
+    """specs: [(file in build/textures_placeholder, srgb, normal map)] -> {file: texture asset path}.
+    Imports, in one batch, only the files whose contents (or settings) changed since the last build."""
+    cache = build_cache.CACHE
+    out, stale = {}, []
+    for f, srgb, normal in dict(((s[0], s) for s in specs)).values():
+        path = "%s/%s" % (TEX_DIR, os.path.splitext(f)[0])
+        key = cache.key(build_cache.file_digest(os.path.join(PLACEHOLDERS, f)), srgb, normal,
+                        build_cache.source(_texture_settings))
+        out[f] = path
+        if cache.fresh(path, key):
+            cache.done(path, key, "textures", False)
+        else:
+            stale.append((f, srgb, normal, path, key))
+    if stale:
+        import_textures([s[0] for s in stale])
+        for f, srgb, normal, path, key in stale:
+            tex = eal.load_asset(path)
+            if not tex:
+                log("WARNING: %s did not import" % f)
+                out.pop(f)
+                continue
+            _texture_settings(tex, srgb, normal)
+            eal.save_loaded_asset(tex)
+            cache.done(path, key, "textures", True)
+    return out
+
+
+def build_displaced_master(name, default_height, tessellation=True):
     """M_PlaceholderDisplaced, for Nanite zone-art meshes (docs/adr/0003, displacement test).
     Same inputs as M_Placeholder plus a Height texture; built with Material Attributes because the
     Python MaterialProperty enum has no Displacement pin:
@@ -105,10 +193,10 @@ def build_displaced_master(default_height):
     The art meshes paint vertex colour R = 0 along corners and openings (build_zone_art.py), so
     faces meeting at an angle don't crack apart. The material's DisplacementScaling turns the
     0..1 output into +-DISPLACEMENT_CM / 2."""
-    mat = asset_tools.create_asset("M_PlaceholderDisplaced", MAT_DIR, unreal.Material, unreal.MaterialFactoryNew())
+    mat = _new_material(name)
     mat.set_editor_property("use_material_attributes", True)
     mat.set_editor_property("used_with_nanite", True)
-    mat.set_editor_property("enable_tessellation", True)
+    mat.set_editor_property("enable_tessellation", tessellation)
     scaling = mat.get_editor_property("displacement_scaling")
     scaling.set_editor_property("magnitude", DISPLACEMENT_CM)
     scaling.set_editor_property("center", 0.5)
@@ -142,7 +230,7 @@ def build_displaced_master(default_height):
 
     height = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, 650,
                    parameter_name="Height", sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR,
-                   texture=default_height)
+                   texture=eal.load_asset(default_height))
     centred = _expr(mat, unreal.MaterialExpressionSubtract, -600, 650, const_b=0.5)
     mel.connect_material_expressions(height, "R", centred, "A")
     disp_strength = _expr(mat, unreal.MaterialExpressionScalarParameter, -900, 900,
@@ -161,7 +249,6 @@ def build_displaced_master(default_height):
     mel.connect_material_property(attrs, "", unreal.MaterialProperty.MP_MATERIAL_ATTRIBUTES)
     mel.recompile_material(mat)
     eal.save_loaded_asset(mat)
-    return mat
 
 
 def _srgb_to_linear(c):
@@ -184,11 +271,12 @@ def _world_uv(mat, x, y, scale_param, default_cm, offset=0.0):
     return add
 
 
-def build_ground_master(macro):
+def build_ground_master(name, macro):
     """M_Ground: world-aligned floors. The original texture is sampled at its own repeat size and
     at 2.73x that, blended by macro noise G, so the 64 px originals stop reading as a grid of
     repeats; macro noise R tints between TintA and TintB for large-scale colour variation."""
-    mat = asset_tools.create_asset("M_Ground", MAT_DIR, unreal.Material, unreal.MaterialFactoryNew())
+    mat = _new_material(name)
+    macro = eal.load_asset(macro)
     mat.set_editor_property("used_with_nanite", True)
     uv1 = _world_uv(mat, -1500, -300, "TileCm", 220.0)
     uv2 = _world_uv(mat, -1500, 0, "TileCm2", 600.0, offset=0.37)
@@ -201,7 +289,7 @@ def build_ground_master(macro):
     mel.connect_material_expressions(uv1, "", c1, "UVs")
     mel.connect_material_expressions(uv2, "", c2, "UVs")
     m = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, 250, parameter_name="Macro",
-              sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR, texture=macro)
+              sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, texture=macro)
     mel.connect_material_expressions(uvm, "", m, "UVs")
     # blend weight: macro G stretched around the middle
     wsub = _expr(mat, unreal.MaterialExpressionSubtract, -650, 150, const_b=0.35)
@@ -240,14 +328,14 @@ def build_ground_master(macro):
     mel.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
     mel.recompile_material(mat)
     eal.save_loaded_asset(mat)
-    return mat
 
 
-def build_grass_material(macro, grass):
+def build_grass_material(name, macro, grass):
     """M_Grass for the scatter tufts (build_grass_kit.py): root-to-tip gradient from vertex colour R,
     per-blade variation from G, the same macro tint as M_Ground, two-sided, wind from the engine's
     SimpleGrassWind weighted by height."""
-    mat = asset_tools.create_asset("M_Grass", MAT_DIR, unreal.Material, unreal.MaterialFactoryNew())
+    mat = _new_material(name)
+    macro = eal.load_asset(macro)
     mat.set_editor_property("two_sided", True)
     mat.set_editor_property("used_with_instanced_static_meshes", True)
     vc = _expr(mat, unreal.MaterialExpressionVertexColor, -1000, 0)
@@ -263,7 +351,7 @@ def build_grass_material(macro, grass):
     mel.connect_material_expressions(vc, "G", var, "Alpha")
     uvm = _world_uv(mat, -1500, 300, "MacroCm", 2600.0)
     m = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, 300, parameter_name="Macro",
-              sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR, texture=macro)
+              sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, texture=macro)
     mel.connect_material_expressions(uvm, "", m, "UVs")
     mtint = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -600, 300)
     ta = _expr(mat, unreal.MaterialExpressionVectorParameter, -800, 500, parameter_name="TintA", default_value=unreal.LinearColor(0.82, 0.86, 0.74, 1))
@@ -287,8 +375,26 @@ def build_grass_material(macro, grass):
     if wind_fn:
         wind = _expr(mat, unreal.MaterialExpressionMaterialFunctionCall, -300, 500)
         wind.set_editor_property("material_function", wind_fn)
-        intensity = _expr(mat, unreal.MaterialExpressionScalarParameter, -600, 800, parameter_name="Wind", default_value=float(grass.get("wind", 0.6)))
-        speed = _expr(mat, unreal.MaterialExpressionConstant, -600, 900, r=0.8)
+        # gusts: a slowly drifting macro-noise field (B) scales the wind between calm and full
+        gust_uv = _world_uv(mat, -1500, 1100, "GustCm", float(grass.get("gust_cm", 9000.0)))
+        gust_pan = _expr(mat, unreal.MaterialExpressionPanner, -1100, 1100, speed_x=0.012, speed_y=0.005)
+        mel.connect_material_expressions(gust_uv, "", gust_pan, "Coordinate")
+        gust_tex = _expr(mat, unreal.MaterialExpressionTextureSample, -950, 1100, texture=macro,
+                         sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
+        mel.connect_material_expressions(gust_pan, "", gust_tex, "UVs")
+        gust_sq = _expr(mat, unreal.MaterialExpressionMultiply, -800, 1100)
+        mel.connect_material_expressions(gust_tex, "B", gust_sq, "A")
+        mel.connect_material_expressions(gust_tex, "B", gust_sq, "B")
+        gust = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -650, 1100,
+                     const_a=float(grass.get("calm", 0.25)), const_b=1.0)
+        mel.connect_material_expressions(gust_sq, "", gust, "Alpha")
+        base_wind = _expr(mat, unreal.MaterialExpressionScalarParameter, -650, 800, parameter_name="Wind",
+                          default_value=float(grass.get("wind", 0.3)))
+        intensity = _expr(mat, unreal.MaterialExpressionMultiply, -500, 850)
+        mel.connect_material_expressions(base_wind, "", intensity, "A")
+        mel.connect_material_expressions(gust, "", intensity, "B")
+        speed = _expr(mat, unreal.MaterialExpressionScalarParameter, -600, 950, parameter_name="WindSpeed",
+                      default_value=float(grass.get("wind_speed", 0.3)))
         mel.connect_material_expressions(intensity, "", wind, "WindIntensity")
         mel.connect_material_expressions(vc, "R", wind, "WindWeight")
         mel.connect_material_expressions(speed, "", wind, "WindSpeed")
@@ -299,48 +405,125 @@ def build_grass_material(macro, grass):
         log("WARNING: SimpleGrassWind not found; grass without wind")
     mel.recompile_material(mat)
     eal.save_loaded_asset(mat)
-    return mat
+
+
+def build_water_material(name, normal_tex, cfg):
+    """M_Water: Single Layer Water for zone water surfaces (the Raza pond). Two world-aligned
+    ripple normals panning in different directions, absorption/scattering from materials.json
+    "water" (per metre), near-mirror roughness; Lumen gives the reflections and the bed shows
+    through by depth."""
+    mat = _new_material(name)
+    normal_tex = eal.load_asset(normal_tex)
+
+    def lin(name, default):
+        c = cfg.get(name, default)
+        return unreal.LinearColor(c[0], c[1], c[2], 1.0)
+
+    normals = []
+    for i, (scale, sx, sy) in enumerate(((cfg.get("ripple_cm", 260.0), 0.012, 0.005),
+                                         (cfg.get("ripple_cm", 260.0) * 0.53, -0.008, 0.011))):
+        uv = _world_uv(mat, -1600, -200 + i * 300, "RippleCm%d" % i, scale)
+        pan = _expr(mat, unreal.MaterialExpressionPanner, -1000, -200 + i * 300,
+                    speed_x=sx * cfg.get("speed", 1.0), speed_y=sy * cfg.get("speed", 1.0))
+        mel.connect_material_expressions(uv, "", pan, "Coordinate")
+        n = _expr(mat, unreal.MaterialExpressionTextureSample, -800, -200 + i * 300,
+                  texture=normal_tex, sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
+        mel.connect_material_expressions(pan, "", n, "UVs")
+        normals.append(n)
+    add = _expr(mat, unreal.MaterialExpressionAdd, -550, 0)
+    mel.connect_material_expressions(normals[0], "RGB", add, "A")
+    mel.connect_material_expressions(normals[1], "RGB", add, "B")
+    flat = _expr(mat, unreal.MaterialExpressionConstant3Vector, -550, 150, constant=unreal.LinearColor(0, 0, 1, 0))
+    strength = _expr(mat, unreal.MaterialExpressionScalarParameter, -550, 250, parameter_name="RippleStrength",
+                     default_value=float(cfg.get("ripple_strength", 0.5)))
+    lerp = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -350, 100)
+    mel.connect_material_expressions(flat, "", lerp, "A")
+    mel.connect_material_expressions(add, "", lerp, "B")
+    mel.connect_material_expressions(strength, "", lerp, "Alpha")
+    norm = _expr(mat, unreal.MaterialExpressionNormalize, -200, 100)
+    mel.connect_material_expressions(lerp, "", norm, "")
+    mel.connect_material_property(norm, "", unreal.MaterialProperty.MP_NORMAL)
+
+    base = _expr(mat, unreal.MaterialExpressionVectorParameter, -350, -300, parameter_name="Color",
+                 default_value=lin("color", [0.02, 0.035, 0.03]))
+    mel.connect_material_property(base, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    rough = _expr(mat, unreal.MaterialExpressionScalarParameter, -350, 350, parameter_name="Roughness",
+                  default_value=float(cfg.get("roughness", 0.04)))
+    mel.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+
+    scatter = _expr(mat, unreal.MaterialExpressionVectorParameter, -350, 500, parameter_name="Scattering",
+                    default_value=lin("scattering", [0.02, 0.06, 0.05]))
+    absorb = _expr(mat, unreal.MaterialExpressionVectorParameter, -350, 650, parameter_name="Absorption",
+                   default_value=lin("absorption", [0.45, 0.12, 0.18]))
+    phase = _expr(mat, unreal.MaterialExpressionConstant, -350, 800, r=0.3)
+    # created last: an unconnected water output fails every intermediate compile
+    out = _expr(mat, unreal.MaterialExpressionSingleLayerWaterMaterialOutput, 0, 500)
+    for src, names in ((scatter, ("ScatteringCoefficients", "Scattering Coefficients")),
+                       (absorb, ("AbsorptionCoefficients", "Absorption Coefficients")),
+                       (phase, ("PhaseG", "Phase G"))):
+        if not any(mel.connect_material_expressions(src, "", out, n) for n in names):
+            log("WARNING: could not connect %s on the Single Layer Water output" % names[0])
+    # switch the shading model last: earlier, every edit recompiles a water material without its
+    # output node and logs "No inputs to Single Layer Water Material"
+    mat.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_SINGLE_LAYER_WATER)
+    mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_OPAQUE)
+    mel.recompile_material(mat)
+    eal.save_loaded_asset(mat)
+
+
+def build_prop_master(name):
+    """M_PropSurface: Color, Emissive, Metallic, Roughness parameters."""
+    mat = _new_material(name)
+    for i, (prop, name, default) in enumerate((
+            (unreal.MaterialProperty.MP_BASE_COLOR, "Color", unreal.LinearColor(0.5, 0.5, 0.5, 1)),
+            (unreal.MaterialProperty.MP_EMISSIVE_COLOR, "Emissive", unreal.LinearColor(0, 0, 0, 1)))):
+        e = _expr(mat, unreal.MaterialExpressionVectorParameter, -400, i * 200, parameter_name=name, default_value=default)
+        mel.connect_material_property(e, "", prop)
+    for i, (prop, name, default) in enumerate((
+            (unreal.MaterialProperty.MP_METALLIC, "Metallic", 0.0),
+            (unreal.MaterialProperty.MP_ROUGHNESS, "Roughness", 0.6))):
+        e = _expr(mat, unreal.MaterialExpressionScalarParameter, -400, 400 + i * 120, parameter_name=name, default_value=default)
+        mel.connect_material_property(e, "", prop)
+    mel.recompile_material(mat)
+    eal.save_loaded_asset(mat)
+
+
+def build_prop_materials(cfg):
+    """M_PropSurface + one MI per props.json "materials" slot (ironwork, lamp glass, embers)."""
+    if not cfg:
+        return {}
+    master = _master("M_PropSurface", build_prop_master)
+    return {slot: _instance("MI_Prop_" + slot, master,
+                            vectors={"Color": v.get("color", [0.5, 0.5, 0.5]) + [1],
+                                     "Emissive": v.get("emissive", [0, 0, 0]) + [1]},
+                            scalars={"Metallic": v.get("metallic", 0.0), "Roughness": v.get("roughness", 0.6)})
+            for slot, v in cfg.items() if not slot.startswith("_")}
 
 
 def build_placeholders():
-    """-> ({grd key: MaterialInstanceConstant}, {grd key: (manifest entry, D, N, H textures)}).
+    """-> ({grd key: MI path}, {grd key: (manifest entry, D, N, H texture paths)}).
     Both empty if make_placeholders.py hasn't been run."""
     manifest_path = os.path.join(PLACEHOLDERS, "placeholders.json")
     if not os.path.exists(manifest_path):
         log("no %s; run tools/textures/make_placeholders.py for textured placeholders" % manifest_path)
         return {}, {}
     textures = json.load(open(manifest_path, encoding="utf-8"))["textures"]
-    masters = {False: build_master("M_Placeholder", False), True: build_master("M_PlaceholderMasked", True)}
+    masters = {False: _master("M_Placeholder", build_master, False), True: _master("M_PlaceholderMasked", build_master, True)}
 
-    import_textures([t[k] for t in textures.values() for k in ("d", "n", "height") if k in t])
+    specs = []
+    for t in textures.values():
+        specs += [(t["d"], True, False), (t["n"], False, True)] + ([(t["height"], False, False)] if "height" in t else [])
+    paths = ensure_textures(specs)
     out, loaded = {}, {}
     for key, t in sorted(textures.items()):
-        d = eal.load_asset("%s/%s" % (TEX_DIR, t["d"][:-4]))
-        n = eal.load_asset("%s/%s" % (TEX_DIR, t["n"][:-4]))
-        h = eal.load_asset("%s/%s" % (TEX_DIR, t["height"][:-4])) if "height" in t else None
+        d, n, h = paths.get(t["d"]), paths.get(t["n"]), paths.get(t.get("height"))
         if not d or not n:
             log("WARNING: textures for %s did not import" % key)
             continue
-        n.set_editor_property("srgb", False)
-        n.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_NORMALMAP)
-        n.set_editor_property("flip_green_channel", False)  # written DirectX-style already
-        eal.save_loaded_asset(n)
-        eal.save_loaded_asset(d)
-        if h:
-            h.set_editor_property("srgb", False)
-            eal.save_loaded_asset(h)
         loaded[key] = (t, d, n, h)
-
-        mi = asset_tools.create_asset("MI_" + key, MAT_DIR, unreal.MaterialInstanceConstant,
-                                      unreal.MaterialInstanceConstantFactoryNew())
-        mel.set_material_instance_parent(mi, masters[t["masked"]])
-        mel.set_material_instance_texture_parameter_value(mi, "BaseColor", d)
-        mel.set_material_instance_texture_parameter_value(mi, "Normal", n)
-        mel.set_material_instance_scalar_parameter_value(mi, "Roughness", t["roughness"])
-        mel.set_material_instance_scalar_parameter_value(mi, "NormalStrength", 1.0)
-        eal.save_loaded_asset(mi)
-        out[key] = mi
-    log("built %d placeholder material instances" % len(out))
+        out[key] = _instance("MI_" + key, masters[t["masked"]], textures={"BaseColor": d, "Normal": n},
+                             scalars={"Roughness": t["roughness"], "NormalStrength": 1.0})
+    log("%d placeholder material instances (%s)" % (len(out), build_cache.CACHE.summary()))
     return out, loaded
 
 
@@ -350,9 +533,8 @@ def load_overrides():
         return {}
     out = {}
     for key, path in json.load(open(OVERRIDES, encoding="utf-8")).get("materials", {}).items():
-        mat = eal.load_asset(path)
-        if mat:
-            out[key] = mat
+        if eal.does_asset_exist(path):
+            out[key] = path
         else:
             log("WARNING: %s -> %s does not exist; using the placeholder" % (key, path))
     return out
@@ -371,7 +553,6 @@ def load_variants():
 
 class ZoneMaterials:
     def __init__(self):
-        # build_world.reset_generated() has already emptied ENV
         self.placeholders, self.textures = build_placeholders()
         self.overrides = load_overrides()
         self.variants = load_variants()
@@ -380,21 +561,27 @@ class ZoneMaterials:
         self.displaced_master = None
         self.ground_config = _materials_json("ground")
         self.grass_config = _materials_json("grass")
-        self.macro = self._import_macro()
-        self.ground_master = build_ground_master(self.macro) if self.macro and self.ground_config else None
-        self.grass = build_grass_material(self.macro, self.grass_config) if self.macro and self.grass_config else None
+        self.macro = self._import_extra("T_MacroNoise.png", srgb=False)
+        self.water_normal = self._import_extra("T_WaterNormal.png", srgb=False, normal=True)
+        water_cfg = _materials_json("water")
+        self.water = _master("M_Water", build_water_material, self.water_normal, water_cfg) if self.water_normal else None
+        self.ground_master = _master("M_Ground", build_ground_master, self.macro) if self.macro and self.ground_config else None
+        self.grass = (_master("M_Grass", build_grass_material, self.macro, self.grass_config)
+                      if self.macro and self.grass_config else None)
         self.ground = {}
+        self.art_flat = {}  # slot -> material for art whose relief is geometry (baked / modelled)
+        self.flat_master = None
+        props_cfg = os.path.join(REPO, "data", "environment", "props.json")
+        self.props = build_prop_materials(json.load(open(props_cfg, encoding="utf-8")).get("materials", {})
+                                          if os.path.exists(props_cfg) else {})
 
-    def _import_macro(self):
-        path = os.path.join(PLACEHOLDERS, "T_MacroNoise.png")
+    def _import_extra(self, filename, srgb=True, normal=False):
+        """Shared textures from make_placeholders.py (macro noise, water normals)."""
+        path = os.path.join(PLACEHOLDERS, filename)
         if not os.path.exists(path):
-            log("no %s; ground and grass without macro variation (run make_placeholders.py)" % path)
+            log("no %s (run make_placeholders.py)" % path)
             return None
-        import_textures(["T_MacroNoise.png"])
-        tex = eal.load_asset(TEX_DIR + "/T_MacroNoise")
-        tex.set_editor_property("srgb", False)
-        eal.save_loaded_asset(tex)
-        return tex
+        return ensure_textures([(filename, srgb, normal)]).get(filename)
 
     def ground_instance(self, key):
         """MI_<grd>__ground on M_Ground for floors listed in materials.json "ground"."""
@@ -404,18 +591,10 @@ class ZoneMaterials:
         if not cfg or not self.ground_master or key not in self.textures:
             return None
         t, d, n, h = self.textures[key]
-        mi = asset_tools.create_asset("MI_%s__ground" % key, MAT_DIR, unreal.MaterialInstanceConstant,
-                                      unreal.MaterialInstanceConstantFactoryNew())
-        mel.set_material_instance_parent(mi, self.ground_master)
-        mel.set_material_instance_texture_parameter_value(mi, "BaseColor", d)
-        mel.set_material_instance_texture_parameter_value(mi, "Normal", n)
         tile = float(cfg.get("tile_m", 2.2)) * 100.0
-        mel.set_material_instance_scalar_parameter_value(mi, "TileCm", tile)
-        mel.set_material_instance_scalar_parameter_value(mi, "TileCm2", tile * 2.73)
-        mel.set_material_instance_scalar_parameter_value(mi, "Roughness", t["roughness"])
-        eal.save_loaded_asset(mi)
-        self.ground[key] = mi
-        return mi
+        self.ground[key] = _instance("MI_%s__ground" % key, self.ground_master, textures={"BaseColor": d, "Normal": n},
+                                     scalars={"TileCm": tile, "TileCm2": tile * 2.73, "Roughness": t["roughness"]})
+        return self.ground[key]
 
     def material_for(self, key):
         """-> (material, kind) for a slot name; kind 0 = materials.json, 1 = placeholder, 2 = none.
@@ -443,61 +622,82 @@ class ZoneMaterials:
         if params is None:
             log("WARNING: no variant %r in materials.json; %s__%s uses %s" % (variant, base, variant, base))
             return parent
-        mi = asset_tools.create_asset("MI_%s__%s%s" % (base, variant, suffix), MAT_DIR, unreal.MaterialInstanceConstant,
-                                      unreal.MaterialInstanceConstantFactoryNew())
-        mel.set_material_instance_parent(mi, parent)
-        for name, value in params.items():
-            if isinstance(value, list):
-                mel.set_material_instance_vector_parameter_value(mi, name, unreal.LinearColor(*value))
-            else:
-                mel.set_material_instance_scalar_parameter_value(mi, name, float(value))
-        eal.save_loaded_asset(mi)
-        return mi
+        return _instance("MI_%s__%s%s" % (base, variant, suffix), parent,
+                         vectors={k: v for k, v in params.items() if isinstance(v, list)},
+                         scalars={k: v for k, v in params.items() if not isinstance(v, list)})
 
-    def art_material_for(self, key):
+    def art_material_for(self, key, flat=False):
         """Zone-art (Nanite) slots: an opaque instance of M_PlaceholderDisplaced, displaced as much as
         materials.json "displacement" says (0 = not at all). Cut-out originals that the art rebuilt
         as solid geometry (crenellations) are opaque here too. materials.json "materials" still wins."""
         if key in self.overrides:
             return self.overrides[key], 0
-        if key in self.art:
-            return self.art[key], 1
+        if key == "water":
+            return (self.water, 1) if self.water else (None, 2)
+        if key.startswith("prop_"):
+            mat = self.props.get(key[len("prop_"):])
+            return (mat, 1) if mat else (None, 2)
+        cache = self.art_flat if flat else self.art
+        if key in cache:
+            return cache[key], 1
         base, _, variant = key.partition("__")
         if base not in self.textures:
             return None, 2
         t, d, n, h = self.textures[base]
-        if not h:
+        if not h or (t["masked"] and variant != "solid"):
+            # cut-out originals copied into the art (signs, fences) stay cut-out; "__solid" ones
+            # were rebuilt as solid geometry (merlons)
             return self.material_for(key)
-        if base not in self.art:
-            if not self.displaced_master:
-                self.displaced_master = build_displaced_master(h)
-            mi = asset_tools.create_asset("MI_%s__art" % base, MAT_DIR, unreal.MaterialInstanceConstant,
-                                          unreal.MaterialInstanceConstantFactoryNew())
-            mel.set_material_instance_parent(mi, self.displaced_master)
-            mel.set_material_instance_texture_parameter_value(mi, "BaseColor", d)
-            mel.set_material_instance_texture_parameter_value(mi, "Normal", n)
-            mel.set_material_instance_texture_parameter_value(mi, "Height", h)
-            mel.set_material_instance_scalar_parameter_value(mi, "Roughness", t["roughness"])
-            mel.set_material_instance_scalar_parameter_value(mi, "NormalStrength", 1.0)
-            mel.set_material_instance_scalar_parameter_value(mi, "DisplacementStrength", float(self.displacement.get(base, 0.0)))
-            eal.save_loaded_asset(mi)
-            self.art[base] = mi
+        if base not in cache:
+            if flat:
+                # relief already in the geometry: same look, no Nanite tessellation
+                if not self.flat_master:
+                    self.flat_master = _master("M_PlaceholderArtFlat", build_displaced_master, h, False)
+                master, suffix = self.flat_master, "__flat"
+            else:
+                if not self.displaced_master:
+                    self.displaced_master = _master("M_PlaceholderDisplaced", build_displaced_master, h, True)
+                master, suffix = self.displaced_master, "__art"
+            cache[base] = _instance("MI_%s%s" % (base, suffix), master, textures={"BaseColor": d, "Normal": n, "Height": h},
+                                    scalars={"Roughness": t["roughness"], "NormalStrength": 1.0,
+                                             "DisplacementStrength": 0.0 if flat else float(self.displacement.get(base, 0.0))})
         if variant:
-            self.art[key] = self.variant_instance(base, variant, parent=self.art[base], suffix="__art")
-        return self.art[key], 1
+            cache[key] = self.variant_instance(base, variant, parent=cache[base], suffix="__flat" if flat else "__art")
+        return cache[key], 1
 
-    def apply(self, mesh, art=False):
-        """Assign by slot name; returns (overridden, placeholder, untouched) slot counts.
-        All slots are written in one go: set_material() per slot rebuilds the mesh (and its
-        distance field) every time, which took minutes on the Raza blockout."""
-        counts = [0, 0, 0]
-        slots = list(mesh.get_editor_property("static_materials"))
-        for slot in slots:
-            name = str(slot.get_editor_property("material_slot_name"))
-            mat, kind = self.art_material_for(name) if art else self.material_for(name)
-            counts[kind] += 1
-            if mat:
-                slot.set_editor_property("material_interface", mat)
-        mesh.set_editor_property("static_materials", slots)
-        eal.save_loaded_asset(mesh)
+    def apply(self, mesh, art=False, flat=False):
+        """Assign by slot name (mesh: StaticMesh asset path); returns (overridden, placeholder,
+        untouched) slot counts."""
+        return assign_materials(mesh, lambda name: self.art_material_for(name, flat) if art else self.material_for(name))
+
+
+def assign_materials(mesh, choose):
+    """choose(slot name) -> (material path or None, kind 0/1/2); returns the counts per kind.
+    The mesh is only written when an assignment changed (or it was re-imported), and then all slots
+    in one go: set_material() per slot rebuilds the mesh (and its distance field) every time, which
+    took minutes on the Raza blockout."""
+    cache = build_cache.CACHE
+    record = mesh + "#materials"
+    slots = cache.info(record).get("slots")  # forgotten when the mesh is re-imported
+    obj = None
+    if slots is None:
+        obj = eal.load_asset(mesh)
+        slots = [str(s.get_editor_property("material_slot_name")) for s in obj.get_editor_property("static_materials")]
+    counts, wanted = [0, 0, 0], []
+    for name in slots:
+        mat, kind = choose(name)
+        counts[kind] += 1
+        wanted.append(mat)
+    key = cache.key(slots, wanted, deps=False)  # instances are rebuilt in place: same paths, nothing to reassign
+    if cache.fresh(record, key, exists=lambda: True):
+        cache.done(record, key, "material assignments", False)
         return counts
+    obj = obj or eal.load_asset(mesh)
+    current = list(obj.get_editor_property("static_materials"))
+    for slot, mat in zip(current, wanted):
+        if mat:
+            slot.set_editor_property("material_interface", eal.load_asset(mat))
+    obj.set_editor_property("static_materials", current)
+    eal.save_loaded_asset(obj)
+    cache.done(record, key, "material assignments", True, slots=slots)
+    return counts

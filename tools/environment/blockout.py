@@ -144,17 +144,27 @@ def _horizontal(tri):
     return max(p[1] for p in tri) - min(p[1] for p in tri) < 1e-3
 
 
-def building_triangles(prims, building):
+def building_triangles(prims, building, claimed=None):
     """-> {material: set(triangle index)}: the blockout triangles that make up one building
     (`building` is an entry of zone_<rid>.json "buildings", with region_m = [x0, z0, x1, z1]).
 
     Every triangle fully inside the region belongs to the building, except horizontal ones at
-    ground level (floors around the building stay part of the blockout)."""
+    ground level (floors around the building stay part of the blockout). An optional
+    "materials" list limits the building to those textures (the town wall, the pond), and
+    triangles already in `claimed` ({material: set}) belong to an earlier entry."""
     region = building["region_m"]
+    only = set(building.get("materials", [])) or None
+    water = building.get("kind") == "water"
+    claimed = claimed or {}
     inside = {}
     ground = None
     for name, prim in prims.items():
+        if only and name not in only:
+            continue
+        taken = claimed.get(name, ())
         for t in range(len(prim.triangles)):
+            if t in taken:
+                continue
             tri = prim.tri(t)
             if _inside(region, tri):
                 inside.setdefault(name, []).append(t)
@@ -165,16 +175,28 @@ def building_triangles(prims, building):
         prim = prims[name]
         for t in tris:
             tri = prim.tri(t)
-            if _horizontal(tri) and tri[0][1] <= ground + GROUND_TOLERANCE_M:
+            if not water and _horizontal(tri) and tri[0][1] <= ground + GROUND_TOLERANCE_M:
                 continue
             out.setdefault(name, set()).add(t)
     return out
 
 
-def all_building_triangles(prims, config):
-    """Union of building_triangles() over every building in a zone config."""
-    out = {}
+def assign_buildings(prims, config):
+    """-> [(building, {material: set(triangle)})] in config order; a triangle belongs to the first
+    building that takes it, so broad entries (the town wall by texture) go last."""
+    claimed, out = {}, []
     for b in (config or {}).get("buildings", []):
-        for name, tris in building_triangles(prims, b).items():
-            out.setdefault(name, set()).update(tris)
+        tris = building_triangles(prims, b, claimed)
+        for name, ts in tris.items():
+            claimed.setdefault(name, set()).update(ts)
+        out.append((b, tris))
+    return out
+
+
+def all_building_triangles(prims, config):
+    """Every blockout triangle some building (or water body) in a zone config replaces."""
+    out = {}
+    for _, tris in assign_buildings(prims, config):
+        for name, ts in tris.items():
+            out.setdefault(name, set()).update(ts)
     return out

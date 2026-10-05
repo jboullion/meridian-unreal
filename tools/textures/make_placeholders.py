@@ -13,9 +13,14 @@ For every texture in build/textures/catalog.json it writes, to build/textures_pl
                   "stones" (masonry: cobble, ashlar, paths): the mortar is found as the minority side of
                   an Otsu threshold (it is light on some originals and dark on others, so luminance
                   alone would raise the mortar), and each stone is domed by its distance to the mortar.
+                  "timber" (timber-framed facades): the dark side of the Otsu split (beams, posts,
+                  braces) stands proud of the light plaster, with rounded edges.
+  T_<grd>_M.png   timber textures only: the beam mask at the original's size (255 = beam), from
+                  which build_zone_art.py can extrude real beams.
   T_<grd>_N.png   tangent-space normal map, DirectX convention (green = down), from the height. Filters
                   wrap around the tile edges so tiling textures stay seamless. Blue is a constant: UE
                   stores normal maps as BC5 and rebuilds Z from X/Y.
+  T_WaterNormal.png   tileable ripple normal map for the water material.
   T_MacroNoise.png    tileable low-frequency noise (R large, G medium, B small blobs) for breaking up
                       tiling and tinting ground and grass across the world (world-aligned in UE).
   placeholders.json   per texture: file names, masked (has transparency), roughness, normal strength;
@@ -53,10 +58,13 @@ DEFAULT_SURFACE = (0.85, 0.8)
 # height mode by name; first match wins, default "luma"
 HEIGHT_RULES = [
     (r"sign|tapestry|carpet|cloth|clock|picture|water|fence|cage|gate|torch|tree|forest", "luma"),
-    (r"stone|rock|cobble|brick|flagston|mausoleum|bldg-h|raz-wall|path", "stones"),
+    (r"\bint|floor|ceil|cieling|cab\b|table|chair|barrel|tos-", "luma"),  # interiors and furniture
+    (r"roof|chimney", "stones"),  # tiles and chimney bricks dome; their dark lines are gaps
+    (r"bldg-?[abgj]\b", "timber"),
+    (r"stone|rock|cobble|brick|flagston|mausoleum|bldg-?[hilm]\b|bldgl|def|new building|raz-wall|path|repeating", "stones"),
 ]
-STONE_RADIUS = 3.5
-DEDITHER = r"grass|field"  # originals de-dithered (median) before upscaling  # dome radius in texels of the original art (typical stone half-width)
+STONE_RADIUS = 3.5  # dome radius in texels of the original art (typical stone half-width)
+DEDITHER = r"grass|field"  # originals de-dithered (median) before upscaling
 BUMP = 6.0  # height of a black-to-white luminance step, in texels of the original art
 
 
@@ -91,6 +99,27 @@ def otsu(img: Image.Image) -> int:
     return best_t
 
 
+def _beam_mask(luma: Image.Image, pad: int, w: int, h: int, texel_scale: float) -> Image.Image:
+    """Timber facades: the dark side of an Otsu split (beams, posts, braces), specks removed.
+    `luma` is padded by `pad` on every side; so is the result."""
+    smooth = luma.filter(ImageFilter.GaussianBlur(texel_scale * 0.5))
+    t = otsu(smooth.crop((pad, pad, pad + w, pad + h)))
+    beams = smooth.point(lambda v: 255 if v <= t else 0)
+    k = 2 * max(1, round(texel_scale * 0.5)) + 1
+    beams = beams.filter(ImageFilter.MaxFilter(k)).filter(ImageFilter.MinFilter(k))
+    return beams.filter(ImageFilter.MinFilter(k)).filter(ImageFilter.MaxFilter(k))
+
+
+def beam_mask(color: Image.Image, texel_scale: float, size: tuple[int, int]) -> Image.Image:
+    """The timber beam mask at the original texture's size (255 = beam), for geometry built from
+    it (tools/blender/build_zone_art.py timber relief)."""
+    w, h = color.size
+    pad = int(max(1.0, texel_scale * 0.6) * 3) + 2
+    luma = wrap_crop(color.convert("L"), pad).filter(ImageFilter.GaussianBlur(max(1.0, texel_scale * 0.6)))
+    mask = _beam_mask(luma, pad, w, h, texel_scale).crop((pad, pad, pad + w, pad + h))
+    return mask.resize(size, Image.Resampling.BILINEAR).point(lambda v: 255 if v >= 128 else 0)
+
+
 def height_map(color: Image.Image, mode: str, texel_scale: float) -> Image.Image:
     """0..255 height, same size as color, seamless across tile edges."""
     w, h = color.size
@@ -98,6 +127,12 @@ def height_map(color: Image.Image, mode: str, texel_scale: float) -> Image.Image
     radius = STONE_RADIUS * texel_scale
     pad = int(blur * 3) + 2 + (int(radius * 3) if mode == "stones" else 0)
     luma = wrap_crop(color.convert("L"), pad).filter(ImageFilter.GaussianBlur(blur))
+    if mode == "timber":
+        beams = _beam_mask(luma, pad, w, h, texel_scale)
+        profile = beams.filter(ImageFilter.GaussianBlur(texel_scale * 0.8))  # rounded beam edges
+        plaster = luma.point(lambda v: 40 + v // 6)  # slightly uneven plaster
+        out = ImageChops.lighter(profile.point(lambda v: 60 + v * 195 // 255), plaster)
+        return Image.blend(out, luma, 0.08).crop((pad, pad, pad + w, pad + h))
     if mode != "stones":
         return luma.crop((pad, pad, pad + w, pad + h))
     # stone mask: Otsu split of a smoother copy, mortar = the minority side, specks removed
@@ -141,6 +176,32 @@ def _normalise(premul: Image.Image, weight: Image.Image) -> Image.Image:
     img = Image.new("RGB", premul.size)
     img.putdata(list(zip(*out)))
     return img
+
+
+def water_normal(size: int = 512, seed: int = 7) -> Image.Image:
+    """Tileable ripple normal map (DirectX): a sum of integer-frequency waves in random
+    directions plus fine noise, so it tiles and pans without seams."""
+    import math
+    import random
+    rng = random.Random(seed)
+    waves = []
+    for _ in range(14):
+        fx, fy = rng.randint(-9, 9), rng.randint(-9, 9)
+        if fx == 0 and fy == 0:
+            fx = 1
+        amp = 1.0 / math.hypot(fx, fy) ** 0.8
+        waves.append((fx, fy, amp, rng.uniform(0, 2 * math.pi)))
+    data = []
+    for y in range(size):
+        for x in range(size):
+            h = 0.0
+            for fx, fy, amp, ph in waves:
+                h += amp * math.sin(2 * math.pi * (fx * x + fy * y) / size + ph)
+            data.append(h)
+    lo, hi = min(data), max(data)
+    img = Image.new("L", (size, size))
+    img.putdata([round(255 * (v - lo) / (hi - lo)) for v in data])
+    return normal_map(img, strength=0.35, texel_scale=1.0)
 
 
 def pow2(n: int) -> int:
@@ -261,13 +322,17 @@ def main():
         (Image.merge("RGBA", (*rgb.split(), alpha)) if masked else rgb).save(OUT / d_name)
         nrm.save(OUT / n_name)
         height.save(OUT / h_name)
+        if mode == "timber":
+            beam_mask(rgb, texel_scale, orig.size).save(OUT / ("T_%s_M.png" % key))
         manifest[key] = {"name": info["name"], "d": d_name, "n": n_name, "height": h_name, "w": size[0], "h": size[1],
                          "height_mode": mode, "masked": masked, "roughness": rough, "normal_strength": strength}
         print("%s %-34s %4dx%-4d %s rough %.2f %s" % (key, info["name"][:34], size[0], size[1],
                                                       "masked" if masked else "      ", rough, mode))
 
     macro_noise().save(OUT / "T_MacroNoise.png")
-    (OUT / "placeholders.json").write_text(json.dumps({"textures": manifest, "extras": {"macro": "T_MacroNoise.png"}}, indent=1))
+    water_normal().save(OUT / "T_WaterNormal.png")
+    extras = {"macro": "T_MacroNoise.png", "water_normal": "T_WaterNormal.png"}
+    (OUT / "placeholders.json").write_text(json.dumps({"textures": manifest, "extras": extras}, indent=1))
     print("wrote %d placeholder texture sets to %s" % (len(manifest), OUT.relative_to(ROOT)))
 
 

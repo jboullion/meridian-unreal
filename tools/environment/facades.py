@@ -34,14 +34,19 @@ def _arc(cx, cy, r, a0, a1, segments):
 
 
 def opening_outline(op, grow=0.0, segments=8):
-    """Outline of an opening in texture pixels (x right, y down), counter-clockwise on screen
-    starting at the bottom-left corner. `grow` expands it (pixels) for frames/surrounds.
+    """Outline of an opening in texture pixels (x right, y down), starting at the bottom-left
+    corner. `grow` expands it (pixels) for frames/surrounds.
 
     op: {"x": [left, right], "y": [apex, bottom], "spring": y where the arch starts,
-         "shape": "pointed" | "round" | "rect"}"""
+         "shape": "pointed" | "round" | "rect" | "circle"}"""
     xl, xr = op["x"][0] - grow, op["x"][1] + grow
     ya, yb = op["y"][0] - grow, op["y"][1] + grow
     shape = op.get("shape", "rect")
+    if shape == "circle":
+        # ellipse inscribed in the box, starting at the bottom (no straight bottom edge)
+        cx, cy, rx, ry = (xl + xr) / 2.0, (ya + yb) / 2.0, (xr - xl) / 2.0, (yb - ya) / 2.0
+        n = segments * 3
+        return [(cx + rx * math.sin(2 * math.pi * i / n), cy + ry * math.cos(2 * math.pi * i / n)) for i in range(n)]
     if shape == "rect":
         return [(xl, yb), (xr, yb), (xr, ya), (xl, ya)]
     ys = op["spring"]
@@ -84,6 +89,8 @@ def check_overlays():
     os.makedirs(out_dir, exist_ok=True)
     s = 4
     for grd, desc in data["textures"].items():
+        if grd.startswith("_"):
+            continue
         path = os.path.join(TEXTURES, grd + ".png")
         if not os.path.exists(path):
             print("missing", path)
@@ -92,12 +99,16 @@ def check_overlays():
         im = im.resize((im.width * s, im.height * s), Image.NEAREST)
         d = ImageDraw.Draw(im)
         for op in desc.get("openings", []):
-            d.line([(x * s, y * s) for x, y in opening_outline(op)] + [(op["x"][0] * s, op["y"][1] * s)], fill=(255, 0, 255, 255), width=2)
+            outline = opening_outline(op)
+            d.line([(x * s, y * s) for x, y in outline + outline[:1]], fill=(255, 0, 255, 255), width=2)
             fw = op.get("frame_px", 0)
             if fw:
-                d.line([(x * s, y * s) for x, y in opening_outline(op, fw)] + [((op["x"][0] - fw) * s, (op["y"][1] + fw) * s)], fill=(0, 255, 255, 255), width=1)
+                outer = opening_outline(op, fw)
+                d.line([(x * s, y * s) for x, y in outer + outer[:1]], fill=(0, 255, 255, 255), width=1)
         for band in desc.get("bands", []):
             d.rectangle([0, band["y"][0] * s, im.width - 1, band["y"][1] * s], outline=(255, 255, 0, 255), width=2)
+        for pier in desc.get("piers", []):
+            d.rectangle([pier["x"][0] * s, 0, pier["x"][1] * s, im.height - 1], outline=(255, 160, 0, 255), width=2)
         cren = desc.get("crenels")
         if cren:
             for x0, x1 in cren["x"]:

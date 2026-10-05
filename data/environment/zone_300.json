@@ -1,40 +1,29 @@
 {
-  "_doc": "Zone art for Raza (rid 300), docs/adr/0003 pass 3. Each building lists a region (blockout glTF metres [x0, z0, x1, z1], x east, z south) whose blockout faces are rebuilt as art by tools/blender/build_zone_art.py and hidden from the rendered blockout by tools/ue/build_world.py (the full blockout stays as collision). Ground-level floors in the region stay in the blockout. `scatter`: ground decoration per floor texture (tools/environment/scatter.py).",
+  "_doc": "Zone art for Raza (rid 300), docs/adr/0003 pass 3. Each building lists a region (blockout glTF metres [x0, z0, x1, z1], x east, z south) whose blockout faces are rebuilt as art by tools/blender/build_zone_art.py and hidden from the rendered blockout by tools/ue/build_world.py (the full blockout stays as collision). Ground-level floors in a region stay in the blockout. `materials` limits an entry to those textures; a face belongs to the first entry that takes it, so broad entries (the town wall) go last. kind \"water\": the faces become a water surface over a sunken bed. `scatter`: ground decoration per floor texture (tools/environment/scatter.py). grid_m: displacement grid for that entry (default 0.25 m; coarser for long walls).",
   "rid": 300,
   "buildings": [
-    {
-      "name": "Hall",
-      "region_m": [
-        61.5,
-        49.5,
-        75.5,
-        57.0
-      ],
-      "_doc": "raz-bldg-h: the stone hall with stained-glass windows and the clock tower over the door."
-    }
+    {"name": "Hall", "region_m": [61.5, 49.5, 75.5, 57.0], "_doc": "raz-bldg-h: stone hall, stained glass, clock tower over the door"},
+    {"name": "Inn", "region_m": [49.1, 5.4, 63.1, 14.4], "_doc": "raz-bldg-g: timber-framed, blue door, sign Inn"},
+    {"name": "Tavern", "region_m": [6.5, 23.5, 22.7, 38.6], "_doc": "raz-bldg-L: ashlar front with shop window, arched door, chimneys"},
+    {"name": "WestHouse", "region_m": [6.5, 5.0, 21.4, 22.9], "_doc": "Raza new building: stone, arched door and window"},
+    {"name": "Temple", "region_m": [22.4, 56.5, 37.5, 67.2], "_doc": "raz-bldg-M: pediment, arched stained glass, twin doors, rose window"},
+    {"name": "Hut", "region_m": [33.4, 5.4, 38.6, 10.6], "_doc": "raz-bldg-J: small timber hut"},
+    {"name": "Shops", "region_m": [102.4, 15.0, 116.5, 48.2], "_doc": "raz-DEF: the stone-and-timber row with the alchemist, smith and bank"},
+    {"name": "BarnEast", "region_m": [131.0, 28.5, 140.6, 46.9], "_doc": "raz-bldg-B: timber barn"},
+    {"name": "BarnOutskirts", "region_m": [110.7, -44.1, 120.3, -30.1], "_doc": "raz-bldg-B: timber barn in the Outskirts"},
+    {"name": "Shed", "region_m": [135.5, 12.0, 140.6, 17.2], "_doc": "raz-bldg-A: plank storage shed"},
+    {"name": "CryptEntrance", "region_m": [41.1, 51.3, 54.0, 67.8], "_doc": "raz-bldg-i: dark stone, skull door, braziers outside"},
+    {"name": "Pond", "kind": "water", "region_m": [60.5, 21.0, 98.0, 45.0], "materials": ["grd01802"], "bed_depth_m": 0.9, "bed_texture": "grd09629", "_doc": "the town-square pond"},
+    {"name": "TownWall", "region_m": [0.0, 0.0, 152.0, 72.0], "materials": ["grd20232"], "_doc": "RAZ-WALL I: the town wall with pilasters", "grid_m": 0.5}
   ],
   "scatter": [
     {
       "name": "grass",
       "_doc": "Grass tufts on the original grass floors (grd02306/02301) and sparser between the stones of the grass-stone path (grd09603). Meshes: tools/blender/build_grass_kit.py.",
-      "meshes": [
-        "SM_GrassClump_A",
-        "SM_GrassClump_B",
-        "SM_GrassClump_C"
-      ],
-      "per_m2": {
-        "grd02306": 12.0,
-        "grd02301": 12.0,
-        "grd09603": 1.5
-      },
-      "scale": [
-        0.7,
-        1.4
-      ],
-      "cull_m": [
-        40,
-        60
-      ],
+      "meshes": ["SM_GrassClump_A", "SM_GrassClump_B", "SM_GrassClump_C"],
+      "per_m2": {"grd02306": 12.0, "grd02301": 12.0, "grd09603": 1.5},
+      "scale": [0.7, 1.4],
+      "cull_m": [40, 60],
       "shadows": true,
       "seed": 1,
       "keep_out_m": 0.12

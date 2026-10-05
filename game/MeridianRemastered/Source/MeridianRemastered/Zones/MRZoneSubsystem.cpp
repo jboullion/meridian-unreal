@@ -242,6 +242,16 @@ bool UMRZoneSubsystem::LoadData()
 		const TArray<TSharedPtr<FJsonValue>>& G = L->GetArrayField(TEXT("grid_size_roo"));
 		Info.GridSizeRoo = FVector2D(G[0]->AsNumber(), G[1]->AsNumber());
 
+		// roo2gltf's arrival point already sits on the floor (sector height at that spot)
+		const TSharedPtr<FJsonObject>* LayoutTeleport = nullptr;
+		const TArray<TSharedPtr<FJsonValue>>* TeleportPos = nullptr;
+		if (L->TryGetObjectField(TEXT("teleport"), LayoutTeleport) && (*LayoutTeleport)->TryGetArrayField(TEXT("pos"), TeleportPos)
+			&& TeleportPos->Num() == 3)
+		{
+			Info.TeleportLocal = MRUnits::LayoutToLocal((*TeleportPos)[0]->AsNumber(), (*TeleportPos)[1]->AsNumber(), (*TeleportPos)[2]->AsNumber());
+			Info.bHasTeleportLocal = true;
+		}
+
 		const TSharedPtr<FJsonObject>* Shares = nullptr;
 		if (L->TryGetObjectField(TEXT("shares_geometry_with"), Shares))
 		{
@@ -353,13 +363,26 @@ FVector UMRZoneSubsystem::GridToWorld(int32 Rid, int32 Row, int32 Col, bool bTra
 	{
 		if (const UWorld* World = GetWorld())
 		{
-			FHitResult Hit;
-			const FVector Start = P + FVector(0, 0, 5000.0);
-			const FVector End = P - FVector(0, 0, 5000.0);
+			// Walk down from high above: the first surface with standing room above it is the floor.
+			// Ceilings, roofs and rafters (hit from above) have another surface right over them.
+			constexpr double HeadroomCm = 190.0;
 			FCollisionQueryParams Params(SCENE_QUERY_STAT(MRGridToWorld), true);
-			if (World->LineTraceSingleByChannel(Hit, Start, End, ECC_WorldStatic, Params))
+			FVector Start = P + FVector(0, 0, 5000.0);
+			const FVector End = P - FVector(0, 0, 5000.0);
+			FHitResult Hit, Above;
+			for (int32 i = 0; i < 8 && World->LineTraceSingleByChannel(Hit, Start, End, ECC_WorldStatic, Params); ++i)
 			{
-				P.Z = Hit.ImpactPoint.Z;
+				const FVector Floor = Hit.ImpactPoint;
+				const bool bRoom = !World->LineTraceSingleByChannel(Above, Floor + FVector(0, 0, 5.0), Floor + FVector(0, 0, HeadroomCm),
+					ECC_WorldStatic, Params);
+				UE_LOG(LogMeridian, Verbose, TEXT("GridToWorld zone %d (%d,%d): hit z=%.0f on %s / %s%s"), Rid, Row, Col, Floor.Z,
+					*GetNameSafe(Hit.GetActor()), *GetNameSafe(Hit.GetComponent()), bRoom ? TEXT("") : TEXT(" (no headroom, looking lower)"));
+				P.Z = Floor.Z;
+				if (bRoom)
+				{
+					break;
+				}
+				Start = Floor - FVector(0, 0, 1.0);
 			}
 		}
 	}
@@ -562,7 +585,11 @@ FTransform UMRZoneSubsystem::GetStartTransform(int32 Rid) const
 	{
 		return FTransform::Identity;
 	}
-	FVector P = GridToWorld(Rid, Z->TeleportRow > 0 ? Z->TeleportRow : 5, Z->TeleportCol > 0 ? Z->TeleportCol : 5, true);
+	// The arrival point's floor height is known from the room data; tracing for it can land on a
+	// ceiling or anything else above the floor.
+	FVector P = Z->bHasTeleportLocal
+		? Z->Origin + Z->TeleportLocal
+		: GridToWorld(Rid, Z->TeleportRow > 0 ? Z->TeleportRow : 5, Z->TeleportCol > 0 ? Z->TeleportCol : 5, true);
 	P.Z += 100.0;
 	return FTransform(FRotator(0.0, Z->TeleportYaw, 0.0), P);
 }

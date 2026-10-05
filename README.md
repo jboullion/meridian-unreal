@@ -53,6 +53,7 @@ Environment art for the world build (see [ADR 0003](docs/adr/0003-environment-ar
 python tools/textures/make_placeholders.py                                   # textures, normals, heights, macro noise
 blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 # rebuilt buildings (the Hall) -> build/environment/
 blender -b --factory-startup -P tools/blender/build_grass_kit.py              # grass tufts -> build/environment/kit/
+blender -b --factory-startup -P tools/blender/build_prop_kit.py               # lamp post, brazier -> build/environment/kit/
 ```
 
 ## Game project (`game/MeridianRemastered`)
@@ -64,11 +65,16 @@ Requires UE 5.8 (`G:\Unreal Engine\UE_5.8`) and Visual Studio 2022 or 2026 with 
 "G:/Unreal Engine/UE_5.8/Engine/Build/BatchFiles/Build.bat" MeridianRemasteredEditor Win64 Development -Project="E:/2026_Experiments/meridian-unreal/game/MeridianRemastered/MeridianRemastered.uproject" -WaitMutex
 ```
 
-Rebuild the world level (`/Game/Generated/Maps/L_World`) from the zone blockouts (run `roo2gltf` first). It runs a headless editor session and quits:
+Rebuild the world level (`/Game/Generated/Maps/L_World`) from the zone blockouts and environment art (run `roo2gltf` and the environment-art steps first):
 
 ```bash
-"G:/Unreal Engine/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" "E:/2026_Experiments/meridian-unreal/game/MeridianRemastered/MeridianRemastered.uproject" -ExecutePythonScript="E:/2026_Experiments/meridian-unreal/tools/ue/build_world.py" -unattended -nosplash -RenderOffscreen
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/build_world.ps1
 ```
+
+- **Incremental.** Each generated texture, material, mesh and level is stored with a hash of its inputs (`tools/ue/build_cache.py`, `Saved/MRBuild/world_cache.json`). Only what changed is rebuilt, in place. Re-exporting one building re-imports that one mesh; levels that place it are untouched.
+- **In the open editor.** If the editor is open on the project, the build runs inside it through Python remote execution (`tools/ue/run_in_editor.py`, enabled in `DefaultEngine.ini`, this machine only). There's no startup cost and the viewport updates. Stop Play-In-Editor first. A level that must be rebuilt is opened and the map you had open comes back afterwards; unsaved edits to generated maps are discarded.
+- **Otherwise headless.** With no editor open, it starts a headless editor on the engine's empty Entry map (opening `L_World` in a headless editor has crashed the GPU driver), prints a summary and quits.
+- `-Clean` deletes everything generated and builds from scratch. `-Headless` never uses the open editor.
 
 Run the network smoke test. It starts a dedicated server and a headless client, walks the player through the demo's exits, and exits 0 if every step passes. It takes about 2 minutes, including a 35 s wait that lets the client unload zones before a long-distance teleport:
 
@@ -76,10 +82,16 @@ Run the network smoke test. It starts a dedicated server and a headless client, 
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_zone_test.ps1
 ```
 
-Environment look-dev: render the camera bookmarks in `data/environment/lookdev_cameras.json` and compare against an earlier label. Change only the lighting with `tools/ue/zone_mood.py` (same command line as `build_world.py`), which skips the full rebuild:
+Environment look-dev: render the camera bookmarks in `data/environment/lookdev_cameras.json` and compare against an earlier label. Change only the lighting with `build_world.ps1 -Script zone_mood.py`, which skips the full rebuild:
 
 ```bash
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_lookdev.ps1 -Label mytest -Compare baseline
+```
+
+Add `-Profile -ResX 1920 -ResY 1080` to also measure each camera with everything on, Nanite tessellation off and grass hidden. Then summarise the GPU passes:
+
+```bash
+python tools/lookdev/profile_report.py mytest
 ```
 
 **To play:** open the project in the editor and press Play with Net Mode set to "Play As Client" (2+ players).
@@ -120,8 +132,9 @@ The game reads `data/zones.json` and `data/zone_layout.json` directly from the r
 - **`tools/roo2gltf/roo2gltf.py`**: turns `.roo` files into glTF blockouts. It builds floors and ceilings from the BSP leaves and Doom-style wall sections, and handles slopes. It also writes the world positions of exits, arrivals, objects and spawn generators.
 - **`tools/bgf2png/bgf2png.py`**: decodes BGF v10 files into PNGs. Sprites become contact sheets (one group per row, view angles in columns); textures are written un-rotated, along with a size catalog.
 - **`tools/blender/render_glb.py`**: renders a preview of any `.glb` in headless Blender.
-- **`tools/blender/build_zone_art.py`**: rebuilds the buildings listed in `data/environment/zone_<rid>.json` as real geometry (recessed windows, proud trims, solid merlons) from the blockout and the painted-feature map in `data/environment/facades.json`.
+- **`tools/blender/build_zone_art.py`**: rebuilds the buildings listed in `data/environment/zone_<rid>.json` as real geometry (recessed windows, proud trims, solid merlons) from the blockout and the painted-feature map in `data/environment/facades.json`. Optional per-building detail (`tools/blender/zone_detail.py`): timber beams extruded from the texture, tile-by-tile roofs, window boxes, or displacement baked into the mesh. A hand-edited `art_src/environment/zones/<rid>/<Building>.blend` overrides the generated building; `--seed-override <Building>` starts one from the generated mesh.
 - **`tools/blender/build_grass_kit.py`**: grass tuft meshes for the ground scatter.
+- **`tools/blender/build_prop_kit.py`**: meshes for Kod-placed objects listed in `data/environment/props.json` (lamp posts, braziers), spawned with their lights by the world build.
 - **`tools/environment/`**: shared pure-Python helpers: blockout glb reading and the rebuilt-face selection (`blockout.py`), facade outlines and an alignment check (`facades.py`), and seeded ground scatter (`scatter.py`).
 - **`tools/textures/make_placeholders.py`**: tier-0 textures from the originals: upscaled base colour, normal and height maps (masonry heights from a mortar/stone split), and the macro-variation noise.
 - **`tools/ue/zone_mood.py`**, **`tools/ue/run_lookdev.ps1`**, **`tools/lookdev/compare.py`**: lighting moods from `data/environment/moods.json`, and the look-dev capture and comparison loop.

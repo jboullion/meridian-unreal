@@ -5,7 +5,7 @@
   },
   "moods": {
     "raza_afternoon": {
-      "_doc": "Late-afternoon sun raking across the Hall's long facades from the south-west, warm key against a cooler sky fill, light haze for depth.",
+      "_doc": "Late-afternoon sun raking across the Hall's long facades from the south-west, warm key against a cooler sky fill, light haze for depth. Shade floor: lumen_skylight_leaking keeps occluded corners from going black, local exposure lifts deep shade without flattening the sunlit areas; lamps and braziers (props.json) add warm pools.",
       "Sun": {
         "rotation": [
           -38.0,
@@ -89,9 +89,10 @@
           "lumen_final_gather_quality": 1.5,
           "lumen_scene_lighting_quality": 1.5,
           "lumen_ambient_occlusion_intensity": 1.0,
-          "local_exposure_shadow_contrast_scale": 0.85,
+          "local_exposure_shadow_contrast_scale": 0.7,
           "local_exposure_highlight_contrast_scale": 0.85,
-          "sharpen": 0.4
+          "sharpen": 0.4,
+          "lumen_skylight_leaking": 0.12
         }
       }
     }

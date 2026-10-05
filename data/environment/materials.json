@@ -2,7 +2,7 @@
  "_doc": "Original texture id (blockout material slot) -> real material asset. Slots not listed use the generated placeholder MI_<grd> (tools/textures/make_placeholders.py). Zone-art slots named <grd>__<variant> use <grd>'s material with the parameters of `variants`. See docs/adr/0003-environment-art-pipeline.md.",
  "materials": {},
  "variants": {
-  "_doc": "Material parameter overrides for <grd>__<variant> slots (written by tools/blender/build_zone_art.py).",
+  "_doc": "Material parameter overrides for <grd>__<variant> slots (written by tools/blender/build_zone_art.py): glass = stained glass panels, panel = door leaves, solid = cut-out originals rebuilt as solid geometry (merlons).",
   "glass": {
    "Roughness": 0.18,
    "NormalStrength": 0.35,
@@ -11,16 +11,58 @@
   "panel": {
    "DisplacementStrength": 0.0,
    "NormalStrength": 0.6
-  }
+  },
+  "solid": {}
  },
  "displacement": {
-  "_doc": "Nanite displacement strength (0..1, full range +-2.5 cm) for zone-art (Nanite) meshes using these textures; unlisted textures don't displace. Heights come from T_<grd>_H (make_placeholders.py).",
+  "_doc": "Nanite displacement strength (0..1, full range +-2.5 cm) for zone-art (Nanite) meshes using these textures; unlisted textures don't displace. Heights come from T_<grd>_H (make_placeholders.py): timber facades raise their beams, masonry and roof tiles dome.",
   "grd09663": 1.0,
   "grd09665": 1.0,
   "grd09667": 0.8,
   "grd09670": 0.5,
   "grd09669": 0.6,
-  "grd09668": 0.6
+  "grd09668": 0.6,
+  "grd09625": 1.0,
+  "grd09626": 1.0,
+  "grd09627": 1.0,
+  "grd09628": 1.0,
+  "grd09590": 1.0,
+  "grd09591": 1.0,
+  "grd09617": 1.0,
+  "grd09618": 1.0,
+  "grd09619": 1.0,
+  "grd09620": 1.0,
+  "grd09593": 0.8,
+  "grd09594": 0.8,
+  "grd09595": 0.8,
+  "grd09596": 0.8,
+  "grd09778": 0.8,
+  "grd09779": 0.8,
+  "grd09780": 0.8,
+  "grd09781": 0.8,
+  "grd09599": 0.8,
+  "grd09600": 0.8,
+  "grd09601": 0.8,
+  "grd09655": 0.8,
+  "grd09656": 0.8,
+  "grd09657": 0.8,
+  "grd09658": 0.8,
+  "grd09659": 0.8,
+  "grd09662": 0.8,
+  "grd09614": 0.8,
+  "grd09615": 0.8,
+  "grd09671": 0.8,
+  "grd09672": 0.8,
+  "grd09673": 0.8,
+  "grd09674": 0.8,
+  "grd20232": 0.8,
+  "grd09592": 0.6,
+  "grd09598": 0.6,
+  "grd09616": 0.6,
+  "grd09624": 0.6,
+  "grd09613": 0.6,
+  "grd09621": 0.6,
+  "grd09629": 0.5
  },
  "ground": {
   "_doc": "Floors drawn with the world-aligned ground master instead of the blockout UVs: the original texture at two scales blended by macro noise (breaks up tiling), tinted by the macro noise. tile_m = the original repeat size (floors tile once per 2.2 m grid square in the original client, whatever the texture's size).",
@@ -44,7 +86,7 @@
   }
  },
  "grass": {
-  "_doc": "Grass tuft colours (sRGB), sampled from the original grass texture (grd02306): its middle fifth at the root, a little above its lightest fifth at the tip.",
+  "_doc": "Grass tuft colours (sRGB), sampled from the original grass texture (grd02306): its middle fifth at the root, a little above its lightest fifth at the tip. Wind: base sway `wind` at `wind_speed`, scaled between `calm` and 1 by a slowly drifting gust field (`gust_cm` across).",
   "root": [
    0.189,
    0.306,
@@ -55,6 +97,31 @@
    0.42,
    0.22
   ],
-  "wind": 0.6
+  "wind": 0.3,
+  "wind_speed": 0.3,
+  "calm": 0.25,
+  "gust_cm": 9000
+ },
+ "water": {
+  "_doc": "M_Water (Single Layer Water) for zone water surfaces. Colours linear; scattering/absorption per metre: greenish pond water where the bed fades out within about a metre.",
+  "color": [
+   0.02,
+   0.035,
+   0.03
+  ],
+  "scattering": [
+   0.02,
+   0.06,
+   0.05
+  ],
+  "absorption": [
+   0.45,
+   0.12,
+   0.18
+  ],
+  "roughness": 0.04,
+  "ripple_cm": 260,
+  "ripple_strength": 0.5,
+  "speed": 1.0
  }
 }
