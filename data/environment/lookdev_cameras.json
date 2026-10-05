@@ -14,6 +14,14 @@
     {"name": "tavern_front", "location_cm": [3400, 3100, 200], "rotation": [7.1, 177.6], "fov": 90},
     {"name": "shops_row", "location_cm": [9250, 2500, 200], "rotation": [3.1, 38.0], "fov": 90},
     {"name": "inn_close", "location_cm": [5200, 1700, 180], "rotation": [6.4, -24.8], "fov": 75},
-    {"name": "inn_roof", "location_cm": [6100, 2100, 750], "rotation": [-11.3, -118.6], "fov": 70}
+    {"name": "inn_roof", "location_cm": [6100, 2100, 750], "rotation": [-11.3, -118.6], "fov": 70},
+    {"name": "sign_smith", "location_cm": [10635, 3913, 170], "rotation": [12.0, 135.0], "fov": 50},
+    {"name": "fence_close", "location_cm": [4437, 4842, 167], "rotation": [-8.0, 90.0], "fov": 60},
+    {"name": "tavern_door", "location_cm": [2677, 2584, 170], "rotation": [4.8, -180.0], "fov": 70},
+    {"name": "temple_gable", "location_cm": [2780, 5092, 170], "rotation": [24.0, 115.0], "fov": 60},
+    {"name": "hut_door", "location_cm": [3677, 1468, 170], "rotation": [-5.0, -90.0], "fov": 70},
+    {"name": "shops_corner", "location_cm": [10077, 2435, 170], "rotation": [0.9, -45.0], "fov": 70},
+    {"name": "shops_side", "location_cm": [10495, 3493, 170], "rotation": [30.0, 0.0], "fov": 70},
+    {"name": "temple_rose", "location_cm": [3150, 5258, 170], "rotation": [28.0, 104.0], "fov": 60}
   ]
 }

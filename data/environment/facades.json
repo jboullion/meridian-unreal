@@ -109,7 +109,7 @@
       "openings": [
         {"kind": "door", "shape": "round", "x": [36, 122], "y": [192, 384], "spring": 235, "frame_px": 6, "reveal_depth_m": 0.3},
         {"kind": "door", "shape": "round", "x": [134, 220], "y": [192, 384], "spring": 235, "frame_px": 6, "reveal_depth_m": 0.3},
-        {"kind": "window", "shape": "circle", "x": [110, 144], "y": [78, 112], "frame_px": 4}
+        {"kind": "window", "shape": "circle", "x": [110, 146], "y": [88, 124], "frame_px": 4}
       ],
       "bands": [{"y": [2, 10]}]
     },
@@ -133,8 +133,8 @@
     "grd09658": {
       "name": "raz-DEF-outdr d tallwall w/win (Shops)",
       "openings": [
-        {"kind": "window", "shape": "rect", "x": [72, 120], "y": [58, 136], "frame_px": 6, "sill": true},
-        {"kind": "window", "shape": "rect", "x": [72, 120], "y": [273, 327], "frame_px": 6, "sill": true}
+        {"kind": "window", "shape": "round", "x": [76, 116], "y": [77, 137], "spring": 81, "frame_px": 10, "sill": true, "_doc": "shallow arch under the voussoirs"},
+        {"kind": "window", "shape": "round", "x": [76, 116], "y": [269, 329], "spring": 273, "frame_px": 10, "sill": true}
       ]
     },
     "grd09659": {

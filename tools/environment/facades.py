@@ -118,5 +118,51 @@ def check_overlays():
         print(os.path.join(out_dir, grd + ".png"))
 
 
+def openings_sheet(cols=6, s=4, pad_px=10, fit=320):
+    """Every described opening cropped from its texture at up to s x (fit px a side), with its outline (magenta) and frame
+    (cyan) drawn on, labelled, in one image: build/environment/facade_check/openings_sheet.png.
+    The quickest way to spot an outline that misses its painted window or door."""
+    from PIL import Image, ImageDraw
+
+    data = load()
+    tiles = []
+    for grd, desc in sorted(data["textures"].items()):
+        if grd.startswith("_"):
+            continue
+        path = os.path.join(TEXTURES, grd + ".png")
+        if not os.path.exists(path):
+            continue
+        tex = Image.open(path).convert("RGB")
+        for i, op in enumerate(desc.get("openings", [])):
+            fw = op.get("frame_px", 0)
+            outer = opening_outline(op, fw)
+            x0 = max(0, int(min(x for x, _ in outer)) - pad_px)
+            y0 = max(0, int(min(y for _, y in outer)) - pad_px)
+            x1 = min(tex.width, int(max(x for x, _ in outer)) + pad_px + 1)
+            y1 = min(tex.height, int(max(y for _, y in outer)) + pad_px + 1)
+            k = min(s, fit / max(x1 - x0, y1 - y0))  # big doors shrink to fit a cell
+            im = tex.crop((x0, y0, x1, y1)).resize((round((x1 - x0) * k), round((y1 - y0) * k)), Image.NEAREST)
+            d = ImageDraw.Draw(im)
+            for pts, colour, width in ((outer, (0, 255, 255), 1), (opening_outline(op), (255, 0, 255), 2)):
+                if pts is outer and not fw:
+                    continue
+                d.line([((x - x0) * k, (y - y0) * k) for x, y in pts + pts[:1]], fill=colour, width=width)
+            tiles.append(("%s #%d %s %s" % (grd, i, op.get("kind", "window"), op.get("shape", "rect")), im))
+    cell = max(max(im.width for _, im in tiles), max(im.height for _, im in tiles)) + 24
+    rows = (len(tiles) + cols - 1) // cols
+    sheet = Image.new("RGB", (cols * cell, rows * cell), (24, 24, 24))
+    d = ImageDraw.Draw(sheet)
+    for n, (label, im) in enumerate(tiles):
+        cx, cy = (n % cols) * cell, (n // cols) * cell
+        sheet.paste(im, (cx + (cell - im.width) // 2, cy + 20))
+        d.text((cx + 4, cy + 4), label, fill=(255, 255, 255))
+    out = os.path.join(REPO, "build", "environment", "facade_check", "openings_sheet.png")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    sheet.save(out)
+    print("%d openings -> %s" % (len(tiles), out))
+    return out
+
+
 if __name__ == "__main__":
     check_overlays()
+    openings_sheet()

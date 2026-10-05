@@ -200,6 +200,22 @@ We compared three ways of giving the Inn its relief, using the same cameras and 
 ### Texture alignment fix
 Several textures sat slightly wrong: two half clocks on the clock tower, fences drawn as 2.8 m bars, and seams where walls were split. The cause was that `roo2gltf` anchored wall textures at world height 0, restarted them at every wall piece, and ignored the per-side offsets and pegging flags. It now follows the original client's rules (`wall_uvs`, see `docs/findings.md`), and floors tile once per grid square like the client. `facades.json` is in texture pixels, so the rebuilt buildings follow automatically.
 
+### Openings left flat (fixed 2026-10-04)
+Some painted windows and doors weren't recessed: the middle Temple window, the Cornucopia door, the hut door and some Shops windows. It wasn't displacement. `build_zone_art.py` cuts an opening only into a wall polygon that contains all of it. The original maps often split one wall into several pieces while the painting runs on across the seam, so an opening painted across a seam fitted in neither piece and was silently skipped. That happened to 7 of 72 openings in Raza.
+
+There were two kinds of seam:
+- **Seams where the texture continues.** Fixed by joining the pieces into one wall first (`merge_wall_runs`).
+- **Mirrored seams.** The second piece shows the texture flipped (`WF_BACKWARDS`), and the opening is centred on the seam: the Temple and two Shops walls. Fixed by keeping one texture mapping per piece on the joined wall, splitting faces and boxes at the seam, and accepting an opening that crosses a mirrored seam when it is centred on it.
+
+To catch this in future, every painted opening on a rebuilt building is now checked off in `build/environment/zone_<rid>/openings.json` (built or not, position, facing, reason). Any opening not built is logged as a WARNING, and `--strict` fails the run. This checks against the facade data itself, which is more reliable than screenshots of every face. The look-dev cameras `tavern_door`, `temple_gable`, `hut_door`, `shops_corner` and `shops_side` show the fixed openings.
+
+### Opening outlines that miss their painting (fixed 2026-10-04)
+Two more recesses didn't match the paint, and both were data errors in `facades.json`, not geometry bugs:
+- **The Shops tall-wall windows (`grd09658`).** They were rectangles whose top reached into the arch of stones painted above them. They are now a shallow arch (`"shape": "round"` with a low `spring`) under that arch.
+- **The Temple rose window (`grd09600` #2).** Its circle sat 10 px above the painted window.
+
+An automatic edge-fitting check was tried and dropped. On these textures, mortar lines, frame edges and leading all score as well as the real outline, so it flagged every opening. Instead, `python tools/environment/facades.py` now also writes `build/environment/facade_check/openings_sheet.png`. It shows all 34 described openings, cropped from their textures, with the opening outline (magenta) and frame (cyan) drawn over them. A misplaced outline is obvious there at a glance. Check it after editing `facades.json`. The look-dev camera `temple_rose` covers the rose window.
+
 ### How to run the loop
 ```
 python tools/textures/make_placeholders.py                                   # textures, heights, macro noise

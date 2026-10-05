@@ -225,11 +225,39 @@ def target_size(w: int, h: int, scale: int, cap: int) -> tuple[int, int]:
     return min(pow2(w * scale), cap), min(pow2(h * scale), cap)
 
 
-def esrgan_upscale(exe: Path, src: Path) -> Image.Image:
+def fill_cutout(img: Image.Image) -> Image.Image:
+    """RGB of an RGBA original with every transparent pixel set to the average of its nearest opaque
+    neighbours, grown ring by ring (wrapping around, as the textures tile). The originals key their
+    transparent pixels as cyan (0, 255, 255); left in, any resampling filter blends it into the edge of
+    the cut-out, which then renders as a cyan outline."""
+    w, h = img.size
+    px = img.load()
+    rgb = [[px[x, y][:3] for x in range(w)] for y in range(h)]
+    known = [[px[x, y][3] >= 128 for x in range(w)] for y in range(h)]
+    todo = [(x, y) for y in range(h) for x in range(w) if not known[y][x]]
+    while todo and len(todo) < w * h:
+        ring, rest = [], []
+        for x, y in todo:
+            near = [rgb[(y + dy) % h][(x + dx) % w] for dy in (-1, 0, 1) for dx in (-1, 0, 1)
+                    if (dx or dy) and known[(y + dy) % h][(x + dx) % w]]
+            if near:
+                ring.append((x, y, tuple(round(sum(c[i] for c in near) / len(near)) for i in range(3))))
+            else:
+                rest.append((x, y))
+        for x, y, c in ring:
+            rgb[y][x] = c
+            known[y][x] = True
+        todo = rest
+    out = Image.new("RGB", (w, h))
+    out.putdata([c for row in rgb for c in row])
+    return out
+
+
+def esrgan_upscale(exe: Path, src: Image.Image) -> Image.Image:
     """4x with realesrgan-ncnn-vulkan; alpha is upscaled separately by Lanczos (ESRGAN drops it)."""
     with tempfile.TemporaryDirectory() as tmp:
         rgb_in, rgb_out = Path(tmp) / "in.png", Path(tmp) / "out.png"
-        Image.open(src).convert("RGB").save(rgb_in)
+        src.convert("RGB").save(rgb_in)
         subprocess.run([str(exe), "-i", str(rgb_in), "-o", str(rgb_out), "-n", "realesrgan-x4plus"],
                        check=True, capture_output=True)
         return Image.open(rgb_out).convert("RGB")
@@ -280,10 +308,12 @@ def make_set(key: str, info: dict, rules: dict, scale: int, max_side: int, esrga
     src = SRC / (key + ".png")
     orig = Image.open(src).convert("RGBA")
     size = target_size(*orig.size, scale, max_side)
+    masked = bool(info.get("has_transparency"))
+    # cut-outs: replace the key colour before anything filters the image (see fill_cutout)
+    src_rgb = fill_cutout(orig) if masked else orig.convert("RGB")
     if esrgan:
-        rgb = esrgan_upscale(Path(esrgan), src).resize(size, Image.Resampling.LANCZOS)
+        rgb = esrgan_upscale(Path(esrgan), src_rgb).resize(size, Image.Resampling.LANCZOS)
     else:
-        src_rgb = orig.convert("RGB")
         if rules["dedither"]:
             # 64 px grass/field art is mostly dither; upscaled, it reads as coloured noise
             src_rgb = src_rgb.filter(ImageFilter.MedianFilter(3))
@@ -293,7 +323,6 @@ def make_set(key: str, info: dict, rules: dict, scale: int, max_side: int, esrga
             rgb = rgb.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=2))
     # alpha stays hard-edged (the originals are 1-bit cut-outs)
     alpha = orig.getchannel("A").resize(size, Image.Resampling.BILINEAR).point(lambda a: 255 if a >= 128 else 0)
-    masked = bool(info.get("has_transparency"))
     if masked:
         # fill cut-out texels with the surrounding opaque colour (alpha-weighted blur), so mips,
         # filtering and solid rebuilds (zone art merlons) never show the palette's key colour
@@ -326,7 +355,7 @@ def make_set(key: str, info: dict, rules: dict, scale: int, max_side: int, esrga
 
 
 # the code a texture set depends on (rule tables are resolved per texture instead, see set_rules)
-SET_CODE = (make_set, height_map, normal_map, beam_mask, _beam_mask, otsu, _normalise, target_size, pow2,
+SET_CODE = (make_set, fill_cutout, height_map, normal_map, beam_mask, _beam_mask, otsu, _normalise, target_size, pow2,
             wrap_crop, esrgan_upscale)
 
 

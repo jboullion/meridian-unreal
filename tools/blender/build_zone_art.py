@@ -3,7 +3,7 @@ Zone art pass (docs/adr/0003 pass 3): rebuild the buildings listed in data/envir
 as real geometry, from the roo2gltf blockout and the painted-feature descriptions in
 data/environment/facades.json. Runs in headless Blender:
 
-    blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 [--preview]
+    blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 [--preview] [--strict]
 
 For each building, every blockout face in its region is either rebuilt or copied:
   - facade walls (texture described in facades.json): the outward face keeps the original texture
@@ -17,6 +17,12 @@ For each building, every blockout face in its region is either rebuilt or copied
     originals keep their slot so they stay cut-out, rebuilt crenels use "<grd>__solid".
 The wall's outer surface stays exactly on the blockout plane, so the hidden blockout collision
 still matches; only trims (a few cm) stand proud.
+
+Walls the original map split into pieces are joined first (merge_wall_runs) when the painting runs
+on across the seam or is mirrored there (WF_BACKWARDS), so a window or door painted across the seam
+is rebuilt rather than left flat. Every painted opening on a rebuilt building is checked off in
+openings.json; any that could not be built is logged as a WARNING with the reason, and --strict
+makes that an error.
 
 Per building in zone_<rid>.json:
   "displacement": "runtime" (default; Nanite tessellation in UE) | "baked" (applied to real geometry
@@ -36,6 +42,7 @@ Output, build/environment/zone_<rid>/ (git-ignored, regenerate any time):
                              "<grd>__glass" for stained glass, "<grd>__panel" for door leaves;
                              cut into a GRID_M grid, vertex colour R = displacement mask
   manifest.json              what build_world.py imports
+  openings.json              every painted window/door on the buildings: built or not, where, why
   zone_<rid>_art.blend       the art over the remaining blockout, for inspection
   preview_<Building>.png     with --preview: quick textured render
 """
@@ -140,6 +147,136 @@ def poly_key(poly):
     return frozenset((round(p.x, 2), round(p.y, 2), round(p.z, 2)) for p in poly.pts)
 
 
+def _wall_piece(poly, r):
+    """A wall quad with vertical ends as (s0, s1, (t_lo, t_hi) at s0, (t_lo, t_hi) at s1) in the plane's
+    (s, t) coordinates (s = r . (x, 0, z), t = height), or None for any other shape."""
+    if len(poly.pts) != 4:
+        return None
+    st = [(r.dot(Vector((p.x, 0.0, p.z))), p.y) for p in poly.pts]
+    s0, s1 = min(s for s, _ in st), max(s for s, _ in st)
+    left = sorted(t for s, t in st if abs(s - s0) < 0.01)
+    right = sorted(t for s, t in st if abs(s - s1) < 0.01)
+    if len(left) != 2 or len(right) != 2 or s1 - s0 < 0.01:
+        return None
+    return s0, s1, tuple(left), tuple(right)
+
+
+def _uv_map(poly, r):
+    """Affine (s, t) -> uv of a wall polygon, from the three corners spanning the largest triangle."""
+    st = [Vector((r.dot(Vector((p.x, 0.0, p.z))), p.y)) for p in poly.pts]
+    best, tri = -1.0, (0, 1, 2)
+    k = len(st)
+    for i in range(k):
+        for j in range(i + 1, k):
+            for m in range(j + 1, k):
+                area = abs((st[j] - st[i]).cross(st[m] - st[i]))
+                if area > best:
+                    best, tri = area, (i, j, m)
+    Mi = Matrix([[st[i].x, st[i].y, 1.0] for i in tri]).inverted()
+    cu = Mi @ Vector([poly.uvs[i].x for i in tri])
+    cv = Mi @ Vector([poly.uvs[i].y for i in tri])
+    return lambda s, t: Vector((cu[0] * s + cu[1] * t + cu[2], cv[0] * s + cv[1] * t + cv[2]))
+
+
+def _same_picture(uv, poly, r, mirror_at=None):
+    """True when `poly`'s UVs are uv(s, t), or uv mirrored about s = mirror_at, up to whole repeats."""
+    d = []
+    for p, q in zip(poly.pts, poly.uvs):
+        s = r.dot(Vector((p.x, 0.0, p.z)))
+        d.append(uv(2 * mirror_at - s if mirror_at is not None else s, p.y) - q)
+    return all(abs(v.x - round(v.x)) < 1e-3 and abs(v.y - round(v.y)) < 1e-3 for v in d) \
+        and len({(round(v.x), round(v.y)) for v in d}) == 1
+
+
+def merge_wall_runs(polys, mergeable, mirrorable):
+    """Join neighbouring pieces of the same wall into one polygon. The original maps often split a
+    wall into segments while its painting runs on across the seam, so a painted window or door can
+    straddle two pieces and fit in neither (build_facade_wall then leaves it flat). Pieces join when
+    they share material and plane, have vertical ends, and the end of one is the start of the next.
+    The texture must either continue across the seam (up to whole repeats), or, for walls that
+    `mirrorable` allows, be mirrored there (the original client's WF_BACKWARDS: symmetric facades
+    whose seam runs through the middle of a window). A joined wall keeps one texture mapping per
+    stretch ("maps", see Wall) and its original pieces ("parts", to copy it flat).
+    -> (polys, continued seams, mirrored seams)"""
+    groups, out = {}, []
+    for poly in polys:
+        if not (poly.vertical and mergeable(poly)) or len(poly.pts) != 4:
+            out.append(poly)
+            continue
+        n = Vector((poly.normal.x, 0.0, poly.normal.z)).normalized()
+        key = (poly.material, round(n.x, 3), round(n.z, 3), round(n.dot(Vector((poly.pts[0].x, 0.0, poly.pts[0].z))), 2))
+        groups.setdefault(key, []).append(poly)
+    joins = mirrors = 0
+    for (material, nx, nz, _), pieces in groups.items():
+        r = (-Vector((nx, 0.0, nz)).normalized()).cross(UP).normalized()
+        shaped = [(p, _wall_piece(p, r)) for p in pieces]
+        out += [p for p, sh in shaped if sh is None]
+        shaped = sorted([(p, sh) for p, sh in shaped if sh], key=lambda x: x[1][0])
+        run = None  # {"parts", "bottom", "top" ([(s, t)] left to right), "maps" [[s_lo, s_hi, uv]], "right"}
+        for poly, (s0, s1, left, right) in shaped:
+            if run and abs(s0 - run["maps"][-1][1]) < 0.01 and all(abs(a - b) < 0.01 for a, b in zip(left, run["right"])):
+                last = run["maps"][-1]
+                if _same_picture(last[2], poly, r):
+                    kind = "continued"
+                elif mirrorable(poly) and _same_picture(last[2], poly, r, mirror_at=s0):
+                    kind = "mirrored"
+                else:
+                    kind = None
+                if kind:
+                    run["parts"].append(poly)
+                    run["bottom"].append((s1, right[0]))
+                    run["top"].append((s1, right[1]))
+                    run["right"] = right
+                    if kind == "continued":
+                        last[1] = s1
+                        joins += 1
+                    else:
+                        run["maps"].append([s0, s1, _uv_map(poly, r)])
+                        mirrors += 1
+                    continue
+            if run:
+                out.append(_joined_wall(material, run, r))
+            run = {"parts": [poly], "bottom": [(s0, left[0]), (s1, right[0])], "top": [(s0, left[1]), (s1, right[1])],
+                   "maps": [[s0, s1, _uv_map(poly, r)]], "right": right}
+        if run:
+            out.append(_joined_wall(material, run, r))
+    return out, joins, mirrors
+
+
+def _collinear(a, b, c):
+    return abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])) < 1e-4
+
+
+def _joined_wall(material, run, r):
+    """The polygon of a run of wall pieces (the piece itself when it is alone), wound like its first piece."""
+    like = run["parts"][0]
+    if len(run["parts"]) == 1:
+        return like
+
+    def simplify(chain):
+        keep = [chain[0]]
+        for i in range(1, len(chain) - 1):
+            if not _collinear(keep[-1], chain[i], chain[i + 1]):
+                keep.append(chain[i])
+        return keep + [chain[-1]]
+
+    outline = simplify(run["bottom"]) + simplify(run["top"])[::-1]
+    base = Vector((like.pts[0].x, 0.0, like.pts[0].z))
+    foot = base - r * r.dot(base)  # the plane's point at s = 0, height 0
+    pts = [foot + r * s + UP * t for s, t in outline]
+    n = Vector((like.normal.x, 0.0, like.normal.z))
+    if (pts[1] - pts[0]).cross(pts[2] - pts[0]).dot(n) * (like.pts[1] - like.pts[0]).cross(like.pts[2] - like.pts[0]).dot(n) < 0:
+        outline, pts = outline[::-1], pts[::-1]
+    maps = [(lo, hi, f) for lo, hi, f in run["maps"]]
+
+    def uv(s, t):
+        return next((f for lo, hi, f in maps if s <= hi + 1e-6), maps[-1][2])(s, t)
+    poly = Poly(material, pts, [uv(s, t) for s, t in outline], like.normal)
+    poly.parts = run["parts"]
+    poly.maps = maps if len(maps) > 1 else None
+    return poly
+
+
 def outward(poly, floors):
     """True when the polygon faces the lower floor (the open side of a building wall)."""
     mid = sum(poly.pts, Vector()) / len(poly.pts)
@@ -183,10 +320,20 @@ class MeshOut:
             self.tri([pts[0], pts[i], pts[i + 1]], [uvs[0], uvs[i], uvs[i + 1]], mat, want)
 
 
+class TexMap:
+    """Affine (s, t) -> uv over the stretch s_lo..s_hi of a wall."""
+
+    def __init__(self, A, c, s_lo, s_hi):
+        self.A, self.c, self.Ai = A, c, A.inverted()
+        self.s_lo, self.s_hi = s_lo, s_hi
+
+
 class Wall:
     """Local frame of a vertical facade polygon: s along the wall (right, seen from outside),
     t = height, d = distance along the outward normal. The blockout UVs are an affine function of
-    (s, t), which maps texture pixels to wall positions and back."""
+    (s, t), which maps texture pixels to wall positions and back. A wall joined from mirrored pieces
+    (merge_wall_runs) has one such map per piece; `use()` picks the one st_of_px() and repeats()
+    work in, uv() picks by position, and faces are split at the seams between them."""
 
     def __init__(self, poly, tex):
         self.poly = poly
@@ -195,6 +342,18 @@ class Wall:
         self.o = Vector((poly.pts[0].x, 0.0, poly.pts[0].z))
         self.st = [Vector((self.r.dot(p - self.o), p.y)) for p in poly.pts]
         self.W, self.H = tex["w"], tex["h"]
+        self.s0, self.s1 = min(p.x for p in self.st), max(p.x for p in self.st)
+        self.t0, self.t1 = min(p.y for p in self.st), max(p.y for p in self.st)
+        maps = getattr(poly, "maps", None)
+        if maps:
+            ro = self.r.dot(self.o)  # the joined wall's maps are in plane coordinates (s = r . (x, 0, z))
+            self.maps = [self._fit(lambda s, t, f=f: f(s + ro, t), lo - ro, hi - ro) for lo, hi, f in maps]
+        else:
+            self.maps = [self._fit_corners()]
+        self.seams = [m.s_hi for m in self.maps[:-1]]
+        self.use(self.maps[0])
+
+    def _fit_corners(self):
         # affine (s, t) -> (u, v) from the three corners spanning the largest triangle
         best, tri = -1.0, (0, 1, 2)
         k = len(self.st)
@@ -204,24 +363,40 @@ class Wall:
                     area = abs((self.st[j] - self.st[i]).cross(self.st[m] - self.st[i]))
                     if area > best:
                         best, tri = area, (i, j, m)
-        M = Matrix([[self.st[i].x, self.st[i].y, 1.0] for i in tri])
-        Mi = M.inverted()
-        cu = Mi @ Vector([poly.uvs[i].x for i in tri])
-        cv = Mi @ Vector([poly.uvs[i].y for i in tri])
-        self.A = Matrix(((cu[0], cu[1]), (cv[0], cv[1])))
-        self.c = Vector((cu[2], cv[2]))
-        self.Ai = self.A.inverted()
-        self.s0, self.s1 = min(p.x for p in self.st), max(p.x for p in self.st)
-        self.t0, self.t1 = min(p.y for p in self.st), max(p.y for p in self.st)
-        us = [self.uv(p) for p in self.st]
+        Mi = Matrix([[self.st[i].x, self.st[i].y, 1.0] for i in tri]).inverted()
+        cu = Mi @ Vector([self.poly.uvs[i].x for i in tri])
+        cv = Mi @ Vector([self.poly.uvs[i].y for i in tri])
+        return TexMap(Matrix(((cu[0], cu[1]), (cv[0], cv[1]))), Vector((cu[2], cv[2])), self.s0, self.s1)
+
+    @staticmethod
+    def _fit(f, s_lo, s_hi):
+        o, a, b = f(0.0, 0.0), f(1.0, 0.0), f(0.0, 1.0)
+        return TexMap(Matrix(((a.x - o.x, b.x - o.x), (a.y - o.y, b.y - o.y))), Vector((o.x, o.y)), s_lo, s_hi)
+
+    def use(self, m):
+        """Work in map m: st_of_px() and repeats() then refer to its stretch of the wall."""
+        self.map = m
+        us = [m.A @ Vector((s, t)) + m.c for s in (m.s_lo, m.s_hi) for t in (self.t0, self.t1)]
         self.u_range = (min(u.x for u in us), max(u.x for u in us))
         self.v_range = (min(u.y for u in us), max(u.y for u in us))
 
-    def uv(self, st):
-        return self.A @ Vector(st) + self.c
+    def frames(self):
+        """Each texture map in turn (one for most walls)."""
+        for m in self.maps:
+            self.use(m)
+            yield m
+        self.use(self.maps[0])
+
+    def map_at(self, s):
+        return next((m for m in self.maps if s <= m.s_hi + 1e-6), self.maps[-1])
+
+    def uv(self, st, at=None):
+        """UV of a wall point; `at` (an s) picks the map for points on a seam."""
+        m = self.map_at(st[0] if at is None else at)
+        return m.A @ Vector(st) + m.c
 
     def st_of_uv(self, uv):
-        return self.Ai @ (Vector(uv) - self.c)
+        return self.map.Ai @ (Vector(uv) - self.map.c)
 
     def st_of_px(self, px, ku, kv):
         return self.st_of_uv((ku + px[0] / self.W, kv + px[1] / self.H))
@@ -230,7 +405,7 @@ class Wall:
         return self.o + self.r * s + UP * t + self.n * d
 
     def repeats(self):
-        """(ku, kv) texture repeats overlapping the wall."""
+        """(ku, kv) texture repeats overlapping the current map's stretch of the wall."""
         for ku in range(math.floor(self.u_range[0]) - 1, math.ceil(self.u_range[1]) + 1):
             for kv in range(math.floor(self.v_range[0]) - 1, math.ceil(self.v_range[1]) + 1):
                 yield ku, kv
@@ -243,6 +418,47 @@ class Wall:
             return ok_s and top_ok and any(p.y > self.t0 + 0.5 for p in st_pts)
         return ok_s and top_ok and bottom_ok
 
+    def mirrored(self, seam):
+        return any(abs(seam - s) < 1e-4 for s in self.seams)
+
+    def painted(self, st_pts, tol=0.02):
+        """Is an outline found in the current map really painted there? It is when it stays within
+        the map's stretch, or runs over a seam into a mirrored neighbour while centred on the seam
+        (the mirror shows the other half of the same opening). Anything else found from this map
+        beyond its stretch is the wrong half of a mirrored wall."""
+        lo, hi = min(p.x for p in st_pts), max(p.x for p in st_pts)
+        mid, m = (lo + hi) / 2, self.map
+        if lo < m.s_lo - tol and not (self.mirrored(m.s_lo) and abs(mid - m.s_lo) < 0.05):
+            return False
+        if hi > m.s_hi + tol and not (self.mirrored(m.s_hi) and abs(mid - m.s_hi) < 0.05):
+            return False
+        return True
+
+    def split(self, tri):
+        """A triangle (three (s, t) Vectors) cut at the seams between maps, as triangles."""
+        tris = [tri]
+        for seam in self.seams:
+            tris = [piece for t in tris for piece in _split_tri(t, seam)]
+        return tris
+
+
+def _split_tri(tri, c):
+    """Cut a triangle by the line s = c into triangles on either side (same winding)."""
+    if all(p.x <= c + 1e-7 for p in tri) or all(p.x >= c - 1e-7 for p in tri):
+        return [tri]
+    out = []
+    for keep in (lambda x: x <= c, lambda x: x >= c):
+        poly = []
+        for i in range(3):
+            a, b = tri[i], tri[(i + 1) % 3]
+            if keep(a.x):
+                poly.append(a)
+            if (a.x - c) * (b.x - c) < 0:
+                f = (c - a.x) / (b.x - a.x)
+                poly.append(a + (b - a) * f)
+        out += [[poly[0], poly[i], poly[i + 1]] for i in range(1, len(poly) - 1)]
+    return out
+
 
 def tessellate(loops):
     """Triangles (as index triples into the concatenated loops) filling loop 0 minus the others."""
@@ -253,10 +469,11 @@ def tessellate(loops):
 def add_face_st(out, wall, pts_st, d, mat, want, uv_fn=None):
     """Fill a planar polygon (with optional holes: pts_st = [outer, hole, ...]) at offset d."""
     flat, tris = tessellate(pts_st)
-    uv_fn = uv_fn or (lambda p: wall.uv(p))
     for a, b, c in tris:
-        pa, pb, pc = (Vector((flat[i].x, flat[i].y)) for i in (a, b, c))
-        out.tri([wall.p3(p.x, p.y, d) for p in (pa, pb, pc)], [uv_fn(p) for p in (pa, pb, pc)], mat, want)
+        for piece in wall.split([Vector((flat[i].x, flat[i].y)) for i in (a, b, c)]):
+            at = sum(p.x for p in piece) / 3  # the map of this side of any seam
+            fn = uv_fn or (lambda p: wall.uv(p, at))
+            out.tri([wall.p3(p.x, p.y, d) for p in piece], [fn(p) for p in piece], mat, want)
 
 
 def add_strip(out, wall, chain, d0, d1, mat, uv_trim, centre, facing="in", closed=False):
@@ -297,17 +514,29 @@ def open_chain(outline):
 
 def add_box(out, wall, s0, s1, t0, t1, d0, d1, mat, front_uv=True):
     """Axis-aligned box in wall space. Front (+d) shows the facade texture through the wall's UVs;
-    the other faces use the same mapping with depth folded into s or t."""
-    uv = wall.uv
+    the other faces use the same mapping with depth folded into s or t. Cut at the seams between
+    texture maps (joined mirrored walls); only the outer ends get end faces."""
+    cuts = [s0] + [c for c in wall.seams if s0 + 1e-4 < c < s1 - 1e-4] + [s1]
+    for a, b in zip(cuts, cuts[1:]):
+        _box(out, wall, a, b, t0, t1, d0, d1, mat, left=a == s0, right=b == s1)
+
+
+def _box(out, wall, s0, s1, t0, t1, d0, d1, mat, left=True, right=True):
+    at = (s0 + s1) / 2
+
+    def uv(st):
+        return wall.uv(st, at)
     faces = [
         # (corner (s, t, d) list, wanted normal, uv function of (s, t, d))
         ([(s0, t0, d1), (s1, t0, d1), (s1, t1, d1), (s0, t1, d1)], wall.n, lambda s, t, d: uv((s, t))),
         ([(s0, t0, d0), (s0, t1, d0), (s1, t1, d0), (s1, t0, d0)], -wall.n, lambda s, t, d: uv((s, t))),
         ([(s0, t1, d0), (s0, t1, d1), (s1, t1, d1), (s1, t1, d0)], UP, lambda s, t, d: uv((s, t + d - d1))),
         ([(s0, t0, d0), (s1, t0, d0), (s1, t0, d1), (s0, t0, d1)], -UP, lambda s, t, d: uv((s, t - d + d1))),
-        ([(s1, t0, d0), (s1, t1, d0), (s1, t1, d1), (s1, t0, d1)], wall.r, lambda s, t, d: uv((s + d - d1, t))),
-        ([(s0, t0, d0), (s0, t0, d1), (s0, t1, d1), (s0, t1, d0)], -wall.r, lambda s, t, d: uv((s - d + d1, t))),
     ]
+    if right:
+        faces.append(([(s1, t0, d0), (s1, t1, d0), (s1, t1, d1), (s1, t0, d1)], wall.r, lambda s, t, d: uv((s + d - d1, t))))
+    if left:
+        faces.append(([(s0, t0, d0), (s0, t0, d1), (s0, t1, d1), (s0, t1, d0)], -wall.r, lambda s, t, d: uv((s - d + d1, t))))
     for corners, want, uvf in faces:
         out.poly([wall.p3(s, t, d) for s, t, d in corners], [uvf(s, t, d) for s, t, d in corners], mat, want)
 
@@ -325,6 +554,44 @@ def opening_st(wall, op, ku, kv, grow_px=0.0):
     return [wall.st_of_px(p, ku, kv) for p in facades.opening_outline(op, grow_px)]
 
 
+# every painted opening that lands on a rebuilt building's wall, and what became of it (openings.json)
+OPENINGS = []
+
+
+def overlaps(wall, pts, margin=0.02):
+    """True if the outline's (s, t) box overlaps the wall's by more than `margin` metres both ways."""
+    s0, s1 = min(p.x for p in pts), max(p.x for p in pts)
+    t0, t1 = min(p.y for p in pts), max(p.y for p in pts)
+    return min(s1, wall.s1) - max(s0, wall.s0) > margin and min(t1, wall.t1) - max(t0, wall.t0) > margin
+
+
+def note_opening(building, wall, op, i, ku, kv, pts, result, reason=""):
+    s0, s1 = min(p.x for p in pts), max(p.x for p in pts)
+    t0, t1 = min(p.y for p in pts), max(p.y for p in pts)
+    centre = wall.p3((s0 + s1) / 2, (t0 + t1) / 2)
+    OPENINGS.append({"building": building, "texture": wall.poly.material, "opening": i, "kind": op.get("kind", "window"),
+                     "repeat": [ku, kv], "result": result, "reason": reason,
+                     "at_m": [round(centre.x, 2), round(centre.y, 2), round(centre.z, 2)],
+                     "facing": [round(wall.n.x, 3), round(wall.n.z, 3)],
+                     "opening_st": [round(s0, 2), round(s1, 2), round(t0, 2), round(t1, 2)],
+                     "wall_st": [round(wall.s0, 2), round(wall.s1, 2), round(wall.t0, 2), round(wall.t1, 2)]})
+
+
+def why_outside(wall, pts, door, tol=0.01):
+    s0, s1 = min(p.x for p in pts), max(p.x for p in pts)
+    t0, t1 = min(p.y for p in pts), max(p.y for p in pts)
+    why = []
+    if s0 < wall.s0 - tol or s1 > wall.s1 + tol:
+        why.append("crosses the wall's side edge (%.2f..%.2f m vs wall %.2f..%.2f m)" % (s0, s1, wall.s0, wall.s1))
+    if t1 > wall.t1 + tol:
+        why.append("pokes above the wall top (%.2f vs %.2f m)" % (t1, wall.t1))
+    if not door and t0 < wall.t0 - tol:
+        why.append("dips below the wall bottom (%.2f vs %.2f m)" % (t0, wall.t0))
+    if door and t1 <= wall.t0 + 0.5:
+        why.append("door less than 0.5 m above the wall bottom")
+    return "; ".join(why) or "outside the wall"
+
+
 def build_facade_wall(out, wall, desc, defaults, catalog):
     """Facade wall with recessed openings, proud surrounds, bands and a plinth."""
     mat = wall.poly.material
@@ -332,52 +599,68 @@ def build_facade_wall(out, wall, desc, defaults, catalog):
     trim_uv = trim_uv_fn(catalog[trim])
     holes, notches = [], []  # notches: openings reaching the wall bottom (doors)
 
-    for op in desc.get("openings", []):
+    built = set()  # an opening across a mirrored seam is found from both sides
+    for op_i, op in enumerate(desc.get("openings", [])):
         door = op.get("kind") == "door"
         depth = op.get("reveal_depth_m", defaults["reveal_depth_m"])
         proud = op.get("frame_proud_m", defaults["frame_proud_m"])
         fw = op.get("frame_px", 0)
-        for ku, kv in wall.repeats():
-            inner = opening_st(wall, op, ku, kv)
-            outer = opening_st(wall, op, ku, kv, fw) if fw else None
-            if not wall.inside(outer or inner, clamp_bottom=door):
-                continue
-            if door:
-                for p in inner + (outer or []):
-                    p.y = max(p.y, wall.t0)
-                notches.append((inner, outer))
-                # threshold: floor of the recess, so the ground doesn't show a gap under the door
-                left, right = min(p.x for p in inner), max(p.x for p in inner)
-                add_box(out, wall, left, right, wall.t0 - 0.06, wall.t0 + 0.03, -depth, 0.0, trim)
-            else:
-                holes.append(inner)
-            centre = sum(inner, Vector((0.0, 0.0))) / len(inner)
-            # reveal: from the front of the surround back to the panel
-            front = proud if fw else 0.0
-            if door:
-                add_strip(out, wall, open_chain(inner), front, -depth, trim, trim_uv, centre)
-            else:
-                add_strip(out, wall, inner, front, -depth, trim, trim_uv, centre, closed=True)
-            # panel at the back: painted glass or door leaf
-            add_face_st(out, wall, [inner], -depth, mat + ("__panel" if door else "__glass"), wall.n)
-            if fw and op.get("shape") == "circle":
-                # closed ring (rose window)
-                add_face_st(out, wall, [outer, inner], proud, mat, wall.n)
-                add_strip(out, wall, outer, 0.0, proud, trim, trim_uv, centre, facing="out", closed=True)
-            elif fw:
-                # U-shaped surround open at the bottom (sill or ground below it)
-                oc, ic = open_chain(outer), open_chain(inner)
-                add_face_st(out, wall, [oc + ic[::-1]], proud, mat, wall.n)
-                add_strip(out, wall, oc, 0.0, proud, trim, trim_uv, centre, facing="out")
-            if op.get("sill"):
-                edge = outer or inner
-                left, right = min(p.x for p in edge), max(p.x for p in edge)
-                foot = min(p.y for p in edge)
-                over = 0.06
-                add_box(out, wall, left - over, right + over, foot - 0.09, foot + 0.015, 0.0, 0.08, trim)
-                if "window_boxes" in DETAIL and not door:
-                    zone_detail.window_box(out, wall, left - 0.02, right + 0.02, foot - 0.09,
-                                           hash((round(left, 2), round(foot, 2), mat)) & 0xFFFF, UP)
+        for m in wall.frames():
+            for ku, kv in wall.repeats():
+                inner = opening_st(wall, op, ku, kv)
+                outer = opening_st(wall, op, ku, kv, fw) if fw else None
+                mid = (min(p.x for p in inner) + max(p.x for p in inner)) / 2
+                ours = m.s_lo - 0.05 <= mid <= m.s_hi + 0.05  # centred on this map's stretch
+                if not wall.inside(outer or inner, clamp_bottom=door):
+                    if ours and overlaps(wall, inner):
+                        note_opening(BUILDING, wall, op, op_i, ku, kv, inner, "skipped", why_outside(wall, outer or inner, door))
+                    continue
+                if not wall.painted(outer or inner):
+                    if ours:
+                        note_opening(BUILDING, wall, op, op_i, ku, kv, inner, "skipped",
+                                     "straddles a seam where the texture does not continue or mirror")
+                    continue
+                key = (op_i, round(min(p.x for p in inner), 2), round(min(p.y for p in inner), 2))
+                if key in built:
+                    continue
+                built.add(key)
+                note_opening(BUILDING, wall, op, op_i, ku, kv, inner, "built")
+                if door:
+                    for p in inner + (outer or []):
+                        p.y = max(p.y, wall.t0)
+                    notches.append((inner, outer))
+                    # threshold: floor of the recess, so the ground doesn't show a gap under the door
+                    left, right = min(p.x for p in inner), max(p.x for p in inner)
+                    add_box(out, wall, left, right, wall.t0 - 0.06, wall.t0 + 0.03, -depth, 0.0, trim)
+                else:
+                    holes.append(inner)
+                centre = sum(inner, Vector((0.0, 0.0))) / len(inner)
+                # reveal: from the front of the surround back to the panel
+                front = proud if fw else 0.0
+                if door:
+                    add_strip(out, wall, open_chain(inner), front, -depth, trim, trim_uv, centre)
+                else:
+                    add_strip(out, wall, inner, front, -depth, trim, trim_uv, centre, closed=True)
+                # panel at the back: painted glass or door leaf
+                add_face_st(out, wall, [inner], -depth, mat + ("__panel" if door else "__glass"), wall.n)
+                if fw and op.get("shape") == "circle":
+                    # closed ring (rose window)
+                    add_face_st(out, wall, [outer, inner], proud, mat, wall.n)
+                    add_strip(out, wall, outer, 0.0, proud, trim, trim_uv, centre, facing="out", closed=True)
+                elif fw:
+                    # U-shaped surround open at the bottom (sill or ground below it)
+                    oc, ic = open_chain(outer), open_chain(inner)
+                    add_face_st(out, wall, [oc + ic[::-1]], proud, mat, wall.n)
+                    add_strip(out, wall, oc, 0.0, proud, trim, trim_uv, centre, facing="out")
+                if op.get("sill"):
+                    edge = outer or inner
+                    left, right = min(p.x for p in edge), max(p.x for p in edge)
+                    foot = min(p.y for p in edge)
+                    over = 0.06
+                    add_box(out, wall, left - over, right + over, foot - 0.09, foot + 0.015, 0.0, 0.08, trim)
+                    if "window_boxes" in DETAIL and not door:
+                        zone_detail.window_box(out, wall, left - 0.02, right + 0.02, foot - 0.09,
+                                               hash((round(left, 2), round(foot, 2), mat)) & 0xFFFF, UP)
 
     # timber frame as real beams (zone_detail.timber_relief), clear of the openings
     if "timber" in DETAIL:
@@ -388,7 +671,7 @@ def build_facade_wall(out, wall, desc, defaults, catalog):
     corners = sorted(wall.st, key=lambda p: (p.y, p.x))
     bottom = sorted([p for p in wall.st if p.y < wall.t0 + 0.01], key=lambda p: p.x)
     top = sorted([p for p in wall.st if p.y >= wall.t0 + 0.01], key=lambda p: -p.x)
-    if len(bottom) == 2 and len(top) == 2:
+    if len(bottom) == 2 and len(top) >= 2:
         loop = [bottom[0]]
         for inner, outer in sorted(notches, key=lambda n: min(p.x for p in n[0])):
             loop += open_chain(inner)  # left foot, up, over, down to the right foot
@@ -401,18 +684,19 @@ def build_facade_wall(out, wall, desc, defaults, catalog):
     # piers (pilasters): full-height proud strips
     for pier in desc.get("piers", []):
         proud = pier.get("proud_m", defaults["pier_proud_m"])
-        for ku, kv in wall.repeats():
-            a = wall.st_of_px((pier["x"][0], 0), ku, kv).x
-            b = wall.st_of_px((pier["x"][1], 0), ku, kv).x
-            a, b = max(min(a, b), wall.s0), min(max(a, b), wall.s1)
-            if b - a > 0.05 and kv == math.floor(wall.v_range[0]):
-                add_box(out, wall, a, b, wall.t0, wall.t1, 0.0, proud, mat)
+        for m in wall.frames():
+            for ku, kv in wall.repeats():
+                a = wall.st_of_px((pier["x"][0], 0), ku, kv).x
+                b = wall.st_of_px((pier["x"][1], 0), ku, kv).x
+                a, b = max(min(a, b), m.s_lo), min(max(a, b), m.s_hi)
+                if b - a > 0.05 and kv == math.floor(wall.v_range[0]):
+                    add_box(out, wall, a, b, wall.t0, wall.t1, 0.0, proud, mat)
 
     # bands (string courses) across the whole wall, extended past the ends to close corners
     for band in desc.get("bands", []):
         band_proud = band.get("proud_m", desc.get("band_proud_m", defaults["band_proud_m"]))
         done = set()
-        for ku, kv in wall.repeats():
+        for ku, kv in (rep_ for _ in wall.frames() for rep_ in list(wall.repeats())):
             if kv in done:
                 continue
             ta = wall.st_of_px((0, band["y"][0]), ku, kv).y
@@ -589,8 +873,22 @@ def build_water(out, water_out, polys, entry):
                  bed_tex, inward)
 
 
+def note_unbuilt_wall(poly, desc, catalog, result, reason):
+    """A described wall that is copied flat: its painted openings stay painted."""
+    if not desc or not desc.get("openings"):
+        return
+    wall = Wall(poly, catalog[poly.material])
+    for i, op in enumerate(desc["openings"]):
+        for m in wall.frames():
+            for ku, kv in wall.repeats():
+                inner = opening_st(wall, op, ku, kv)
+                if overlaps(wall, inner) and wall.painted(inner):
+                    note_opening(BUILDING, wall, op, i, ku, kv, inner, result, reason)
+
+
 def copy_poly(out, poly):
-    out.poly(list(poly.pts), list(poly.uvs), poly.material)
+    for part in getattr(poly, "parts", None) or [poly]:
+        out.poly(list(part.pts), list(part.uvs), part.material)
 
 
 # ---------------------------------------------------------------------------------- blender io
@@ -767,9 +1065,10 @@ def main():
     bpy.context.scene.collection.children.link(ref_col)
 
     manifest = {"rid": rid, "meshes": []}
-    global DETAIL
+    global DETAIL, BUILDING
     for b, sel in blockout.assign_buildings(prims, config):
         name = "SM_Z%d_%s" % (rid, b["name"])
+        BUILDING = b["name"]
         override = os.path.join(override_dir, b["name"] + ".blend")
         if os.path.exists(override) and not (b["name"] in seed and force):
             with bpy.data.libraries.load(override, link=False) as (src, dst):
@@ -806,6 +1105,12 @@ def main():
         out = MeshOut()
         counts = {"rebuilt": 0, "parapet": 0, "roof": 0, "copied": 0, "dropped": 0}
         all_polys = [poly for name, tris in sorted(sel.items()) for poly in polys_of(prims[name], tris)]
+        all_polys, joins, mirrors = merge_wall_runs(
+            all_polys, lambda p: described.get(p.material) or timber_only(p),
+            lambda p: bool(described.get(p.material, {}).get("openings")) and "crenels" not in described.get(p.material, {}))
+        if joins or mirrors:
+            log("%s: joined %d wall seams where the texture continues, %d where it is mirrored"
+                % (name, joins, mirrors))
         # walls whose two copies both fail the outward test (free-standing, or level floors on
         # both sides) are copied as they are rather than lost
         sides = {}
@@ -815,6 +1120,8 @@ def main():
         keep_as_is = {k for k, flags in sides.items() if not any(flags)}
         for poly in all_polys:
             if poly.vertical and (described.get(poly.material) or timber_only(poly)) and poly_key(poly) in keep_as_is:
+                note_unbuilt_wall(poly, described.get(poly.material), catalog, "flat",
+                                  "wall copied as is: neither side faces open ground (no outward side found)")
                 copy_poly(out, poly)
                 counts["copied"] += 1
                 continue
@@ -856,6 +1163,12 @@ def main():
         log("%s: %d walls rebuilt, %d parapets, %d roofs, %d polygons copied, %d inner faces dropped -> %d triangles"
             % (name, counts["rebuilt"], counts["parapet"], counts["roof"], counts["copied"], counts["dropped"],
                len(obj.data.polygons)))
+        mine = [o for o in OPENINGS if o["building"] == b["name"]]
+        missed = [o for o in mine if o["result"] != "built"]
+        if mine:
+            log("%s: openings %d built, %d NOT built%s" % (name, len(mine) - len(missed), len(missed),
+                                                          "".join("\n    %s #%d (%s) at %s: %s" % (o["texture"], o["opening"], o["kind"], o["at_m"], o["reason"])
+                                                                  for o in missed)))
 
     # the rest of the blockout, for context in the .blend and the preview
     render_glb = os.path.join(out_dir, "blockout_render.glb")
@@ -868,6 +1181,16 @@ def main():
         ref_col.objects.link(o)
 
     json.dump(manifest, open(os.path.join(out_dir, "manifest.json"), "w"), indent=2)
+    missed = [o for o in OPENINGS if o["result"] != "built"]
+    json.dump({"built": len(OPENINGS) - len(missed), "not_built": len(missed), "openings": OPENINGS},
+              open(os.path.join(out_dir, "openings.json"), "w"), indent=1)
+    log("openings: %d built, %d not built (%s)" % (len(OPENINGS) - len(missed), len(missed),
+                                                  os.path.join(out_dir, "openings.json")))
+    for o in missed:
+        log("WARNING: %s %s opening #%d (%s) at %s left flat: %s" % (o["building"], o["texture"], o["opening"],
+                                                                     o["kind"], o["at_m"], o["reason"]))
+    if missed and "--strict" in argv:
+        raise SystemExit("%d painted openings were not built (--strict)" % len(missed))
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(out_dir, "zone_%d_art.blend" % rid))
     if preview:
         ref_col.hide_render = True
