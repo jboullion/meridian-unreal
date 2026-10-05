@@ -3,7 +3,16 @@ Zone art pass (docs/adr/0003 pass 3): rebuild the buildings listed in data/envir
 as real geometry, from the roo2gltf blockout and the painted-feature descriptions in
 data/environment/facades.json. Runs in headless Blender:
 
-    blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 [--preview] [--strict]
+    blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 [--preview] [--strict] [--plain]
+
+--plain skips all the rebuilding: every building is the original blockout geometry as it is (still
+cut into the displacement grid), for judging what height maps alone do (tools/lookdev/ai_maps_test.ps1).
+
+zone_<rid>.json "rebuild" picks what is rebuilt (default all): "facades" (walls described in
+facades.json: openings, trims, plinths, window panes, timber relief), "roofs" (thickness and
+overhangs), "parapets" (crenellation strips as solid merlons; without it they are cut-out solids),
+"cutouts" (fences, gates, signs as solids). Anything not rebuilt is the original geometry.
+materials.json "relief" "displacement": false leaves out the displacement grid.
 
 For each building, every blockout face in its region is either rebuilt or copied:
   - facade walls (texture described in facades.json): the outward face keeps the original texture
@@ -13,8 +22,12 @@ For each building, every blockout face in its region is either rebuilt or copied
   - crenellation strips (alpha-cut merlons) become a solid parapet with real merlons;
   - sloped roofs (facades.json "roofs") get thickness and eave/verge overhangs;
   - water bodies (kind "water") become a sunken bed with a separate water surface mesh;
-  - everything else (flat roofs, the clock tower, signs) is copied as is; cut-out (masked)
-    originals keep their slot so they stay cut-out, rebuilt crenels use "<grd>__solid".
+  - cut-out (alpha) originals - fences, gates, signs - become solids traced from their alpha mask
+    and extruded a few cm (facades.json "cutouts"), in the "<grd>__solid" slot; foliage cut-outs
+    (tree lines, field tops) stay flat cut-outs. A "kind": "cutouts" entry picks up the ones
+    outside buildings;
+  - everything else (flat roofs, the clock tower) is copied as is; rebuilt crenels use
+    "<grd>__solid".
 The wall's outer surface stays exactly on the blockout plane, so the hidden blockout collision
 still matches; only trims (a few cm) stand proud.
 
@@ -49,6 +62,7 @@ Output, build/environment/zone_<rid>/ (git-ignored, regenerate any time):
 import json
 import math
 import os
+import re
 import sys
 
 import bmesh
@@ -62,10 +76,13 @@ import facades  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import zone_detail  # noqa: E402
+import zone_grime  # noqa: E402
 
 M_PER_SQUARE = 2.2
 GRID_M = 0.25  # art meshes are cut into this grid so displacement has interior vertices to move
-DISPLACEMENT_M = 0.05  # full range of the displacement (must match environment_materials.DISPLACEMENT_CM)
+# full range of the displacement, as the UE materials use it (materials.json "displacement_range_cm")
+DISPLACEMENT_M = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "data", "environment",
+                                             "materials.json"), encoding="utf-8")).get("displacement_range_cm", 5.0) / 100.0
 OVERRIDES = os.path.join(REPO, "art_src", "environment", "zones")
 DETAIL = set()  # optional detail for the building being built (zone_<rid>.json "detail")
 UP = Vector((0.0, 1.0, 0.0))  # glTF space: x east, y up, z south
@@ -512,20 +529,21 @@ def open_chain(outline):
     return path
 
 
-def add_box(out, wall, s0, s1, t0, t1, d0, d1, mat, front_uv=True):
-    """Axis-aligned box in wall space. Front (+d) shows the facade texture through the wall's UVs;
-    the other faces use the same mapping with depth folded into s or t. Cut at the seams between
-    texture maps (joined mirrored walls); only the outer ends get end faces."""
+def add_box(out, wall, s0, s1, t0, t1, d0, d1, mat, front_uv=True, shift=0.0):
+    """Axis-aligned box in wall space. Front (+d) shows the facade texture through the wall's UVs
+    (sampled `shift` metres along the wall); the other faces use the same mapping with depth folded
+    into s or t. Cut at the seams between texture maps (joined mirrored walls); only the outer ends
+    get end faces."""
     cuts = [s0] + [c for c in wall.seams if s0 + 1e-4 < c < s1 - 1e-4] + [s1]
     for a, b in zip(cuts, cuts[1:]):
-        _box(out, wall, a, b, t0, t1, d0, d1, mat, left=a == s0, right=b == s1)
+        _box(out, wall, a, b, t0, t1, d0, d1, mat, left=a == s0, right=b == s1, shift=shift)
 
 
-def _box(out, wall, s0, s1, t0, t1, d0, d1, mat, left=True, right=True):
-    at = (s0 + s1) / 2
+def _box(out, wall, s0, s1, t0, t1, d0, d1, mat, left=True, right=True, shift=0.0):
+    at = (s0 + s1) / 2 + shift
 
     def uv(st):
-        return wall.uv(st, at)
+        return wall.uv((st[0] + shift, st[1]), at)
     faces = [
         # (corner (s, t, d) list, wanted normal, uv function of (s, t, d))
         ([(s0, t0, d1), (s1, t0, d1), (s1, t1, d1), (s0, t1, d1)], wall.n, lambda s, t, d: uv((s, t))),
@@ -565,7 +583,12 @@ def overlaps(wall, pts, margin=0.02):
     return min(s1, wall.s1) - max(s0, wall.s0) > margin and min(t1, wall.t1) - max(t0, wall.t0) > margin
 
 
+CUT_OPENINGS = True  # facades.json defaults "cut_openings"; when off, nothing is reported
+
+
 def note_opening(building, wall, op, i, ku, kv, pts, result, reason=""):
+    if not CUT_OPENINGS:
+        return
     s0, s1 = min(p.x for p in pts), max(p.x for p in pts)
     t0, t1 = min(p.y for p in pts), max(p.y for p in pts)
     centre = wall.p3((s0 + s1) / 2, (t0 + t1) / 2)
@@ -593,11 +616,15 @@ def why_outside(wall, pts, door, tol=0.01):
 
 
 def build_facade_wall(out, wall, desc, defaults, catalog):
-    """Facade wall with recessed openings, proud surrounds, bands and a plinth."""
+    """Facade wall with recessed openings, proud surrounds, bands and a plinth. With facades.json
+    defaults "cut_openings": false nothing is recessed (depth comes from the height map): windows
+    become flush panes in a glossy "<grd>__pane" slot, and doors only interrupt the plinth."""
     mat = wall.poly.material
     trim = desc.get("trim", defaults["trim"])
     trim_uv = trim_uv_fn(catalog[trim])
     holes, notches = [], []  # notches: openings reaching the wall bottom (doors)
+    cut = defaults.get("cut_openings", True)
+    gaps = []  # doors the plinth stops at
 
     built = set()  # an opening across a mirrored seam is found from both sides
     for op_i, op in enumerate(desc.get("openings", [])):
@@ -624,6 +651,14 @@ def build_facade_wall(out, wall, desc, defaults, catalog):
                 if key in built:
                     continue
                 built.add(key)
+                if not cut:
+                    if door:
+                        gaps.append((inner, outer))
+                    else:
+                        # flush glazing: the painted window in its own glossy slot, displaced like the wall
+                        holes.append(inner)
+                        add_face_st(out, wall, [inner], 0.0, mat + "__pane", wall.n)
+                    continue
                 note_opening(BUILDING, wall, op, op_i, ku, kv, inner, "built")
                 if door:
                     for p in inner + (outer or []):
@@ -711,12 +746,15 @@ def build_facade_wall(out, wall, desc, defaults, catalog):
     if desc.get("plinth"):
         pl = defaults["plinth"]
         spans = [(wall.s0 - pl["proud_m"], wall.s1 + pl["proud_m"])]
-        for inner, outer in notches:
+        for inner, outer in notches + gaps:
             edge = outer or inner
             a, b = min(p.x for p in edge), max(p.x for p in edge)
             spans = [piece for s0, s1 in spans for piece in ((s0, min(s1, a)), (max(s0, b), s1)) if piece[1] - piece[0] > 0.05]
         for s0, s1 in spans:
             add_box(out, wall, s0, s1, wall.t0, wall.t0 + pl["height_m"], 0.0, pl["proud_m"], mat)
+
+
+PARAPET_CORNER_M = 0.25  # solid merlon width kept at each end of a parapet (besides its thickness)
 
 
 def build_parapet(out, wall, desc, defaults):
@@ -740,13 +778,41 @@ def build_parapet(out, wall, desc, defaults):
         add_box(out, wall, wall.s0, wall.s1, wall.t0, wall.t1, -T, 0.0, mat)
         return
     add_box(out, wall, wall.s0, wall.s1, wall.t0, cut_t, -T, 0.0, mat)
-    s = wall.s0
-    for a, b in sorted(gaps) + [(wall.s1, wall.s1)]:
-        a = min(max(a, wall.s0), wall.s1)
-        b = min(max(b, wall.s0), wall.s1)
+    # solid stone for the parapet's thickness (plus a merlon's worth) at both ends, so two parapets
+    # meeting at a corner close into one corner merlon instead of two half-merlons with gaps; where
+    # the painting has a crenel there, the end block shows the nearest painted merlon instead
+    gaps = sorted((max(a, wall.s0), min(b, wall.s1)) for a, b in gaps if min(b, wall.s1) > max(a, wall.s0))
+    end_m = T + PARAPET_CORNER_M
+    lo, hi = wall.s0 + end_m, wall.s1 - end_m
+    if hi - lo < 0.1:
+        lo = hi = (wall.s0 + wall.s1) / 2  # short wall: solid
+    for a, b in ((wall.s0, lo), (hi, wall.s1)):
+        if b - a > 0.01:
+            add_box(out, wall, a, b, cut_t, wall.t1, -T, 0.0, mat, shift=_merlon_shift(a, b, gaps, wall.s0, wall.s1))
+    s = lo
+    for a, b in [(max(a, lo), min(b, hi)) for a, b in gaps if min(b, hi) - max(a, lo) > 0.05] + [(hi, hi)]:
         if a - s > 0.03:
             add_box(out, wall, s, a, cut_t, wall.t1, -T, 0.0, mat)
         s = max(s, b)
+
+
+def _merlon_shift(a, b, gaps, s0, s1):
+    """Texture shift (metres along the wall) for a solid block a..b: 0 when the painting has a merlon
+    there, else the offset to the nearest painted merlon wide enough (the widest one otherwise)."""
+    if not any(min(b, g1) - max(a, g0) > 0.01 for g0, g1 in gaps):
+        return 0.0
+    merlons, s = [], s0
+    for g0, g1 in gaps:
+        if g0 - s > 0.01:
+            merlons.append((s, g0))
+        s = max(s, g1)
+    if s1 - s > 0.01:
+        merlons.append((s, s1))
+    if not merlons:
+        return 0.0
+    wide = [m for m in merlons if m[1] - m[0] >= (b - a) - 1e-3] or [max(merlons, key=lambda m: m[1] - m[0])]
+    m0, m1 = min(wide, key=lambda m: min(abs(m[0] - a), abs(m[1] - b)))
+    return m0 - a if abs(m0 - a) <= abs(m1 - b) else m1 - b
 
 
 def build_roof(out, poly, cfg):
@@ -884,6 +950,16 @@ def note_unbuilt_wall(poly, desc, catalog, result, reason):
                 inner = opening_st(wall, op, ku, kv)
                 if overlaps(wall, inner) and wall.painted(inner):
                     note_opening(BUILDING, wall, op, i, ku, kv, inner, result, reason)
+
+
+def build_cutout(out, poly, thickness, catalog, done):
+    """A vertical cut-out (fence, gate, sign) as a solid; its back-side copy in the blockout is the
+    same solid, so each wall is built once. Returns the outlines built (0 for a repeat)."""
+    key = poly_key(poly)
+    if key in done:
+        return 0
+    done.add(key)
+    return zone_detail.cutout_solid(out, Wall(poly, catalog[poly.material]), poly.material, thickness, add_face_st, UP)
 
 
 def copy_poly(out, poly):
@@ -1031,10 +1107,15 @@ def render_preview(path, obj):
 
 # ------------------------------------------------------------------------------------------ main
 
+# what zone_<rid>.json "rebuild" can list (default: all of them)
+REBUILD_FEATURES = ("facades", "roofs", "parapets", "cutouts")
+
+
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     rid = int(argv[argv.index("--rid") + 1]) if "--rid" in argv else 300
     preview = "--preview" in argv
+    plain = "--plain" in argv
     i = argv.index("--preview") if preview else -1
     preview_only = set(argv[i + 1].split(",")) if preview and i + 1 < len(argv) and not argv[i + 1].startswith("--") else None
     seed = set(argv[argv.index("--seed-override") + 1].split(",")) if "--seed-override" in argv else set()
@@ -1050,6 +1131,10 @@ def main():
         raise SystemExit("no data/environment/zone_%d.json" % rid)
     fac = facades.load()
     defaults, described = fac["defaults"], fac["textures"]
+    global CUT_OPENINGS
+    CUT_OPENINGS = defaults.get("cut_openings", True)
+    if not CUT_OPENINGS:
+        log("openings are not cut (facades.json defaults.cut_openings is false): their depth comes from the height maps")
     roofs = {k: dict(defaults["roof"], **v) for k, v in fac.get("roofs", {}).items() if not k.startswith("_")}
     catalog = texture_catalog()
 
@@ -1065,6 +1150,21 @@ def main():
     bpy.context.scene.collection.children.link(ref_col)
 
     manifest = {"rid": rid, "meshes": []}
+    # zone_<rid>.json "rebuild": which parts of the buildings are rebuilt (REBUILD_FEATURES); the
+    # rest is copied as the original geometry
+    rebuild = set(config.get("rebuild", REBUILD_FEATURES))
+    if rebuild - set(REBUILD_FEATURES):
+        raise SystemExit('zone_%d.json "rebuild": unknown %s (known: %s)'
+                         % (rid, sorted(rebuild - set(REBUILD_FEATURES)), ", ".join(REBUILD_FEATURES)))
+    log("rebuilding: %s; the rest stays the original geometry" % (", ".join(sorted(rebuild)) or "nothing"))
+    # no parapets: crenellation strips are cut-outs like the fences
+    cutouts = {grd: facades.cutout_thickness(grd, fac, catalog, crenels="parapets" not in rebuild) for grd in catalog}
+    if "cutouts" not in rebuild:
+        cutouts = {}
+    relief = json.load(open(os.path.join(REPO, "data", "environment", "materials.json"), encoding="utf-8")).get("relief", {})
+    displace = relief.get("displacement", True) if isinstance(relief, dict) else bool(relief)
+    cutouts = {grd: t for grd, t in cutouts.items() if t}
+    cut_done = set()
     global DETAIL, BUILDING
     for b, sel in blockout.assign_buildings(prims, config):
         name = "SM_Z%d_%s" % (rid, b["name"])
@@ -1101,10 +1201,40 @@ def main():
                                            "water": suffix == "_Water"})
                 log("%s: %d triangles, slots %s" % (name, len(obj.data.polygons), ", ".join(mesh_out.slots)))
             continue
+        if b.get("kind") == "cutouts":
+            out, n_walls, n_outlines = MeshOut(), 0, 0
+            for poly in (poly for mat, tris in sorted(sel.items()) for poly in polys_of(prims[mat], tris)):
+                if poly.vertical and poly.material in cutouts and not plain:
+                    built = build_cutout(out, poly, cutouts[poly.material], catalog, cut_done)
+                    n_walls += 1 if built else 0
+                    n_outlines += built
+                else:
+                    copy_poly(out, poly)
+            obj = make_object(name, out, art_col, grid=False)
+            obj["displacement"] = "none"
+            path = os.path.join(out_dir, name + ".glb")
+            export_glb(obj, path)
+            manifest["meshes"].append({"name": name, "file": os.path.basename(path), "building": b["name"],
+                                       "displacement": "none"})
+            log("%s: %d cut-out walls as solids (%d outlines) -> %d triangles, slots %s"
+                % (name, n_walls, n_outlines, len(obj.data.polygons), ", ".join(out.slots)))
+            continue
         floors = Floors(prims, b["region_m"])
         out = MeshOut()
-        counts = {"rebuilt": 0, "parapet": 0, "roof": 0, "copied": 0, "dropped": 0}
+        counts = {"rebuilt": 0, "parapet": 0, "roof": 0, "copied": 0, "dropped": 0, "cut-outs": 0}
         all_polys = [poly for name, tris in sorted(sel.items()) for poly in polys_of(prims[name], tris)]
+        if plain:
+            for poly in all_polys:
+                copy_poly(out, poly)
+            all_polys = []  # nothing left to rebuild
+        if "facades" not in rebuild:
+            # walls stay as they are: only the parts listed in "rebuild" (roofs, parapets, cut-outs)
+            facade_like = [p for p in all_polys if p.vertical and (described.get(p.material) or timber_only(p))
+                           and "crenels" not in described.get(p.material, {})]
+            for poly in facade_like:
+                copy_poly(out, poly)
+                counts["copied"] += 1
+            all_polys = [p for p in all_polys if p not in facade_like]
         all_polys, joins, mirrors = merge_wall_runs(
             all_polys, lambda p: described.get(p.material) or timber_only(p),
             lambda p: bool(described.get(p.material, {}).get("openings")) and "crenels" not in described.get(p.material, {}))
@@ -1119,20 +1249,23 @@ def main():
                 sides.setdefault(poly_key(poly), []).append(outward(poly, floors))
         keep_as_is = {k for k, flags in sides.items() if not any(flags)}
         for poly in all_polys:
+            if poly.vertical and poly.material in cutouts:
+                counts["cut-outs"] += 1 if build_cutout(out, poly, cutouts[poly.material], catalog, cut_done) else 0
+                continue
             if poly.vertical and (described.get(poly.material) or timber_only(poly)) and poly_key(poly) in keep_as_is:
                 note_unbuilt_wall(poly, described.get(poly.material), catalog, "flat",
                                   "wall copied as is: neither side faces open ground (no outward side found)")
                 copy_poly(out, poly)
                 counts["copied"] += 1
                 continue
-            if poly.material in roofs and 0.1 < poly.normal.y < 0.97:
+            if poly.material in roofs and 0.1 < poly.normal.y < 0.97 and "roofs" in rebuild:
                 build_roof(out, poly, roofs[poly.material])
                 counts["roof"] += 1
                 continue
             desc = described.get(poly.material)
             if not desc and poly.vertical and timber_only(poly):
                 desc = {"name": poly.material}  # plain timber wall: relief only
-            if desc and poly.vertical:
+            if desc and poly.vertical and ("crenels" not in desc or "parapets" in rebuild):
                 if outward(poly, floors):
                     wall = Wall(poly, catalog[poly.material])
                     if "crenels" in desc:
@@ -1146,7 +1279,7 @@ def main():
                 continue
             copy_poly(out, poly)
             counts["copied"] += 1
-        mode = b.get("displacement", "runtime")
+        mode = b.get("displacement", "runtime") if displace else "none"
         # the grid only serves displacement (interior vertices + the edge mask)
         obj = make_object(name, out, art_col, grid=b.get("grid_m", GRID_M) if mode != "none" else False,
                           bake=strengths if mode == "baked" else None)
@@ -1160,8 +1293,8 @@ def main():
             obj["displacement"] = "none" if mode == "runtime" else mode
             bpy.data.libraries.write(override, {obj}, fake_user=True)
             log("%s: seeded override %s (edit it in Blender; the generator now uses it)" % (name, override))
-        log("%s: %d walls rebuilt, %d parapets, %d roofs, %d polygons copied, %d inner faces dropped -> %d triangles"
-            % (name, counts["rebuilt"], counts["parapet"], counts["roof"], counts["copied"], counts["dropped"],
+        log("%s: %d walls rebuilt, %d parapets, %d roofs, %d cut-outs as solids, %d polygons copied, %d inner faces dropped -> %d triangles"
+            % (name, counts["rebuilt"], counts["parapet"], counts["roof"], counts["cut-outs"], counts["copied"], counts["dropped"],
                len(obj.data.polygons)))
         mine = [o for o in OPENINGS if o["building"] == b["name"]]
         missed = [o for o in mine if o["result"] != "built"]
@@ -1169,6 +1302,23 @@ def main():
             log("%s: openings %d built, %d NOT built%s" % (name, len(mine) - len(missed), len(missed),
                                                           "".join("\n    %s #%d (%s) at %s: %s" % (o["texture"], o["opening"], o["kind"], o["at_m"], o["reason"])
                                                                   for o in missed)))
+
+    # grime strips over the whole zone (materials.json "grime"; zone_grime.py): mesh decals in UE
+    grime_cfg = json.load(open(os.path.join(REPO, "data", "environment", "materials.json"),
+                               encoding="utf-8")).get("grime", {})
+    if grime_cfg.get("enabled", True):
+        pattern = re.compile(grime_cfg.get("exclude") or "$^", re.I)
+        no_grime = {grd for grd, info in catalog.items()
+                    if info.get("has_transparency") or pattern.search(info.get("name", ""))}
+        out = MeshOut()
+        n_base, n_eave = zone_grime.build_grime(out, prims, polys_of, grime_cfg, no_grime)
+        name = "SM_Z%d_Grime" % rid
+        obj = make_object(name, out, art_col, grid=False)
+        path = os.path.join(out_dir, name + ".glb")
+        export_glb(obj, path)
+        manifest["meshes"].append({"name": name, "file": os.path.basename(path), "building": "Grime",
+                                   "displacement": "none", "decal": True})
+        log("%s: %d wall-foot strips, %d eave strips -> %d triangles" % (name, n_base, n_eave, len(obj.data.polygons)))
 
     # the rest of the blockout, for context in the .blend and the preview
     render_glb = os.path.join(out_dir, "blockout_render.glb")

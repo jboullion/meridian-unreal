@@ -151,9 +151,14 @@ def building_triangles(prims, building, claimed=None):
     Every triangle fully inside the region belongs to the building, except horizontal ones at
     ground level (floors around the building stay part of the blockout). An optional
     "materials" list limits the building to those textures (the town wall, the pond), and
-    triangles already in `claimed` ({material: set}) belong to an earlier entry."""
+    triangles already in `claimed` ({material: set}) belong to an earlier entry. A "cutouts" entry
+    takes the cut-out originals rebuilt as solids (facades.cutout_materials()) left over by the
+    buildings before it: fences, gates, signs."""
     region = building["region_m"]
     only = set(building.get("materials", [])) or None
+    if building.get("kind") == "cutouts":
+        import facades  # same folder; every cut-out original rebuilt as a solid
+        only = facades.cutout_materials()
     water = building.get("kind") == "water"
     claimed = claimed or {}
     inside = {}

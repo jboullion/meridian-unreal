@@ -10,6 +10,8 @@ Output for a sprite:
     build/bgf/<name>/frame_NN.png   every bitmap, RGBA (palette index 254 = transparent)
     build/bgf/<name>/sheet.png      contact sheet: one row per group, columns = the group's indices
     build/bgf/<name>/meta.json      shrink, sizes, offsets, hotspots, groups
+Textures with more than one frame also get build/textures/grdNNNNN_fNN.png (every frame) and their
+groups in catalog.json.
 
 The extracted art is the original game's (not covered by the GPL) — it is written to
 build/ (git-ignored) and used only as reference input for the remaster pipeline.
@@ -157,10 +159,15 @@ def export_texture(bgf: BGF, out_png: Path, pal) -> dict:
     out_png.parent.mkdir(parents=True, exist_ok=True)
     im = bgf.image(0, pal, rotated=True)
     im.save(out_png)
+    if len(bgf.bitmaps) > 1:
+        # animated (Kod AnimateWall picks a group: the Raza clock face shows the game hour):
+        # every frame as <grd>_fNN.png next to the first
+        for i in range(len(bgf.bitmaps)):
+            bgf.image(i, pal, rotated=True).save(out_png.with_name("%s_f%02d.png" % (out_png.stem, i)))
     m = bgf.meta(rotated=True)
     w, h = m["bitmaps"][0]["w"], m["bitmaps"][0]["h"]
     # world size in grid squares (64 Kod units per square)
-    return {"name": bgf.name, "w": w, "h": h, "shrink": bgf.shrink, "frames": len(bgf.bitmaps),
+    return {"name": bgf.name, "w": w, "h": h, "shrink": bgf.shrink, "frames": len(bgf.bitmaps), "groups": bgf.groups,
             "squares_w": w / bgf.shrink / 64.0, "squares_h": h / bgf.shrink / 64.0,
             "has_transparency": any(v == TRANSPARENT for v in bgf.bitmaps[0].pixels)}
 

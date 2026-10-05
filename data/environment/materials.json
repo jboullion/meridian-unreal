@@ -1,8 +1,30 @@
 {
  "_doc": "Original texture id (blockout material slot) -> real material asset. Slots not listed use the generated placeholder MI_<grd> (tools/textures/make_placeholders.py). Zone-art slots named <grd>__<variant> use <grd>'s material with the parameters of `variants`. See docs/adr/0003-environment-art-pipeline.md.",
  "materials": {},
+ "relief": {
+  "normals": true,
+  "displacement": false,
+  "flat_openings": true,
+  "rules_for": "roof",
+  "flat": "sign|door|w/ ?dr|gate|win|glass|picture|tapestry|carpet|clock|tower|razmus|shelf|cab|frnt|weapons|torch",
+  "_doc": "Relief from the height maps (T_<grd>_N/_H, Marigold) by texture. normals: normal maps on, except textures with painted windows or doors (facades.json openings, when flat_openings) and names matching flat (painted doors, gates, windows, pictures, signs, clocks that facades.json doesn't describe): inferred relief reads wrong on those. displacement: Nanite displacement (and the zone-art displacement grid). rules_for: names that keep make_placeholders.py's rule-based maps instead of Marigold's (Marigold gives roofs nearly flat normals; the rules give them relief that follows the painted strokes). true / false for the whole value switches both. 2026-10-05: normals on plain walls, roofs and ground; no displacement (see docs/adr/0003)."
+ },
+ "grime": {
+  "enabled": true,
+  "exclude": "water|marble|grass|field|forest|tree|sign",
+  "base": {"height_m": 1.1, "color": [0.04, 0.032, 0.022], "opacity": 0.85, "falloff": 1.3},
+  "eave": {"height_m": 0.7, "color": [0.02, 0.018, 0.016], "opacity": 0.7, "falloff": 1.8},
+  "_doc": "Grime strips (tools/blender/zone_grime.py, built into SM_Z<rid>_Grime by build_zone_art.py, mesh decals in UE): base = dirt rising height_m from the foot of every wall standing on a floor; eave = a band height_m under every level wall top a roof sits on. From the geometry alone, never from the textures. color (linear) and opacity at the edge, fading to 0 at height_m with exponent falloff, broken up by the macro noise. exclude: wall texture names that get none (cut-outs and foliage never do)."
+ },
+ "displacement_range_cm": 14,
+ "displacement_facade_scale": 1.0,
+ "_displacement_range_doc": "Full Nanite displacement range in cm at DisplacementStrength 1 (Marigold height maps, docs/adr/0003 AI relief maps). Walls whose texture facades.json describes displace displacement_facade_scale as much; 1.0 while facades.json defaults.cut_openings is false (no cut recesses to double up with), 0.5 suits cut openings.",
  "variants": {
-  "_doc": "Material parameter overrides for <grd>__<variant> slots (written by tools/blender/build_zone_art.py): glass = stained glass panels, panel = door leaves, solid = cut-out originals rebuilt as solid geometry (merlons).",
+  "_doc": "Material parameter overrides for <grd>__<variant> slots (written by tools/blender/build_zone_art.py): glass = stained glass panels at the back of a cut recess, pane = flush window glazing when facades.json cut_openings is false (glossy like glass with flat normals; displaced with the wall, DisplacementStrength inherited, but make_placeholders.py flattens the height inside painted windows so the glass stays flat), panel = door leaves, solid = cut-out originals rebuilt as solid geometry (merlons).",
+  "pane": {
+   "Roughness": 0.18,
+   "NormalStrength": 0.0
+  },
   "glass": {
    "Roughness": 0.18,
    "NormalStrength": 0.35,
@@ -15,7 +37,7 @@
   "solid": {}
  },
  "displacement": {
-  "_doc": "Nanite displacement strength (0..1, full range +-2.5 cm) for zone-art (Nanite) meshes using these textures; unlisted textures don't displace. Heights come from T_<grd>_H (make_placeholders.py): timber facades raise their beams, masonry and roof tiles dome.",
+  "_doc": "Nanite displacement strength (0..1 of displacement_range_cm) for zone-art (Nanite) meshes using these textures; unlisted textures don't displace. Heights come from T_<grd>_H (Marigold via make_placeholders.py --relief auto, else rule-based).",
   "grd09663": 1.0,
   "grd09665": 1.0,
   "grd09667": 0.8,

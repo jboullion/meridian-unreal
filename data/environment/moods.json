@@ -1,5 +1,5 @@
 {
-  "_doc": "Lighting moods (docs/adr/0003 pass 4). tools/ue/zone_mood.py applies a mood to the lighting actors build_world.py spawns in L_World, by actor label. Each actor block sets `rotation` ([pitch, yaw], directional light only) and properties on its main component; `settings` on GlobalPostProcess sets PostProcessSettings fields and turns their override flags on. Values: numbers, bools, [r,g,b(,a)] for colours/vectors, strings for enums. For now one outdoor mood is baked into L_World (`levels`); per-zone runtime blending (UMRZoneMood) comes later. Exposure is in EV100 (r.DefaultFeature.AutoExposure.ExtendDefaultLuminanceRange); with the sun at ~8 lux the town sits around EV -1..1, so clamping above that blackens the shade.",
+  "_doc": "Lighting moods (docs/adr/0003 pass 4). tools/ue/zone_mood.py applies a mood to the lighting actors build_world.py spawns in L_World, by actor label. Each actor block sets `rotation` ([pitch, yaw], directional light only) and properties on its main component; `settings` on GlobalPostProcess sets PostProcessSettings fields and turns their override flags on. Values: numbers, bools, [r,g,b(,a)] for colours/vectors, strings for enums. For now one outdoor mood is baked into L_World (`levels`); per-zone runtime blending (UMRZoneMood) comes later. Exposure is in EV100 (r.DefaultFeature.AutoExposure.ExtendDefaultLuminanceRange); with the sun at ~8 lux the town sits around EV -1..1, so clamping above that blackens the shade. \"Collection\": values for MPC_Environment (WindowGlow: how brightly the painted windows glow, 0 by day).",
   "levels": {
     "L_World": "raza_afternoon"
   },
@@ -94,6 +94,164 @@
           "sharpen": 0.4,
           "lumen_skylight_leaking": 0.12
         }
+      },
+      "Collection": {
+        "WindowGlow": 0.0
+      }
+    },
+    "raza_morning": {
+      "_doc": "Early morning: low sun from the east-south-east, cool and hazy, mist in the low ground; long soft shadows across the square.",
+      "inherit": "raza_afternoon",
+      "Sun": {
+        "rotation": [
+          -16.0,
+          -160.0
+        ],
+        "intensity": 6.5,
+        "temperature": 5600
+      },
+      "SkyLight": {
+        "intensity": 1.5
+      },
+      "HeightFog": {
+        "fog_density": 0.06,
+        "fog_height_falloff": 0.45,
+        "start_distance": 800,
+        "fog_inscattering_luminance": [
+          0.5,
+          0.55,
+          0.62,
+          1.0
+        ],
+        "directional_inscattering_luminance": [
+          0.6,
+          0.52,
+          0.42,
+          1.0
+        ]
+      },
+      "GlobalPostProcess": {
+        "settings": {
+          "color_gain_highlights": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "color_saturation": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "Collection": {
+        "WindowGlow": 0.0
+      }
+    },
+    "raza_dusk": {
+      "_doc": "Dusk: the sun just above the west wall, deep orange key and long shadows, the sky fading; the first windows lit.",
+      "inherit": "raza_afternoon",
+      "Sun": {
+        "rotation": [
+          -6.0,
+          -15.0
+        ],
+        "intensity": 3.0,
+        "temperature": 2900
+      },
+      "SkyLight": {
+        "intensity": 0.9
+      },
+      "HeightFog": {
+        "directional_inscattering_luminance": [
+          0.9,
+          0.45,
+          0.2,
+          1.0
+        ],
+        "fog_inscattering_luminance": [
+          0.3,
+          0.3,
+          0.4,
+          1.0
+        ]
+      },
+      "GlobalPostProcess": {
+        "settings": {
+          "auto_exposure_bias": 0.0
+        }
+      },
+      "Collection": {
+        "WindowGlow": 0.12
+      }
+    },
+    "raza_night": {
+      "_doc": "Night: cool moonlight from the south-east, the town lit by its lamps, braziers and glowing windows; exposure allowed to go dark but kept below full adaptation so night reads as night.",
+      "inherit": "raza_afternoon",
+      "Sun": {
+        "rotation": [
+          -40.0,
+          -135.0
+        ],
+        "intensity": 0.12,
+        "temperature": 8000,
+        "light_source_angle": 0.6
+      },
+      "SkyLight": {
+        "intensity": 0.35,
+        "lower_hemisphere_color": [
+          0.02,
+          0.02,
+          0.025,
+          1.0
+        ]
+      },
+      "HeightFog": {
+        "fog_density": 0.03,
+        "fog_inscattering_luminance": [
+          0.008,
+          0.011,
+          0.02,
+          1.0
+        ],
+        "directional_inscattering_luminance": [
+          0.02,
+          0.025,
+          0.04,
+          1.0
+        ]
+      },
+      "GlobalPostProcess": {
+        "settings": {
+          "auto_exposure_min_brightness": -9.0,
+          "auto_exposure_max_brightness": -4.0,
+          "auto_exposure_bias": -0.8,
+          "bloom_intensity": 0.8,
+          "color_saturation": [
+            0.85,
+            0.85,
+            0.85,
+            1.0
+          ],
+          "color_gain_shadows": [
+            0.9,
+            0.95,
+            1.12,
+            1.0
+          ],
+          "color_gain_highlights": [
+            1.06,
+            1.0,
+            0.9,
+            1.0
+          ],
+          "lumen_skylight_leaking": 0.05
+        }
+      },
+      "Collection": {
+        "WindowGlow": 0.35
       }
     }
   }

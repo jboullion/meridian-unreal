@@ -9,7 +9,7 @@ editor startup, no fight over locked files, and the open editor shows the result
 build_world.ps1 calls this first and starts a headless editor only when nothing answers.
 Exit codes: 0 done, 1 the script failed, 3 no editor open on this project.
 
-Environment variables the scripts read (MR_MOOD) are passed through.
+Environment variables the scripts read (MR_MOOD, MR_DISPLACEMENT_RANGE_CM) are passed through.
 """
 import argparse
 import json
@@ -20,7 +20,7 @@ import time
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 PROJECT_DIR = os.path.join(REPO, "game", "MeridianRemastered")
 DEFAULT_ENGINE = r"G:\Unreal Engine\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
-PASS_ENV = ("MR_MOOD",)
+PASS_ENV = ("MR_MOOD", "MR_DISPLACEMENT_RANGE_CM")
 # lines worth echoing from the editor's output (everything goes to its log as usual)
 ECHO = ("[build_world]", "[build_cache]", "[environment_materials]", "[zone_mood]", "Error", "Traceback")
 NO_EDITOR = 3

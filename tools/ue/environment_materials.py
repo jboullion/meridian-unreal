@@ -19,6 +19,7 @@ functions here pass assets around by path and load them only to build something:
 """
 import json
 import os
+import re
 
 import unreal
 
@@ -30,7 +31,8 @@ OVERRIDES = os.path.join(REPO, "data", "environment", "materials.json")
 ENV = "/Game/Generated/Environment"
 MAT_DIR = ENV + "/Materials"
 TEX_DIR = ENV + "/Textures"
-DISPLACEMENT_CM = 5.0  # full range of Nanite displacement at DisplacementStrength 1 (+-2.5 cm)
+# full range of Nanite displacement at DisplacementStrength 1 (5 cm: +-2.5 cm); see displacement_range_cm()
+DISPLACEMENT_CM = 5.0
 
 asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
 eal = unreal.EditorAssetLibrary
@@ -49,7 +51,7 @@ def _expr(mat, cls, x, y, **props):
 
 
 # material settings the builders below change; a rebuilt master starts from the defaults again
-RESET_PROPERTIES = ("blend_mode", "shading_model", "two_sided", "use_material_attributes", "used_with_nanite",
+RESET_PROPERTIES = ("material_domain", "blend_mode", "shading_model", "two_sided", "use_material_attributes", "used_with_nanite",
                     "used_with_instanced_static_meshes", "enable_tessellation", "displacement_scaling")
 
 
@@ -70,7 +72,7 @@ def _new_material(name):
 def _master(name, builder, *args):
     """-> path of master material <name>; builder(name, *args) runs only when it or its inputs changed."""
     cache = build_cache.CACHE
-    key = cache.key(build_cache.source(builder, _expr, _world_uv, _srgb_to_linear, _new_material), name, args)
+    key = cache.key(build_cache.source(builder, _expr, _world_uv, _srgb_to_linear, _new_material, _window_glow, _atlas_uv), name, args)
     return cache.get_or_build("%s/%s" % (MAT_DIR, name), key, "masters", lambda: builder(name, *args))
 
 
@@ -98,7 +100,96 @@ def _instance(name, parent, textures=None, scalars=None, vectors=None):
     return cache.get_or_build(path, key, "instances", build)
 
 
-def build_master(name, masked):
+MPC_NAME = "MPC_Environment"
+# scalars in MPC_Environment that moods set (tools/ue/zone_mood.py, moods.json "Collection")
+MPC_SCALARS = {"WindowGlow": 0.0, "GameHour": 0.0}
+
+
+def ensure_mpc():
+    """/Game/Generated/Environment/Materials/MPC_Environment with MPC_SCALARS (values kept when it
+    exists: the mood sets them)."""
+    path = "%s/%s" % (MAT_DIR, MPC_NAME)
+    if not eal.does_asset_exist(path):
+        asset_tools.create_asset(MPC_NAME, MAT_DIR, unreal.MaterialParameterCollection,
+                                 unreal.MaterialParameterCollectionFactoryNew())
+    mpc = eal.load_asset(path)
+    params = list(mpc.get_editor_property("scalar_parameters"))
+    have = {str(p.get_editor_property("parameter_name")) for p in params}
+    missing = [k for k in MPC_SCALARS if k not in have]
+    for name in missing:
+        p = unreal.CollectionScalarParameter()
+        p.set_editor_property("parameter_name", name)
+        p.set_editor_property("default_value", MPC_SCALARS[name])
+        params.append(p)
+    if missing:
+        mpc.set_editor_property("scalar_parameters", params)
+        eal.save_loaded_asset(mpc)
+    return path
+
+
+def _atlas_uv(mat, atlas, mpc, x, y):
+    """UVs into a clock atlas (make_placeholders.clock_layout: `atlas` = (columns, rows), cell i =
+    hour i mod 12): the cell for floor(MPC_Environment.GameHour) mod 12, with the face's 0..1 UVs
+    clamped inside it (a clock face is mapped once)."""
+    cols, rows = atlas
+    tc = _expr(mat, unreal.MaterialExpressionTextureCoordinate, x, y)
+    clamp = _expr(mat, unreal.MaterialExpressionClamp, x + 150, y, min_default=0.0005, max_default=0.9995)
+    mel.connect_material_expressions(tc, "", clamp, "")
+    hour = _expr(mat, unreal.MaterialExpressionCollectionParameter, x, y + 150,
+                 collection=eal.load_asset(mpc), parameter_name="GameHour")
+    h12 = _expr(mat, unreal.MaterialExpressionFmod, x + 150, y + 150)
+    mel.connect_material_expressions(hour, "", h12, "A")
+    twelve = _expr(mat, unreal.MaterialExpressionConstant, x, y + 250, r=12.0)
+    mel.connect_material_expressions(twelve, "", h12, "B")
+    frame = _expr(mat, unreal.MaterialExpressionFloor, x + 300, y + 150)
+    mel.connect_material_expressions(h12, "", frame, "")
+    ncols = _expr(mat, unreal.MaterialExpressionConstant, x + 300, y + 250, r=float(cols))
+    col = _expr(mat, unreal.MaterialExpressionFmod, x + 450, y + 150)
+    mel.connect_material_expressions(frame, "", col, "A")
+    mel.connect_material_expressions(ncols, "", col, "B")
+    rowf = _expr(mat, unreal.MaterialExpressionDivide, x + 450, y + 250)
+    mel.connect_material_expressions(frame, "", rowf, "A")
+    mel.connect_material_expressions(ncols, "", rowf, "B")
+    row = _expr(mat, unreal.MaterialExpressionFloor, x + 600, y + 250)
+    mel.connect_material_expressions(rowf, "", row, "")
+    cell = _expr(mat, unreal.MaterialExpressionAppendVector, x + 750, y + 200)
+    mel.connect_material_expressions(col, "", cell, "A")
+    mel.connect_material_expressions(row, "", cell, "B")
+    add = _expr(mat, unreal.MaterialExpressionAdd, x + 900, y + 50)
+    mel.connect_material_expressions(clamp, "", add, "A")
+    mel.connect_material_expressions(cell, "", add, "B")
+    size = _expr(mat, unreal.MaterialExpressionConstant2Vector, x + 900, y + 200, r=float(cols), g=float(rows))
+    uv = _expr(mat, unreal.MaterialExpressionDivide, x + 1050, y + 100)
+    mel.connect_material_expressions(add, "", uv, "A")
+    mel.connect_material_expressions(size, "", uv, "B")
+    return uv
+
+
+def _window_glow(mat, base_rgb, glow, x, y, uv=None):
+    """Emissive for painted windows at night: base colour * warm lamplight * Emissive mask (T_<grd>_E)
+    * MPC_Environment.WindowGlow, so the painted glass glows and its leading and frames stay dark.
+    glow = (MPC path, default mask texture path)."""
+    mpc, default_mask = glow
+    mask = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, x, y, parameter_name="Emissive",
+                 sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, texture=eal.load_asset(default_mask))
+    if uv:
+        mel.connect_material_expressions(uv, "", mask, "UVs")
+    warm = _expr(mat, unreal.MaterialExpressionConstant3Vector, x, y + 220, constant=unreal.LinearColor(1.0, 0.62, 0.3, 0))
+    col = _expr(mat, unreal.MaterialExpressionMultiply, x + 250, y + 150)
+    mel.connect_material_expressions(base_rgb, "", col, "A")
+    mel.connect_material_expressions(warm, "", col, "B")
+    level = _expr(mat, unreal.MaterialExpressionCollectionParameter, x, y + 330,
+                  collection=eal.load_asset(mpc), parameter_name="WindowGlow")
+    m1 = _expr(mat, unreal.MaterialExpressionMultiply, x + 400, y + 50)
+    mel.connect_material_expressions(mask, "R", m1, "A")
+    mel.connect_material_expressions(level, "", m1, "B")
+    em = _expr(mat, unreal.MaterialExpressionMultiply, x + 550, y + 100)
+    mel.connect_material_expressions(col, "", em, "A")
+    mel.connect_material_expressions(m1, "", em, "B")
+    return em
+
+
+def build_master(name, masked, glow=None, atlas=None):
     """BaseColor (sRGB) * Tint -> Base Color; lerp(flat, Normal, NormalStrength) -> Normal;
     Roughness scalar; masked variant clips on BaseColor alpha."""
     mat = _new_material(name)
@@ -128,6 +219,12 @@ def build_master(name, masked):
     rough = _expr(mat, unreal.MaterialExpressionScalarParameter, -350, 700,
                   parameter_name="Roughness", default_value=0.85)
     mel.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    uv = _atlas_uv(mat, atlas, glow[0], -2400, 0) if atlas and glow else None
+    if uv:
+        for sample in (base, nrm):
+            mel.connect_material_expressions(uv, "", sample, "UVs")
+    if glow:
+        mel.connect_material_property(_window_glow(mat, mul, glow, -1100, 800, uv), "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
 
     if masked:
         mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
@@ -185,7 +282,7 @@ def ensure_textures(specs):
     return out
 
 
-def build_displaced_master(name, default_height, tessellation=True):
+def build_displaced_master(name, default_height, tessellation=True, range_cm=DISPLACEMENT_CM, glow=None, atlas=None):
     """M_PlaceholderDisplaced, for Nanite zone-art meshes (docs/adr/0003, displacement test).
     Same inputs as M_Placeholder plus a Height texture; built with Material Attributes because the
     Python MaterialProperty enum has no Displacement pin:
@@ -198,7 +295,7 @@ def build_displaced_master(name, default_height, tessellation=True):
     mat.set_editor_property("used_with_nanite", True)
     mat.set_editor_property("enable_tessellation", tessellation)
     scaling = mat.get_editor_property("displacement_scaling")
-    scaling.set_editor_property("magnitude", DISPLACEMENT_CM)
+    scaling.set_editor_property("magnitude", range_cm)
     scaling.set_editor_property("center", 0.5)
     mat.set_editor_property("displacement_scaling", scaling)
     attrs = _expr(mat, unreal.MaterialExpressionMakeMaterialAttributes, 0, 0)
@@ -227,10 +324,18 @@ def build_displaced_master(name, default_height, tessellation=True):
 
     rough = _expr(mat, unreal.MaterialExpressionScalarParameter, -500, 450, parameter_name="Roughness", default_value=0.85)
     mel.connect_material_expressions(rough, "", attrs, "Roughness")
+    uv = _atlas_uv(mat, atlas, glow[0], -2800, 0) if atlas and glow else None
+    if uv:
+        for sample in (base, nrm):
+            mel.connect_material_expressions(uv, "", sample, "UVs")
+    if glow:
+        mel.connect_material_expressions(_window_glow(mat, mul, glow, -1500, -700, uv), "", attrs, "EmissiveColor")
 
     height = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, 650,
                    parameter_name="Height", sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR,
                    texture=eal.load_asset(default_height))
+    if uv:
+        mel.connect_material_expressions(uv, "", height, "UVs")
     centred = _expr(mat, unreal.MaterialExpressionSubtract, -600, 650, const_b=0.5)
     mel.connect_material_expressions(height, "R", centred, "A")
     disp_strength = _expr(mat, unreal.MaterialExpressionScalarParameter, -900, 900,
@@ -253,6 +358,54 @@ def build_displaced_master(name, default_height, tessellation=True):
 
 def _srgb_to_linear(c):
     return [x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+
+
+def build_grime_master(name, macro):
+    """Mesh-decal material for the grime strips (tools/blender/zone_grime.py): Color at the strip's
+    contact edge (UV v = 0: the ground or the eave), fading to nothing at its far side as
+    (1 - v)^Falloff, times Opacity, broken up by the macro noise along the wall (UV u = metres)."""
+    mat = _new_material(name)
+    # blend mode first: switching the domain to decal while opaque logs a (transient) compile error
+    mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_TRANSLUCENT)
+    mat.set_editor_property("material_domain", unreal.MaterialDomain.MD_DEFERRED_DECAL)
+    uv = _expr(mat, unreal.MaterialExpressionTextureCoordinate, -1100, 0)
+    v = _expr(mat, unreal.MaterialExpressionComponentMask, -900, 0, r=False, g=True, b=False, a=False)
+    mel.connect_material_expressions(uv, "", v, "")
+    inv = _expr(mat, unreal.MaterialExpressionOneMinus, -750, 0)
+    mel.connect_material_expressions(v, "", inv, "")
+    clamp = _expr(mat, unreal.MaterialExpressionSaturate, -620, 0)
+    mel.connect_material_expressions(inv, "", clamp, "")
+    falloff = _expr(mat, unreal.MaterialExpressionScalarParameter, -620, 100, parameter_name="Falloff", default_value=1.6)
+    fade = _expr(mat, unreal.MaterialExpressionPower, -450, 0)
+    mel.connect_material_expressions(clamp, "", fade, "Base")
+    mel.connect_material_expressions(falloff, "", fade, "Exp")
+    # noise: u in metres along the wall, v across the strip
+    scale = _expr(mat, unreal.MaterialExpressionConstant2Vector, -1100, 250, r=0.11, g=0.35)
+    nuv = _expr(mat, unreal.MaterialExpressionMultiply, -900, 250)
+    mel.connect_material_expressions(uv, "", nuv, "A")
+    mel.connect_material_expressions(scale, "", nuv, "B")
+    noise = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -750, 250, parameter_name="Macro",
+                  sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, texture=eal.load_asset(macro))
+    mel.connect_material_expressions(nuv, "", noise, "UVs")
+    vary = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -450, 250, const_a=0.45, const_b=1.25)
+    mel.connect_material_expressions(noise, "G", vary, "Alpha")
+    opacity = _expr(mat, unreal.MaterialExpressionScalarParameter, -450, 400, parameter_name="Opacity", default_value=0.5)
+    m1 = _expr(mat, unreal.MaterialExpressionMultiply, -280, 100)
+    mel.connect_material_expressions(fade, "", m1, "A")
+    mel.connect_material_expressions(vary, "", m1, "B")
+    m2 = _expr(mat, unreal.MaterialExpressionMultiply, -150, 200)
+    mel.connect_material_expressions(m1, "", m2, "A")
+    mel.connect_material_expressions(opacity, "", m2, "B")
+    sat = _expr(mat, unreal.MaterialExpressionSaturate, -30, 200)
+    mel.connect_material_expressions(m2, "", sat, "")
+    mel.connect_material_property(sat, "", unreal.MaterialProperty.MP_OPACITY)
+    color = _expr(mat, unreal.MaterialExpressionVectorParameter, -300, -200, parameter_name="Color",
+                  default_value=unreal.LinearColor(0.045, 0.035, 0.025, 1))
+    mel.connect_material_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    rough = _expr(mat, unreal.MaterialExpressionConstant, -300, -80, r=0.95)
+    mel.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    mel.recompile_material(mat)
+    eal.save_loaded_asset(mat)
 
 
 def _world_uv(mat, x, y, scale_param, default_cm, offset=0.0):
@@ -500,7 +653,7 @@ def build_prop_materials(cfg):
             for slot, v in cfg.items() if not slot.startswith("_")}
 
 
-def build_placeholders():
+def build_placeholders(normals_for=lambda key, entry: True, glow=None):
     """-> ({grd key: MI path}, {grd key: (manifest entry, D, N, H texture paths)}).
     Both empty if make_placeholders.py hasn't been run."""
     manifest_path = os.path.join(PLACEHOLDERS, "placeholders.json")
@@ -508,11 +661,21 @@ def build_placeholders():
         log("no %s; run tools/textures/make_placeholders.py for textured placeholders" % manifest_path)
         return {}, {}
     textures = json.load(open(manifest_path, encoding="utf-8"))["textures"]
-    masters = {False: _master("M_Placeholder", build_master, False), True: _master("M_PlaceholderMasked", build_master, True)}
+    masters = {}
+
+    def master_for(t):
+        """M_Placeholder / M_PlaceholderMasked, and a clock variant per atlas layout."""
+        atlas = tuple(t["atlas"]) if t.get("atlas") and glow else None
+        key = (t["masked"], atlas)
+        if key not in masters:
+            name = "M_Placeholder" + ("Masked" if t["masked"] else "") + ("Clock%dx%d" % atlas if atlas else "")
+            masters[key] = _master(name, build_master, t["masked"], glow, atlas)
+        return masters[key]
 
     specs = []
     for t in textures.values():
         specs += [(t["d"], True, False), (t["n"], False, True)] + ([(t["height"], False, False)] if "height" in t else [])
+        specs += [(t["emissive"], False, False)] if t.get("emissive") and glow else []
     paths = ensure_textures(specs)
     out, loaded = {}, {}
     for key, t in sorted(textures.items()):
@@ -520,9 +683,10 @@ def build_placeholders():
         if not d or not n:
             log("WARNING: textures for %s did not import" % key)
             continue
-        loaded[key] = (t, d, n, h)
-        out[key] = _instance("MI_" + key, masters[t["masked"]], textures={"BaseColor": d, "Normal": n},
-                             scalars={"Roughness": t["roughness"], "NormalStrength": 1.0})
+        e = paths.get(t.get("emissive")) if glow else None
+        loaded[key] = (t, d, n, h, e)
+        out[key] = _instance("MI_" + key, master_for(t), textures=dict({"BaseColor": d, "Normal": n}, **({"Emissive": e} if e else {})),
+                             scalars={"Roughness": t["roughness"], "NormalStrength": 1.0 if normals_for(key, t) else 0.0})
     log("%d placeholder material instances (%s)" % (len(out), build_cache.CACHE.summary()))
     return out, loaded
 
@@ -546,6 +710,46 @@ def _materials_json(section):
     return {k: v for k, v in json.load(open(OVERRIDES, encoding="utf-8")).get(section, {}).items() if not k.startswith("_")}
 
 
+def _materials_value(key, default):
+    if not os.path.exists(OVERRIDES):
+        return default
+    return json.load(open(OVERRIDES, encoding="utf-8")).get(key, default)
+
+
+def relief_config():
+    """materials.json "relief": {"normals": bool, "displacement": bool, "flat": name regex,
+    "flat_openings": bool}; true / false switch both on / off."""
+    value = _materials_value("relief", True)
+    if not isinstance(value, dict):
+        value = {"normals": bool(value), "displacement": bool(value)}
+    return dict({"normals": True, "displacement": True, "flat": "", "flat_openings": True}, **value)
+
+
+def normals_policy(facades_textures):
+    """-> normals_for(key, placeholders.json entry): whether the texture gets its normal map
+    (materials.json "relief"). Off for textures with painted windows or doors (facades.json
+    "openings") and for names matching "flat": inferred relief reads wrong on glass, doors and
+    pictures."""
+    cfg = relief_config()
+    openings = {k for k, v in facades_textures.items() if v.get("openings")} if cfg["flat_openings"] else set()
+
+    def normals_for(key, entry):
+        if not cfg["normals"] or key in openings:
+            return False
+        return not (cfg["flat"] and re.search(cfg["flat"], entry.get("name", ""), re.I))
+    return normals_for
+
+
+def displacement_range_cm():
+    """materials.json "displacement_range_cm" (default DISPLACEMENT_CM); the MR_DISPLACEMENT_RANGE_CM
+    environment variable overrides it for experiments (tools/lookdev/ai_maps_test.ps1)."""
+    if os.environ.get("MR_DISPLACEMENT_RANGE_CM"):
+        return float(os.environ["MR_DISPLACEMENT_RANGE_CM"])
+    if not os.path.exists(OVERRIDES):
+        return DISPLACEMENT_CM
+    return float(json.load(open(OVERRIDES, encoding="utf-8")).get("displacement_range_cm", DISPLACEMENT_CM))
+
+
 def load_variants():
     """data/environment/materials.json "variants": {name: {material parameter: value}}"""
     return _materials_json("variants")
@@ -553,10 +757,20 @@ def load_variants():
 
 class ZoneMaterials:
     def __init__(self):
-        self.placeholders, self.textures = build_placeholders()
+        facades_json = os.path.join(REPO, "data", "environment", "facades.json")
+        facades_textures = (json.load(open(facades_json, encoding="utf-8")).get("textures", {})
+                            if os.path.exists(facades_json) else {})
+        self.relief = relief_config()
+        self.normals_for = normals_policy(facades_textures)
+        no_emissive = self._import_extra("T_NoEmissive.png", srgb=False)
+        self.glow = (ensure_mpc(), no_emissive) if no_emissive else None
+        self.placeholders, self.textures = build_placeholders(self.normals_for, self.glow)
         self.overrides = load_overrides()
         self.variants = load_variants()
         self.displacement = _materials_json("displacement")
+        facades_json = os.path.join(REPO, "data", "environment", "facades.json")
+        self.facade_textures = (set(json.load(open(facades_json, encoding="utf-8")).get("textures", {}))
+                                if os.path.exists(facades_json) else set())
         self.art = {}  # slot -> material for zone-art meshes
         self.displaced_master = None
         self.ground_config = _materials_json("ground")
@@ -583,6 +797,24 @@ class ZoneMaterials:
             return None
         return ensure_textures([(filename, srgb, normal)]).get(filename)
 
+    def displacement_strength(self, base):
+        """materials.json "displacement" for the texture, scaled by "displacement_facade_scale" when
+        facades.json describes it (the wall is rebuilt with real openings and trims)."""
+        strength = float(self.displacement.get(base, 0.0))
+        if base in self.facade_textures:
+            strength *= float(_materials_value("displacement_facade_scale", 1.0))
+        return strength
+
+    def grime_instance(self, kind):
+        """MI_grime_<kind> (base, eave) on M_GrimeDecal, from materials.json "grime"."""
+        cfg = _materials_json("grime").get(kind)
+        if not cfg or not self.macro:
+            return None
+        master = _master("M_GrimeDecal", build_grime_master, self.macro)
+        return _instance("MI_grime_" + kind, master,
+                         scalars={"Opacity": cfg.get("opacity", 0.5), "Falloff": cfg.get("falloff", 1.6)},
+                         vectors={"Color": list(cfg.get("color", [0.04, 0.035, 0.03])) + [1.0]})
+
     def ground_instance(self, key):
         """MI_<grd>__ground on M_Ground for floors listed in materials.json "ground"."""
         if key in self.ground:
@@ -590,10 +822,13 @@ class ZoneMaterials:
         cfg = self.ground_config.get(key)
         if not cfg or not self.ground_master or key not in self.textures:
             return None
-        t, d, n, h = self.textures[key]
+        t, d, n, h, _ = self.textures[key]
         tile = float(cfg.get("tile_m", 2.2)) * 100.0
+        scalars = {"TileCm": tile, "TileCm2": tile * 2.73, "Roughness": t["roughness"]}
+        if not self.normals_for(key, t):
+            scalars["NormalStrength"] = 0.0
         self.ground[key] = _instance("MI_%s__ground" % key, self.ground_master, textures={"BaseColor": d, "Normal": n},
-                                     scalars={"TileCm": tile, "TileCm2": tile * 2.73, "Roughness": t["roughness"]})
+                                     scalars=scalars)
         return self.ground[key]
 
     def material_for(self, key):
@@ -637,30 +872,46 @@ class ZoneMaterials:
         if key.startswith("prop_"):
             mat = self.props.get(key[len("prop_"):])
             return (mat, 1) if mat else (None, 2)
+        if key.startswith("grime_"):
+            mat = self.grime_instance(key[len("grime_"):])
+            return (mat, 1) if mat else (None, 2)
+        flat = flat or not self.relief["displacement"]  # no displacement: no Nanite tessellation either
         cache = self.art_flat if flat else self.art
         if key in cache:
             return cache[key], 1
         base, _, variant = key.partition("__")
         if base not in self.textures:
             return None, 2
-        t, d, n, h = self.textures[base]
+        t, d, n, h, e = self.textures[base]
         if not h or (t["masked"] and variant != "solid"):
             # cut-out originals copied into the art (signs, fences) stay cut-out; "__solid" ones
             # were rebuilt as solid geometry (merlons)
             return self.material_for(key)
+        atlas = tuple(t["atlas"]) if t.get("atlas") and self.glow else None
+        if atlas and base not in cache:
+            # clock faces: their own master per atlas layout (no displacement)
+            name = "M_PlaceholderArtFlatClock%dx%d" % atlas
+            master = _master(name, build_displaced_master, h, False, DISPLACEMENT_CM, self.glow, atlas)
+            cache[base] = _instance("MI_%s__flat" % base, master,
+                                    textures=dict({"BaseColor": d, "Normal": n, "Height": h}, **({"Emissive": e} if e else {})),
+                                    scalars={"Roughness": t["roughness"], "NormalStrength": 1.0 if self.normals_for(base, t) else 0.0,
+                                             "DisplacementStrength": 0.0})
         if base not in cache:
             if flat:
                 # relief already in the geometry: same look, no Nanite tessellation
                 if not self.flat_master:
-                    self.flat_master = _master("M_PlaceholderArtFlat", build_displaced_master, h, False)
+                    self.flat_master = _master("M_PlaceholderArtFlat", build_displaced_master, h, False,
+                                               DISPLACEMENT_CM, self.glow)
                 master, suffix = self.flat_master, "__flat"
             else:
                 if not self.displaced_master:
-                    self.displaced_master = _master("M_PlaceholderDisplaced", build_displaced_master, h, True)
+                    self.displaced_master = _master("M_PlaceholderDisplaced", build_displaced_master, h, True,
+                                                    displacement_range_cm(), self.glow)
                 master, suffix = self.displaced_master, "__art"
-            cache[base] = _instance("MI_%s%s" % (base, suffix), master, textures={"BaseColor": d, "Normal": n, "Height": h},
-                                    scalars={"Roughness": t["roughness"], "NormalStrength": 1.0,
-                                             "DisplacementStrength": 0.0 if flat else float(self.displacement.get(base, 0.0))})
+            cache[base] = _instance("MI_%s%s" % (base, suffix), master,
+                                    textures=dict({"BaseColor": d, "Normal": n, "Height": h}, **({"Emissive": e} if e else {})),
+                                    scalars={"Roughness": t["roughness"], "NormalStrength": 1.0 if self.normals_for(base, t) else 0.0,
+                                             "DisplacementStrength": 0.0 if flat else self.displacement_strength(base)})
         if variant:
             cache[key] = self.variant_instance(base, variant, parent=cache[base], suffix="__flat" if flat else "__art")
         return cache[key], 1
