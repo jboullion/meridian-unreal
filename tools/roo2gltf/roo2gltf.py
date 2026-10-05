@@ -28,6 +28,7 @@ import json
 import math
 import struct
 import sys
+import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -158,27 +159,32 @@ class MeshBuilder:
         self.prims: dict[str, dict[str, list]] = {}
 
     def _prim(self, key):
-        return self.prims.setdefault(key, {"pos": [], "nrm": [], "uv": [], "idx": []})
+        return self.prims.setdefault(key, {"pos": [], "nrm": [], "uv": [], "col": [], "idx": []})
 
-    def quad(self, key, p0, p1, p2, p3, uv0, uv1, uv2, uv3, double=False):
-        """p* are (x, y, z) in ROO space with z = height.  Winding p0->p1->p2->p3."""
-        self.poly(key, [p0, p1, p2, p3], [uv0, uv1, uv2, uv3])
+    def quad(self, key, p0, p1, p2, p3, uv0, uv1, uv2, uv3, double=False, light=None):
+        """p* are (x, y, z) in ROO space with z = height.  Winding p0->p1->p2->p3. light(normal) ->
+        the sector light (0..1) a face with that glTF normal sees (each side of a double wall its own)."""
+        self.poly(key, [p0, p1, p2, p3], [uv0, uv1, uv2, uv3], light=light)
         if double:
-            self.poly(key, [p3, p2, p1, p0], [uv3, uv2, uv1, uv0])
+            self.poly(key, [p3, p2, p1, p0], [uv3, uv2, uv1, uv0], light=light)
 
-    def poly(self, key, pts, uvs):
+    def poly(self, key, pts, uvs, light=1.0):
+        """light: the original sector light level (0..1) for the face, or a function of its glTF
+        normal; written as the vertex colour (COLOR_0), the materials' ambient floor (docs/adr/0005)."""
         if len(pts) < 3:
             return
         g = [to_gltf(p) for p in pts]
         n = newell_normal(g)
         if n is None:
             return
+        level = light(n) if callable(light) else (1.0 if light is None else light)
         pr = self._prim(key)
         base = len(pr["pos"])
         for p, uv in zip(g, uvs):
             pr["pos"].append(p)
             pr["nrm"].append(n)
             pr["uv"].append(uv)
+            pr["col"].append((level, level, level, 1.0))
         for i in range(1, len(pts) - 1):
             pr["idx"] += [base, base + i, base + i + 1]
 
@@ -206,9 +212,52 @@ def tex_key(t: int) -> str:
     return "grd%05d" % t if t else "untextured"
 
 
+SF_FLICKER = 0x00000200  # clientd3d bsp.h: the sector's light flickers
+
+
+def sector_at(room: Room):
+    """-> at(x, y): the sector (1-based, as walls and BSP leaves number them) under a ROO point, from
+    the BSP leaves (convex polygons), or None outside every sector."""
+    leaves = [(node.points, node.sector) for node in room.bsp.walk()
+              if node.type == BSP_LEAF and node.sector and len(node.points) >= 3]
+
+    def inside(pts, x, y):
+        sign = 0
+        for i in range(len(pts)):
+            (x0, y0), (x1, y1) = pts[i], pts[(i + 1) % len(pts)]
+            c = (x1 - x0) * (y - y0) - (y1 - y0) * (x - x0)
+            if abs(c) < 1e-6:
+                continue
+            if sign == 0:
+                sign = 1 if c > 0 else -1
+            elif (c > 0) != (sign > 0):
+                return False
+        return True
+
+    def at(x, y):
+        for pts, sector in leaves:
+            if inside(pts, x, y):
+                return sector
+        return None
+    return at
+
+
+def sector_lights(room: Room):
+    """-> light_at(x, y): the light level (0..1) of the sector at a ROO point, or None outside every
+    sector. The original client lights each sector at its own level (0..255); the blockout carries it
+    as vertex colour."""
+    at = sector_at(room)
+
+    def light_at(x, y):
+        sector = at(x, y)
+        return None if sector is None else room.sectors[sector - 1].light / 255.0
+    return light_at
+
+
 def build_room_mesh(room: Room) -> MeshBuilder:
     mb = MeshBuilder()
     H = SectorHeights(room.sectors)
+    light_at = sector_lights(room)
 
     # ---- floors & ceilings from BSP leaves (convex polygons)
     for node in room.bsp.walk():
@@ -227,7 +276,7 @@ def build_room_mesh(room: Room) -> MeshBuilder:
         n = newell_normal(g)
         if n and n[1] < 0:
             floor, uvs = floor[::-1], uvs[::-1]
-        mb.poly(tex_key(s.floor_type), floor, uvs)
+        mb.poly(tex_key(s.floor_type), floor, uvs, light=s.light / 255.0)
 
         if s.ceiling_type:  # 0 = open sky
             ceil = [(x, y, H.ceil(node.sector, x, y)) for x, y in pts]
@@ -235,7 +284,7 @@ def build_room_mesh(room: Room) -> MeshBuilder:
             n = newell_normal([to_gltf(p) for p in ceil])
             if n and n[1] > 0:
                 ceil, cuv = ceil[::-1], cuv[::-1]
-            mb.poly(tex_key(s.ceiling_type), ceil, cuv)
+            mb.poly(tex_key(s.ceiling_type), ceil, cuv, light=s.light / 255.0)
 
     # ---- walls from client walls (Doom-style upper / lower / middle sections)
     seen = set()
@@ -250,6 +299,16 @@ def build_room_mesh(room: Room) -> MeshBuilder:
         sd_pos = room.sidedefs[w.pos_sidedef - 1] if w.pos_sidedef else None
         sd_neg = room.sidedefs[w.neg_sidedef - 1] if w.neg_sidedef else None
         P, N = w.pos_sector, w.neg_sector
+        mid = ((w.x0 + w.x1) / 2.0, (w.y0 + w.y1) / 2.0)
+        fallback = max(room.sectors[S - 1].light for S in (P, N) if S) / 255.0 if (P or N) else 1.0
+
+        def wall_light(n, mid=mid, fallback=fallback):
+            # the sector a wall face looks into: a little way off the wall along its normal
+            # (glTF x, z = ROO x, y)
+            step = 0.15 / M_PER_ROO
+            level = light_at(mid[0] + n[0] * step, mid[1] + n[2] * step)
+            return fallback if level is None else level
+
         def emit(tex, b0, t0, b1, t1, sd, section, side, double=True):
             if t0 - b0 < 1 and t1 - b1 < 1:
                 return
@@ -259,7 +318,7 @@ def build_room_mesh(room: Room) -> MeshBuilder:
                 return
             mb.quad(tex_key(tex),
                     (w.x0, w.y0, b0), (w.x1, w.y1, b1), (w.x1, w.y1, t1), (w.x0, w.y0, t0),
-                    ub0, ub1, ut1, ut0, double=double)
+                    ub0, ub1, ut1, ut0, double=double, light=wall_light)
 
         if not P and not N:
             continue
@@ -328,20 +387,22 @@ def write_glb(mb: MeshBuilder, path: Path, name: str) -> dict:
         nv = add_view(b"".join(struct.pack("<3f", *n) for n in pr["nrm"]), 34962)
         uv = add_view(b"".join(struct.pack("<2f", *t) for t in pr["uv"]), 34962)
         iv = add_view(struct.pack("<%dI" % len(pr["idx"]), *pr["idx"]), 34963)
+        cv = add_view(b"".join(struct.pack("<4f", *c) for c in pr["col"]), 34962)
         a0 = len(accessors)
         accessors += [
             {"bufferView": pv, "componentType": 5126, "count": len(pos), "type": "VEC3", "min": mins, "max": maxs},
             {"bufferView": nv, "componentType": 5126, "count": len(pos), "type": "VEC3"},
             {"bufferView": uv, "componentType": 5126, "count": len(pos), "type": "VEC2"},
             {"bufferView": iv, "componentType": 5125, "count": len(pr["idx"]), "type": "SCALAR"},
+            {"bufferView": cv, "componentType": 5126, "count": len(pos), "type": "VEC4"},
         ]
         # deterministic pastel colour per texture id so the blockout is readable untextured
-        h = (hash(key) & 0xFFFF) / 0xFFFF if key != "untextured" else 0
+        h = (zlib.crc32(key.encode()) & 0xFFFF) / 0xFFFF if key != "untextured" else 0  # crc32: the same every run (str hash is salted)
         r, g, b = (0.55 + 0.35 * math.sin(6.28 * (h + k / 3)) for k in range(3))
         materials.append({"name": key, "doubleSided": True,
                           "pbrMetallicRoughness": {"baseColorFactor": [r, g, b, 1.0],
                                                    "metallicFactor": 0.0, "roughnessFactor": 0.9}})
-        primitives.append({"attributes": {"POSITION": a0, "NORMAL": a0 + 1, "TEXCOORD_0": a0 + 2},
+        primitives.append({"attributes": {"POSITION": a0, "NORMAL": a0 + 1, "TEXCOORD_0": a0 + 2, "COLOR_0": a0 + 4},
                            "indices": a0 + 3, "material": len(materials) - 1})
         tri_count += len(pr["idx"]) // 3
 
@@ -406,12 +467,17 @@ def zone_layout(zone: dict, room: Room) -> dict:
         exits.append(item)
     t = zone["teleport"]
     objects = []
+    sector = sector_at(room)
     for o in zone["objects"]:
         if "row" in o and "col" in o and isinstance(o["row"], int) and isinstance(o["col"], int):
             fr = o.get("fine_row", 32) if isinstance(o.get("fine_row"), int) else 32
             fc = o.get("fine_col", 32) if isinstance(o.get("fine_col"), int) else 32
-            objects.append({"class": o.get("class"), "params": o.get("params"), "pos": at(o["row"], o["col"], fr, fc),
-                            "yaw_kod": o.get("angle")})
+            item = {"class": o.get("class"), "params": o.get("params"), "pos": at(o["row"], o["col"], fr, fc),
+                    "yaw_kod": o.get("angle")}
+            s = sector(*grid_to_roo(o["row"], o["col"], fr, fc))
+            if s and room.sectors[s - 1].blak_flags & SF_FLICKER:
+                item["flicker"] = True  # in a flickering sector: its lights flicker (docs/adr/0005)
+            objects.append(item)
     gens = []
     for g in (zone.get("spawning") or {}).get("generators", []):
         if len(g) >= 2 and all(isinstance(v, int) for v in g[:2]):

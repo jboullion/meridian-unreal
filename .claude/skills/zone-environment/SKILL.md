@@ -29,6 +29,9 @@ Every default below won an in-engine comparison; don't change one without a new 
 | Rebuilt geometry | `"rebuild": ["plain_facades", "roofs", "parapets", "cutouts"]`: proud bands, piers and plinths on walls *without* painted openings, roof slabs with eaves and verges, solid merlons, solid fences/gates/signs. Walls with painted windows or doors stay original (no facade relief, no cut openings) | "Selective rebuild", "Plain facades back" |
 | Grime | Geometry-derived strips at wall feet and under eaves (mesh decals) | Never reads the textures, so it can't misplace anything |
 | Lighting | A day/night cycle: moods in `moods.json` are keys on the game clock, blended in game by `UMREnvironmentSubsystem`; one directional light is the sun by day and the moon by night; lamps off 11–17; stars at night; painted windows glow at night (window masks × `MPC_Environment.WindowGlow`) | "Moods and lit windows" |
+| Fire | The original flame frames as flipbook sprites (`props.json` `"fires"` → `T_Fire_<preset>` → `M_Fire` on `AMRFireActor`); wall torches found from their textures (`"walls"`), braziers and candles as props; every fire light flickers (`UMRFireSubsystem`), as do the original's lights in flickering sectors; 4 nearest cast shadows | ADR 0005 "Phase 3 built" |
+| Weather | The original's storm rolls per weather zone (`AMRGameState`), rain or snow by season and the zone's mask (`moods.json` `"zones"` `weather_zone` / `weather_mask`); storm overlay moods; wet ground with puddles or snow cover in every master; GPU rain and snow (`AMRPrecipitationActor`) kept out from under roofs by baked shelter maps; lightning in rainstorms | ADR 0005 "Phase 4 built" |
+| Atmosphere | Chimney smoke plumes found from the chimney texture (`props.json` `"smoke"`), moths at the lamps (`"moths"`), ambient particles around the camera by zone profile (`moods.json` `"zones"` `ambient`: motes inside, pollen and fireflies outdoors, leaves in the forest), the season's tint on foliage and grass (`materials.json` `"seasons"`), all driven through `MPC_Environment` by `moods.json` `"atmosphere"` | ADR 0005 "Phase 5 built" |
 | Time-driven textures | Animated textures that show game time (the clock) become a frame atlas indexed by `MPC_Environment.GameHour` from `UMRGameTimeSubsystem` | "The Raza clock tells the time" |
 
 **The guiding rule:** prefer depth and richness that come from the geometry or from lighting
@@ -71,14 +74,18 @@ Work in this order; each step is cheap to re-run (everything is incremental).
 7. **Zone art.** `blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid <rid> --preview --strict`.
    Read every `WARNING` (cut-out outlines that triangulate to the wrong area, openings not built) and `build/environment/zone_<rid>/openings.json`.
    Run `tools/blender/check_overlaps.py` on `zone_<rid>_art.blend` for z-fighting (see pitfalls for which pairs are harmless).
+   Then `python tools/environment/shelter.py <rid>`, so rain and snow stay out from under the new roofs.
    Inspect `zone_<rid>_art.blend` if something looks off.
-8. **Props and lights.** Map the zone's Kod object classes (`data/zone_layout.json` objects) to kit meshes and lights in `props.json`.
+8. **Props, lights and fire.** Map the zone's Kod object classes (`data/zone_layout.json` objects) to kit meshes and lights in `props.json`.
    New meshes go into `tools/blender/build_prop_kit.py`.
+   A new fire (a torch texture, a firepit object) is a `"fires"` preset: extract an object's frames with `python tools/bgf2png/bgf2png.py <name>`, set `crop` and `keep` from a contact sheet, and for a wall texture add it under `"walls"` (`at`, `out`, `erase`). Check the flames with `python tools/environment/fires.py <rid>`.
 9. **World.** Run `powershell -File tools/ue/build_world.ps1`. It uses the open editor when there is one; stop PIE first.
    C++ changes need a compile and an editor restart.
 10. **Mood and cycle.** In game the environment director blends the moods along the zone's cycle by game hour (`moods.json` `"zones"` → `"cycles"`; `default` = `raza_outdoor`). The level's baked mood (`levels`) is only the editor's view.
     New moods `inherit` an existing one and set only what differs, plus `"Collection"` (`WindowGlow`, `Stars`). A new key mood goes into a cycle's `keys` at its hour.
-    Interior, dungeon and cave profiles are **phase 2** of [ADR 0005](../../../docs/adr/0005-time-weather-and-atmosphere.md); until then every zone shares the town's cycle. If a zone needs its own lighting before that lands, raise it with the user instead of improvising.
+    Outdoor zones in another weather zone than Raza's need `weather_zone` / `weather_mask` in their profile (from the room's kod `viWeatherZone` / `viWeatherMask`); zones without weather get `"weather_zone": 0`.
+    Give the profile an `ambient` (`motes` inside, `pollen` / `fireflies` outdoors, `leaves` in forests); without one a zone falls back to the default's outdoor kinds. Chimneys smoke where the blockout uses a `props.json` `"smoke"` texture; check `python tools/environment/chimneys.py <rid>`.
+    Interiors and underground zones need a profile in `moods.json` `"zones"`: `cycle` (`raza_interior` / `raza_crypt` or a new one), `kind`, `sun: false`, `daylight` (outside factor / 10), and `base_light` / `outside` copied from `data/zones.json`. Their lights come from the original's `DynamicLight` / `Candle` objects (`props.json`), and their ambient floor from the sector light levels `roo2gltf` writes as vertex colour ([ADR 0005](../../../docs/adr/0005-time-weather-and-atmosphere.md) "Phase 2"). Inside, exposure is fixed per mood: tune it by bracketing (temporary moods with `auto_exposure_min/max_brightness` equal, captured with `mood_test.ps1`).
 11. **Look-dev.**
     - Add cameras for the zone to `lookdev_cameras.json`. In game, `MRBookmark <name>` logs the current view as an entry.
     - Capture a baseline label, then compare every change: `run_lookdev.ps1 -Label <new> -Compare <old> [-Only cam1,cam2]`.
@@ -89,10 +96,10 @@ Work in this order; each step is cheap to re-run (everything is incremental).
 
 ## Interiors and other zones: what isn't proven yet
 
-The recipe was proven on Raza's town (300) only. For interiors (301–308, 332, 333) and the forest zones (330, 331), expect these gaps. Raise them with the user rather than guessing:
-- **Lighting.** Every zone streams into `L_World` under its one outdoor mood. There's no interior mood yet; interiors are lit by their lamps and the sky-light leak. Per-zone moods (`UMRZoneMood`) are a planned item.
+The art recipe (textures, rebuild, grime) was proven on Raza's town (300) only; the lighting recipe (ADR 0005 phases 1–2) also covers Raza's interiors and the Mausoleum. For other interiors and the forest zones (330, 331), expect these gaps. Raise them with the user rather than guessing:
+- **Lighting.** A zone without a profile in `moods.json` `"zones"` gets the town's outdoor cycle. Add a profile (see step 10) and cameras (`python tools/lookdev/suggest_cameras.py <rid>`).
 - **Zone config.** An interior usually needs no `buildings` regions. A single `"kind": "cutouts"` entry over the whole blockout gives solid torches, bars and signs. Grime runs over the whole zone either way. Check that the 1.1 m base strips aren't too heavy indoors, and tune them in `materials.json` `grime` (it's global today).
-- **Look-dev.** `run_lookdev.ps1` starts the game in zone 300 (`-MRStartZone=300`). Zones one exit away (Raza's interiors, the Outskirts) stream in. Cameras in farther zones need a start-zone option added first.
+- **Look-dev.** `run_lookdev.ps1` starts in zone 300; zones one exit away (Raza's interiors, the Outskirts) stream in. For farther zones pass `-StartZone <rid>`.
 - **Interiors' painted art** (tapestries, shelves, cabinets, weapons racks) is already in `relief.flat`. Confirm it on a contact sheet for the zone.
 
 ## The iteration loop

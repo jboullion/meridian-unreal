@@ -42,6 +42,9 @@ public:
 	/** Whole game days since the epoch for a moment in UTC (the day changes when the hour wraps). */
 	static int64 GameDayCountAt(const FDateTime& Utc);
 
+	/** When a game day (GameDayCountAt) begins, in Unix seconds (UTC). */
+	static int64 GameDayStartUnix(int64 GameDay);
+
 	/** The original's day phase for a whole game hour: night < 6 or > 20, dawn < 9, dusk > 17. */
 	static EMRDayPhase DayPhaseForHour(int32 Hour);
 

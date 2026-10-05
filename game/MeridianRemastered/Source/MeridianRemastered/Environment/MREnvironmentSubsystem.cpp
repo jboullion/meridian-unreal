@@ -1,10 +1,18 @@
 #include "Environment/MREnvironmentSubsystem.h"
 
+#include "Audio/MRAudioSubsystem.h"
+
 #include "Components/LightComponent.h"
 #include "Engine/PostProcessVolume.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Environment/MRGameTimeSubsystem.h"
+#include "Environment/MRPrecipitationActor.h"
+#include "Game/MRGameState.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Components/VolumetricCloudComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Camera/PlayerCameraManager.h"
 #include "GameFramework/PlayerController.h"
 #include "HAL/IConsoleManager.h"
 #include "Kismet/KismetMaterialLibrary.h"
@@ -31,6 +39,20 @@ namespace
 	TAutoConsoleVariable<FString> CVarMood(
 		TEXT("mr.Env.Mood"), TEXT(""),
 		TEXT("Pin one mood from moods.json (no day/night cycle); empty follows the cycle."));
+	TAutoConsoleVariable<int32> CVarParticles(
+		TEXT("mr.Weather.Particles"), 1,
+		TEXT("0: no falling rain or snow (a player setting, as the original's); wet and snowy ground stay."));
+	TAutoConsoleVariable<FString> CVarKind(
+		TEXT("mr.Weather.Kind"), TEXT(""),
+		TEXT("rain, snow or sand: what storms bring here, whatever the season and the zone's mask (look-dev); empty follows them."));
+	TAutoConsoleVariable<int32> CVarSplashes(
+		TEXT("mr.Weather.Splashes"), 1, TEXT("0: no rain splashes on the ground."));
+	TAutoConsoleVariable<int32> CVarSounds(
+		TEXT("mr.Weather.Sounds"), 1, TEXT("0: no rain, wind or thunder sounds."));
+	TAutoConsoleVariable<int32> CVarLightning(
+		TEXT("mr.Weather.Lightning"), 1, TEXT("0: no lightning in rainstorms."));
+	TAutoConsoleVariable<int32> CVarAmbient(
+		TEXT("mr.Env.Ambient"), 1, TEXT("0: no ambient particles (dust motes, pollen, fireflies, leaves); a player setting."));
 	TAutoConsoleVariable<int32> CVarEditor(
 		TEXT("mr.Env.Editor"), 0,
 		TEXT("1: the environment director also drives editor worlds (it edits the open level's lighting)."));
@@ -145,6 +167,58 @@ namespace
 		const TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> Writer =
 			TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Out);
 		FJsonSerializer::Serialize(Obj.ToSharedRef(), Writer);
+		return Out;
+	}
+
+	/** An overlay mood on top of a state: numbers and arrays replace, {"mul": x} multiplies and
+	    {"add": x} adds (a number, or per component for arrays), objects ("settings") recurse.
+	    Returns a new object. */
+	TSharedPtr<FJsonObject> Overlay(const TSharedPtr<FJsonObject>& Base, const TSharedPtr<FJsonObject>& Over)
+	{
+		TSharedPtr<FJsonObject> Out = CopyObject(Base);
+		for (const auto& Pair : Over->Values)
+		{
+			const FString Key(*Pair.Key);
+			if (Key.StartsWith(TEXT("_")) || Key == TEXT("inherit"))
+			{
+				continue;
+			}
+			const TSharedPtr<FJsonValue> Old = Out->TryGetField(Pair.Key);
+			const TSharedPtr<FJsonObject>* OverObj = nullptr;
+			if (Pair.Value->TryGetObject(OverObj))
+			{
+				const TSharedPtr<FJsonValue> Mul = (*OverObj)->TryGetField(TEXT("mul"));
+				const TSharedPtr<FJsonValue> Add = (*OverObj)->TryGetField(TEXT("add"));
+				if (Mul.IsValid() || Add.IsValid())
+				{
+					const bool bMul = Mul.IsValid();
+					const TSharedPtr<FJsonValue> Op = bMul ? Mul : Add;
+					const double Identity = bMul ? 1.0 : 0.0;
+					auto Combine = [bMul](double A, double B) { return bMul ? A * B : A + B; };
+					if (Old.IsValid() && Old->Type == EJson::Number && Op->Type == EJson::Number)
+					{
+						Out->SetNumberField(Pair.Key, Combine(Old->AsNumber(), Op->AsNumber()));
+					}
+					else if (Old.IsValid() && Old->Type == EJson::Array)
+					{
+						TArray<TSharedPtr<FJsonValue>> Items;
+						const TArray<TSharedPtr<FJsonValue>>& A = Old->AsArray();
+						for (int32 i = 0; i < A.Num(); ++i)
+						{
+							const double M = Op->Type == EJson::Array
+								? (Op->AsArray().IsValidIndex(i) ? Op->AsArray()[i]->AsNumber() : Identity) : Op->AsNumber();
+							Items.Add(MakeShared<FJsonValueNumber>(Combine(A[i]->AsNumber(), M)));
+						}
+						Out->SetArrayField(Pair.Key, Items);
+					}
+					continue;
+				}
+				const TSharedPtr<FJsonObject>* OldObj = nullptr;
+				Out->SetObjectField(Pair.Key, Overlay(Old.IsValid() && Old->TryGetObject(OldObj) ? *OldObj : MakeShared<FJsonObject>(), *OverObj));
+				continue;
+			}
+			Out->SetField(Pair.Key, CopyValue(Pair.Value));
+		}
 		return Out;
 	}
 
@@ -308,6 +382,86 @@ float UMREnvironmentSubsystem::LampsOnForHour(double Hour)
 	return float(1.0 - Off);
 }
 
+double UMREnvironmentSubsystem::RoomLightForHour(double Hour, double BaseLight, double OutsideFactor)
+{
+	const double H = FMath::Fmod(FMath::Fmod(Hour, 24.0) + 24.0, 24.0);
+	const int32 H0 = FMath::FloorToInt32(H);
+	const double Brightness = FMath::Lerp(double(UMRGameTimeSubsystem::BrightnessForHour(H0)),
+		double(UMRGameTimeSubsystem::BrightnessForHour((H0 + 1) % 24)), H - H0);
+	return FMath::Clamp(BaseLight + OutsideFactor * (Brightness - 50.0) / 4.0, 0.0, 255.0) / 255.0;
+}
+
+FMRAtmosphere UMREnvironmentSubsystem::AtmosphereFor(double Hour, double SunElevation, int32 Season, float Storm, bool bOutdoor,
+	const TSharedPtr<FJsonObject>& Cfg, const TSharedPtr<FJsonObject>& ZoneAmbient)
+{
+	FMRAtmosphere A;
+	const double H = FMath::Fmod(FMath::Fmod(Hour, 24.0) + 24.0, 24.0);
+	const int32 S = FMath::Clamp(Season, 0, 3);
+	auto Numbers = [](const TSharedPtr<FJsonObject>& Obj, const TCHAR* Field, TArray<double> Out)
+	{
+		const TArray<TSharedPtr<FJsonValue>>* Items = nullptr;
+		if (Obj.IsValid() && Obj->TryGetArrayField(Field, Items) && Items->Num() == Out.Num())
+		{
+			for (int32 i = 0; i < Out.Num(); ++i)
+			{
+				Out[i] = (*Items)[i]->AsNumber();
+			}
+		}
+		return Out;
+	};
+	auto Child = [](const TSharedPtr<FJsonObject>& Obj, const TCHAR* Field)
+	{
+		const TSharedPtr<FJsonObject>* Out = nullptr;
+		return Obj.IsValid() && Obj->TryGetObjectField(Field, Out) ? *Out : TSharedPtr<FJsonObject>();
+	};
+
+	// dark from night_deg [below, above] the horizon: 1 below the first, 0 above the second;
+	// quantised, as it changes at every update
+	const TArray<double> Deg = Numbers(Cfg, TEXT("night_deg"), {-4.0, 6.0});
+	A.Night = float(FMath::RoundToDouble((1.0 - FMath::SmoothStep(Deg[0], Deg[1], SunElevation)) * 50.0) / 50.0);
+
+	// the season's tint (summer is the original's colours), and snow lying outdoors in winter
+	const TSharedPtr<FJsonObject> Seasons = Child(Cfg, TEXT("seasons"));
+	const float Tint = float(Numbers(Seasons, TEXT("tint"), {1.0, 0.0, 1.0, 1.0})[S]);
+	A.Spring = S == 0 ? Tint : 0.f;
+	A.Autumn = S == 2 ? Tint : 0.f;
+	A.Winter = S == 3 ? Tint : 0.f;
+	A.WinterCover = bOutdoor && S == 3 ? float(Number(Seasons, TEXT("winter_snow_cover"), 0.0)) : 0.f;
+
+	// chimney smoke: a base, more on cold mornings (a bump over morning_hours: rising from, full,
+	// full until, gone by), at night and in winter, less in a storm (the wind and the rain take it)
+	const TSharedPtr<FJsonObject> Smoke = Child(Cfg, TEXT("smoke"));
+	const TArray<double> M = Numbers(Smoke, TEXT("morning_hours"), {4.0, 6.0, 9.0, 11.0});
+	const double Bump = FMath::SmoothStep(M[0], M[1], H) * (1.0 - FMath::SmoothStep(M[2], M[3], H));
+	const double SmokeAmount = Number(Smoke, TEXT("base"), 0.45) + Number(Smoke, TEXT("morning"), 0.35) * Bump
+		+ Number(Smoke, TEXT("night"), 0.1) * A.Night + (S == 3 ? Number(Smoke, TEXT("winter"), 0.35) : 0.0);
+	A.Smoke = float(FMath::Clamp(SmokeAmount * (1.0 - Number(Smoke, TEXT("storm"), 0.6) * Storm), 0.0, 1.0));
+
+	// ambient particles: the zone's weight for each kind x the kind's season x its time of day
+	// ("when": day, night or always) x the storm outdoors ("storm": the share a full storm takes away;
+	// negative brings more)
+	const TSharedPtr<FJsonObject> Kinds = Child(Cfg, TEXT("ambient"));
+	auto Kind = [&](const TCHAR* Name)
+	{
+		const double Weight = Number(ZoneAmbient, Name, 0.0);
+		const TSharedPtr<FJsonObject> K = Child(Kinds, Name);
+		if (Weight <= 0.0 || !K.IsValid())
+		{
+			return 0.f;
+		}
+		FString When;
+		K->TryGetStringField(TEXT("when"), When);
+		const double Time = When == TEXT("day") ? 1.0 - A.Night : (When == TEXT("night") ? A.Night : 1.0);
+		const double Weather = bOutdoor ? 1.0 - Number(K, TEXT("storm"), 0.0) * Storm : 1.0;
+		return float(FMath::Clamp(Weight * Numbers(K, TEXT("seasons"), {1.0, 1.0, 1.0, 1.0})[S] * Time * Weather, 0.0, 2.0));
+	};
+	A.Motes = Kind(TEXT("motes"));
+	A.Pollen = Kind(TEXT("pollen"));
+	A.Fireflies = Kind(TEXT("fireflies"));
+	A.Leaves = Kind(TEXT("leaves"));
+	return A;
+}
+
 bool UMREnvironmentSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
 	// the dedicated server renders nothing
@@ -324,6 +478,10 @@ void UMREnvironmentSubsystem::Initialize(FSubsystemCollectionBase& InCollection)
 	Super::Initialize(InCollection);
 	Collection = LoadObject<UMaterialParameterCollection>(nullptr, CollectionPath);
 	FParse::Value(FCommandLine::Get(), TEXT("MRMood="), PinnedMood);
+	bNoLightning = FParse::Param(FCommandLine::Get(), TEXT("MRNoLightning"));  // look-dev stills
+	FParse::Value(FCommandLine::Get(), TEXT("MRWeatherKind="), KindOverride);
+	bHoldLightning = FParse::Param(FCommandLine::Get(), TEXT("MRLightningHold"));
+	bNoLightning = bNoLightning && !bHoldLightning;
 	Reload();
 }
 
@@ -409,6 +567,16 @@ TSharedPtr<FJsonObject> UMREnvironmentSubsystem::ResolveMood(const FString& Name
 
 TSharedPtr<FJsonObject> UMREnvironmentSubsystem::StateFor(double Hour, int32 ZoneId, bool& bOutPinnedMood)
 {
+	// the zone's profile ("zones": cycle, kind, sun, daylight, lamps)
+	const TSharedPtr<FJsonObject>* Zones = nullptr;
+	const TSharedPtr<FJsonObject>* ZoneProfile = nullptr;
+	Profile.Reset();
+	if (Root->TryGetObjectField(TEXT("zones"), Zones)
+		&& ((*Zones)->TryGetObjectField(FString::FromInt(ZoneId), ZoneProfile) || (*Zones)->TryGetObjectField(TEXT("default"), ZoneProfile)))
+	{
+		Profile = *ZoneProfile;
+	}
+
 	const FString CVar = CVarMood.GetValueOnGameThread();
 	const FString Pinned = !CVar.IsEmpty() ? CVar : PinnedMood;
 	bOutPinnedMood = !Pinned.IsEmpty();
@@ -419,13 +587,10 @@ TSharedPtr<FJsonObject> UMREnvironmentSubsystem::StateFor(double Hour, int32 Zon
 	}
 
 	// zone profile -> cycle -> keys
-	const TSharedPtr<FJsonObject>* Zones = nullptr;
-	const TSharedPtr<FJsonObject>* Profile = nullptr;
 	FString CycleName;
-	if (Root->TryGetObjectField(TEXT("zones"), Zones)
-		&& ((*Zones)->TryGetObjectField(FString::FromInt(ZoneId), Profile) || (*Zones)->TryGetObjectField(TEXT("default"), Profile)))
+	if (Profile.IsValid())
 	{
-		(*Profile)->TryGetStringField(TEXT("cycle"), CycleName);
+		Profile->TryGetStringField(TEXT("cycle"), CycleName);
 	}
 	const TSharedPtr<FJsonObject>* Cycles = nullptr;
 	const TSharedPtr<FJsonObject>* Cycle = nullptr;
@@ -494,7 +659,19 @@ AActor* UMREnvironmentSubsystem::FindActor(const FString& Label) const
 
 int32 UMREnvironmentSubsystem::LocalZoneId() const
 {
+	// the zone the view is in: the same as the player's in play, but look-dev (and spectating) move
+	// the camera without the player
 	const APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC && PC->PlayerCameraManager)
+	{
+		if (const UMRZoneSubsystem* Zones = GetWorld()->GetSubsystem<UMRZoneSubsystem>())
+		{
+			if (const int32 Zone = Zones->ZoneAtLocation(PC->PlayerCameraManager->GetCameraLocation()))
+			{
+				return Zone;
+			}
+		}
+	}
 	const AMRPlayerState* PS = PC ? PC->GetPlayerState<AMRPlayerState>() : nullptr;
 	return PS ? PS->GetZoneId() : -1;
 }
@@ -558,9 +735,33 @@ void UMREnvironmentSubsystem::Apply(const TSharedPtr<FJsonObject>& State, double
 		}
 	}
 
+	// interiors and underground: no sun or moon (their single-sided walls and ceilings don't stop the
+	// sun's shadows); the rotation stays as it was, so the shadow cache isn't touched
+	bool bSunOn = true;
+	if (Profile.IsValid() && Profile->TryGetBoolField(TEXT("sun"), bSunOn) && !bSunOn)
+	{
+		const TSharedPtr<FJsonObject>* SunBlock = nullptr;
+		if (State->TryGetObjectField(TEXT("Sun"), SunBlock))
+		{
+			(*SunBlock)->SetNumberField(TEXT("intensity"), 0.0);
+			(*SunBlock)->RemoveField(TEXT("rotation"));
+		}
+	}
+	const double Daylight = Number(Profile, TEXT("daylight"), 1.0);
+	FString LampRule;
+	const bool bLampsAlways = Profile.IsValid() && Profile->TryGetStringField(TEXT("lamps"), LampRule) && LampRule == TEXT("always");
+
 	// MPC_Environment: the moods' "Collection" plus the lamps
-	const float LampsOn = bPinnedMood ? 1.0f : LampsOnForHour(Hour);
-	const FString Key = ToJson(State) + FString::Printf(TEXT("|%.3f"), LampsOn);
+	const float LampsOn = bPinnedMood || bLampsAlways ? 1.0f : LampsOnForHour(Hour);
+	// the room's own light by the hour, as the original computes it (interiors and underground)
+	const double RoomLight = RoomLightForHour(Hour, Number(Profile, TEXT("base_light"), 255.0), Number(Profile, TEXT("outside"), 10.0));
+	const bool bOutdoor = IsOutdoor();
+	const float PrecipOn = bOutdoor && WeatherKind != EMRWeatherKind::None ? StormAmount : 0.f;
+	const FMRAtmosphere& Atmo = Atmosphere;
+	const FString Key = ToJson(State) + FString::Printf(TEXT("|%.3f|%.3f|%.3f|%.3f|%.3f|%.3f|%.3f|%d"), LampsOn, Daylight, RoomLight,
+		Wetness, SnowCover, WindAmount, PrecipOn, int32(WeatherKind))
+		+ FString::Printf(TEXT("|%.3f|%.3f|%.3f|%.3f|%.3f|%.3f|%.3f|%.3f|%.3f"), Atmo.Night, Atmo.Smoke, Atmo.Motes, Atmo.Pollen,
+			Atmo.Fireflies, Atmo.Leaves, Atmo.Spring, Atmo.Autumn, Atmo.Winter);
 	if (Key == LastApplied)
 	{
 		return;  // nothing changed (a pinned hour, or the same 5 seconds)
@@ -569,21 +770,63 @@ void UMREnvironmentSubsystem::Apply(const TSharedPtr<FJsonObject>& State, double
 
 	if (Collection)
 	{
-		TMap<FString, double> Scalars = {{TEXT("WindowGlow"), 0.0}, {TEXT("Stars"), 0.0}};
+		TMap<FString, double> Scalars = {{TEXT("WindowGlow"), 0.0}, {TEXT("Stars"), 0.0}, {TEXT("WindowDaylight"), 0.0},
+			{TEXT("SectorAmbient"), 0.0}};
+		TMap<FString, FLinearColor> Vectors = {{TEXT("AmbientTint"), FLinearColor::White}};
 		const TSharedPtr<FJsonObject>* Values = nullptr;
 		if (State->TryGetObjectField(TEXT("Collection"), Values))
 		{
 			for (const auto& Pair : (*Values)->Values)
 			{
 				double Value = 0.0;
+				const TArray<TSharedPtr<FJsonValue>>* Items = nullptr;
 				const FString Name(*Pair.Key);
-				if (!Name.StartsWith(TEXT("_")) && Pair.Value->TryGetNumber(Value))
+				if (Name.StartsWith(TEXT("_")))
+				{
+					continue;
+				}
+				if (Pair.Value->TryGetNumber(Value))
 				{
 					Scalars.Add(Name, Value);
 				}
+				else if (Pair.Value->TryGetArray(Items) && Items->Num() >= 3)
+				{
+					Vectors.Add(Name, FLinearColor((*Items)[0]->AsNumber(), (*Items)[1]->AsNumber(), (*Items)[2]->AsNumber(),
+						Items->Num() > 3 ? (*Items)[3]->AsNumber() : 1.0));
+				}
 			}
 		}
+		if (double* Ambient = Scalars.Find(TEXT("SectorAmbient")))
+		{
+			*Ambient *= RoomLight;  // dims with the hour where the room has windows (outside factor)
+		}
+		for (const auto& Pair : Vectors)
+		{
+			UKismetMaterialLibrary::SetVectorParameterValue(World, Collection, FName(*Pair.Key), Pair.Value);
+		}
 		Scalars.Add(TEXT("LampsOn"), LampsOn);
+		if (double* WindowDaylight = Scalars.Find(TEXT("WindowDaylight")))
+		{
+			*WindowDaylight *= Daylight;  // the zone's share of daylight through its windows
+			BaseWindowDaylight = float(*WindowDaylight);
+		}
+		// weather: wet or white ground outdoors, wind, and what falls (M_Precip)
+		Scalars.Add(TEXT("Wetness"), bOutdoor ? Wetness : 0.0);
+		Scalars.Add(TEXT("SnowCover"), bOutdoor ? SnowCover : 0.0);
+		Scalars.Add(TEXT("Wind"), WindAmount);
+		Scalars.Add(TEXT("Precip"), PrecipOn);
+		Scalars.Add(TEXT("Snow"), WeatherKind == EMRWeatherKind::Snow ? 1.0 : 0.0);
+		Scalars.Add(TEXT("Sand"), WeatherKind == EMRWeatherKind::Sand ? 1.0 : 0.0);
+		// atmosphere (phase 5)
+		Scalars.Add(TEXT("Night"), Atmo.Night);
+		Scalars.Add(TEXT("Smoke"), Atmo.Smoke);
+		Scalars.Add(TEXT("Motes"), Atmo.Motes);
+		Scalars.Add(TEXT("Pollen"), Atmo.Pollen);
+		Scalars.Add(TEXT("Fireflies"), Atmo.Fireflies);
+		Scalars.Add(TEXT("Leaves"), Atmo.Leaves);
+		Scalars.Add(TEXT("Spring"), Atmo.Spring);
+		Scalars.Add(TEXT("Autumn"), Atmo.Autumn);
+		Scalars.Add(TEXT("Winter"), Atmo.Winter);
 		for (const auto& Pair : Scalars)
 		{
 			UKismetMaterialLibrary::SetScalarParameterValue(World, Collection, FName(*Pair.Key), float(Pair.Value));
@@ -591,10 +834,42 @@ void UMREnvironmentSubsystem::Apply(const TSharedPtr<FJsonObject>& State, double
 	}
 	ApplyLamps(LampsOn);
 
+	// "CloudMaterial": parameters of the clouds' material; any a mood set before and this state
+	// doesn't name go back to the material's own values
+	{
+		const TSharedPtr<FJsonObject>* CloudParams = nullptr;
+		const bool bHas = State->TryGetObjectField(TEXT("CloudMaterial"), CloudParams);
+		if (bHas || CloudBaseValues.Num() > 0)
+		{
+			if (UMaterialInstanceDynamic* MID = CloudMaterial())
+			{
+				TMap<FName, float> Values;
+				if (bHas)
+				{
+					for (const auto& Param : (*CloudParams)->Values)
+					{
+						double Value = 0.0;
+						if (!FString(*Param.Key).StartsWith(TEXT("_")) && Param.Value->TryGetNumber(Value))
+						{
+							const FName Name(*FString(*Param.Key));
+							CloudBase(Name);
+							Values.Add(Name, float(Value));
+						}
+					}
+				}
+				for (const auto& Base : CloudBaseValues)
+				{
+					const float* Value = Values.Find(Base.Key);
+					MID->SetScalarParameterValue(Base.Key, Value ? *Value : Base.Value);
+				}
+			}
+		}
+	}
+
 	for (const auto& Pair : State->Values)
 	{
 		const FString Label(*Pair.Key);
-		if (Label.StartsWith(TEXT("_")) || Label == TEXT("Collection") || Pair.Value->Type != EJson::Object)
+		if (Label.StartsWith(TEXT("_")) || Label == TEXT("Collection") || Label == TEXT("CloudMaterial") || Pair.Value->Type != EJson::Object)
 		{
 			continue;
 		}
@@ -687,20 +962,409 @@ void UMREnvironmentSubsystem::Tick(float DeltaTime)
 		LastZone = Zone;
 		bForce = true;
 	}
+	TickLightning(DeltaTime);
 	if (!bForce && Now < NextUpdate)
 	{
 		return;
 	}
 	bForce = false;
-	NextUpdate = Now + FMath::Max(0.1f, CVarUpdateSeconds.GetValueOnGameThread());
-
 	const UMRGameTimeSubsystem* Time = World->GetSubsystem<UMRGameTimeSubsystem>();
 	const double Hour = Time ? Time->GetGameHour() : 12.0;
 	bool bPinnedMood = false;
-	const TSharedPtr<FJsonObject> State = StateFor(Hour, Zone, bPinnedMood);
+	TSharedPtr<FJsonObject> State = StateFor(Hour, Zone, bPinnedMood);  // also picks the zone's profile
+	UpdateWeather();
+	// while a storm builds or clears, follow it every second
+	const bool bChanging = (StormAmount > 0.001f && StormAmount < 0.999f) || (Wetness > 0.001f && Wetness < 0.999f)
+		|| (SnowCover > 0.001f && SnowCover < 0.999f);
+	NextUpdate = Now + (bChanging ? 1.0 : FMath::Max(0.1f, CVarUpdateSeconds.GetValueOnGameThread()));
+	UpdateAtmosphere(Hour);  // after: winter's lying snow isn't a storm changing
 	if (State.IsValid())
 	{
+		State = WithStorm(State);
 		Apply(State, Hour, bPinnedMood);
+	}
+	UpdatePrecipitation(Zone);
+	UpdateAmbient(Zone);
+	UpdateSounds();
+}
+
+TSharedPtr<FJsonValue> UMREnvironmentSubsystem::ProfileField(const TCHAR* Field) const
+{
+	if (Profile.IsValid() && Profile->HasField(Field))
+	{
+		return Profile->TryGetField(Field);
+	}
+	const TSharedPtr<FJsonObject>* Zones = nullptr;
+	const TSharedPtr<FJsonObject>* Default = nullptr;
+	if (Root.IsValid() && Root->TryGetObjectField(TEXT("zones"), Zones) && (*Zones)->TryGetObjectField(TEXT("default"), Default))
+	{
+		return (*Default)->TryGetField(Field);
+	}
+	return nullptr;
+}
+
+bool UMREnvironmentSubsystem::IsOutdoor() const
+{
+	FString Kind;
+	return !(Profile.IsValid() && Profile->TryGetStringField(TEXT("kind"), Kind) && Kind != TEXT("outdoor"));
+}
+
+void UMREnvironmentSubsystem::UpdateWeather()
+{
+	const TSharedPtr<FJsonValue> ZoneValue = ProfileField(TEXT("weather_zone"));
+	const TSharedPtr<FJsonValue> MaskValue = ProfileField(TEXT("weather_mask"));
+	const int32 WeatherZone = ZoneValue.IsValid() ? int32(ZoneValue->AsNumber()) : 0;
+	const int32 Mask = MaskValue.IsValid() ? MRWeather::MaskByName(MaskValue->AsString()) : -1;
+	WeatherMask = Mask;
+	const UMRGameTimeSubsystem* Time = GetWorld()->GetSubsystem<UMRGameTimeSubsystem>();
+	const AMRGameState* GameState = GetWorld()->GetGameState<AMRGameState>();
+	const FMRZoneWeather W = GameState && WeatherZone > 0 ? GameState->GetZoneWeather(WeatherZone) : FMRZoneWeather();
+	WeatherKind = MRWeather::KindFor(Mask, Time ? Time->GetSeason() : 0);
+	const FString Kind = !CVarKind.GetValueOnGameThread().IsEmpty() ? CVarKind.GetValueOnGameThread() : KindOverride;
+	if (WeatherKind != EMRWeatherKind::None && !Kind.IsEmpty())
+	{
+		WeatherKind = Kind == TEXT("snow") ? EMRWeatherKind::Snow : (Kind == TEXT("sand") ? EMRWeatherKind::Sand : EMRWeatherKind::Rain);
+	}
+	bStormy = W.bStorm && WeatherKind != EMRWeatherKind::None;
+	const double Since = W.SinceUnix > 0
+		? double((FDateTime::UtcNow() - FDateTime(1970, 1, 1)).GetTotalSeconds()) - double(W.SinceUnix) : 1.0e9;
+	const TSharedPtr<FJsonObject>* WeatherCfg = nullptr;
+	const TSharedPtr<FJsonObject> Cfg = Root->TryGetObjectField(TEXT("weather"), WeatherCfg) ? *WeatherCfg : nullptr;
+	StormAmount = WeatherKind == EMRWeatherKind::None ? 0.f
+		: MRWeather::StormAmount(bStormy, Since, Number(Cfg, TEXT("build_seconds"), 90.0), Number(Cfg, TEXT("clear_seconds"), 120.0));
+	Wetness = WeatherKind == EMRWeatherKind::Rain
+		? MRWeather::Cover(bStormy, Since, Number(Cfg, TEXT("wet_seconds"), 180.0), Number(Cfg, TEXT("dry_seconds"), 600.0)) : 0.f;
+	SnowCover = WeatherKind == EMRWeatherKind::Snow
+		? MRWeather::Cover(bStormy, Since, Number(Cfg, TEXT("snow_seconds"), 300.0), Number(Cfg, TEXT("melt_seconds"), 900.0)) : 0.f;
+	WindAmount = float(FMath::Lerp(Number(Cfg, TEXT("wind_clear"), 1.0), Number(Cfg, TEXT("wind_storm"), 2.5), double(StormAmount)));
+}
+
+UMaterialInstanceDynamic* UMREnvironmentSubsystem::CloudMaterial()
+{
+	if (CloudMID.IsValid())
+	{
+		return CloudMID.Get();
+	}
+	AActor* Clouds = FindActor(TEXT("Clouds"));
+	UVolumetricCloudComponent* Cloud = Clouds ? Clouds->FindComponentByClass<UVolumetricCloudComponent>() : nullptr;
+	UMaterialInterface* Current = Cloud ? Cloud->Material.LoadSynchronous() : nullptr;
+	if (!Current)
+	{
+		return nullptr;
+	}
+	UMaterialInstanceDynamic* MID = Cast<UMaterialInstanceDynamic>(Current);
+	if (!MID)
+	{
+		MID = UMaterialInstanceDynamic::Create(Current, Cloud);
+		Cloud->SetMaterial(MID);
+	}
+	CloudMID = MID;
+	return MID;
+}
+
+float UMREnvironmentSubsystem::CloudBase(const FName& Param)
+{
+	if (const float* Found = CloudBaseValues.Find(Param))
+	{
+		return *Found;
+	}
+	float Value = 0.f;
+	if (UMaterialInstanceDynamic* MID = CloudMaterial())
+	{
+		MID->GetScalarParameterValue(FMaterialParameterInfo(Param), Value);
+	}
+	CloudBaseValues.Add(Param, Value);
+	return Value;
+}
+
+TSharedPtr<FJsonObject> UMREnvironmentSubsystem::WithStorm(const TSharedPtr<FJsonObject>& State)
+{
+	if (StormAmount <= 0.001f || WeatherKind == EMRWeatherKind::None)
+	{
+		return State;
+	}
+	const TSharedPtr<FJsonObject>* WeatherCfg = nullptr;
+	const TSharedPtr<FJsonObject>* Storms = nullptr;
+	const TSharedPtr<FJsonObject>* Moods = nullptr;
+	const TSharedPtr<FJsonObject>* Over = nullptr;
+	FString Name;
+	const TCHAR* KindName = WeatherKind == EMRWeatherKind::Snow ? TEXT("snow") : (WeatherKind == EMRWeatherKind::Sand ? TEXT("sand") : TEXT("rain"));
+	// indoors the storm only darkens what comes through the windows
+	const TCHAR* Which = IsOutdoor() ? KindName : TEXT("interior");
+	if (!Root->TryGetObjectField(TEXT("weather"), WeatherCfg) || !(*WeatherCfg)->TryGetObjectField(TEXT("storm"), Storms)
+		|| !(*Storms)->TryGetStringField(Which, Name) || !Root->TryGetObjectField(TEXT("moods"), Moods)
+		|| !(*Moods)->TryGetObjectField(Name, Over))
+	{
+		return State;
+	}
+	// the clouds' own values under the storm's, so they blend rather than jump
+	const TSharedPtr<FJsonObject>* OverClouds = nullptr;
+	TSharedPtr<FJsonObject> Base = State;
+	if ((*Over)->TryGetObjectField(TEXT("CloudMaterial"), OverClouds))
+	{
+		Base = CopyObject(State);
+		const TSharedPtr<FJsonObject>* Have = nullptr;
+		TSharedPtr<FJsonObject> Clouds = Base->TryGetObjectField(TEXT("CloudMaterial"), Have) ? *Have : MakeShared<FJsonObject>();
+		for (const auto& Param : (*OverClouds)->Values)
+		{
+			if (!FString(*Param.Key).StartsWith(TEXT("_")) && !Clouds->HasField(Param.Key))
+			{
+				Clouds->SetNumberField(Param.Key, CloudBase(FName(*FString(*Param.Key))));
+			}
+		}
+		Base->SetObjectField(TEXT("CloudMaterial"), Clouds);
+	}
+	// quantised, so a building storm re-applies in steps rather than every second for small changes
+	const double S = FMath::RoundToDouble(StormAmount * 50.0) / 50.0;
+	return BlendValue(MakeShared<FJsonValueObject>(Base), MakeShared<FJsonValueObject>(Overlay(Base, *Over)), S)->AsObject();
+}
+
+AMRPrecipitationActor* UMREnvironmentSubsystem::EnsurePrecip()
+{
+	if (!Precip.IsValid())
+	{
+		FActorSpawnParameters Params;
+		Params.ObjectFlags |= RF_Transient;
+		Precip = GetWorld()->SpawnActor<AMRPrecipitationActor>(Params);
+		PrecipZone = -1;
+		AmbientZone = -1;
+	}
+	return Precip.Get();
+}
+
+UMaterialInterface* UMREnvironmentSubsystem::ZoneMaterial(const TCHAR* Prefix, int32 Zone)
+{
+	// the zone's instance carries its shelter map (build_world.py: <Prefix>_<rid>), else the default
+	const FString Key = FString::Printf(TEXT("%s_%d"), Prefix, Zone);
+	TWeakObjectPtr<UMaterialInterface>& Cached = ZoneMaterials.FindOrAdd(Key);
+	if (!Cached.IsValid())
+	{
+		const FString Base = TEXT("/Game/Generated/Environment/Materials/");
+		UMaterialInterface* M = LoadObject<UMaterialInterface>(nullptr, *(Base + Key + TEXT(".") + Key), nullptr, LOAD_NoWarn | LOAD_Quiet);
+		Cached = M ? M : LoadObject<UMaterialInterface>(nullptr, *FString::Printf(TEXT("%s%s.%s"), *Base, Prefix, Prefix), nullptr, LOAD_NoWarn | LOAD_Quiet);
+	}
+	return Cached.Get();
+}
+
+void UMREnvironmentSubsystem::UpdatePrecipitation(int32 Zone)
+{
+	const bool bFalls = IsOutdoor() && StormAmount > 0.001f && CVarParticles.GetValueOnGameThread() != 0
+		&& WeatherKind != EMRWeatherKind::None;
+	if (!bFalls && !Precip.IsValid())
+	{
+		return;
+	}
+	AMRPrecipitationActor* Actor = EnsurePrecip();
+	if (!Actor)
+	{
+		return;
+	}
+	if (bFalls && Zone != PrecipZone)
+	{
+		PrecipZone = Zone;
+		Actor->SetMaterials(ZoneMaterial(TEXT("MI_Precip"), Zone), ZoneMaterial(TEXT("MI_Splash"), Zone));
+	}
+	Actor->SetFalling(bFalls, bFalls && WeatherKind == EMRWeatherKind::Rain && CVarSplashes.GetValueOnGameThread() != 0);
+}
+
+void UMREnvironmentSubsystem::UpdateAtmosphere(double Hour)
+{
+	const TSharedPtr<FJsonObject>* Sky = nullptr;
+	const TSharedPtr<FJsonObject> SkyCfg = Root.IsValid() && Root->TryGetObjectField(TEXT("sky"), Sky) ? *Sky : nullptr;
+	double Elevation = 0.0;
+	SkyBodyRotation(Hour, Number(SkyCfg, TEXT("sun_rise"), 6.0), Number(SkyCfg, TEXT("sun_set"), 22.0),
+		Number(SkyCfg, TEXT("sun_max_elevation"), 50.0), Elevation);
+	const UMRGameTimeSubsystem* Time = GetWorld()->GetSubsystem<UMRGameTimeSubsystem>();
+	const TSharedPtr<FJsonObject>* AtmoCfg = nullptr;
+	const TSharedPtr<FJsonValue> Ambient = ProfileField(TEXT("ambient"));
+	Atmosphere = AtmosphereFor(Hour, Elevation, Time ? Time->GetSeason() : 1, StormAmount, IsOutdoor(),
+		Root.IsValid() && Root->TryGetObjectField(TEXT("atmosphere"), AtmoCfg) ? *AtmoCfg : nullptr,
+		Ambient.IsValid() && Ambient->Type == EJson::Object ? Ambient->AsObject() : nullptr);
+	const FString Line = FString::Printf(TEXT("night %.2f, smoke %.2f, motes %.2f, pollen %.2f, fireflies %.2f, leaves %.2f, season %d"),
+		Atmosphere.Night, Atmosphere.Smoke, Atmosphere.Motes, Atmosphere.Pollen, Atmosphere.Fireflies, Atmosphere.Leaves,
+		Time ? Time->GetSeason() : -1);
+	if (Line != LastAtmosphereLog)
+	{
+		LastAtmosphereLog = Line;
+		UE_LOG(LogMeridian, Log, TEXT("MREnvironment: atmosphere %s"), *Line);
+	}
+	// winter: a light snow lies outdoors where winter storms bring snow, storm or not
+	if (WeatherKind == EMRWeatherKind::Snow)
+	{
+		SnowCover = FMath::Max(SnowCover, Atmosphere.WinterCover);
+	}
+}
+
+void UMREnvironmentSubsystem::UpdateAmbient(int32 Zone)
+{
+	const FMRAtmosphere& A = Atmosphere;
+	const bool bShow = CVarAmbient.GetValueOnGameThread() != 0 && (A.Motes + A.Pollen + A.Fireflies + A.Leaves) > 0.001f;
+	if (!bShow && !Precip.IsValid())
+	{
+		return;
+	}
+	AMRPrecipitationActor* Actor = EnsurePrecip();
+	if (!Actor)
+	{
+		return;
+	}
+	UMaterialInterface* Material = nullptr;
+	if (bShow && Zone != AmbientZone)
+	{
+		AmbientZone = Zone;
+		Material = ZoneMaterial(TEXT("MI_Ambient"), Zone);
+	}
+	Actor->SetAmbient(Material, bShow);
+}
+
+FString UMREnvironmentSubsystem::WeatherSoundFile(const TCHAR* Key) const
+{
+	// moods.json "weather" "sounds": {key: the original's file name without .ogg}
+	const TSharedPtr<FJsonObject>* WeatherCfg = nullptr;
+	const TSharedPtr<FJsonObject>* SoundsCfg = nullptr;
+	FString Name;
+	if (Root.IsValid() && Root->TryGetObjectField(TEXT("weather"), WeatherCfg) && (*WeatherCfg)->TryGetObjectField(TEXT("sounds"), SoundsCfg)
+		&& (*SoundsCfg)->TryGetStringField(Key, Name))
+	{
+		return Name + TEXT(".ogg");
+	}
+	return FString();
+}
+
+void UMREnvironmentSubsystem::UpdateSounds()
+{
+	// moods.json weather.sounds.follow_mask: only where the original played them (the mask's sound bit)
+	const TSharedPtr<FJsonObject>* WeatherCfg = nullptr;
+	const TSharedPtr<FJsonObject>* SoundsCfg = nullptr;
+	bool bFollowMask = false;
+	if (Root.IsValid() && Root->TryGetObjectField(TEXT("weather"), WeatherCfg) && (*WeatherCfg)->TryGetObjectField(TEXT("sounds"), SoundsCfg))
+	{
+		(*SoundsCfg)->TryGetBoolField(TEXT("follow_mask"), bFollowMask);
+	}
+	const bool bOn = CVarSounds.GetValueOnGameThread() != 0 && !(bFollowMask && (WeatherMask < 0 || !(WeatherMask & 0x1)));
+	bSoundsOn = bOn;
+	const float Inside = IsOutdoor() ? 1.f : 0.5f;
+	// played by the audio system (docs/adr/0006), muffled inside: heard through the walls
+	if (UMRAudioSubsystem* Audio = GetWorld()->GetSubsystem<UMRAudioSubsystem>())
+	{
+		Audio->SetLoop2D(TEXT("weather.rain"), WeatherSoundFile(TEXT("rain")),
+			bOn && WeatherKind == EMRWeatherKind::Rain ? StormAmount * Inside : 0.f, !IsOutdoor());
+		Audio->SetLoop2D(TEXT("weather.wind"), WeatherSoundFile(TEXT("wind")),
+			bOn && WeatherKind != EMRWeatherKind::None ? FMath::Clamp((WindAmount - 1.f) / 1.5f, 0.f, 1.f) * 0.7f * Inside : 0.f, !IsOutdoor());
+	}
+}
+
+void UMREnvironmentSubsystem::TickLightning(float DeltaTime)
+{
+	const double Now = FPlatformTime::Seconds();
+	for (int32 i = ThunderAt.Num() - 1; i >= 0; --i)
+	{
+		if (Now < ThunderAt[i])
+		{
+			continue;
+		}
+		ThunderAt.RemoveAt(i);
+		UMRAudioSubsystem* Audio = bSoundsOn ? GetWorld()->GetSubsystem<UMRAudioSubsystem>() : nullptr;
+		if (Audio)
+		{
+			Audio->PlayOriginal(WeatherSoundFile(TEXT("thunder")), FVector::ZeroVector, true,
+				FMath::FRandRange(0.5f, 1.f) * (IsOutdoor() ? 1.f : 0.6f), FMath::FRandRange(0.85f, 1.1f), !IsOutdoor());
+		}
+	}
+	const bool bCan = WeatherKind == EMRWeatherKind::Rain && StormAmount > 0.6f && !bNoLightning
+		&& CVarLightning.GetValueOnGameThread() != 0;
+	const TSharedPtr<FJsonObject>* WeatherCfg = nullptr;
+	const TSharedPtr<FJsonObject>* LightningCfg = nullptr;
+	const TSharedPtr<FJsonObject> Cfg = Root.IsValid() && Root->TryGetObjectField(TEXT("weather"), WeatherCfg)
+		&& (*WeatherCfg)->TryGetObjectField(TEXT("lightning"), LightningCfg) ? *LightningCfg : nullptr;
+	if (FlashStart < 0.0)
+	{
+		if (!bCan)
+		{
+			NextFlash = 0.0;
+			return;
+		}
+		if (NextFlash == 0.0)
+		{
+			NextFlash = Now + (bHoldLightning ? 0.5 : FMath::FRandRange(Number(Cfg, TEXT("min_seconds"), 8.0), Number(Cfg, TEXT("max_seconds"), 30.0)));
+		}
+		if (Now < NextFlash)
+		{
+			return;
+		}
+		FlashStart = Now;
+		FlashScale = bHoldLightning ? 1.f : FMath::FRandRange(0.5f, 1.f);
+		NextFlash = 0.0;
+		// the thunder follows, later the farther the stroke
+		ThunderAt.Add(Now + FMath::FRandRange(0.4f, 3.5f));
+		// a distant bolt in the sky, outdoors (M_Bolt: one of four, sometimes mirrored)
+		const APlayerController* PC = GetWorld()->GetFirstPlayerController();
+		if (IsOutdoor() && PC && PC->PlayerCameraManager)
+		{
+			if (!BoltMID.IsValid())
+			{
+				if (UMaterialInterface* Bolt = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Generated/Environment/Materials/MI_Bolt.MI_Bolt"), nullptr, LOAD_NoWarn | LOAD_Quiet))
+				{
+					BoltMID = UMaterialInstanceDynamic::Create(Bolt, this);
+				}
+			}
+			if (BoltMID.IsValid())
+			{
+				BoltMID->SetScalarParameterValue(TEXT("Variant"), float(FMath::RandRange(0, 3)));
+				BoltMID->SetScalarParameterValue(TEXT("Mirror"), FMath::RandBool() ? 1.f : 0.f);
+				const FVector Cam = PC->PlayerCameraManager->GetCameraLocation();
+				const double Yaw = FMath::FRandRange(0.0, 2.0 * PI);
+				const double Dist = Number(Cfg, TEXT("bolt_distance_m"), 2200.0) * FMath::FRandRange(0.8, 1.2) * 100.0;
+				const double Height = Number(Cfg, TEXT("bolt_height_m"), 900.0) * 100.0;
+				const FVector At = Cam + FVector(FMath::Cos(Yaw) * Dist, FMath::Sin(Yaw) * Dist, Height * 0.5 - 2000.0);
+				if (AMRPrecipitationActor* Actor = EnsurePrecip())
+				{
+					Actor->ShowBolt(BoltMID.Get(), At, float(Height * 0.28), float(Height));
+				}
+			}
+		}
+	}
+	// a stroke: a bright flash, a flicker, a second flash, fading out over 0.7 s
+	const double T = bHoldLightning ? 0.0 : Now - FlashStart;  // held at the first flash
+	float Envelope = 0.f;
+	if (T < 0.08) { Envelope = 1.f; }
+	else if (T < 0.16) { Envelope = 0.25f; }
+	else if (T < 0.24) { Envelope = 0.8f; }
+	else if (T < 0.7) { Envelope = float(0.6 * (1.0 - (T - 0.24) / 0.46)); }
+	else
+	{
+		FlashStart = -1.0;
+		if (Precip.IsValid())
+		{
+			Precip->ShowBolt(nullptr, FVector::ZeroVector, 0.f, 0.f);
+		}
+	}
+	Envelope *= FlashScale;
+	if (BoltMID.IsValid())
+	{
+		BoltMID->SetScalarParameterValue(TEXT("Flash"), Envelope);
+	}
+
+	if (IsOutdoor())
+	{
+		if (!LightningLight.IsValid())
+		{
+			if (AActor* Actor = FindActor(TEXT("Lightning")))
+			{
+				LightningLight = Actor->FindComponentByClass<ULightComponent>();
+			}
+		}
+		if (ULightComponent* Light = LightningLight.Get())
+		{
+			Light->SetIntensity(float(Number(Cfg, TEXT("lux"), 6.0)) * Envelope);
+			Light->SetVisibility(Envelope > 0.f);
+		}
+	}
+	else if (Collection)
+	{
+		// inside: the windows flash
+		UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), Collection, TEXT("WindowDaylight"),
+			BaseWindowDaylight + Envelope * float(Number(Cfg, TEXT("window_flash"), 2.0)) * float(Number(Profile, TEXT("daylight"), 1.0)));
 	}
 }
 

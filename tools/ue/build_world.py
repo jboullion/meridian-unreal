@@ -33,6 +33,10 @@ Output (everything under /Game/Generated, git-ignored):
                                             is NOT loaded at startup. At runtime the server loads all
                                             of them and each client streams its zone + neighbours
                                             (UMRZoneSubsystem / AMRPlayerController).
+  Fires (docs/adr/0005 phase 3)             AMRFireActor per wall torch (tools/environment/fires.py),
+                                            brazier and candle (props.json "fire"), and per original
+                                            light that flickers: a flame sprite (MI_Fire_<preset>) and
+                                            a light that UMRFireSubsystem flickers in game.
 """
 import importlib
 import json
@@ -40,6 +44,7 @@ import os
 import shutil
 import sys
 import time
+import zlib
 
 import unreal
 
@@ -48,11 +53,14 @@ for _p in (os.path.dirname(os.path.abspath(__file__)), os.path.join(REPO, "tools
     if _p not in sys.path:
         sys.path.insert(0, _p)
 # an editor that stays open (run_in_editor.py) keeps modules from the last run; pick up edits
-for _m in ("build_cache", "blockout", "scatter", "zone_mood", "environment_materials"):
+for _m in ("build_cache", "blockout", "scatter", "fires", "chimneys", "zone_mood", "environment_materials", "build_audio"):
     if _m in sys.modules:
         importlib.reload(sys.modules[_m])
 import blockout  # noqa: E402
+import build_audio  # noqa: E402
 import build_cache  # noqa: E402
+import chimneys  # noqa: E402
+import fires  # noqa: E402
 import scatter  # noqa: E402
 from build_cache import file_digest, source  # noqa: E402
 from environment_materials import ENV as ENVIRONMENT_DIR, ZoneMaterials, assign_materials  # noqa: E402
@@ -225,6 +233,9 @@ def import_zone_parts(zone, materials):
                                 nanite=not (m.get("water") or m.get("decal")), collision=False)
         materials.apply(mesh, art=True, flat=m.get("displacement", "runtime") != "runtime")
         parts.append((mesh, "ZoneArt_%d_%s" % (rid, m["building"]), "decal" if m.get("decal") else "art"))
+        if m.get("water") and materials.ice:
+            # the same surface just above the water, in ice that shows only in snow (M_Ice)
+            parts.append((mesh, "ZoneIce_%d_%s" % (rid, m["building"]), "ice|" + materials.ice))
     return parts, "%d art meshes, %d blockout triangles hidden under art" % (len(manifest["meshes"]), hidden)
 
 
@@ -263,9 +274,41 @@ def import_kit_mesh(name, materials, slot_materials=None):
     return mesh
 
 
+# Kod light intensity (0-255) -> candela and reach: a lamp (Kod 50) is 12 cd and reaches 11.5 m,
+# a brazier (40) about 10 cd (docs/adr/0005)
+KOD_CANDELA_PER_UNIT = 0.24
+KOD_RADIUS_M = (4.0, 0.15)  # base + per unit
+
+
+def kod_light(light, params):
+    """A props.json light with "kod_intensity" / "kod_color" (the class's Kod defaults; the object's
+    own iIntensity / iColor params win) -> candela, radius and colour (15-bit Kod RGB -> sRGB)."""
+    params = params or {}
+    intensity = float(params.get("iIntensity", light["kod_intensity"]))
+    color = int(params.get("iColor", light.get("kod_color", 0x7FFF)))
+    out = dict(light)
+    out["candela"] = intensity * KOD_CANDELA_PER_UNIT
+    out["radius_m"] = KOD_RADIUS_M[0] + KOD_RADIUS_M[1] * intensity
+    # Kod's 15-bit colours are fully saturated (fire: 31, 24, 6); 40% towards white reads as firelight
+    out["color"] = [round(((color >> s) & 31) * 255 / 31 * 0.6 + 255 * 0.4) for s in (10, 5, 0)]
+    return out
+
+
+def fire_spec(materials, preset, centre_cm):
+    """A flame for AMRFireActor: {"material", "size_cm": [w, h], "centre_cm"} from the preset's
+    flipbook (make_placeholders.py), or None when the flipbooks haven't been made."""
+    made = materials.fires.get(preset)
+    if not made:
+        log("WARNING: no flame flipbook %r (run tools/textures/make_placeholders.py)" % preset)
+        return None
+    mi, entry = made
+    return {"material": mi, "size_cm": [v * 100.0 for v in entry["size_m"]], "centre_cm": centre_cm}
+
+
 def zone_props(zone, materials, prop_materials):
-    """-> [(label, mesh path or None, [x, y, z] cm, light config or None)] for the zone's Kod objects
-    whose class is in data/environment/props.json."""
+    """-> [(label, mesh path or None, [x, y, z] cm, light config or None, fire or None)] for the zone's
+    Kod objects whose class is in data/environment/props.json. A light with "flicker" (true, or
+    "sector" in the original's flickering sectors) and a class with a "fire" become AMRFireActors."""
     if not os.path.exists(PROPS):
         return []
     classes = json.load(open(PROPS, encoding="utf-8")).get("classes", {})
@@ -276,8 +319,90 @@ def zone_props(zone, materials, prop_materials):
             continue
         x, y, z = obj["pos"]
         mesh = import_kit_mesh(cfg["mesh"], materials, prop_materials) if cfg.get("mesh") else None
-        out.append(("Prop_%d_%s_%d" % (zone["rid"], obj["class"], i), mesh, [x * 100.0, z * 100.0, y * 100.0], cfg.get("light")))
+        light = cfg.get("light")
+        if light and "kod_intensity" in light:
+            light = kod_light(light, obj.get("params"))
+        if light and "flicker" in light:
+            light = dict(light, flicker=light["flicker"] is True or (light["flicker"] == "sector" and bool(obj.get("flicker"))))
+        fire = None
+        if cfg.get("fire"):
+            preset = cfg["fire"]["preset"]
+            entry = materials.fires.get(preset, (None, {}))[1]
+            fire = fire_spec(materials, preset, (cfg["fire"].get("base_m", 0.0) + entry.get("flame_m", [0, 0])[1] / 2) * 100.0)
+        out.append(("Prop_%d_%s_%d" % (zone["rid"], obj["class"], i), mesh, [x * 100.0, z * 100.0, y * 100.0], light, fire))
     return out
+
+
+def zone_wall_fires(zone, materials):
+    """-> [(label, None, [x, y, z] cm, light, fire)] for the wall torches the blockout draws
+    (props.json "fires" presets with "walls", found by tools/environment/fires.py)."""
+    presets = fires.load_presets()
+    if not any(p.get("walls") for p in presets.values()):
+        return []
+    out = []
+    for i, f in enumerate(fires.wall_flames(blockout.read_glb(os.path.join(REPO, zone["mesh"])), presets)):
+        x, y, z = f["pos"]
+        light = presets[f["preset"]].get("light")
+        if light and "kod_intensity" in light:
+            light = dict(kod_light(light, None), offset_m=0.0)
+        fire = fire_spec(materials, f["preset"], 0.0)
+        out.append(("Fire_%d_%s_%d" % (zone["rid"], f["preset"], i), None, [x * 100.0, z * 100.0, y * 100.0], light, fire))
+    if out:
+        log("zone %d: %d wall flames" % (zone["rid"], len(out)))
+    return out
+
+
+# extent of an effect's actor (SM_Puffs is a 1 m box standing on its origin): its bounds; the
+# material moves the quads anywhere inside, and a plume bends further downwind in a storm
+EFFECT_SCALE = {"smoke": (12.0, 12.0, 10.0), "moth": (1.6, 1.6, 1.6)}
+EFFECT_BOUNDS = {"smoke": 1.6, "moth": 1.0}
+
+
+def zone_effects(zone, materials):
+    """-> [(label, kind, [x, y, z] cm)] for the zone's atmosphere (docs/adr/0005 phase 5): a smoke
+    plume on every chimney top (props.json "smoke", tools/environment/chimneys.py) and moths around
+    the lights of classes with "moths" (props.json "classes")."""
+    atmo = materials.atmosphere
+    if not atmo or "SM_Puffs" not in _kit:
+        return []
+    out = []
+    for i, (x, y, z) in enumerate(chimneys.chimney_tops(blockout.read_glb(os.path.join(REPO, zone["mesh"])))):
+        out.append(("Smoke_%d_%d" % (zone["rid"], i), "smoke", [x * 100.0, z * 100.0, y * 100.0]))
+    classes = json.load(open(PROPS, encoding="utf-8")).get("classes", {}) if os.path.exists(PROPS) else {}
+    for i, obj in enumerate(zone.get("objects", [])):
+        moths = classes.get(obj["class"], {}).get("moths")
+        if moths:
+            x, y, z = obj["pos"]
+            out.append(("Moths_%d_%s_%d" % (zone["rid"], obj["class"], i), "moth",
+                        [x * 100.0, z * 100.0, y * 100.0 + float(moths.get("offset_m", 2.0)) * 100.0]))
+    if out:
+        log("zone %d: %d chimney plumes, %d lamps with moths" % (zone["rid"], sum(1 for e in out if e[1] == "smoke"),
+                                                                 sum(1 for e in out if e[1] == "moth")))
+    return out
+
+
+def _srgb_to_linear(c):
+    c = c / 255.0
+    return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+
+def spawn_fire(label, loc, light, fire, zone_rid):
+    """An AMRFireActor at the flame's centre (or the light, without a flame)."""
+    centre = fire["centre_cm"] if fire else light["offset_m"] * 100.0
+    a = actors.spawn_actor_from_class(unreal.MRFireActor, loc + unreal.Vector(0, 0, centre))
+    a.set_actor_label(label + "_Fire")
+    if fire:
+        w, h = fire["size_cm"]
+        a.set_flame(eal.load_asset(fire["material"]), w, h)
+    if light:
+        r, g, b = light.get("color") or [255, 170, 90]
+        a.set_light(float(light["candela"]), float(light["radius_m"]) * 100.0,
+                    unreal.LinearColor(_srgb_to_linear(r), _srgb_to_linear(g), _srgb_to_linear(b), 1.0),
+                    unreal.Vector(0, 0, light.get("offset_m", 0.0) * 100.0 - centre),
+                    float(light.get("source_radius_cm", 5)), bool(light.get("flicker", True)),
+                    bool(light.get("shadows", True)), zlib.crc32(label.encode()) & 0x7FFFFFFF)
+    a.tags = [unreal.Name("ZoneFire"), unreal.Name("Zone%d" % zone_rid)]
+    return a
 
 
 def zone_scatter(zone, materials):
@@ -345,13 +470,15 @@ def open_level(path, maps):
         raise RuntimeError("could not create " + path)
 
 
-def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, props, maps):
+def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, props, maps, effects=(), atmosphere=None):
     """Rebuild L_Zone_<rid> when what it places changed (not when a mesh it places was re-imported:
     actors reference the asset, so they show the new mesh as is)."""
     path = zone_level_path(zone["rid"])
     cache = build_cache.CACHE
     recipe = {"origin": zone["world_origin_cm"], "sharers": sharers, "parts": parts, "scatter": scatter_inputs,
-              "props": props, "code": source(build_zone_level)}
+              "props": props, "code": source(build_zone_level, spawn_fire), "fire_actor": hasattr(unreal, "MRFireActor"),
+              "effects": list(effects), "effect_scale": EFFECT_SCALE, "effect_bounds": EFFECT_BOUNDS,
+              "atmosphere": {k: v for k, v in (atmosphere or {}).items() if k != "ambient"}}
     key = cache.key(recipe, deps=False)
     if cache.fresh(path, key):
         cache.done(path, key, "levels", False)
@@ -361,16 +488,21 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
     origin = unreal.Vector(ox, oy, oz)
     zone_tags = [unreal.Name("Zone%d" % r) for r in [zone["rid"]] + sharers]
     for mesh, label, role in parts:
-        a = actors.spawn_actor_from_object(eal.load_asset(mesh), origin, unreal.Rotator(0, 0, 0))
+        role, _, override = role.partition("|")
+        a = actors.spawn_actor_from_object(eal.load_asset(mesh), origin + unreal.Vector(0, 0, 1.5 if role == "ice" else 0),
+                                           unreal.Rotator(0, 0, 0))
         a.set_actor_label(label)
         comp = a.get_component_by_class(unreal.StaticMeshComponent)
         comp.set_mobility(unreal.ComponentMobility.STATIC)
+        if override:
+            for i in range(comp.get_num_materials()):
+                comp.set_material(i, eal.load_asset(override))
         if role == "collision":
             comp.set_visibility(False)  # still blocks; not rendered, no shadows, no Lumen
-        elif role in ("render", "art", "decal"):
+        elif role in ("render", "art", "decal", "ice"):
             comp.set_collision_profile_name("NoCollision")
             comp.set_collision_enabled(unreal.CollisionEnabled.NO_COLLISION)
-        if role == "decal":
+        if role in ("decal", "ice"):
             comp.set_cast_shadow(False)
         a.tags = [unreal.Name("Zone" + role.capitalize())] + zone_tags
     for label, mesh, transforms, rule in compute_scatter():
@@ -379,8 +511,12 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
         cull = rule.get("cull_m", [40, 60])
         a.set_scatter(eal.load_asset(mesh), transforms, cull[0] * 100.0, cull[1] * 100.0, bool(rule.get("shadows", True)))
         a.tags = [unreal.Name("ZoneScatter")] + zone_tags
-    for label, mesh, (x, y, z), light in props:
+    has_fire_actor = hasattr(unreal, "MRFireActor")
+    for label, mesh, (x, y, z), light, fire in props:
         loc = origin + unreal.Vector(x, y, z)
+        if (fire or (light and light.get("flicker"))) and has_fire_actor:
+            spawn_fire(label, loc, light, fire, zone["rid"])
+            light = None  # the fire actor has it
         if mesh:
             a = actors.spawn_actor_from_object(eal.load_asset(mesh), loc, unreal.Rotator(0, 0, 0))
             a.set_actor_label(label)
@@ -396,12 +532,35 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
             lc.set_editor_property("intensity_units", unreal.LightUnits.CANDELAS)
             lc.set_editor_property("intensity", float(light["candela"]))
             lc.set_editor_property("attenuation_radius", float(light["radius_m"]) * 100.0)
-            lc.set_editor_property("use_temperature", True)
-            lc.set_editor_property("temperature", float(light["temperature"]))
+            if "color" in light:
+                r, g, b = light["color"]
+                lc.set_editor_property("use_temperature", False)
+                lc.set_editor_property("light_color", unreal.Color(r=r, g=g, b=b, a=255))
+            else:
+                lc.set_editor_property("use_temperature", True)
+                lc.set_editor_property("temperature", float(light["temperature"]))
             lc.set_editor_property("source_radius", float(light.get("source_radius_cm", 5)))
+            if not light.get("shadows", True):
+                lc.set_editor_property("cast_shadows", False)
             pl.tags = [unreal.Name("ZoneLight"), unreal.Name("Zone%d" % zone["rid"])]
             if light.get("night_only"):
                 pl.tags = pl.tags + [unreal.Name("NightLamp")]  # off by day (UMREnvironmentSubsystem)
+    puffs = _kit.get("SM_Puffs")
+    for label, kind, (x, y, z) in effects:
+        # chimney smoke and lamp moths: SM_Puffs moved entirely by its material (M_Smoke, M_Moth)
+        a = actors.spawn_actor_from_object(eal.load_asset(puffs), origin + unreal.Vector(x, y, z), unreal.Rotator(0, 0, 0))
+        a.set_actor_label(label)
+        a.set_actor_scale3d(unreal.Vector(*EFFECT_SCALE[kind]))
+        comp = a.get_component_by_class(unreal.StaticMeshComponent)
+        comp.set_mobility(unreal.ComponentMobility.STATIC)
+        comp.set_collision_profile_name("NoCollision")
+        comp.set_collision_enabled(unreal.CollisionEnabled.NO_COLLISION)
+        comp.set_cast_shadow(False)
+        comp.set_editor_property("affect_distance_field_lighting", False)
+        comp.set_editor_property("affect_dynamic_indirect_lighting", False)
+        comp.set_editor_property("bounds_scale", EFFECT_BOUNDS[kind])
+        comp.set_material(0, eal.load_asset(atmosphere[kind]))
+        a.tags = [unreal.Name("ZoneEffect"), unreal.Name("Zone%d" % zone["rid"])]
     if not level_sub.save_current_level():
         raise RuntimeError("could not save " + path)
     cache.done(path, key, "levels", True)
@@ -443,6 +602,18 @@ def build_persistent_level(zone_levels, maps, night_sky=None):
     sun.light_component.set_mobility(unreal.ComponentMobility.MOVABLE)
     sun.light_component.set_editor_property("atmosphere_sun_light", True)
     sun.light_component.set_editor_property("intensity", 8.0)
+    # lightning (docs/adr/0005 phase 4): a second, unshadowed directional light the environment
+    # director flashes in rainstorms; never the atmosphere's sun, so it adds no disc to the sky.
+    # The original's lightning colour is a bluish white (kod LIGHT_LIGHTNING)
+    bolt = spawn(unreal.DirectionalLight, rot=unreal.Rotator(roll=0, pitch=-62, yaw=40), label="Lightning")
+    bolt_light = bolt.light_component
+    bolt_light.set_mobility(unreal.ComponentMobility.MOVABLE)
+    bolt_light.set_editor_property("atmosphere_sun_light", False)
+    bolt_light.set_editor_property("cast_shadows", False)
+    bolt_light.set_editor_property("intensity", 0.0)
+    bolt_light.set_editor_property("use_temperature", False)
+    bolt_light.set_editor_property("light_color", unreal.Color(r=190, g=205, b=255, a=255))
+    bolt_light.set_editor_property("visible", False)
     spawn(unreal.SkyAtmosphere, label="SkyAtmosphere")
     sky = spawn(unreal.SkyLight, label="SkyLight")
     sky.light_component.set_editor_property("mobility", unreal.ComponentMobility.MOVABLE)
@@ -509,6 +680,14 @@ def main(args):
         if sg:
             sharers.setdefault(sg["rid"], []).append(z["rid"])
 
+    if materials.precip:
+        # rain and snow (AMRPrecipitationActor loads it at runtime): no Nanite, M_Precip moves it
+        import_kit_mesh("SM_Precip", materials, {"precip": materials.precip["default"]})
+    if materials.atmosphere:
+        # chimney smoke and moths (phase 5); the ambient particles reuse SM_Precip
+        import_kit_mesh("SM_Puffs", materials, {"puffs": materials.atmosphere["smoke"]})
+    build_audio.build_audio()  # the original's sounds (docs/adr/0006)
+
     zone_levels, bad = [], 0
     try:
         for z in zones:
@@ -518,8 +697,10 @@ def main(args):
             if any(parts[0][0].startswith(d + "/") for d in cache.built.get("meshes", [])):  # re-imported
                 bad += 0 if check_orientation(z, parts[0][0]) else 1
             scatter_inputs, compute_scatter = zone_scatter(z, materials)
-            props = zone_props(z, materials, prop_materials)
-            path, rebuilt = build_zone_level(z, parts, sharers.get(z["rid"], []), scatter_inputs, compute_scatter, props, maps)
+            props = zone_props(z, materials, prop_materials) + zone_wall_fires(z, materials)
+            effects = zone_effects(z, materials)
+            path, rebuilt = build_zone_level(z, parts, sharers.get(z["rid"], []), scatter_inputs, compute_scatter, props, maps,
+                                             effects, materials.atmosphere)
             zone_levels.append(path)
             prune_art(z, parts)
             if rebuilt:

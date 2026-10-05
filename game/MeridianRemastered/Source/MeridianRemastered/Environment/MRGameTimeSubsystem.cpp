@@ -39,6 +39,11 @@ int64 UMRGameTimeSubsystem::GameDayCountAt(const FDateTime& Utc)
 	return int64(FMath::FloorToDouble(Seconds / SecondsPerGameDay));
 }
 
+int64 UMRGameTimeSubsystem::GameDayStartUnix(int64 GameDay)
+{
+	return int64(double(GameDay) * SecondsPerGameDay - ServerUtcOffset);
+}
+
 EMRDayPhase UMRGameTimeSubsystem::DayPhaseForHour(int32 Hour)
 {
 	// kod system.kod SysRecalcLightAndDayPhase, in its order

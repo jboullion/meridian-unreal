@@ -2,6 +2,7 @@
 
 #include "Character/MRCharacter.h"
 #include "Engine/World.h"
+#include "Game/MRGameState.h"
 #include "GameFramework/Controller.h"
 #include "MeridianRemastered.h"
 #include "Misc/CommandLine.h"
@@ -16,6 +17,7 @@ AMRGameMode::AMRGameMode()
 	DefaultPawnClass = AMRCharacter::StaticClass();
 	PlayerStateClass = AMRPlayerState::StaticClass();
 	PlayerControllerClass = AMRPlayerController::StaticClass();
+	GameStateClass = AMRGameState::StaticClass();
 }
 
 void AMRGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)

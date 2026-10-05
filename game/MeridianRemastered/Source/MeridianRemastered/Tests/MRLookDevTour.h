@@ -62,6 +62,8 @@ private:
 	void Sample();
 	void OnFrame(int32 Width, int32 Height, const TArray<FColor>& Pixels);
 	void Captured();
+	/** Audio mode (-MRLookDevAudio=<seconds>): record the main mix at the shot, then go on. */
+	void StopRecording();
 	void After(float Seconds, void (UMRLookDevTour::*Step)());
 	void NextVariant();
 	void StartSampling();
@@ -80,6 +82,7 @@ private:
 	FDelegateHandle FrameHandle;
 
 	bool bProfile = false;
+	float AudioSeconds = 0.f;     // > 0: -MRLookDevAudio, a WAV per shot
 	TArray<FVariant> Variants;
 	int32 VariantIndex = -1;
 	int32 Frames = 0;

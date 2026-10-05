@@ -84,6 +84,8 @@ Each zone has a kind: **outdoor**, **interior** or **underground** (dungeon or c
   - Every interior is judged at noon and midnight, and in a storm.
 
 ### 4. Fire as VFX, with flickering light
+*As built (phase 3): sprites of the original frames instead of Niagara, `UMRFireSubsystem` instead of a light component, and the flame points in `props.json` "fires" instead of `facades.json`; see "Phase 3 built".*
+
 - **One Niagara fire family** (`NS_Fire`), with presets: wall torch, brazier, candle, chandelier, lamp flame, and later hearths. Each has flames, embers and thin smoke. Heat haze is used only on the large fires, and only close up.
 - **The flames are the originals, at first.**
   - The 3 frames of the torch and brazier animations (wall-torch textures and object BGFs) are upscaled with the base-colour model and made into a flipbook. That keeps the fires recognisably Meridian, costs nothing and needs no new art.
@@ -175,6 +177,194 @@ These are ordered by value for effort. All are data-driven, and all are judged o
   - The night sky is deep blue rather than the reference shots' purple; that's tunable in the night mood.
   - Profiling the 5 s sun step against the shadow cache.
 
+## Phase 5 built (2026-10-05): atmosphere
+- **The pattern:** no Niagara. Like the rain, everything is quads moved on the GPU by their material (world position offset), driven by `MPC_Environment` values the director sets.
+  - The director (`UMREnvironmentSubsystem::AtmosphereFor`, pure and tested by `Meridian.Environment.Atmosphere`) computes them from `moods.json` `"atmosphere"`, the hour, the season, the storm and the zone profile.
+  - `MPC_Environment` gains `Night`, `Spring`, `Autumn`, `Winter`, `Smoke`, `Motes`, `Pollen`, `Fireflies` and `Leaves`.
+  - It logs `MREnvironment: atmosphere night .., smoke .., ...` whenever they change.
+- **Chimney smoke:**
+  - `tools/environment/chimneys.py` finds every chimney the blockout draws with the chimney texture (`props.json` `"smoke"`): 5 in Raza.
+  - `build_world.py` stands `SM_Puffs` (48 quads, `build_prop_kit.py`) with `M_Smoke` on each top.
+  - Each puff rises 6.5 m over 14 s, slowing, growing from 0.7 to 4.2 m, bent downwind by `Wind`. It's soft value-noise lumps, lit translucent (it takes the sun's, the sky's and the moon's light), depth-faded where it meets the chimney.
+  - How thick: a base of 0.45, more on cold mornings (4–11), at night and in winter, less in a storm (`"smoke"`). Wisps on a summer afternoon, full plumes on a winter morning.
+- **Ambient particles:** `M_Ambient` on a third copy of `SM_Precip`'s quads in `AMRPrecipitationActor`. A quarter of the quads each, every kind wrapping in its own box around the camera.
+  - Kinds by zone profile (`moods.json` `"zones"` `ambient`):
+    - **dust motes** in the buildings (and fewer in the Mausoleum): tiny lit specks, catching the lamps and torches;
+    - **pollen** by day outdoors, carried on the wind;
+    - **fireflies** at dusk and night over open ground below eye level (the shelter map), blinking green;
+    - **falling leaves** in the forest (the Outskirts, half as many at Farol West), tumbling.
+  - Each by season (`"atmosphere"` `"ambient"`: no fireflies or pollen in winter, leaves mostly in fall), time of day, and storm (a storm takes the pollen and fireflies, and brings more leaves).
+  - `mr.Env.Ambient 0` hides them (a player setting).
+- **Lamp moths:** `SM_Puffs` with `M_Moth` at every lamp (`props.json` class `"moths"`). A few moths on erratic orbits around the lantern, wings flapping, while the lamps are lit at night (`LampsOn x Night`), not in winter.
+  - **Lit glass** was already built in phase 1 (`lamp_glass` follows `LampsOn`).
+- **Seasons:**
+  - Foliage textures (`materials.json` `"seasons"` `"foliage"`: Raza's tree walls) get `M_Placeholder*Seasonal` masters; `M_Ground` and `M_Grass` always get the tint.
+  - `SEASON_HLSL` changes only plant colours (greens and yellow-greens; stone, wood, earth, roofs and the wheat fields keep theirs):
+    - autumn: trees gold, orange and rust in patches, grass a muted gold-olive;
+    - winter: dormant straw on both, and the grass tufts die back to stubble (`WinterDropCm`);
+    - spring: a fresher green;
+    - summer: the original colours.
+  - The painted trees can't go bare: winter makes them brown and dull.
+- **Look-dev:**
+  - `run_lookdev.ps1` now pins the season to summer by default, the original colours, so captures compare; `-Season 2` / `3` for fall and winter, `-1` follows the clock.
+  - New cameras `smoke_tavern` and `moths_lamp`.
+  - Sheets: `build/lookdev/p5c_seasons.png` (summer, fall, winter), `p5d_atmo.png` (smoke, moths, fireflies at 17, 7 in winter, 23).
+- **Cost** (RTX 3070, `-Profile`, 23:00): ambient particles on vs off within noise (±0.7 ms either way over five cameras).
+- **Tried and changed:**
+  - **Winter snow lying all season** (`seasons.winter_snow_cover` 0.12): an even dusting read as pale sand over the whole town (`p5b_winter_17`). Off (0); the original has none.
+  - **Autumn grass in the leaves' orange** looked burnt; grass has its own muted palette.
+  - **Fireflies at first size** (2.5 cm, 5% of the quads over a 32 m box) didn't show at all. A few 1–2 px dots that the temporal upscaler dissolves. Now 6 cm with a halo, in a 16 m box, blinking more often.
+  - **Smoke rising from 5 m above the chimneys, moths circling above the lanterns:** `ObjectPositionWS` is the centre of the mesh's bounds, which moves with the actor's scale. The puff materials use `ActorPositionWS`.
+  - **Thin vertical lines across the view** (pollen, motes; rain had the same latent bug): wrapping each corner's own position split quads lying on the box's wrap into slivers as tall as the box. Every camera-box material now places a quad from its seed, the same on all four corners.
+- **Open:**
+  - Drips in caves: the crypt has no ceiling-and-floor map to drip between.
+  - Moths smear into short dashes in stills (motion blur of a fast, flapping quad); fine in motion.
+  - Birds, crickets and crackling fires wait for the audio ADR. The original client has `birdchirping.ogg`, `fireplac.ogg`, `Drips.ogg` and `AMBCave.ogg`, though Raza's rooms play only music.
+  - Seasons switch at the season's boundary; there's no blend between them.
+
+### Hazy interiors (2026-10-05)
+- **Goal:** the dusty air of the buildings and the Mausoleum shows around their lights.
+- **How:** it's the volumetric fog that was already on, given density. The interior moods set it to 0.3, with full extinction, and a near-black warm fog colour so nothing glows without a light. The sky light is mostly taken out of the fog (`volumetric_scattering_intensity` 0.15). The crypt keeps its cold mood at the same density.
+  - The torches, candles, lamps and braziers then hang in a warm glow; the painted windows (emissive) light nothing.
+- **Bracketed** (`mood_test.ps1`, `mood_zz_haze_*`):
+  - Densities 0.05, 0.2 and 0.6 with the outdoor fog colour and full sky light filled the rooms with a blue-grey veil.
+  - With the dark warm fog colour and the sky light out of it, 0.15 and 0.3 gave clean glows; 0.3 chosen.
+- **Restoring outdoors:** the outdoor base mood now names the sky light's `volumetric_scattering_intensity` (1.0). The director only sets the fields a mood names, so it restores the value on the way out.
+- **Sheets:** `build/lookdev/haze2.png` (bracket), `haze3.png` (crypt), `haze_final.png` (by day and by night in the cycle).
+
+## Phase 4 built (2026-10-05): weather
+- **The original's rules** (`MRWeather`, unit-tested in `Meridian.Environment.Weather`):
+  - Every game day each of the 15 weather zones rolls a storm at 15% (kod `RecalcWeatherConditions`, `piStormChance`).
+  - The roll is a hash of the game day, the zone and a seed (`mr.Weather.Seed`, default 59). So a day's weather is reproducible, and a server started mid-storm knows when the run of stormy days began.
+  - The room's weather mask picks what a storm brings by season (kod `StartStorm`: sand, else snow, else rain). Raza and its forest are zone 13 with `DEFAULT_NS`: rain in spring, summer and fall, snow in winter. Farol West is Marion (4). The Mausoleum has no weather.
+  - Every Raza room, interiors included, shares the town's weather, as in the original.
+- **Server (`AMRGameState`):**
+  - It replicates one entry per weather zone: storm or clear, and since when (Unix seconds). It re-rolls when the game day changes.
+  - Overrides: `-MRWeather=storm|clear` holds full strength from the start (look-dev). `mr.Weather storm|clear` builds up from now.
+- **Client (`UMREnvironmentSubsystem`):**
+  - The zone profile names its `weather_zone` and `weather_mask`, falling back to `default`.
+  - A storm builds over 90 s and clears over 2 minutes; the director re-applies every second while it's changing.
+  - The zone's state blends toward an overlay mood (`moods.json` `"weather"` → `"storm"`): `storm_rain`, `storm_snow` and `storm_interior`. Overlays multiply or add to the hour's values, so one overlay works at noon and at midnight:
+    - the sun is dimmed and its disc hidden (the moon too), the sky light dimmed, the fog thickened and lowered;
+    - the clouds' material is pushed to more coverage and density (the engine cloud's `Cloud_GlobalCoverage` and `Cloud_GlobalDensity`, through a dynamic instance; their original values are restored when the storm clears);
+    - colours wash out and exposure drops (−0.6 EV in rain);
+    - inside, window daylight falls to 45%.
+- **Ground (`_weather_surface` in every surface master; `MPC_Environment.Wetness` and `SnowCover`, outdoors only):**
+  - **Wet:** base colour ×0.6; roughness to 0.12 on floors and 0.45 on walls. Wetness builds over 3 minutes and dries over 10.
+  - **Puddles** on `M_Ground`: flat ground where a 7 m noise is high, growing with the wetness; dark, still and mirror-glossy.
+  - **Snow** lies where the surface faces up. The texture's own relief breaks it up: the flat tops and joints take snow while the sloped stone edges show through; a full cover buries all but the outlines. It builds over 5 minutes and melts over 15. Grass tips whiten.
+  - **Wind** (`MPC Wind`) goes from 1 to 2.5 and scales the grass sway.
+- **Rain and snow without Niagara (`AMRPrecipitationActor` + `M_Precip`):**
+  - Niagara emitters can't be authored from our scripts, so the falling rain and snow are GPU-only. `SM_Precip` holds 10,000 one-centimetre quads (`build_prop_kit.py`), and `M_Precip`'s world position offset turns each into a streak or flake.
+  - The streaks fall and drift with the wind inside a 32 × 32 × 16 m box that wraps around the camera in world space. The actor snaps to a grid of whole boxes, so nothing slides with the camera and the mesh never leaves the view.
+  - Streaks face the camera around their fall direction. A share of the quads shows by storm strength (`MPC Precip`).
+  - The material is lit translucent (the translucency volume), so streaks pick up lamps at night.
+- **Shelter maps** (`tools/environment/shelter.py`):
+  - For each zone, the highest surface over every 25 cm of ground, baked from the blockout plus the rebuilt art (roof overhangs included), into an 8-bit map (10 cm steps).
+  - `M_Precip` hides a streak below it, so nothing falls under roofs, arcades or eaves, or through floors.
+  - Each zone gets `MI_Precip_<rid>`; the Outskirts share Raza's map.
+- **Lightning:** in rainstorms, a stroke every 8–30 s: a flash, a flicker, a second flash, a fade.
+  - Outdoors it's an unshadowed directional light, `Lightning` in `L_World`, in the original's bluish lightning colour.
+  - Inside, the windows flash.
+  - `mr.Weather.Lightning 0` turns it off. Look-dev stills run with `-MRNoLightning` unless `-Lightning` is passed.
+- **Player setting:** `mr.Weather.Particles 0` hides the falling rain and snow (as the original's weather option did). Wet and snowy ground stay.
+- **Look-dev:**
+  - `run_lookdev.ps1 -Weather storm|clear|roll -Season <0..3>`; captures are clear by default, so labels still compare.
+  - Sheets: `compare_wx_clear_17_wx_rain_17_wx_snow2_17.png`, `compare_wx_clear_23_wx_rain2_23.png`, `compare_wx_int_clear_12_wx_int_rain_12.png`.
+  - Cost: no measurable difference (150-frame GPU averages −0.7 to +0.4 ms between storm and clear on three town views; `wx_perf_clear`, `wx_perf_storm`).
+- **Follow-ups built (2026-10-05, the same day):**
+  - **Splashes:** `M_Splash` on a second copy of `SM_Precip`'s quads. Each quad is a splash for 0.45 s at a random spot within 13 m of the camera, on the shelter map's top surface (ground, roofs, merlon tops, the pond), then jumps to a new spot. Rain only; `mr.Weather.Splashes 0` turns them off.
+  - **Ripples:** rings of drops (`RIPPLE_HLSL`: random rings in 45 cm cells, two layers) on the pond (`M_Water`) and in `M_Ground`'s puddles while it rains. The shader is skipped when nothing falls.
+  - **Ice:** the original turns water to ice when it snows. Each water mesh gets a copy 1.5 cm above it with `M_Ice`, which freezes in patches that spread with `SnowCover` (macro noise against the cover) and carries snow drifts.
+  - **Distant bolts:** each stroke shows one of four generated bolts (`T_Bolts`, `make_placeholders.py bolts()`) 2.2 km out in a random direction, about 900 m tall. It's additive and unfogged, held for the stroke's envelope. The flash outdoors is now 1.5 lux: 6 lit the night like day.
+  - **Sandstorms** (desert masks; testable anywhere with `-MRWeatherKind=sand` / `mr.Weather.Kind sand`): low, tan streaks blown sideways within 6 m of the ground, and `storm_sand` (ochre haze, the sun hidden).
+  - **Sounds:** the original client's `rain.ogg`, `Rs_wind.ogg` and `thunderclap.ogg` (Meridian-104 resources). Since [ADR 0006](0006-audio.md) phase 1 they're imported with the other originals and played by `UMRAudioSubsystem`; the director still decides when.
+    - Rain loops with the storm and wind with the wind; both are muffled by a low-pass filter inside. Thunder follows each stroke 0.4–3.5 s later, at random volume and pitch.
+    - The original played rain only where the room's weather mask had the sound bit, and Raza's `DEFAULT_NS` has none, so its rain was silent. `weather.sounds.follow_mask` restores that rule; it's off.
+  - **Inside:** window daylight drops to 35% in a storm. Rain and wind are heard muffled and the windows flash.
+- **Look-dev additions:**
+  - `run_lookdev.ps1 -WeatherKind rain|snow|sand`, `-LightningHold` (one stroke held on screen) and `-Exec "<console commands>"`.
+  - Sheets: `compare_wx_clear_17_wx5_rain_17_wx5_snow_17_wx5_sand_17.png`, `compare_wx_clear_23_wx_rain2_23_wx5_bolt_23.png`.
+- **Found on the way:**
+  - In a look-dev still, a rain streak frozen within a metre or two of the camera smeared a grey veil across the view: a ribbon over the Hall in one run, a blurred wall in another. Streaks now hide within 1.5 m and fade in by 4.5 m.
+  - Python has no temporal-dither expression (`DitherTemporalAA` is a material function), hence the ice's patches.
+- **Open:**
+  - The sounds weren't heard here: look-dev runs with `-nosound`. They imported; listen in the editor.
+  - Snow on the pond's ice is drift-shaped, not piled.
+  - Indoors the storm is still mostly sound.
+
+## Phase 3 built (2026-10-05): fire
+- **What the original has in Raza:**
+  - Wall torches are wall textures with the flame painted on: `Torch Attaches to wall` (`grd08886`, side view with the bracket) crossed with `Torch Cross` (`grd08887`, front view), 3 frames each. Raza's interiors have 28: the Inn 4, the Smith 2, the Apothecary 1, the Elder's hut 1, the Mausoleum 2, the Bar 3, the Hall of Heroes (308) 12, the Vault 3. The original's wall torches give no light of their own: their sectors are lit.
+  - `Brazier` (kod `flikerer/brazier.kod`): 7 frames, frame 0 unlit, intensity 40, `LIGHT_FIRE`, 100–120 ms a frame. There are two in town, two in the Mausoleum, one in the bank.
+  - `Candle`: a candlestick with a small flame, intensity 5. There is one, in the Bar.
+  - The chandelier is unlit (`chandelr.bgf` draws white candles with no flames) and isn't fire.
+  - Flicker: the D3D client flickers flickering objects' own brightness (`OF_FLICKERING`, `animate.c`). Sector flicker (`SF_FLICKER`, ±40 of 255 every 100 ms) runs only in the software renderer.
+- **Flames are sprites of the original frames, not Niagara.**
+  - Niagara emitters can't be authored from our scripted pipeline (Python can't build emitter stacks). A camera-facing sprite with a flipbook material is scriptable end to end, and draws the same thing.
+  - `props.json` `"fires"` defines three presets (torch, brazier, candle). Each crops the original frames to the flame, keeping only flame-coloured pixels where the flame overlaps a torch head or bowl.
+  - `make_placeholders.py` upscales the frames with the base-colour model into `T_Fire_<preset>` (one power-of-two cell per frame, soft alpha).
+  - `M_Fire` (unlit, translucent) cycles the cells at the preset's frame rate. Each frame fades into the next, and each fire starts from its own phase (a hash of where it stands). `AMRFireActor` draws it as a `UMaterialBillboardComponent` at the original's size: a torch flame is 0.45 × 0.65 m, a brazier's 0.52 × 0.31 m.
+  - Embers and thin smoke are left for later: a hand-made Niagara system can be added to `AMRFireActor` when wanted.
+- **Wall torches:**
+  - The torch textures lose their painted flame: flame-coloured pixels in the preset's `"erase"` rect become transparent, so the bracket and the glowing torch head stay.
+  - `tools/environment/fires.py` finds a flame wherever the blockout uses those textures. It extends each face's UV mapping to the flame's texel (`"at"`), merges the faces of one torch (crossed planes, both sides), and sets the flame 12 cm off the wall (`"out"`: the texture direction away from the wall).
+  - Each torch gets a light of Kod intensity 20 (`"light"`). The original torches had none of their own; this replaces the brighter sectors around them.
+- **Props:**
+  - Brazier: `SM_Brazier` plus the brazier flame in its bowl, and Kod intensity 40 (it was 8 cd at 2000 K).
+  - Candle: a new `SM_Candle` candlestick (bronze and wax slots) plus the candle flame.
+- **Flicker (`UMRFireSubsystem`, client only):**
+  - Every fire light flickers by seeded noise: three slow sines and a smoothed 10 Hz random step (the original's 100 ms). The amplitude is ±16% (the original's ±40 of 255), and the flame reddens as it dips. The source wanders 1.5 cm.
+  - The noise is unit-tested (`Meridian.Environment.Flicker`): bounded, deterministic, lively, and uncorrelated between seeds.
+  - The original's `DynamicLight`s flicker only in its flickering sectors: `roo2gltf` marks objects in `SF_FLICKER` sectors (`"flicker": true` in `zone_layout.json`), and `props.json` `"flicker": "sector"`. That covers the Inn, Smith, Apothecary, Hut, Mausoleum, Bar, Hall of Heroes and Vault lights.
+  - Beyond 30 m a light holds still; beyond 60 m it's off. The 4 nearest eligible fires cast shadows, re-chosen 4 times a second (`mr.Fire.*` console variables).
+  - There are 58 fire lights in Raza and its interiors.
+- **Cost** (`run_lookdev.ps1 -Profile`, new `no_fire` variant with the fire lights off, `fire_perf`): no measurable cost. The 150-frame GPU averages differ by −0.7 to +0.6 ms between fires on and off, within run-to-run noise.
+- **Look-dev:**
+  - Cameras `fire_crypt_torch`, `fire_crypt_brazier`, `fire_candle_bar` and `fire_inn_torch`, compared against `fire_before_23` (`compare_fire_before_23_fire_v5_23.png`).
+  - Outdoors is unchanged (`fire_out_17` vs `out_check_17`).
+- **Pitfalls found:**
+  - A new component-mask expression has R on by default. An "A only" mask built with just `a=True` read the opacity from the red channel, which drew the flame's whole box in red.
+  - `roo2gltf` coloured each blockout material by Python's salted `hash()`, so every run wrote different files and forced a re-import of every zone. It now uses `crc32`.
+- **Open:**
+  - The town's two braziers stand about 0.5 m inside the Mausoleum's facade (`zone_layout.json` positions), hidden from the street. That was already so before phase 3. They need moving out to the doorway.
+  - The Mausoleum is still lit mostly by its ambient floor: it has only 2 wall torches and 2 braziers.
+  - Embers and smoke; heat haze is not planned.
+
+## Phase 2 built (2026-10-05): interiors and underground
+- **What the baseline showed:**
+  - Sun came through every interior. The blockout's floors and ceilings are single-sided, and a downward-facing ceiling doesn't block a sun shining from above.
+  - At night the interiors were black: none of the original's interior lights were spawned.
+- **Zone profiles** (`moods.json` `"zones"`, one per Raza interior):
+  - `cycle` and `kind` (interior / underground).
+  - `sun: false`: the sun and moon are switched off while the view is in the zone; their rotation is left alone, so the shadow cache isn't touched.
+  - `daylight`: the share of daylight through painted windows, from the original's outside factor / 10.
+  - `base_light` and `outside` from `data/zones.json`.
+  - `lamps: always` for the Mausoleum.
+- **Which profile applies:** the director picks it by the zone the camera is in (`UMRZoneSubsystem::ZoneAtLocation`), falling back to the player's zone. Look-dev cameras in other zones get their own profile.
+- **The original's lights:** `props.json` gains `DynamicLight` and `Candle`.
+  - The Kod defaults are `kod_intensity` / `kod_color`; the object's own `iIntensity` / `iColor` win.
+  - `build_world.py` converts them: intensity × 0.24 cd, reach 4 m + 0.15 m per unit, the 15-bit colour blended 40% towards white (pure Kod fire colour read as yellow).
+  - They're unshadowed, like the original's pools of light. The chandelier is decorative in the original and stays unlit.
+- **Sector light as the ambient floor:**
+  - `roo2gltf` writes each sector's original light level (0–255) as vertex colour (`COLOR_0`): floors and ceilings their sector's, each side of a wall the sector it faces.
+  - Every placeholder master adds base colour × that level × `MPC_Environment.SectorAmbient` × `AmbientTint` as emissive. It's 0 outdoors, so it only shows inside.
+  - The director scales `SectorAmbient` by the original's room light, `base + outside × (brightness − 50) / 4`, so rooms with windows dim at night: the Inn to about 65%, the shops to about 60%, the Mausoleum constant.
+  - This replaced a Lumen skylight-leak ambient, which barely reached into closed rooms.
+- **Window daylight from inside:** the window-glow term gained cool daylight × `WindowDaylight` on the same window masks. It's set only while the view is in an interior, so it never shows on the exterior.
+- **Moods:**
+  - `raza_interior_day` and `raza_interior_night` (cycle `raza_interior`: night until 5:30, day 8–18, night from 20:30).
+  - `raza_crypt`: cold, desaturated, high contrast.
+  - **Fixed exposure,** chosen by bracketing (`mood_raza_interior_day_ev*`, `mood_raza_crypt_ev*`): EV −1 by day and −1.3 at night in buildings, 0 in the Mausoleum. The original renders at a fixed brightness, so the room light itself dims rather than the camera adapting it away.
+- **Look-dev:**
+  - Eleven interior cameras (`int_*`), suggested by `tools/lookdev/suggest_cameras.py`.
+  - `run_lookdev.ps1 -StartZone` captures zones further away; all of Raza's interiors stream in from Raza.
+  - Outdoor captures are unchanged (`out_check_17` vs `cycle_17`).
+- **Open:**
+  - The Mausoleum is lit mostly by its ambient floor until the torches become fire with light (phase 3).
+  - Local Fog Volumes for its low passages.
+  - Day and night inside differ subtly; it's tunable (exposure, `SectorAmbient`).
+
 ## Decisions taken (user, 2026-10-05)
 1. **Sun and moon step every few seconds**, not every frame, to protect the shadow cache (§1).
 2. **No fog weather.** Instead there's a reasonable outdoor morning mist that adds atmosphere without obscuring the view (§5). It's tuned and in `raza_morning`.
@@ -238,9 +428,9 @@ These are ordered by value for effort. All are data-driven, and all are judged o
 |---|---|---|
 | 1. Day/night outdoors | Director, sun and moon path, star layer, Raza cycle from the four key moods, lamps by the original rule, window glow by the hour, cycle and time-lapse look-dev | the game clock (built) |
 | 2. Interiors and underground | Zone profiles and kinds, `DynamicLight`, candle and chandelier lights, interior daylight windows, sector ambient and flicker, Mausoleum mood, `-StartZone` look-dev | phase 1; interior zone art (ADR 0003) |
-| 3. Fire | `NS_Fire` presets from the original frames, `UMRFlickerLightComponent`, torch flame points in `facades.json`, brazier, candle and chandelier props, shadow budget | phase 2 for interiors (outdoor braziers can go first) |
-| 4. Weather | Server weather state (zones, rolls, masks, seasons), replication, storm blend, rain plus wetness plus shelter maps, lightning, snow plus snow cover, `-MRWeather` look-dev, player setting | phase 1 |
-| 5. Atmosphere | Chimney smoke, ambient particles, seasonal tint, lamp moths; audio hooks for the audio ADR | phases 1–4 |
+| 3. Fire | Flame presets from the original frames (built as sprites), `UMRFireSubsystem` flicker, wall-torch flame points (`props.json` "fires"), brazier and candle props, shadow budget | phase 2 for interiors (outdoor braziers can go first) |
+| 4. Weather | Server weather state (zones, rolls, masks, seasons), replication, storm blend, rain plus wetness plus shelter maps, lightning, snow plus snow cover, `-MRWeather` look-dev, player setting (built: see "Phase 4 built") | phase 1 |
+| 5. Atmosphere | Chimney smoke, ambient particles, seasonal tint, lamp moths; audio hooks for the audio ADR (built: see "Phase 5 built"; audio waits for its ADR) | phases 1–4 |
 
 ## Action items
 
@@ -249,9 +439,9 @@ These are ordered by value for effort. All are data-driven, and all are judged o
 3. [x] `UMREnvironmentSubsystem`: read `moods.json`, blend keys by hour, apply to the `L_World` actors and the MPC, switch on zone change. `zone_mood.py` stays the headless bake until then.
 4. [x] Sun and moon path with stepped updates; star/night-sky layer. [ ] VSM profiling of the step size.
 5. [x] Lamps on and off by the hour (lights plus glass emissive).
-6. [ ] `-StartZone` for look-dev (phase 2). [x] `cycle_test.ps1` and time-lapse sheets.
-7. [ ] Interior profiles; import `DynamicLight`, `Candle` and `Chandelier`; interior window daylight; sector ambient and `SF_FLICKER`.
-8. [ ] `NS_Fire` from the original flame frames; `UMRFlickerLightComponent`; `"flame"` points in `facades.json`; props.
-9. [ ] Server weather (zones, rolls, masks, seasons), replication in `AMRGameState`, overrides and `-MRWeather`.
-10. [ ] Rain (Niagara plus shelter maps plus wetness), lightning, snow (plus snow cover in the masters), player setting.
-11. [ ] Chimney smoke, ambient particles, seasonal tint.
+6. [x] `-StartZone` for look-dev. [x] `cycle_test.ps1` and time-lapse sheets.
+7. [x] Interior profiles; import `DynamicLight` and `Candle` (the chandelier has no light in the original); interior window daylight; sector ambient. `SF_FLICKER` moves to phase 3 with the flicker component. [ ] Local Fog Volumes for the Mausoleum.
+8. [x] Fire from the original flame frames (sprites, not Niagara: see "Phase 3 built"); `UMRFireSubsystem` flicker and shadow budget; wall-torch flame points (`props.json` "fires" "walls"); brazier and candle props; `SF_FLICKER` lights. [ ] Embers and thin smoke. [ ] The town's two braziers stand inside the Mausoleum facade.
+9. [x] Server weather (zones, rolls, masks, seasons), replication in `AMRGameState`, overrides and `-MRWeather`.
+10. [x] Rain (GPU streaks, not Niagara; shelter maps; wetness and puddles), lightning, snow (plus snow cover in the masters), player setting (`mr.Weather.Particles`). [x] Splashes, ripples, ice on the pond, distant bolts, sandstorm visuals, the original's storm sounds.
+11. [x] Chimney smoke, ambient particles (motes, pollen, fireflies, leaves), seasonal tint, lamp moths. [ ] Cave drips. [x] Volumetric light in dusty interiors ("Hazy interiors"). [ ] Birds, crickets and fire sounds (audio ADR).

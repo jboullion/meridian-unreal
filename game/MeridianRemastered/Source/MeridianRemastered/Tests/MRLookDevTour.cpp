@@ -21,6 +21,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Containers/Ticker.h"
+#include "AudioMixerBlueprintLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "UnrealClient.h"
 #include "Zones/MRZoneSubsystem.h"
@@ -154,6 +155,11 @@ void UMRLookDevTour::Start(APlayerController* InController)
 		return;
 	}
 	FParse::Value(FCommandLine::Get(), TEXT("MRLookDevSettle="), FixedSettle);
+	FParse::Value(FCommandLine::Get(), TEXT("MRLookDevAudio="), AudioSeconds);
+	if (AudioSeconds > 0.f && FixedSettle <= 0.f)
+	{
+		FixedSettle = 2.f;  // no slowed world clock while recording sound
+	}
 	bProfile = FParse::Param(FCommandLine::Get(), TEXT("MRLookDevProfile"));
 	if (bProfile)
 	{
@@ -163,9 +169,11 @@ void UMRLookDevTour::Start(APlayerController* InController)
 			InController->ConsoleCommand(Cmd);
 		}
 		Variants = {
-			{TEXT("full"), {TEXT("r.Nanite.Tessellation 1"), TEXT("ShowFlag.InstancedStaticMeshes 1")}},
-			{TEXT("no_tess"), {TEXT("r.Nanite.Tessellation 0"), TEXT("ShowFlag.InstancedStaticMeshes 1")}},
-			{TEXT("no_grass"), {TEXT("r.Nanite.Tessellation 1"), TEXT("ShowFlag.InstancedStaticMeshes 0")}},
+			{TEXT("full"), {TEXT("r.Nanite.Tessellation 1"), TEXT("ShowFlag.InstancedStaticMeshes 1"), TEXT("mr.Fire.CullDistanceM 60")}},
+			{TEXT("no_tess"), {TEXT("r.Nanite.Tessellation 0"), TEXT("ShowFlag.InstancedStaticMeshes 1"), TEXT("mr.Fire.CullDistanceM 60")}},
+			{TEXT("no_grass"), {TEXT("r.Nanite.Tessellation 1"), TEXT("ShowFlag.InstancedStaticMeshes 0"), TEXT("mr.Fire.CullDistanceM 60")}},
+			// fire lights off (UMRFireSubsystem): what the fires' lights and shadows cost
+			{TEXT("no_fire"), {TEXT("r.Nanite.Tessellation 1"), TEXT("ShowFlag.InstancedStaticMeshes 1"), TEXT("mr.Fire.CullDistanceM 0")}},
 		};
 	}
 	Index = -1;
@@ -289,8 +297,25 @@ void UMRLookDevTour::Captured()
 	if (APlayerController* P = Controller.Get())
 	{
 		VariantIndex = -1;
+		if (AudioSeconds > 0.f)
+		{
+			UAudioMixerBlueprintLibrary::StartRecordingOutput(P, AudioSeconds);
+			After(AudioSeconds, &UMRLookDevTour::StopRecording);
+			return;
+		}
 		After(0.1f, bProfile ? &UMRLookDevTour::NextVariant : &UMRLookDevTour::Next);
 	}
+}
+
+void UMRLookDevTour::StopRecording()
+{
+	if (APlayerController* P = Controller.Get(); P && Shots.IsValidIndex(Index))
+	{
+		// the main mix as heard at the camera: <label>/<shot>.wav
+		UAudioMixerBlueprintLibrary::StopRecordingOutput(P, EAudioRecordingExportType::WavFile, Shots[Index].Name, OutDir);
+		UE_LOG(LogMeridian, Display, TEXT("MRLookDevAudio: %s.wav (%.0f s)"), *FPaths::Combine(OutDir, Shots[Index].Name), AudioSeconds);
+	}
+	After(0.2f, &UMRLookDevTour::Next);
 }
 
 void UMRLookDevTour::NextVariant()

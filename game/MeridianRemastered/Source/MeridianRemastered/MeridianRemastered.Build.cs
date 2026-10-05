@@ -28,7 +28,8 @@ public class MeridianRemastered : ModuleRules
 			"Slate",
 			"SlateCore",
 			"RHI",
-			"RenderCore"
+			"RenderCore",
+			"AudioMixer"
 		});
 
 		PublicIncludePaths.Add(ModuleDirectory);

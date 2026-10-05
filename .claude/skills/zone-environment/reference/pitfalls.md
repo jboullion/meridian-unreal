@@ -42,6 +42,17 @@ Each entry gives the symptom you'll see, then the cause and fix. The ADR 0003 se
 - **The decal material warns while compiling.** Set the blend mode before the domain (see `build_grime_master`).
 - **Window glow is blown out to flat white.** Use a multiply (base × warm × mask × glow), not a lerp toward white.
   Night is 0.35 and dusk 0.12. ["Moods and lit windows"]
+- **A translucent material shows its whole quad (a coloured box around a flame).** A new `MaterialExpressionComponentMask` has R on by default.
+  Give every mask all four channels (`r=False, g=False, b=False, a=True`), or the "alpha" is the red channel. [ADR 0005 "Phase 3 built"]
+- **Thin straight lines across the view from a camera-box material** (rain, ambient particles). Each corner's own position wrapped separately, so a quad lying on the box's wrap split into a sliver as tall as the box.
+  Place every quad from its seed (the same on all four corners), as `PRECIP_WPO` and `AMBIENT_WPO` do.
+- **An effect drawn metres away from its actor** (smoke above the chimney, moths above the lamp). `ObjectPositionWS` is the centre of the mesh's bounds, which moves with the actor's scale; use `ActorPositionWS`.
+- **Tiny particles don't show at all.** Specks of a pixel or two are dissolved by the temporal upscaler. Make them bigger (a halo) and nearer rather than more numerous; check with the director's `MREnvironment: atmosphere` log line that the amount isn't the problem.
+- **A material helper change doesn't reach a master.** Every helper a builder calls must be in `_master`'s cache key (`_camera_box_inputs`, `_puff_inputs`, `_season`...), or the master isn't rebuilt.
+- **A grey veil or a blurred patch over part of a rain capture.** A streak frozen close to the camera (look-dev freezes time) smears across the view.
+  M_Precip hides streaks within 1.5 m; keep that if you retune it. To check whether splashes or streaks cause an artefact, capture with `-Exec "mr.Weather.Splashes 0"` or tint the material.
+- **A GPU crash (`DXGI_ERROR_DEVICE_HUNG`) in Nanite `PatchSplit` during the first frame's shadow pass** can hit both look-dev attempts. It's the tessellation first-frame crash, not the change under test; run the capture again.
+- **Every zone re-imports after running `roo2gltf`, with nothing changed.** Its output must be byte-for-byte deterministic (no Python `hash()` of strings: it's salted per run).
 - **The clock or atlas shows the neighbouring cell's edge.** UVs must be clamped inside the cell (`_atlas_uv` clamps to 0.0005–0.9995).
 - **Textures are stuck at low mips, or Nanite fallback meshes show (blur, dark gaps in parapets) in a capture right after an in-place mesh reimport.**
   Remove those meshes' entries from `Saved/MRBuild/world_cache.json` (keys starting `/Game/Generated/Zones/Z<rid>/Art/SM_Z<rid>_<Building>`) and build again. It has happened twice, so expect it after big Blender changes and judge look-dev only after the forced reimport. ["Known flake"]
