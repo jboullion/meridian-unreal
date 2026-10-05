@@ -31,6 +31,7 @@ Each entry gives the symptom you'll see, then the cause and fix. The ADR 0003 se
   `grd20232` (the town wall) still splits its mottling rather than its mortar.
 - **Normals look inverted** (lit from below). UE wants DirectX (green-down) normals.
   Pillow's `ImageFilter.Kernel` flips kernels vertically, so test any new filter with a synthetic raised square. ["Proof of concept"]
+- **Big stones on the ground show small stones' bumps.** `M_Ground` blends the texture at two scales. Any map added to it (normal, roughness, height) must be sampled at both scales and blended with the same weight as the colour. ["Ground normals"]
 - **Displacement makes melted stone, cracks at corners, or doubled window depth.** That's why displacement is off.
   If it's ever revisited, the grid mask (vertex colour R) and `displacement_facade_scale` exist for this. ["Plain walls", "Textures-only test"]
 

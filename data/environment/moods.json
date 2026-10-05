@@ -1,7 +1,39 @@
 {
-  "_doc": "Lighting moods (docs/adr/0003 pass 4). tools/ue/zone_mood.py applies a mood to the lighting actors build_world.py spawns in L_World, by actor label. Each actor block sets `rotation` ([pitch, yaw], directional light only) and properties on its main component; `settings` on GlobalPostProcess sets PostProcessSettings fields and turns their override flags on. Values: numbers, bools, [r,g,b(,a)] for colours/vectors, strings for enums. For now one outdoor mood is baked into L_World (`levels`); per-zone runtime blending (UMRZoneMood) comes later. Exposure is in EV100 (r.DefaultFeature.AutoExposure.ExtendDefaultLuminanceRange); with the sun at ~8 lux the town sits around EV -1..1, so clamping above that blackens the shade. \"Collection\": values for MPC_Environment (WindowGlow: how brightly the painted windows glow, 0 by day).",
+  "_doc": "Lighting moods (docs/adr/0003 pass 4, docs/adr/0005). In game the environment director (UMREnvironmentSubsystem) blends moods by the game hour along a zone's cycle (\"cycles\", \"zones\") and moves the sun and moon (\"sky\"); in the editor tools/ue/zone_mood.py bakes one mood (\"levels\") into L_World. Both apply a mood to the lighting actors build_world.py spawns in L_World, by actor label (a tag in game). Each actor block sets `rotation` ([pitch, yaw], directional light only) and properties on its main component; `settings` on GlobalPostProcess sets PostProcessSettings fields and turns their override flags on. Values: numbers, bools, [r,g,b(,a)] for colours/vectors, strings for enums. Exposure is in EV100 (r.DefaultFeature.AutoExposure.ExtendDefaultLuminanceRange); with the sun at ~8 lux the town sits around EV -1..1, so clamping above that blackens the shade. \"Collection\": values for MPC_Environment (WindowGlow: how brightly the painted windows glow, 0 by day; Stars: the night sky's stars, 0 by day, 1 at night).",
   "levels": {
     "L_World": "raza_afternoon"
+  },
+  "sky": {
+    "_doc": "The directional light's path (UMREnvironmentSubsystem, docs/adr/0005): the sun by day, the moon by night. Each rises in the east-north-east, is highest in the south halfway between rise and set, and sets in the west-north-west; game hours. The sun peaks at 14, where the original server's brightness peaks (kod SysRecalcLightAndDayPhase), and is in the south-west at 17 as the tuned afternoon mood. The moon is up from 18 to 10 the next day, highest at 2; moon_intensity (lux) and moon_temperature replace the moods' Sun values while the sun is down. The moods' Sun rotation is ignored except when one mood is pinned (-MRMood, mood_test.ps1).",
+    "sun_rise": 6.0,
+    "sun_set": 22.0,
+    "sun_max_elevation": 50.0,
+    "moon_rise": 18.0,
+    "moon_set": 34.0,
+    "moon_max_elevation": 40.0,
+    "moon_intensity": 0.12,
+    "moon_temperature": 8000
+  },
+  "cycles": {
+    "_doc": "Day/night cycles: [game hour, mood] keys. The environment director blends the two keys around the hour (numbers and colours interpolate, everything else switches halfway), wrapping over midnight. The original's phases: night before 6 and after 20, dawn 6-8, day 9-17, dusk 18-20 (kod).",
+    "raza_outdoor": {
+      "_doc": "Raza and the Outskirts: night until 4:30, the misty morning by 6:30, day (the afternoon mood) from 9:30 to 17, dusk by 19:30, night again from 21:30.",
+      "keys": [
+        [0.0, "raza_night"],
+        [4.5, "raza_night"],
+        [6.5, "raza_morning"],
+        [9.5, "raza_afternoon"],
+        [17.0, "raza_afternoon"],
+        [19.5, "raza_dusk"],
+        [21.5, "raza_night"]
+      ]
+    }
+  },
+  "zones": {
+    "_doc": "Per zone (original room id) environment profile: which cycle it follows. \"default\" covers every zone not listed. Interiors, dungeons and caves get their own profiles in ADR 0005 phase 2; until then they share the town's.",
+    "default": {
+      "cycle": "raza_outdoor"
+    }
   },
   "moods": {
     "raza_afternoon": {
@@ -186,11 +218,12 @@
         }
       },
       "Collection": {
-        "WindowGlow": 0.12
+        "WindowGlow": 0.12,
+        "Stars": 0.2
       }
     },
     "raza_night": {
-      "_doc": "Night: cool moonlight from the south-east, the town lit by its lamps, braziers and glowing windows; exposure allowed to go dark but kept below full adaptation so night reads as night.",
+      "_doc": "Night: cool moonlight (moods.json sky), the town lit by its lamps, braziers and glowing windows; a faint sky-light fill (intensity 0.7, skylight leaking 0.12) keeps shade readable instead of black; exposure allowed to go dark but kept below full adaptation so night reads as night.",
       "inherit": "raza_afternoon",
       "Sun": {
         "rotation": [
@@ -202,7 +235,7 @@
         "light_source_angle": 0.6
       },
       "SkyLight": {
-        "intensity": 0.35,
+        "intensity": 0.7,
         "lower_hemisphere_color": [
           0.02,
           0.02,
@@ -249,11 +282,12 @@
             0.9,
             1.0
           ],
-          "lumen_skylight_leaking": 0.05
+          "lumen_skylight_leaking": 0.12
         }
       },
       "Collection": {
-        "WindowGlow": 0.35
+        "WindowGlow": 0.35,
+        "Stars": 1.0
       }
     }
   }

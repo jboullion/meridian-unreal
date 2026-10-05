@@ -51,7 +51,7 @@ def _expr(mat, cls, x, y, **props):
 
 
 # material settings the builders below change; a rebuilt master starts from the defaults again
-RESET_PROPERTIES = ("material_domain", "blend_mode", "shading_model", "two_sided", "use_material_attributes", "used_with_nanite",
+RESET_PROPERTIES = ("material_domain", "blend_mode", "shading_model", "two_sided", "is_sky", "use_material_attributes", "used_with_nanite",
                     "used_with_instanced_static_meshes", "enable_tessellation", "displacement_scaling")
 
 
@@ -101,8 +101,9 @@ def _instance(name, parent, textures=None, scalars=None, vectors=None):
 
 
 MPC_NAME = "MPC_Environment"
-# scalars in MPC_Environment that moods set (tools/ue/zone_mood.py, moods.json "Collection")
-MPC_SCALARS = {"WindowGlow": 0.0, "GameHour": 0.0}
+# scalars in MPC_Environment: moods set them (moods.json "Collection"; tools/ue/zone_mood.py in the
+# editor, UMREnvironmentSubsystem in game), the game clock writes GameHour, the director LampsOn
+MPC_SCALARS = {"WindowGlow": 0.0, "GameHour": 0.0, "LampsOn": 1.0, "Stars": 0.0}
 
 
 def ensure_mpc():
@@ -484,15 +485,31 @@ def build_ground_master(name, macro):
     mel.connect_material_expressions(tint, "", col, "B")
     mel.connect_material_property(col, "", unreal.MaterialProperty.MP_BASE_COLOR)
 
+    # the normal map at both scales, blended like the colour, so the large-scale stones get their
+    # own relief (sampled only at the small scale, they showed the small stones' bumps)
+    default_normal = eal.load_asset("/Engine/EngineMaterials/DefaultNormal")
     nrm = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, 650, parameter_name="Normal",
-                sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL,
-                texture=eal.load_asset("/Engine/EngineMaterials/DefaultNormal"))
+                sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL, texture=default_normal)
     mel.connect_material_expressions(uv1, "", nrm, "UVs")
+    nrm2 = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, 950, parameter_name="Normal",
+                 sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL, texture=default_normal)
+    mel.connect_material_expressions(uv2, "", nrm2, "UVs")
     flat = _expr(mat, unreal.MaterialExpressionConstant3Vector, -650, 800, constant=unreal.LinearColor(0, 0, 1, 0))
+    # the large layer stretches the same relief 2.73x wider at the same height, so its slopes come
+    # out flatter; LargeNormalScale lifts them (1 = as stretched, 2.73 = as steep as the small stones)
+    large_scale = _expr(mat, unreal.MaterialExpressionScalarParameter, -900, 1250, parameter_name="LargeNormalScale", default_value=1.5)
+    nrm2s = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -650, 1000)
+    mel.connect_material_expressions(flat, "", nrm2s, "A")
+    mel.connect_material_expressions(nrm2, "RGB", nrm2s, "B")
+    mel.connect_material_expressions(large_scale, "", nrm2s, "Alpha")
+    nblend = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -650, 650)
+    mel.connect_material_expressions(nrm, "RGB", nblend, "A")
+    mel.connect_material_expressions(nrm2s, "", nblend, "B")
+    mel.connect_material_expressions(wsat, "", nblend, "Alpha")
     strength = _expr(mat, unreal.MaterialExpressionScalarParameter, -650, 900, parameter_name="NormalStrength", default_value=0.8)
     lerp = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -400, 700)
     mel.connect_material_expressions(flat, "", lerp, "A")
-    mel.connect_material_expressions(nrm, "RGB", lerp, "B")
+    mel.connect_material_expressions(nblend, "", lerp, "B")
     mel.connect_material_expressions(strength, "", lerp, "Alpha")
     mel.connect_material_property(lerp, "", unreal.MaterialProperty.MP_NORMAL)
     rough = _expr(mat, unreal.MaterialExpressionScalarParameter, -400, 1000, parameter_name="Roughness", default_value=0.92)
@@ -642,14 +659,25 @@ def build_water_material(name, normal_tex, cfg):
     eal.save_loaded_asset(mat)
 
 
-def build_prop_master(name):
-    """M_PropSurface: Color, Emissive, Metallic, Roughness parameters."""
+def build_prop_master(name, mpc):
+    """M_PropSurface: Color, Emissive, Metallic, Roughness parameters. With LampSwitch 1 (props.json
+    "night_only": lamp glass) the emissive follows MPC_Environment.LampsOn: lamps off by day."""
     mat = _new_material(name)
-    for i, (prop, name, default) in enumerate((
-            (unreal.MaterialProperty.MP_BASE_COLOR, "Color", unreal.LinearColor(0.5, 0.5, 0.5, 1)),
-            (unreal.MaterialProperty.MP_EMISSIVE_COLOR, "Emissive", unreal.LinearColor(0, 0, 0, 1)))):
-        e = _expr(mat, unreal.MaterialExpressionVectorParameter, -400, i * 200, parameter_name=name, default_value=default)
-        mel.connect_material_property(e, "", prop)
+    color = _expr(mat, unreal.MaterialExpressionVectorParameter, -400, 0, parameter_name="Color",
+                  default_value=unreal.LinearColor(0.5, 0.5, 0.5, 1))
+    mel.connect_material_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    emissive = _expr(mat, unreal.MaterialExpressionVectorParameter, -700, 200, parameter_name="Emissive",
+                     default_value=unreal.LinearColor(0, 0, 0, 1))
+    lamps_on = _expr(mat, unreal.MaterialExpressionCollectionParameter, -1000, 320,
+                     collection=eal.load_asset(mpc), parameter_name="LampsOn")
+    switch = _expr(mat, unreal.MaterialExpressionScalarParameter, -1000, 420, parameter_name="LampSwitch", default_value=0.0)
+    gate = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -700, 360, const_a=1.0)
+    mel.connect_material_expressions(lamps_on, "", gate, "B")
+    mel.connect_material_expressions(switch, "", gate, "Alpha")
+    lit = _expr(mat, unreal.MaterialExpressionMultiply, -400, 200)
+    mel.connect_material_expressions(emissive, "", lit, "A")
+    mel.connect_material_expressions(gate, "", lit, "B")
+    mel.connect_material_property(lit, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     for i, (prop, name, default) in enumerate((
             (unreal.MaterialProperty.MP_METALLIC, "Metallic", 0.0),
             (unreal.MaterialProperty.MP_ROUGHNESS, "Roughness", 0.6))):
@@ -659,16 +687,88 @@ def build_prop_master(name):
     eal.save_loaded_asset(mat)
 
 
-def build_prop_materials(cfg):
+def build_prop_materials(cfg, mpc):
     """M_PropSurface + one MI per props.json "materials" slot (ironwork, lamp glass, embers)."""
     if not cfg:
         return {}
-    master = _master("M_PropSurface", build_prop_master)
+    master = _master("M_PropSurface", build_prop_master, mpc)
     return {slot: _instance("MI_Prop_" + slot, master,
                             vectors={"Color": v.get("color", [0.5, 0.5, 0.5]) + [1],
                                      "Emissive": v.get("emissive", [0, 0, 0]) + [1]},
-                            scalars={"Metallic": v.get("metallic", 0.0), "Roughness": v.get("roughness", 0.6)})
+                            scalars={"Metallic": v.get("metallic", 0.0), "Roughness": v.get("roughness", 0.6),
+                                     "LampSwitch": 1.0 if v.get("night_only") else 0.0})
             for slot, v in cfg.items() if not slot.startswith("_")}
+
+
+def build_night_sky_master(name, stars, mpc):
+    """M_NightSky (docs/adr/0005): the sky dome's material. It is a sky material (is_sky), so the sky
+    atmosphere is drawn through it (view luminance + the sun / moon disc) exactly as without a dome,
+    and the star map (T_Stars, equirectangular around the zenith) is added on top, scaled by
+    MPC_Environment.Stars (night 1, day 0) and StarBrightness, faded out at the horizon and turned a
+    full circle per game day with GameHour."""
+    mat = _new_material(name)
+    mat.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    mat.set_editor_property("is_sky", True)
+    mat.set_editor_property("two_sided", True)
+    collection = eal.load_asset(mpc)
+    # direction towards the sky from the camera: -CameraVector
+    cam = _expr(mat, unreal.MaterialExpressionCameraVectorWS, -2200, 300)
+    d = _expr(mat, unreal.MaterialExpressionMultiply, -2050, 300, const_b=-1.0)
+    mel.connect_material_expressions(cam, "", d, "A")
+    masks = {}
+    for i, ch in enumerate("xyz"):
+        m = _expr(mat, unreal.MaterialExpressionComponentMask, -1900, 150 + i * 120, r=ch == "x", g=ch == "y", b=ch == "z")
+        mel.connect_material_expressions(d, "", m, "")
+        masks[ch] = m
+    lon = _expr(mat, unreal.MaterialExpressionArctangent2, -1700, 150)
+    mel.connect_material_expressions(masks["y"], "", lon, "Y")
+    mel.connect_material_expressions(masks["x"], "", lon, "X")
+    u0 = _expr(mat, unreal.MaterialExpressionMultiply, -1550, 150, const_b=1.0 / (2.0 * 3.14159265))
+    mel.connect_material_expressions(lon, "", u0, "A")
+    hour = _expr(mat, unreal.MaterialExpressionCollectionParameter, -1700, 0, collection=collection, parameter_name="GameHour")
+    turn = _expr(mat, unreal.MaterialExpressionMultiply, -1550, 0, const_b=1.0 / 24.0)
+    mel.connect_material_expressions(hour, "", turn, "A")
+    u = _expr(mat, unreal.MaterialExpressionAdd, -1400, 100)
+    mel.connect_material_expressions(u0, "", u, "A")
+    mel.connect_material_expressions(turn, "", u, "B")
+    acos = _expr(mat, unreal.MaterialExpressionArccosine, -1700, 400)
+    mel.connect_material_expressions(masks["z"], "", acos, "")
+    v = _expr(mat, unreal.MaterialExpressionMultiply, -1550, 400, const_b=1.0 / 3.14159265)
+    mel.connect_material_expressions(acos, "", v, "A")
+    uv = _expr(mat, unreal.MaterialExpressionAppendVector, -1250, 250)
+    mel.connect_material_expressions(u, "", uv, "A")
+    mel.connect_material_expressions(v, "", uv, "B")
+    # mip 0 always: the longitude wraps at the seam, where screen-space derivatives would jump
+    tex = _expr(mat, unreal.MaterialExpressionTextureSample, -1050, 250, texture=eal.load_asset(stars),
+                mip_value_mode=unreal.TextureMipValueMode.TMVM_MIP_LEVEL, const_mip_value=0)
+    mel.connect_material_expressions(uv, "", tex, "UVs")
+    horizon = _expr(mat, unreal.MaterialExpressionMultiply, -1550, 550, const_b=8.0)
+    mel.connect_material_expressions(masks["z"], "", horizon, "A")
+    horizon_sat = _expr(mat, unreal.MaterialExpressionSaturate, -1400, 550)
+    mel.connect_material_expressions(horizon, "", horizon_sat, "")
+    night = _expr(mat, unreal.MaterialExpressionCollectionParameter, -1250, 650, collection=collection, parameter_name="Stars")
+    bright = _expr(mat, unreal.MaterialExpressionScalarParameter, -1250, 750, parameter_name="StarBrightness", default_value=0.035)
+    k1 = _expr(mat, unreal.MaterialExpressionMultiply, -1100, 600)
+    mel.connect_material_expressions(horizon_sat, "", k1, "A")
+    mel.connect_material_expressions(night, "", k1, "B")
+    k2 = _expr(mat, unreal.MaterialExpressionMultiply, -950, 650)
+    mel.connect_material_expressions(k1, "", k2, "A")
+    mel.connect_material_expressions(bright, "", k2, "B")
+    star_rgb = _expr(mat, unreal.MaterialExpressionMultiply, -800, 300)
+    mel.connect_material_expressions(tex, "RGB", star_rgb, "A")
+    mel.connect_material_expressions(k2, "", star_rgb, "B")
+    # the sky atmosphere as it would be drawn without a dome
+    sky = _expr(mat, unreal.MaterialExpressionSkyAtmosphereViewLuminance, -800, -100)
+    disc = _expr(mat, unreal.MaterialExpressionSkyAtmosphereLightDiskLuminance, -800, 50)
+    atmos = _expr(mat, unreal.MaterialExpressionAdd, -600, 0)
+    mel.connect_material_expressions(sky, "", atmos, "A")
+    mel.connect_material_expressions(disc, "", atmos, "B")
+    out = _expr(mat, unreal.MaterialExpressionAdd, -400, 150)
+    mel.connect_material_expressions(atmos, "", out, "A")
+    mel.connect_material_expressions(star_rgb, "", out, "B")
+    mel.connect_material_property(out, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    mel.recompile_material(mat)
+    eal.save_loaded_asset(mat)
 
 
 def build_placeholders(normals_for=lambda key, entry: True, glow=None):
@@ -808,7 +908,9 @@ class ZoneMaterials:
         self.flat_master = None
         props_cfg = os.path.join(REPO, "data", "environment", "props.json")
         self.props = build_prop_materials(json.load(open(props_cfg, encoding="utf-8")).get("materials", {})
-                                          if os.path.exists(props_cfg) else {})
+                                          if os.path.exists(props_cfg) else {}, ensure_mpc())
+        stars = self._import_extra("T_Stars.png", srgb=True)
+        self.night_sky = _master("M_NightSky", build_night_sky_master, stars, ensure_mpc()) if stars else None
 
     def _import_extra(self, filename, srgb=True, normal=False):
         """Shared textures from make_placeholders.py (macro noise, water normals)."""
@@ -848,6 +950,8 @@ class ZoneMaterials:
         scalars = {"TileCm": tile, "TileCm2": tile * 2.73, "Roughness": t["roughness"]}
         if "normal_strength" in cfg:
             scalars["NormalStrength"] = float(cfg["normal_strength"])  # else M_Ground's default (0.8)
+        if "large_normal_scale" in cfg:
+            scalars["LargeNormalScale"] = float(cfg["large_normal_scale"])  # else M_Ground's default (1.5)
         if not self.normals_for(key, t):
             scalars["NormalStrength"] = 0.0
         self.ground[key] = _instance("MI_%s__ground" % key, self.ground_master, textures={"BaseColor": d, "Normal": n},

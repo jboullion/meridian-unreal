@@ -8,14 +8,19 @@
 #   powershell -File tools/ue/run_lookdev.ps1 -Label slow -Settle 3       (fixed 3 s per camera, the old way)
 #     (by default each camera is saved as soon as its image settles, with clouds and wind frozen;
 #      see Source/.../Tests/MRLookDevTour.h)
+#   powershell -File tools/ue/run_lookdev.ps1 -Label night -GameHour 23          (any time of day, docs/adr/0005)
+#   powershell -File tools/ue/run_lookdev.ps1 -Label dusk -Mood raza_dusk        (one mood, no day/night cycle)
 #   powershell -File tools/ue/run_lookdev.ps1 -Label perf -Profile -ResX 1920 -ResY 1080
 #     (-Profile: per camera, frame times with everything on / Nanite tessellation off / grass hidden,
 #      plus CSV-profiler captures; summarise with python tools/lookdev/profile_report.py perf)
 param(
     [Parameter(Mandatory = $true)][string]$Label,
     [string]$Compare = "",
-    # Meridian game hour for the clock faces (MRGameTimeSubsystem); pinned so captures compare, -1 = real time
-    [double]$GameHour = 15,
+    # Meridian game hour (MRGameTimeSubsystem): the day/night cycle, sun and clock faces; pinned so
+    # captures compare, -1 = real time. 17 puts the sun where the afternoon mood was tuned.
+    [double]$GameHour = 17,
+    # pin one mood from moods.json instead of the day/night cycle (UMREnvironmentSubsystem -MRMood)
+    [string]$Mood = "",
     [string[]]$Only = @(),
     [switch]$Profile,
     [int]$ResX = 1600,
@@ -38,6 +43,7 @@ if ($Only) { $gameArgs += " -MRLookDevOnly=" + ($Only -join ",") }
 if ($Profile) { $gameArgs += " -MRLookDevProfile" }
 if ($Settle -gt 0) { $gameArgs += " -MRLookDevSettle=$Settle" }
 if ($GameHour -ge 0) { $gameArgs += " -MRGameHour=$GameHour" }
+if ($Mood) { $gameArgs += " -MRMood=$Mood" }
 
 $started = Get-Date
 for ($attempt = 1; $attempt -le 2; $attempt++) {

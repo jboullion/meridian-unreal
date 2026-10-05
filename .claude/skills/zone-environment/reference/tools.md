@@ -72,7 +72,8 @@ Run `bgf2png` before `roo2gltf`, which needs texture sizes for its UVs.
 - **Flags:**
   - `-Compare <label>`
   - `-Only cam1,cam2`
-  - `-GameHour <h>` (default 15; -1 = real time)
+  - `-GameHour <h>` (default 17; -1 = real time): drives the day/night cycle, the sun and moon and the clock
+  - `-Mood <name>`: pin one mood (no cycle; the mood's own sun rotation)
   - `-Profile -ResX 1920 -ResY 1080`
   - `-Settle 3` (the old fixed wait)
 - **Output:** images go to `build/lookdev/<label>/`. With `-Compare`, a side-by-side sheet is written as well.
@@ -80,10 +81,18 @@ Run `bgf2png` before `roo2gltf`, which needs texture sizes for its UVs.
 
 **Comparisons and profiling**
 - `python tools/lookdev/compare.py <labelA> <labelB> [...] [--only cams]` builds sheets for any labels.
-- `powershell -File tools/lookdev/mood_test.ps1 -Moods a,b,c [-Cameras …]` captures `mood_<name>` per mood, then restores the level's own mood.
+- `powershell -File tools/lookdev/mood_test.ps1 -Moods a,b,c [-Cameras …]` captures `mood_<name>` per mood, each pinned with `-Mood` (nothing baked).
+- `powershell -File tools/lookdev/cycle_test.ps1 [-Hours 0,6,9,14,19,22] [-Cameras …]` captures `cycle_<hh>` per hour and one sheet with the hours side by side.
 - `powershell -File tools/lookdev/ground_normals_test.ps1 [-Variants current,strong,stones] [-Moods …] [-Cameras …]` captures `gn_<variant>_<mood>` per ground-normal variant (`ground_normals_variant.py`), then restores `materials.json`, the textures and the mood.
 - `powershell -File tools/lookdev/upscaler_test.ps1 -Models default,<name>,… [-Cameras …]` captures `up_<model>` per model, then restores the default textures.
 - `python tools/lookdev/profile_report.py <label> [--top N]` summarises the GPU passes from a `-Profile` run.
+
+**Environment director (C++)**
+- `UMREnvironmentSubsystem` (`Source/MeridianRemastered/Environment/`): client and PIE only (not the dedicated server; editor worlds with `mr.Env.Editor 1`).
+- Reads `moods.json` at runtime; blends the cycle's keys by hour; moves the directional light along the sun or moon path (`"sky"`); switches `NightLamp` lights and `MPC_Environment.LampsOn`; sets `WindowGlow` and `Stars`.
+- It re-evaluates every `mr.Env.UpdateSeconds` (5) and applies only changes. Lighting actors are found by tag (`build_world.py` tags them with their label).
+- `-MRMood=` / `mr.Env.Mood` pin a mood; `MREnvReload` re-reads the file.
+- Tests: `UnrealEditor-Cmd <uproject> -ExecCmds="Automation RunTests Meridian.Environment;Quit" -unattended -nullrhi`.
 
 **Game time (C++)**
 - `UMRGameTimeSubsystem` (`Source/MeridianRemastered/Environment/`) writes `MPC_Environment.GameHour` every tick, in game, PIE and the editor.

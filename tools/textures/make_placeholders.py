@@ -42,6 +42,7 @@ For every texture in build/textures/catalog.json it writes, to build/textures_pl
                   wrap around the tile edges so tiling textures stay seamless. Blue is a constant: UE
                   stores normal maps as BC5 and rebuilds Z from X/Y.
   T_WaterNormal.png   tileable ripple normal map for the water material.
+  T_Stars.png         equirectangular star map for the night sky (M_NightSky, docs/adr/0005).
   T_MacroNoise.png    tileable low-frequency noise (R large, G medium, B small blobs) for breaking up
                       tiling and tinting ground and grass across the world (world-aligned in UE).
   placeholders.json   per texture: file names, masked (has transparency), roughness, normal strength;
@@ -221,6 +222,56 @@ def macro_noise(size: int = 512, seed: int = 59) -> Image.Image:
         off = 2 * size // cells
         channels.append(big.crop((off, off, off + size, off + size)).filter(ImageFilter.GaussianBlur(size / cells / 6)))
     return Image.merge("RGB", channels)
+
+
+def stars(width: int = 4096, seed: int = 59) -> Image.Image:
+    """Night-sky star map, equirectangular (u = longitude, v = 0 at the zenith, 0.5 at the horizon),
+    for M_NightSky (docs/adr/0005). Mostly faint stars, a few bright and tinted ones, and a band of
+    extra faint ones along a tilted great circle for a hint of a milky way. Stars are widened towards
+    the poles so they stay round on the sky."""
+    import math
+    import random
+    rng = random.Random(seed)
+    height = width // 2
+    img = Image.new("RGB", (width, height))
+    draw = ImageDraw.Draw(img)
+    tints = [(255, 255, 255)] * 6 + [(205, 218, 255), (255, 232, 205), (255, 214, 186)]
+
+    def star(x, y, z, b):
+        z = max(-1.0, min(1.0, z))
+        lat = math.asin(z)
+        u = (math.atan2(y, x) / (2 * math.pi)) % 1.0 * width
+        v = math.acos(z) / math.pi * height
+        r = 0.35 + 0.8 * b  # about a texel: the map is seen ~1.5x magnified, plus bloom
+        rx = min(r / max(math.cos(lat), 0.05), width / 16)
+        c = tuple(round(t * b) for t in rng.choice(tints))
+        for dx in (-width, 0, width):  # wrap round the seam
+            draw.ellipse((u + dx - rx, v - r, u + dx + rx, v + r), fill=c)
+
+    def point():
+        z = rng.uniform(-1.0, 1.0)
+        a = rng.uniform(0.0, 2 * math.pi)
+        s = math.sqrt(1.0 - z * z)
+        return s * math.cos(a), s * math.sin(a), z
+
+    for _ in range(9000):
+        star(*point(), 0.18 + 0.82 * rng.random() ** 7)
+    # the band: points near a great circle (normal n), spread a little either side
+    n = (0.35, -0.6, 0.72)
+    ln = math.sqrt(sum(c * c for c in n))
+    n = tuple(c / ln for c in n)
+    a = (n[1], -n[0], 0.0)
+    la = math.sqrt(sum(c * c for c in a))
+    a = tuple(c / la for c in a)
+    b = (n[1] * a[2] - n[2] * a[1], n[2] * a[0] - n[0] * a[2], n[0] * a[1] - n[1] * a[0])
+    for _ in range(16000):
+        t = rng.uniform(0.0, 2 * math.pi)
+        off = rng.gauss(0.0, 0.11)
+        p = [a[i] * math.cos(t) + b[i] * math.sin(t) + n[i] * off for i in range(3)]
+        lp = math.sqrt(sum(c * c for c in p))
+        star(p[0] / lp, p[1] / lp, p[2] / lp, 0.08 + 0.45 * rng.random() ** 9)
+    img = img.filter(ImageFilter.GaussianBlur(0.5))
+    return img.point(lambda v: min(255, round(v * 2.0)))
 
 
 def _normalise(premul: Image.Image, weight: Image.Image) -> Image.Image:
@@ -635,11 +686,13 @@ def main():
                                                               "masked" if entry["masked"] else "      ",
                                                               entry["roughness"], entry["height_mode"]))
 
-    extras = {"macro": "T_MacroNoise.png", "water_normal": "T_WaterNormal.png", "no_emissive": "T_NoEmissive.png"}
-    extras_code = hashlib.sha1("".join(inspect.getsource(f) for f in (macro_noise, water_normal)).encode()).hexdigest()
+    extras = {"macro": "T_MacroNoise.png", "water_normal": "T_WaterNormal.png", "no_emissive": "T_NoEmissive.png",
+              "stars": "T_Stars.png"}
+    extras_code = hashlib.sha1("".join(inspect.getsource(f) for f in (macro_noise, water_normal, stars)).encode()).hexdigest()
     if cache.get("_extras", {}).get("key") != extras_code or not all((OUT / f).exists() for f in extras.values()):
         macro_noise().save(OUT / extras["macro"])
         water_normal().save(OUT / extras["water_normal"])
+        stars().save(OUT / extras["stars"])
         Image.new("L", (4, 4), 0).save(OUT / extras["no_emissive"])  # the materials' default window mask
     new_cache["_extras"] = {"key": extras_code, "files": list(extras.values())}
 

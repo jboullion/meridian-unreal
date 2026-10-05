@@ -380,6 +380,8 @@ Results (`build/lookdev/compare_gn_*`, `ground_normals_zoom.png`):
 
 **Decision (user):** stones maps on all four of those floors (`relief.rules_for` names them, and `ground` `normal_strength` 1.0). The user likes the lumpy paths. Grass keeps Marigold's maps.
 
+**Large stones with small stones' bumps (fixed).** `M_Ground` draws each floor texture at two scales (its repeat and 2.73x that), blended by macro noise so the small originals don't read as a grid. Only the base colour was sampled at both scales; the normal map was sampled at the small scale alone. So wherever the large layer showed, its big stones carried the small stones' relief (the user spotted it at the pond). The normal map is now sampled at both scales and blended with the colour's weight. Camera: `ground_pond`; compare `gn2_before` / `gn2_after`. Stretched 2.73x at the same height, the large layer's relief came out gentle, so at the user's request its normals are 1.5x stronger (`LargeNormalScale`; per floor `ground` `large_normal_scale`; 2.73 would match the small stones' steepness). Compare `gn3_large17`.
+
 `make_placeholders.py` now remakes a texture when it moves to or from the rule-based maps (`rule_relief` in its rules). It used to keep the Marigold maps that `ai_maps.py` had written over the rule-based ones.
 
 **Known flake (seen twice).** A capture right after an in-place mesh reimport can show the reimported meshes with their textures stuck at low mips and their Nanite fallback meshes, which shows as blur and dark gaps in parapets. Forgetting those meshes in `Saved/MRBuild/world_cache.json` and building again fixes it. It happened again on 2026-10-05 after the parapet and roof changes.

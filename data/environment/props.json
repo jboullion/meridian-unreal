@@ -1,8 +1,8 @@
 {
-  "_doc": "Meshes and lights for Kod-placed objects (data/zone_layout.json objects, by class), docs/adr/0003 pass 3. tools/ue/build_world.py spawns `mesh` (build/environment/kit/<mesh>.glb, tools/blender/build_prop_kit.py) at the object's position, plus a warm point light `offset_m` above it. Light intensity in candela; at ~8 lux of daylight these read as glows and become the main light in deep shade and at night. `materials`: the kit's material slots (linear colours; emissive in nits-ish scene units); zone art uses them as 'prop_<name>' slots too (window boxes).",
+  "_doc": "Meshes and lights for Kod-placed objects (data/zone_layout.json objects, by class), docs/adr/0003 pass 3. tools/ue/build_world.py spawns `mesh` (build/environment/kit/<mesh>.glb, tools/blender/build_prop_kit.py) at the object's position, plus a warm point light `offset_m` above it. Light intensity in candela; at ~8 lux of daylight these read as glows and become the main light in deep shade and at night. `night_only` (a light, or a material slot): off from 11 to 17 like the original lamps (kod lamp.kod), switched by the environment director in game (docs/adr/0005). `materials`: the kit's material slots (linear colours; emissive in nits-ish scene units); zone art uses them as 'prop_<name>' slots too (window boxes).",
   "materials": {
     "iron": {"color": [0.045, 0.043, 0.045], "metallic": 0.85, "roughness": 0.45},
-    "lamp_glass": {"color": [0.9, 0.75, 0.45], "roughness": 0.2, "emissive": [5.0, 3.2, 1.3]},
+    "lamp_glass": {"color": [0.9, 0.75, 0.45], "roughness": 0.2, "emissive": [5.0, 3.2, 1.3], "night_only": true},
     "embers": {"color": [0.15, 0.04, 0.01], "roughness": 0.9, "emissive": [5.0, 1.5, 0.25]},
     "planter": {"color": [0.16, 0.08, 0.035], "roughness": 0.8},
     "foliage": {"color": [0.05, 0.12, 0.03], "roughness": 0.85},
@@ -10,7 +10,7 @@
     "flower_yellow": {"color": [0.7, 0.5, 0.06], "roughness": 0.7}
   },
   "classes": {
-    "Lamp": {"mesh": "SM_LampPost", "light": {"offset_m": 2.57, "candela": 12, "radius_m": 11, "temperature": 2600, "source_radius_cm": 8}},
+    "Lamp": {"mesh": "SM_LampPost", "light": {"offset_m": 2.57, "candela": 12, "radius_m": 11, "temperature": 2600, "source_radius_cm": 8, "night_only": true}},
     "Brazier": {"mesh": "SM_Brazier", "light": {"offset_m": 1.25, "candela": 8, "radius_m": 9, "temperature": 2000, "source_radius_cm": 20}}
   }
 }

@@ -114,6 +114,8 @@ python tools/lookdev/profile_report.py mytest
 | `Tests/MRScreenshotTour`, `Tests/MRProfileTour` | `-MRScreenshots` visual check and `-MRProfile` character cost measurement |
 | `Tests/MRLookDevTour` | `-MRLookDev` environment captures from fixed cameras; console `MRBookmark <name>` logs a new camera |
 | `Environment/MRScatterActor` | Instanced decoration (grass tufts) placed by the world build |
+| `Environment/MRGameTimeSubsystem` | Meridian game time from UTC (2-hour days), the original's day phases, brightness and seasons; drives the clock faces |
+| `Environment/MREnvironmentSubsystem` | Client-side day/night director: blends `moods.json` by hour, sun and moon, lamps, stars ([ADR 0005](docs/adr/0005-time-weather-and-atmosphere.md)) |
 
 ### Zone streaming
 
@@ -141,6 +143,7 @@ The game reads `data/zones.json` and `data/zone_layout.json` directly from the r
 - **`tools/environment/`**: shared pure-Python helpers: blockout glb reading and the rebuilt-face selection (`blockout.py`), facade outlines with an overlay per texture and a one-image review sheet of every opening (`facades.py`, writes `build/environment/facade_check/`), and seeded ground scatter (`scatter.py`).
 - **`tools/textures/make_placeholders.py`**: textures from the originals. Base colour is upscaled with `4xTextures_GTAV_rgt-s_dither` (`ESRGAN_MODEL`; Real-ESRGAN `realesrgan-x4plus` when its weights aren't installed). Any 4x model from openmodeldb saved as `build/texai/models/<name>.safetensors` also works (`tools/textures/upscale.py`); `--esrgan-model <name>` applies one model to everything, and `tools/lookdev/upscaler_test.ps1` compares models in-engine. Upscales are cached in `build/texai/upscaled/`. Height and normal maps come from Marigold (`ai_maps.py --apply`), and from rules by brightness and texture name when the AI tools aren't installed. It also makes the macro-variation noise. Both steps are incremental.
 - **`tools/textures/ai_maps.py`**: height and normal maps from learned models (DeepBump, Marigold normals, Depth Anything V2) for comparison with `make_placeholders.py`'s. It runs in its own environment, `build/texai/.venv` (PyTorch CUDA, diffusers, onnxruntime, DeepBump cloned into `build/texai/DeepBump`). `--sheet` draws a per-texture comparison. `tools/lookdev/ai_maps_test.ps1` swaps each method into the world and captures look-dev images.
+- **`Environment/MREnvironmentSubsystem`** (C++): the day/night cycle in game: blends the moods in `data/environment/moods.json` by game hour, moves the sun and moon, switches the lamps and lights the stars (ADR 0005). `tools/lookdev/cycle_test.ps1` captures fixed hours; `run_lookdev.ps1 -GameHour <h>` / `-Mood <name>` pin one.
 - **`tools/ue/zone_mood.py`**, **`tools/ue/run_lookdev.ps1`**, **`tools/lookdev/compare.py`**: lighting moods from `data/environment/moods.json`, and the look-dev capture and comparison loop.
 - **`tools/blender/install_mpfb_packs.py`**: installs MakeHuman asset packs (zips) into Blender's MPFB extension.
 - **`tools/blender/mpfb_character.py`**: builds a MakeHuman character kit on the UE5 mannequin skeleton: one body mesh with head-slider morph targets, hairstyles, textures and a manifest. Settings live in `tools/blender/characters/*.json`.

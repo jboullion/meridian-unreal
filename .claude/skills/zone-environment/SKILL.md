@@ -28,7 +28,7 @@ Every default below won an in-engine comparison; don't change one without a new 
 | Displacement | Off (`relief.displacement: false`) | Inferred depth made wobbly glass and melted stone |
 | Rebuilt geometry | `"rebuild": ["plain_facades", "roofs", "parapets", "cutouts"]`: proud bands, piers and plinths on walls *without* painted openings, roof slabs with eaves and verges, solid merlons, solid fences/gates/signs. Walls with painted windows or doors stay original (no facade relief, no cut openings) | "Selective rebuild", "Plain facades back" |
 | Grime | Geometry-derived strips at wall feet and under eaves (mesh decals) | Never reads the textures, so it can't misplace anything |
-| Lighting | Moods in `moods.json`; painted windows glow at night (window masks × `MPC_Environment.WindowGlow`) | "Moods and lit windows" |
+| Lighting | A day/night cycle: moods in `moods.json` are keys on the game clock, blended in game by `UMREnvironmentSubsystem`; one directional light is the sun by day and the moon by night; lamps off 11–17; stars at night; painted windows glow at night (window masks × `MPC_Environment.WindowGlow`) | "Moods and lit windows" |
 | Time-driven textures | Animated textures that show game time (the clock) become a frame atlas indexed by `MPC_Environment.GameHour` from `UMRGameTimeSubsystem` | "The Raza clock tells the time" |
 
 **The guiding rule:** prefer depth and richness that come from the geometry or from lighting
@@ -76,13 +76,13 @@ Work in this order; each step is cheap to re-run (everything is incremental).
    New meshes go into `tools/blender/build_prop_kit.py`.
 9. **World.** Run `powershell -File tools/ue/build_world.ps1`. It uses the open editor when there is one; stop PIE first.
    C++ changes need a compile and an editor restart.
-10. **Mood.** Today there is one outdoor mood baked into `L_World` (`moods.json` `levels`); every zone streams into it.
-    New moods `inherit` an existing one and set only what differs, plus `"Collection": {"WindowGlow": …}`.
-    Interior and per-zone runtime moods are **not built yet**; the plan is [ADR 0005](../../../docs/adr/0005-time-weather-and-atmosphere.md) (day/night director, zone profiles, fire, weather). If a zone needs its own lighting before that lands, raise it with the user instead of improvising.
+10. **Mood and cycle.** In game the environment director blends the moods along the zone's cycle by game hour (`moods.json` `"zones"` → `"cycles"`; `default` = `raza_outdoor`). The level's baked mood (`levels`) is only the editor's view.
+    New moods `inherit` an existing one and set only what differs, plus `"Collection"` (`WindowGlow`, `Stars`). A new key mood goes into a cycle's `keys` at its hour.
+    Interior, dungeon and cave profiles are **phase 2** of [ADR 0005](../../../docs/adr/0005-time-weather-and-atmosphere.md); until then every zone shares the town's cycle. If a zone needs its own lighting before that lands, raise it with the user instead of improvising.
 11. **Look-dev.**
     - Add cameras for the zone to `lookdev_cameras.json`. In game, `MRBookmark <name>` logs the current view as an entry.
     - Capture a baseline label, then compare every change: `run_lookdev.ps1 -Label <new> -Compare <old> [-Only cam1,cam2]`.
-    - Use `mood_test.ps1` for moods and `upscaler_test.ps1` for upscalers. Compare only labels captured the same way (see pitfalls).
+    - Use `cycle_test.ps1` for the day/night cycle, `mood_test.ps1` for single moods and `upscaler_test.ps1` for upscalers. Compare only labels captured the same way (see pitfalls).
     - Send the sheets to the user (SendUserFile) with a recommendation.
 12. **Record.** Log any new experiment, comparison or decision in ADR 0003 (with the sheet paths).
     If a *default* changed, update this skill's table and the reference files too.
@@ -101,10 +101,10 @@ The recipe was proven on Raza's town (300) only. For interiors (301–308, 332, 
 |---|---|
 | Facade/relief/texture rules | `make_placeholders.py` → `build_world.ps1` → `run_lookdev.ps1 -Label x -Compare y` |
 | Zone layout, rebuild, grime, roofs | `build_zone_art.py -- --rid <rid>` → `build_world.ps1` → look-dev |
-| Lighting only | `build_world.ps1 -Script zone_mood.py` (or `$env:MR_MOOD="<mood>"` first) → look-dev, or `mood_test.ps1` |
+| Lighting only | Edit `moods.json` (read at runtime: no build; `MREnvReload` in a running game) → `run_lookdev.ps1 -Mood <name>` / `mood_test.ps1` for a mood, `cycle_test.ps1` for the cycle. `build_world.ps1 -Script zone_mood.py` only refreshes the editor's baked view |
 | Upscaler comparison | `upscaler_test.ps1 -Models default,<name>` (restores the default afterwards) |
 | Materials code (`environment_materials.py`) | `build_world.ps1`; a new helper used by a master must be added to `_master`'s cache key |
-| Clock / game hour | `run_lookdev.ps1 -GameHour <h>` (default 15); `mr.GameHour <h>` in the console |
+| Clock / game hour | `run_lookdev.ps1 -GameHour <h>` (default 17, where the afternoon mood was tuned); `mr.GameHour <h>` in the console |
 
 Typical costs on the RTX 3070: texture no-op 0 s, one building about 22 s in Blender plus 15 s in the open editor, a look-dev run about 45 s, an upscaler model over all 150 textures about 5 min (cached afterwards).
 

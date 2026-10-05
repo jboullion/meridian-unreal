@@ -36,6 +36,7 @@
     {"name": "townwall_piers", "location_cm": [3000, 850, 180], "rotation": [-2.0, -165.8], "fov": 75},
     {"name": "gate_back_corner", "location_cm": [13100, 5700, 160], "rotation": [11.5, 49.0], "fov": 75},
     {"name": "ground_square", "location_cm": [3700, 3300, 160], "rotation": [-24.0, 150.0], "fov": 70},
-    {"name": "ground_path", "location_cm": [8220, 1500, 150], "rotation": [-22.0, -90.0], "fov": 70}
+    {"name": "ground_path", "location_cm": [8220, 1500, 150], "rotation": [-22.0, -90.0], "fov": 70},
+    {"name": "ground_pond", "location_cm": [8000, 1800, 280], "rotation": [-38.0, 75.0], "fov": 70}
   ]
 }

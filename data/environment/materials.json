@@ -87,7 +87,7 @@
   "grd09629": 0.5
  },
  "ground": {
-  "_doc": "Floors drawn with the world-aligned ground master instead of the blockout UVs: the original texture at two scales blended by macro noise (breaks up tiling), tinted by the macro noise. tile_m = the original repeat size (floors tile once per 2.2 m grid square in the original client, whatever the texture's size). normal_strength: the normal map's strength on that floor (default M_Ground's 0.8).",
+  "_doc": "Floors drawn with the world-aligned ground master instead of the blockout UVs: the original texture at two scales blended by macro noise (breaks up tiling), tinted by the macro noise. tile_m = the original repeat size (floors tile once per 2.2 m grid square in the original client, whatever the texture's size). normal_strength: the normal map's strength on that floor (default M_Ground's 0.8). large_normal_scale: extra strength for the large-scale layer, whose relief is stretched 2.73x and comes out flatter (default 1.5; 2.73 makes the big stones as steep as the small).",
   "grd02306": {
    "tile_m": 2.2
   },

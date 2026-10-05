@@ -400,6 +400,8 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
             lc.set_editor_property("temperature", float(light["temperature"]))
             lc.set_editor_property("source_radius", float(light.get("source_radius_cm", 5)))
             pl.tags = [unreal.Name("ZoneLight"), unreal.Name("Zone%d" % zone["rid"])]
+            if light.get("night_only"):
+                pl.tags = pl.tags + [unreal.Name("NightLamp")]  # off by day (UMREnvironmentSubsystem)
     if not level_sub.save_current_level():
         raise RuntimeError("could not save " + path)
     cache.done(path, key, "levels", True)
@@ -407,16 +409,19 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
 
 
 def spawn(cls, loc=unreal.Vector(0, 0, 0), rot=unreal.Rotator(0, 0, 0), label=None):
+    """Spawn an actor; its label is also a tag, which is how UMREnvironmentSubsystem finds the
+    lighting actors in game (labels exist only in the editor)."""
     a = actors.spawn_actor_from_class(cls, loc, rot)
     if label:
         a.set_actor_label(label)
+        a.tags = [unreal.Name(label)]
     return a
 
 
-def build_persistent_level(zone_levels, maps):
+def build_persistent_level(zone_levels, maps, night_sky=None):
     cache = build_cache.CACHE
     recipe = {"levels": zone_levels, "code": source(build_persistent_level, spawn, apply_level_mood),
-              "moods": file_digest(MOODS), "mood": os.environ.get("MR_MOOD")}
+              "moods": file_digest(MOODS), "mood": os.environ.get("MR_MOOD"), "night_sky": night_sky}
     key = cache.key(recipe, deps=False)
     if cache.fresh(WORLD_PATH, key):
         cache.done(WORLD_PATH, key, "levels", False)
@@ -432,8 +437,10 @@ def build_persistent_level(zone_levels, maps):
                                if not isinstance(a, (unreal.WorldSettings, unreal.Brush))])
     else:
         open_level(WORLD_PATH, maps)
-    # one sun + sky for the outdoor zones (interiors get their own lights later)
+    # one sun + sky for the outdoor zones (interiors get their own lights later). The sun is also
+    # the moon at night, moved by the environment director in game (docs/adr/0005), so it's movable
     sun = spawn(unreal.DirectionalLight, rot=unreal.Rotator(roll=0, pitch=-40, yaw=-30), label="Sun")
+    sun.light_component.set_mobility(unreal.ComponentMobility.MOVABLE)
     sun.light_component.set_editor_property("atmosphere_sun_light", True)
     sun.light_component.set_editor_property("intensity", 8.0)
     spawn(unreal.SkyAtmosphere, label="SkyAtmosphere")
@@ -444,6 +451,17 @@ def build_persistent_level(zone_levels, maps):
     spawn(unreal.VolumetricCloud, label="Clouds")
     pp = spawn(unreal.PostProcessVolume, label="GlobalPostProcess")
     pp.set_editor_property("unbound", True)
+    if night_sky:
+        # sky dome for the stars (M_NightSky draws the atmosphere through it): far beyond the clouds
+        dome = spawn(unreal.StaticMeshActor, label="NightSky")
+        dome.set_actor_scale3d(unreal.Vector(2.0e5, 2.0e5, 2.0e5))  # engine sphere: 50 cm -> 100 km
+        comp = dome.static_mesh_component
+        comp.set_static_mesh(eal.load_asset("/Engine/BasicShapes/Sphere"))
+        comp.set_material(0, eal.load_asset(night_sky))
+        comp.set_collision_profile_name("NoCollision")
+        comp.set_editor_property("cast_shadow", False)
+        comp.set_editor_property("affect_distance_field_lighting", False)
+        comp.set_editor_property("affect_dynamic_indirect_lighting", False)
     apply_level_mood("L_World")  # sun angle, fog, exposure... from data/environment/moods.json
 
     world = editor_sub.get_editor_world()
@@ -506,7 +524,7 @@ def main(args):
             prune_art(z, parts)
             if rebuilt:
                 log("zone %d %s: level rebuilt (%s)" % (z["rid"], z["class"], summary))
-        build_persistent_level(zone_levels, maps)
+        build_persistent_level(zone_levels, maps, materials.night_sky)
     finally:
         cache.save()
     if bad:

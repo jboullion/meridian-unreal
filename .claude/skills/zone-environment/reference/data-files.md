@@ -49,23 +49,26 @@ Other animated textures (`catalog.json` `frames` > 1) show frame 0.
 | `grime` | `enabled`, `exclude` (texture-name regex), `base` and `eave` blocks: `height_m`, linear `color`, `opacity`, `falloff` |
 | `variants` | parameters for `<grd>__<variant>` slots: `pane`, `glass`, `panel`, `solid` |
 | `displacement`, `displacement_range_cm`, `displacement_facade_scale` | per-texture Nanite displacement strengths; dormant while `relief.displacement` is false |
-| `ground` | floors drawn with the world-aligned ground master (`tile_m` 2.2, optional `normal_strength`, default 0.8) |
+| `ground` | floors drawn with the world-aligned ground master (`tile_m` 2.2, optional `normal_strength`, default 0.8, and `large_normal_scale` for the 2.73x layer, default 1.5) |
 | `grass` | tuft colours and wind (`wind`, `wind_speed`, `calm`, `gust_cm`) |
 | `water` | `M_Water` colour, scattering, absorption, ripples |
 
 ## `moods.json`: lighting
 | Key | Meaning |
 |---|---|
-| `levels` | level → mood (today only `L_World`: `raza_afternoon`). `MR_MOOD=<name>` overrides it for a run |
+| `levels` | level → mood baked by `zone_mood.py` (the editor's view of `L_World`). `MR_MOOD=<name>` overrides it for a run |
+| `sky` | the directional light's paths in game hours: `sun_rise`/`sun_set`/`sun_max_elevation` (6/22/50: highest at 14), `moon_rise`/`moon_set`/`moon_max_elevation` (18/34/40: highest at 2), `moon_intensity` (lux), `moon_temperature` |
+| `cycles.<name>.keys` | `[game hour, mood]` keys; the director blends the two around the hour (numbers and colours interpolate, the rest switches halfway) |
+| `zones` | per original room id: `{"cycle": name}`; `default` covers the rest |
 | `moods.<name>.inherit` | start from another mood; set only what differs |
 | `moods.<name>.<ActorLabel>` | `Sun` (`rotation` [pitch, yaw], intensity in lux, temperature), `SkyLight`, `HeightFog`, `GlobalPostProcess.settings` (PostProcessSettings fields; exposure in EV100) |
-| `moods.<name>.Collection` | `MPC_Environment` scalars: `WindowGlow` (0 by day, 0.12 dusk, 0.35 night). `GameHour` is written by C++, not by moods |
+| `moods.<name>.Collection` | `MPC_Environment` scalars: `WindowGlow` (0 by day, 0.12 dusk, 0.35 night), `Stars` (0 by day, 0.2 dusk, 1 night). `GameHour` and `LampsOn` are written by C++, not by moods |
 
-Moods: `raza_afternoon` (the level's mood), `raza_morning`, `raza_dusk`, `raza_night`.
+Moods: `raza_afternoon` (the level's baked mood, and "day" in the cycle), `raza_morning` (with the morning mist), `raza_dusk`, `raza_night` (with a faint sky-light fill). Cycle `raza_outdoor`: night until 4:30, morning by 6:30, day 9:30–17, dusk by 19:30, night from 21:30. A mood's `Sun.rotation` only counts when it's pinned; in the cycle the sun path decides.
 
 ## `props.json`: Kod-placed objects
-- `classes.<KodClass>`: `mesh` (`build/environment/kit/<mesh>.glb` from `build_prop_kit.py`) and an optional `light` (`offset_m`, `candela`, `radius_m`, `temperature`, `source_radius_cm`).
-- `materials`: the kit's slots (linear colours, emissive).
+- `classes.<KodClass>`: `mesh` (`build/environment/kit/<mesh>.glb` from `build_prop_kit.py`) and an optional `light` (`offset_m`, `candela`, `radius_m`, `temperature`, `source_radius_cm`, `night_only`: off 11–17).
+- `materials`: the kit's slots (linear colours, emissive; `night_only`: the emissive follows the lamps).
 - `build_world.py` spawns one per object in `data/zone_layout.json`.
 
 ## `lookdev_cameras.json`
