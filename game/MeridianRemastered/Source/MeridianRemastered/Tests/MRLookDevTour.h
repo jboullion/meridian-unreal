@@ -83,6 +83,7 @@ private:
 
 	bool bProfile = false;
 	float AudioSeconds = 0.f;     // > 0: -MRLookDevAudio, a WAV per shot
+	bool bWithPawn = false;       // -MRLookDevWithPawn: the player's character at the shot, seen through its own camera
 	TArray<FVariant> Variants;
 	int32 VariantIndex = -1;
 	int32 Frames = 0;

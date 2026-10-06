@@ -10,6 +10,7 @@
 #include "HAL/IConsoleManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "MeridianRemastered.h"
+#include "Misc/App.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Player/MRPlayerState.h"
@@ -33,6 +34,8 @@ namespace
 	TAutoConsoleVariable<int32> CVarSound(TEXT("mr.Audio.Sound"), 1, TEXT("0: no sounds but music."));
 	TAutoConsoleVariable<int32> CVarSoundVolume(TEXT("mr.Audio.SoundVolume"), 100, TEXT("Sound volume (everything but music), 0..100."));
 	TAutoConsoleVariable<int32> CVarLoops(TEXT("mr.Audio.Loops"), 1, TEXT("0: no looping room sounds (the original's setting)."));
+	TAutoConsoleVariable<int32> CVarBackground(TEXT("mr.Audio.Background"), 1,
+		TEXT("1: keep playing sound when the game window isn't focused (the engine mutes it by default); 0: mute."));
 	TAutoConsoleVariable<int32> CVarRandom(TEXT("mr.Audio.Random"), 1, TEXT("0: no random (periodic) room sounds (the original's setting)."));
 
 	FAutoConsoleCommandWithWorld CmdReload(
@@ -99,7 +102,7 @@ void UMRAudioSubsystem::Initialize(FSubsystemCollectionBase& InCollection)
 void UMRAudioSubsystem::Deinitialize()
 {
 	StopLoops();
-	if (Music.IsValid())
+	if (IsValid(Music))
 	{
 		Music->Stop();
 	}
@@ -290,16 +293,16 @@ UAudioComponent* UMRAudioSubsystem::Play(const UObject* WorldContext, const FStr
 
 void UMRAudioSubsystem::SetLoop2D(FName Key, const FString& File, float Volume, bool bMuffled, float FadeSeconds)
 {
-	TWeakObjectPtr<UAudioComponent>& Loop = NamedLoops.FindOrAdd(Key);
+	TObjectPtr<UAudioComponent>& Loop = NamedLoops.FindOrAdd(Key);
 	if (Volume <= 0.01f)
 	{
-		if (Loop.IsValid() && Loop->IsPlaying())
+		if (IsValid(Loop) && Loop->IsPlaying())
 		{
 			Loop->FadeOut(FadeSeconds, 0.f);
 		}
 		return;
 	}
-	if (!Loop.IsValid())
+	if (!IsValid(Loop))
 	{
 		USoundBase* Sound = FindSound(File);
 		if (!Sound)
@@ -307,7 +310,7 @@ void UMRAudioSubsystem::SetLoop2D(FName Key, const FString& File, float Volume, 
 			return;
 		}
 		Loop = UGameplayStatics::CreateSound2D(GetWorld(), Sound, 1.f, 1.f, 0.f, nullptr, true, false);
-		if (!Loop.IsValid())
+		if (!IsValid(Loop))
 		{
 			return;
 		}
@@ -347,15 +350,15 @@ int32 UMRAudioSubsystem::ViewZone() const
 void UMRAudioSubsystem::SetMusic(const FString& File)
 {
 	const FString Want = bMusicOn ? File : FString();
-	if (Want.Equals(MusicFile, ESearchCase::IgnoreCase) && (Want.IsEmpty() || Music.IsValid()))
+	if (Want.Equals(MusicFile, ESearchCase::IgnoreCase) && (Want.IsEmpty() || IsValid(Music)))
 	{
 		return;  // the same track carries on (the original: MusicPlayFile ignores the current file)
 	}
 	const float Fade = float(Number(TEXT("music_fade_s"), 1.5));
-	if (Music.IsValid())
+	if (IsValid(Music))
 	{
 		Music->FadeOut(Fade, 0.f);
-		Music.Reset();
+		Music = nullptr;
 	}
 	MusicFile = Want;
 	if (Want.IsEmpty())
@@ -365,7 +368,7 @@ void UMRAudioSubsystem::SetMusic(const FString& File)
 	if (USoundBase* Sound = FindSound(Want))
 	{
 		Music = UGameplayStatics::CreateSound2D(GetWorld(), Sound, 1.f, 1.f, 0.f, nullptr, true, true);
-		if (Music.IsValid())
+		if (IsValid(Music))
 		{
 			Music->FadeIn(Fade, 1.f);
 			UE_LOG(LogMeridian, Log, TEXT("MRAudio: music %s"), *Want);
@@ -376,9 +379,9 @@ void UMRAudioSubsystem::SetMusic(const FString& File)
 void UMRAudioSubsystem::StopLoops()
 {
 	const float Fade = float(Number(TEXT("loop_fade_s"), 0.5));
-	for (const TWeakObjectPtr<UAudioComponent>& Loop : Loops)
+	for (const TObjectPtr<UAudioComponent>& Loop : Loops)
 	{
-		if (Loop.IsValid())
+		if (IsValid(Loop))
 		{
 			Loop->FadeOut(Fade, 0.f);
 		}
@@ -483,6 +486,7 @@ void UMRAudioSubsystem::TickPeriodic(double Now)
 void UMRAudioSubsystem::ApplySettings()
 {
 	bMusicOn = CVarMusic.GetValueOnGameThread() != 0;
+	FApp::SetUnfocusedVolumeMultiplier(CVarBackground.GetValueOnGameThread() != 0 ? 1.f : 0.f);
 	bLoopsOn = CVarLoops.GetValueOnGameThread() != 0;
 	bRandomOn = CVarRandom.GetValueOnGameThread() != 0;
 	const float MusicVol = bMusicOn ? FMath::Clamp(CVarMusicVolume.GetValueOnGameThread(), 0, 100) / 100.f : 0.f;
@@ -556,8 +560,9 @@ void UMRAudioSubsystem::Tick(float DeltaTime)
 	if (Now >= NextSettings)
 	{
 		NextSettings = Now + 0.25;
-		const FString Key = FString::Printf(TEXT("%d %d %d %d %d %d"), CVarMusic.GetValueOnGameThread(), CVarMusicVolume.GetValueOnGameThread(),
-			CVarSound.GetValueOnGameThread(), CVarSoundVolume.GetValueOnGameThread(), CVarLoops.GetValueOnGameThread(), CVarRandom.GetValueOnGameThread());
+		const FString Key = FString::Printf(TEXT("%d %d %d %d %d %d %d"), CVarMusic.GetValueOnGameThread(), CVarMusicVolume.GetValueOnGameThread(),
+			CVarSound.GetValueOnGameThread(), CVarSoundVolume.GetValueOnGameThread(), CVarLoops.GetValueOnGameThread(), CVarRandom.GetValueOnGameThread(),
+			CVarBackground.GetValueOnGameThread());
 		if (Key != SettingsKey)
 		{
 			SettingsKey = Key;
@@ -572,6 +577,19 @@ void UMRAudioSubsystem::Tick(float DeltaTime)
 	if (Zone > 0)
 	{
 		TickPeriodic(Now);
+	}
+	// the zone's track should always be playing (it loops): if anything stopped it, say so and
+	// start it again
+	if (Now >= NextMusicCheck && !MusicFile.IsEmpty())
+	{
+		NextMusicCheck = Now + 1.0;
+		if (!IsValid(Music) || !Music->IsPlaying())
+		{
+			UE_LOG(LogMeridian, Warning, TEXT("MRAudio: music %s stopped by itself; restarting it"), *MusicFile);
+			const FString Track = MusicFile;
+			MusicFile.Reset();
+			SetMusic(Track);
+		}
 	}
 }
 

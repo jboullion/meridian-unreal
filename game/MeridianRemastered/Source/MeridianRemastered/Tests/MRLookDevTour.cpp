@@ -11,6 +11,7 @@
 #include "HAL/FileManager.h"
 #include "ImageUtils.h"
 #include "MeridianRemastered.h"
+#include "Misc/App.h"
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -156,9 +157,16 @@ void UMRLookDevTour::Start(APlayerController* InController)
 	}
 	FParse::Value(FCommandLine::Get(), TEXT("MRLookDevSettle="), FixedSettle);
 	FParse::Value(FCommandLine::Get(), TEXT("MRLookDevAudio="), AudioSeconds);
+	bWithPawn = FParse::Param(FCommandLine::Get(), TEXT("MRLookDevWithPawn"));
 	if (AudioSeconds > 0.f && FixedSettle <= 0.f)
 	{
 		FixedSettle = 2.f;  // no slowed world clock while recording sound
+	}
+	if (AudioSeconds > 0.f)
+	{
+		// the engine mutes an unfocused window (UnfocusedVolumeMultiplier 0): recordings must not
+		// depend on what else is clicked while the tour runs
+		FApp::SetUnfocusedVolumeMultiplier(1.f);
 	}
 	bProfile = FParse::Param(FCommandLine::Get(), TEXT("MRLookDevProfile"));
 	if (bProfile)
@@ -208,7 +216,7 @@ void UMRLookDevTour::Next()
 			UGameplayStatics::SetGlobalTimeDilation(PC, CaptureTimeDilation);
 		}
 	}
-	if (APawn* Pawn = PC->GetPawn())
+	if (APawn* Pawn = PC->GetPawn(); Pawn && !bWithPawn)
 	{
 		Pawn->SetActorHiddenInGame(true);
 	}
@@ -222,7 +230,19 @@ void UMRLookDevTour::Next()
 	const FShot& Shot = Shots[Index];
 	Camera->SetActorLocationAndRotation(Shot.Location, Shot.Rotation);
 	Camera->GetCameraComponent()->SetFieldOfView(Shot.Fov);
-	PC->SetViewTarget(Camera);
+	APawn* Pawn = PC->GetPawn();
+	if (bWithPawn && Pawn)
+	{
+		// as a player sees it: the character standing at the shot, its eyes at the camera, seen
+		// through its own (first-person) camera, the body in the scene
+		Pawn->TeleportTo(Shot.Location - (Pawn->GetPawnViewLocation() - Pawn->GetActorLocation()), FRotator(0.f, Shot.Rotation.Yaw, 0.f));
+		PC->SetControlRotation(Shot.Rotation);
+		PC->SetViewTarget(Pawn);
+	}
+	else
+	{
+		PC->SetViewTarget(Camera);
+	}
 	if (PC->PlayerCameraManager)
 	{
 		PC->PlayerCameraManager->SetGameCameraCutThisFrame();  // drop history from the last camera

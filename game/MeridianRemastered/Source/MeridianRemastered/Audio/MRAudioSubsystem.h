@@ -26,7 +26,8 @@ class USoundMix;
  *    thunder), and Play() for one-shots anywhere (gameplay sounds, later from Gameplay Cues).
  *  - The original's settings as console variables: mr.Audio.Music / MusicVolume (0..100),
  *    mr.Audio.Sound / SoundVolume, mr.Audio.Loops, mr.Audio.Random; applied through the sound
- *    classes (tools/ue/build_audio.py) with SM_Settings.
+ *    classes (tools/ue/build_audio.py) with SM_Settings. mr.Audio.Background 1 (default) keeps sound
+ *    playing while the window isn't focused (the engine mutes it otherwise).
  * Every sound it starts is logged ("MRAudio: ..."). Console: MRAudioReload re-reads the data.
  */
 UCLASS()
@@ -102,9 +103,15 @@ private:
 
 	int32 Zone = -1;
 	FString MusicFile;
-	TWeakObjectPtr<UAudioComponent> Music;
-	TArray<TWeakObjectPtr<UAudioComponent>> Loops;
-	TMap<FName, TWeakObjectPtr<UAudioComponent>> NamedLoops;
+	// held strongly: the components belong to no actor, and a weak pointer let the garbage
+	// collector take the music mid-track
+	UPROPERTY()
+	TObjectPtr<UAudioComponent> Music;
+	UPROPERTY()
+	TArray<TObjectPtr<UAudioComponent>> Loops;
+	UPROPERTY()
+	TMap<FName, TObjectPtr<UAudioComponent>> NamedLoops;
+	double NextMusicCheck = 0.0;
 	double NextPeriodic = 0.0;
 	double NextSettings = 0.0;
 	FString SettingsKey;

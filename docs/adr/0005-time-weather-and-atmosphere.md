@@ -222,6 +222,51 @@ These are ordered by value for effort. All are data-driven, and all are judged o
   - Birds, crickets and crackling fires wait for the audio ADR. The original client has `birdchirping.ogg`, `fireplac.ogg`, `Drips.ogg` and `AMBCave.ogg`, though Raza's rooms play only music.
   - Seasons switch at the season's boundary; there's no blend between them.
 
+### After the first playtest (2026-10-06)
+The user played the build and reported four things, with screenshots in `ReferenceImages/issues/`.
+- **Lights too bright at night**, above all the braziers at the crypt door.
+  - Braziers and lamps are 25% dimmer (`props.json`: Brazier `candela_scale` 0.75, Lamp `candela` 9), and so is the lamp glass's glow (`lamp_glass` emissive).
+- **Exposure fading.**
+  - The light changed as the camera adapted walking in and out of buildings, and went dark walking up to a wall (histogram auto exposure over EV −3..3 by day, −9..−4 at night).
+  - Outdoors now has **fixed exposure**, as the interiors already had (min = max). It was bracketed against what auto exposure had settled on in wide views (`mood_zz_ev_*`, `build/lookdev/ev_*.png`).
+  - EVs: afternoon −0.7, morning −1.2, dusk −2.5, night −5.7. Each is about 0.2 EV brighter than the match, to soften close shade. The cycle blends them by hour.
+  - The trade: shade seen up close stays as dark as it is in the wide view, rather than the camera brightening it (`fix_17`). At night the moon's shadows are close to black.
+  - Lifting shadows with local exposure (shadow contrast 0.5 and 0.4, `shade_*.png`) barely changed anything, so it was dropped. More sky fill at night would lift those shadows if wanted.
+- **Light leaking under the trees** outside the gate.
+  - It's the painted tree walls' lowest band: saturated red undergrowth and blue sky gaps between the trunks, which in the lit scene read as light glowing under the trees.
+  - Foliage materials now shade that band toward the ground and take its red and blue out (`UNDERGROWTH_HLSL`; `Undergrowth`, `UndergrowthStart` 0.55, `UndergrowthShade` 0.4). The canopy above is unchanged (`leak2.png`).
+- **Walls washed out by light at grazing angles.**
+  - The masters used the engine's Specular 0.5, which reflects enough sky and lamp light at a grazing angle to wash the colours out.
+  - The placeholder and zone-art masters now take a `Specular` parameter at 0.2 (matte), rising back to 0.5 when wet. Panes and stained glass keep 0.5 (`materials.json` variants). Before and after: `fix_matte.png`.
+
+- **The second round** (the same day):
+  - **Shops going "very dark" up close at night:**
+    - It wasn't exposure. Captures with local exposure on and off are the same (`local_exp.png`), and no camera overrides the post process.
+    - Those facades are simply unlit: no lamp reaches them and the moon is behind them. Up close, a near-black wall fills the screen.
+    - Night's sky-light fill is doubled (SkyLight intensity 0.7 → 1.4, skylight leaking 0.12 → 0.25), chosen from 1.5×, 2× and 3× (`night_fill.png`). Shade is readable, and night still reads as night.
+  - **Window glow and town lights 25% dimmer again:**
+    - Window glow: dusk 0.12 → 0.09, night 0.35 → 0.26.
+    - Lamps: 6.75 cd.
+    - Braziers: `candela_scale` 0.56.
+    - Lamp glass: emissive [2.8, 1.8, 0.74].
+  - **Half the fireflies and moths:** `FireflyShare` 0.04, moths `Share` 0.125.
+  - Sheet: `fix3_night.png`.
+- **The third round: the real cause of walls going black up close.**
+  - The user still saw it after the fill: from afar the shops' facade looked fine, closer a dark band ran down its middle, and close up it went black.
+  - It reproduces in look-dev with no character at all (`shops_wall_17m/7m/2m`, `wall_23.png`), so it's a screen-space effect.
+  - **Tests** (`wall_ab.png`, `wall_ef.png`):
+    - With Lumen's screen traces off, the whole facade goes black at every distance; screen-space and distance-field AO make no difference.
+    - Its only sky light came from screen traces catching the sky on screen. Up close the sky leaves the screen, and so does the light.
+    - Lumen's world-space traces gave the facade nothing, even with only the global distance field.
+  - **Cause:** the zone walls are single-sided planes. Their one-sided distance fields put the wall's own surface "inside", so every world-space ray from it starts occluded.
+  - **Fix:**
+    - `build_world.py` `two_sided_distance_field()` sets "Generate distance field as if two-sided" on every zone mesh, once (the first run re-imported all 37, about 3.5 min).
+    - The facade is now evenly lit at every distance, even with screen traces off (`wall2.png`).
+    - Shaded walls by day get their sky light too: the dark close shade noted above under fixed exposure is gone (`day_df.png`).
+    - Night's fill comes back down to sky light 1.0, leaking 0.18 (`night_fill2.png`); doubling it had only been compensating.
+  - **Also:** exposure adaptation speed is 100 in every mood. A fixed exposure still eases from the old value to the new one, which was the fade when stepping outside (interior EV −1.3, night −5.7). It's instant now.
+  - **Tooling:** `run_lookdev.ps1 -WithPawn` puts the player's character at each camera and views through its own camera; the look-dev otherwise hides it.
+
 ### Hazy interiors (2026-10-05)
 - **Goal:** the dusty air of the buildings and the Mausoleum shows around their lights.
 - **How:** it's the volumetric fog that was already on, given density. The interior moods set it to 0.3, with full extinction, and a near-black warm fog colour so nothing glows without a light. The sky light is mostly taken out of the fog (`volumetric_scattering_intensity` 0.15). The crypt keeps its cold mood at the same density.

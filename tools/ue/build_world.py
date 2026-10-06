@@ -137,6 +137,7 @@ def import_zone_mesh(glb_path, dest_dir, nanite=False, collision=True):
     mesh = cache.info(dest_dir).get("mesh")
     if mesh and cache.fresh(dest_dir, key, exists=lambda: eal.does_asset_exist(mesh)):
         cache.done(dest_dir, key, "meshes", False)
+        two_sided_distance_field(mesh)
         return mesh
     task = unreal.AssetImportTask()
     task.filename = glb_path
@@ -166,7 +167,30 @@ def import_zone_mesh(glb_path, dest_dir, nanite=False, collision=True):
     cache.forget(mesh + "#materials")  # the import put the glTF materials back
     cache.done(dest_dir, key, "meshes", True, mesh=mesh)
     log("imported %s" % mesh)
+    two_sided_distance_field(mesh)
     return mesh
+
+
+def two_sided_distance_field(mesh):
+    """Build the mesh's distance field as if two-sided. The zone walls are single-sided planes, and
+    their one-sided distance fields put the wall's own surface "inside", so Lumen's world-space
+    rays from it start occluded: unlit walls got no sky light at all, only what screen traces
+    picked up from the sky on screen, and went black as the camera came close (2026-10-06,
+    build/lookdev/wall_ef.png). Set on the existing mesh (no re-import), once."""
+    cache = build_cache.CACHE
+    record = mesh + "#distance_field"
+    key = cache.key(source(two_sided_distance_field), deps=False)
+    if cache.fresh(record, key, exists=lambda: True):
+        cache.done(record, key, "distance fields", False)
+        return
+    obj = eal.load_asset(mesh)
+    sub = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem)
+    settings = sub.get_lod_build_settings(obj, 0)
+    if not settings.get_editor_property("generate_distance_field_as_if_two_sided"):
+        settings.set_editor_property("generate_distance_field_as_if_two_sided", True)
+        sub.set_lod_build_settings(obj, 0, settings)
+        eal.save_loaded_asset(obj)
+    cache.done(record, key, "distance fields", True)
 
 
 def check_orientation(zone, mesh):
@@ -287,7 +311,7 @@ def kod_light(light, params):
     intensity = float(params.get("iIntensity", light["kod_intensity"]))
     color = int(params.get("iColor", light.get("kod_color", 0x7FFF)))
     out = dict(light)
-    out["candela"] = intensity * KOD_CANDELA_PER_UNIT
+    out["candela"] = intensity * KOD_CANDELA_PER_UNIT * float(light.get("candela_scale", 1.0))
     out["radius_m"] = KOD_RADIUS_M[0] + KOD_RADIUS_M[1] * intensity
     # Kod's 15-bit colours are fully saturated (fire: 31, 24, 6); 40% towards white reads as firelight
     out["color"] = [round(((color >> s) & 31) * 255 / 31 * 0.6 + 255 * 0.4) for s in (10, 5, 0)]

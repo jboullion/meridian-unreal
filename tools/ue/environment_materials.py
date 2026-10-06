@@ -82,8 +82,9 @@ def _master(name, builder, *args):
     """-> path of master material <name>; builder(name, *args) runs only when it or its inputs changed."""
     cache = build_cache.CACHE
     key = cache.key(build_cache.source(builder, _expr, _world_uv, _srgb_to_linear, _new_material, _window_glow, _atlas_uv,
-                                       _weather_surface, _collection, _custom, _ripples, _season, _camera_box_inputs, _puff_inputs),
-                    name, args + (RIPPLE_HLSL, SEASON_HLSL))
+                                       _weather_surface, _collection, _custom, _ripples, _season, _camera_box_inputs, _puff_inputs,
+                                       _matte, _undergrowth),
+                    name, args + (RIPPLE_HLSL, SEASON_HLSL, UNDERGROWTH_HLSL))
     return cache.get_or_build("%s/%s" % (MAT_DIR, name), key, "masters", lambda: builder(name, *args))
 
 
@@ -436,6 +437,44 @@ return o;
 """
 
 
+def _matte(mat, wet, x, y, default=0.2):
+    """Specular for painted masonry, plaster and wood: matte (Specular 0.2, F0 ~0.016) rather than
+    the engine's 0.5, which at grazing angles reflected enough sky and lamp light to wash the walls'
+    colours out (2026-10-06). Wet surfaces (MPC Wetness) get their gloss back. Glass and panes set
+    Specular 0.5 (materials.json variants). -> expression."""
+    spec = _expr(mat, unreal.MaterialExpressionScalarParameter, x, y, parameter_name="Specular", default_value=default)
+    out = _expr(mat, unreal.MaterialExpressionLinearInterpolate, x + 200, y, const_b=0.5)
+    mel.connect_material_expressions(spec, "", out, "A")
+    mel.connect_material_expressions(wet[0], wet[1], out, "Alpha")
+    return out
+
+
+UNDERGROWTH_HLSL = """
+// Under the canopy (the painted tree walls, mapped once up the wall: v 0 at the top, 1 at the
+// ground): the original paints its lowest band with saturated red undergrowth and blue sky gaps
+// between the trunks, which in the lit scene read as light leaking out under the trees (2026-10-06).
+// Darken it towards the ground, as a canopy shades it, and take the red and blue out there.
+float under = smoothstep(Start, 1.0, UV.y) * Strength;
+float3 c = Base;
+float lum = dot(c, float3(0.3, 0.59, 0.11));
+float g = max(c.g, 0.0001);
+float off = saturate((max(c.r, c.b) - c.g) / g * 1.5);
+c = lerp(c, lum * float3(0.9, 0.95, 0.8), under * off);
+return c * lerp(1.0, Shade, under);
+"""
+
+
+def _undergrowth(mat, base, x, y):
+    """UNDERGROWTH_HLSL on a foliage colour: Undergrowth (strength), from UndergrowthStart (texture v)
+    down, to UndergrowthShade at the ground. base: (expression, output) -> expression."""
+    uv = _expr(mat, unreal.MaterialExpressionTextureCoordinate, x, y + 100)
+    params = [(n, _expr(mat, unreal.MaterialExpressionScalarParameter, x, y + 200 + i * 80, parameter_name=p, default_value=v), "")
+              for i, (n, p, v) in enumerate((("Strength", "Undergrowth", 1.0), ("Start", "UndergrowthStart", 0.55),
+                                             ("Shade", "UndergrowthShade", 0.4)))]
+    return _custom(mat, x + 300, y, UNDERGROWTH_HLSL, unreal.CustomMaterialOutputType.CMOT_FLOAT3,
+                   [("Base", base[0], base[1]), ("UV", uv, "")] + params, "Undergrowth")
+
+
 def _season(mat, base, x, y, grass=False):
     """The season's tint on a plant colour (SEASON_HLSL). base: (expression, output) -> expression."""
     wp = _expr(mat, unreal.MaterialExpressionWorldPosition, x, y + 100)
@@ -473,9 +512,11 @@ def build_master(name, masked, glow=None, atlas=None, seasonal=False):
 
     rough = _expr(mat, unreal.MaterialExpressionScalarParameter, -350, 700,
                   parameter_name="Roughness", default_value=0.85)
-    colour = (_season(mat, (mul, ""), -1100, -700), "") if seasonal else (mul, "")
-    w_base, w_normal, w_rough, _, _ = _weather_surface(mat, colour, (lerp, ""), (rough, ""), -350, 1100)
+    # foliage: the season's tint, and the canopy's shade over the painted undergrowth
+    colour = (_undergrowth(mat, (_season(mat, (mul, ""), -1500, -700), ""), -1100, -1100), "") if seasonal else (mul, "")
+    w_base, w_normal, w_rough, _, wet = _weather_surface(mat, colour, (lerp, ""), (rough, ""), -350, 1100)
     mel.connect_material_property(w_base[0], w_base[1], unreal.MaterialProperty.MP_BASE_COLOR)
+    mel.connect_material_property(_matte(mat, wet, -350, 900), "", unreal.MaterialProperty.MP_SPECULAR)
     mel.connect_material_property(w_normal[0], w_normal[1], unreal.MaterialProperty.MP_NORMAL)
     mel.connect_material_property(w_rough[0], w_rough[1], unreal.MaterialProperty.MP_ROUGHNESS)
     uv = _atlas_uv(mat, atlas, glow[0], -2400, 0) if atlas and glow else None
@@ -598,8 +639,9 @@ def build_displaced_master(name, default_height, tessellation=True, range_cm=DIS
     mel.connect_material_expressions(strength, "", lerp, "Alpha")
 
     rough = _expr(mat, unreal.MaterialExpressionScalarParameter, -500, 450, parameter_name="Roughness", default_value=0.85)
-    w_base, w_normal, w_rough, _, _ = _weather_surface(mat, (mul, ""), (lerp, ""), (rough, ""), -500, 1300)
+    w_base, w_normal, w_rough, _, wet = _weather_surface(mat, (mul, ""), (lerp, ""), (rough, ""), -500, 1300)
     mel.connect_material_expressions(w_base[0], w_base[1], attrs, "BaseColor")
+    mel.connect_material_expressions(_matte(mat, wet, -500, 1100), "", attrs, "Specular")
     mel.connect_material_expressions(w_normal[0], w_normal[1], attrs, "Normal")
     mel.connect_material_expressions(w_rough[0], w_rough[1], attrs, "Roughness")
     uv = _atlas_uv(mat, atlas, glow[0], -2800, 0) if atlas and glow else None

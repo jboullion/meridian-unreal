@@ -159,6 +159,10 @@ All four recommendations below were accepted: a 1.5 s crossfade between tracks, 
   - Separate submixes (sound classes only for now).
   - A voice limit like the original's 24.
 - **Next:** the user listens (Raza, the pond, the forest, the smithy, the crypt) against the original client. The levels in `data/audio/audio.json` `volumes` are set from that.
+- **The user's first listen (2026-10-06):** the volume is "just right", but the music stopped after a while. Two causes, both fixed:
+  - **Garbage collection.** The subsystem held its music, loops and named loops by weak pointer. Components that belong to no actor were then collected by the garbage collector (about once a minute), mid-track. They're `UPROPERTY` references now. If the track ever stops anyway, the subsystem logs `MRAudio: music <file> stopped by itself; restarting it` and restarts it.
+  - **Window focus.** The engine mutes an unfocused window (`UnfocusedVolumeMultiplier` 0). A 100 s recording went silent when the window lost focus (`aud_music100`). `mr.Audio.Background` (default 1) keeps sound playing in the background, and the audio look-dev forces it.
+  - Proof: 100 s at the square with the music looping past its 70 s length, with no silence and no restart (`aud_music100b`).
 
 ## Decisions as proposed
 1. **Music changes:** the original cuts straight to the new track. Recommendation: a short crossfade (about 1.5 s), since a hard cut is jarring once zone changes are instant.

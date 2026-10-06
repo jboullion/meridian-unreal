@@ -122,6 +122,7 @@
       "Collection": {"WindowDaylight": {"mul": 0.35}}
     },
     "raza_afternoon": {
+      "_exposure_doc": "Fixed exposure (min = max), as inside: the camera never adapts (and switches between moods at once: adaptation speed 100, else a fixed exposure still eases to the next value), so walking up to a wall or out of a building doesn't fade the light (2026-10-06, the user). Each key mood names its EV, chosen by bracketing against what auto exposure had settled on in wide views (look-dev mood_zz_ev_*, ev_*.png): afternoon -0.7, morning -1.2, dusk -2.5, night -5.7, each a little brighter than the match to soften close shade; the cycle blends them by hour.",
       "_doc": "Late-afternoon sun raking across the Hall's long facades from the south-west, warm key against a cooler sky fill, light haze for depth. Shade floor: lumen_skylight_leaking keeps occluded corners from going black, local exposure lifts deep shade without flattening the sunlit areas; lamps and braziers (props.json) add warm pools.",
       "Sun": {
         "rotation": [
@@ -174,8 +175,10 @@
       "GlobalPostProcess": {
         "settings": {
           "auto_exposure_method": "AEM_HISTOGRAM",
-          "auto_exposure_min_brightness": -3.0,
-          "auto_exposure_max_brightness": 3.0,
+          "auto_exposure_min_brightness": -0.7,
+          "auto_exposure_max_brightness": -0.7,
+          "auto_exposure_speed_up": 100.0,
+          "auto_exposure_speed_down": 100.0,
           "auto_exposure_bias": -0.3,
           "bloom_intensity": 0.45,
           "bloom_threshold": 1.0,
@@ -253,6 +256,8 @@
       },
       "GlobalPostProcess": {
         "settings": {
+          "auto_exposure_min_brightness": -1.2,
+          "auto_exposure_max_brightness": -1.2,
           "color_gain_highlights": [
             1.0,
             1.0,
@@ -301,11 +306,13 @@
       },
       "GlobalPostProcess": {
         "settings": {
-          "auto_exposure_bias": 0.0
+          "auto_exposure_bias": 0.0,
+          "auto_exposure_min_brightness": -2.5,
+          "auto_exposure_max_brightness": -2.5
         }
       },
       "Collection": {
-        "WindowGlow": 0.12,
+        "WindowGlow": 0.09,
         "Stars": 0.2
       }
     },
@@ -393,7 +400,7 @@
       }
     },
     "raza_night": {
-      "_doc": "Night: cool moonlight (moods.json sky), the town lit by its lamps, braziers and glowing windows; a faint sky-light fill (intensity 0.7, skylight leaking 0.12) keeps shade readable instead of black; exposure allowed to go dark but kept below full adaptation so night reads as night.",
+      "_doc": "Night: cool moonlight (moods.json sky), the town lit by its lamps, braziers and glowing windows; a sky-light fill (intensity 1.0, skylight leaking 0.18; 2026-10-06, after the zone meshes got two-sided distance fields and Lumen could light walls with the sky at all: night_fill2.png) keeps shade readable instead of black; exposure allowed to go dark but kept below full adaptation so night reads as night.",
       "inherit": "raza_afternoon",
       "Sun": {
         "rotation": [
@@ -405,7 +412,7 @@
         "light_source_angle": 0.6
       },
       "SkyLight": {
-        "intensity": 0.7,
+        "intensity": 1.0,
         "lower_hemisphere_color": [
           0.02,
           0.02,
@@ -430,8 +437,8 @@
       },
       "GlobalPostProcess": {
         "settings": {
-          "auto_exposure_min_brightness": -9.0,
-          "auto_exposure_max_brightness": -4.0,
+          "auto_exposure_min_brightness": -5.7,
+          "auto_exposure_max_brightness": -5.7,
           "auto_exposure_bias": -0.8,
           "bloom_intensity": 0.8,
           "color_saturation": [
@@ -452,11 +459,11 @@
             0.9,
             1.0
           ],
-          "lumen_skylight_leaking": 0.12
+          "lumen_skylight_leaking": 0.18
         }
       },
       "Collection": {
-        "WindowGlow": 0.35,
+        "WindowGlow": 0.26,
         "Stars": 1.0
       }
     }

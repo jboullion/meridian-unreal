@@ -47,6 +47,8 @@ param(
     # > 0: sound on, and the main mix recorded for this many seconds at each camera (<camera>.wav,
     # with the audio system's log as audio.log): tools/audio/audio_report.py turns them into a sheet
     [double]$Audio = 0,
+    # the player's character at each camera, seen through its own camera (the look-dev hides it otherwise)
+    [switch]$WithPawn,
     [string]$Engine = "G:\Unreal Engine\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe",
     [int]$TimeoutSeconds = 900
 )
@@ -63,6 +65,7 @@ $gameArgs = "`"$proj`" /Game/Generated/Maps/L_World -game -windowed -resx=$ResX 
 if ($Only) { $gameArgs += " -MRLookDevOnly=" + ($Only -join ",") }
 if ($Profile) { $gameArgs += " -MRLookDevProfile" }
 if ($Audio -gt 0) { $gameArgs += " -MRLookDevAudio=$Audio" }
+if ($WithPawn) { $gameArgs += " -MRLookDevWithPawn" }
 if ($Settle -gt 0) { $gameArgs += " -MRLookDevSettle=$Settle" }
 if ($GameHour -ge 0) { $gameArgs += " -MRGameHour=$GameHour" }
 if ($Mood) { $gameArgs += " -MRMood=$Mood" }

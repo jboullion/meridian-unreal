@@ -1,8 +1,8 @@
 {
-  "_doc": "Meshes and lights for Kod-placed objects (data/zone_layout.json objects, by class), docs/adr/0003 pass 3. tools/ue/build_world.py spawns `mesh` (build/environment/kit/<mesh>.glb, tools/blender/build_prop_kit.py) at the object's position, plus a warm point light `offset_m` above it. Light intensity in candela; at ~8 lux of daylight these read as glows and become the main light in deep shade and at night. `kod_intensity` / `kod_color` (a light): the Kod class's light (0-255, 15-bit colour), overridden by the object's own iIntensity / iColor; build_world.py turns them into candela (0.24 per unit), reach (4 m + 0.15 per unit) and colour (DynamicLight: the invisible lights the original places in rooms; Candle). `shadows`: false for unshadowed pools of light, as the original's. `night_only` (a light, or a material slot): off from 11 to 17 like the original lamps (kod lamp.kod), switched by the environment director in game (docs/adr/0005). `materials`: the kit's material slots (linear colours; emissive in nits-ish scene units); zone art uses them as 'prop_<name>' slots too (window boxes).",
+  "_doc": "Meshes and lights for Kod-placed objects (data/zone_layout.json objects, by class), docs/adr/0003 pass 3. tools/ue/build_world.py spawns `mesh` (build/environment/kit/<mesh>.glb, tools/blender/build_prop_kit.py) at the object's position, plus a warm point light `offset_m` above it. Light intensity in candela; at ~8 lux of daylight these read as glows and become the main light in deep shade and at night. `candela_scale`: a factor on a Kod light's candela (2026-10-06: the braziers and lamps dimmed twice by 25%, to 0.56 of the original, at the user's request: too bright at night). `kod_intensity` / `kod_color` (a light): the Kod class's light (0-255, 15-bit colour), overridden by the object's own iIntensity / iColor; build_world.py turns them into candela (0.24 per unit), reach (4 m + 0.15 per unit) and colour (DynamicLight: the invisible lights the original places in rooms; Candle). `shadows`: false for unshadowed pools of light, as the original's. `night_only` (a light, or a material slot): off from 11 to 17 like the original lamps (kod lamp.kod), switched by the environment director in game (docs/adr/0005). `materials`: the kit's material slots (linear colours; emissive in nits-ish scene units); zone art uses them as 'prop_<name>' slots too (window boxes).",
   "materials": {
     "iron": {"color": [0.045, 0.043, 0.045], "metallic": 0.85, "roughness": 0.45},
-    "lamp_glass": {"color": [0.9, 0.75, 0.45], "roughness": 0.2, "emissive": [5.0, 3.2, 1.3], "night_only": true},
+    "lamp_glass": {"color": [0.9, 0.75, 0.45], "roughness": 0.2, "emissive": [2.8, 1.8, 0.74], "night_only": true},
     "embers": {"color": [0.15, 0.04, 0.01], "roughness": 0.9, "emissive": [5.0, 1.5, 0.25]},
     "bronze": {"color": [0.2, 0.11, 0.05], "metallic": 0.7, "roughness": 0.5},
     "wax": {"color": [0.78, 0.7, 0.52], "roughness": 0.55},
@@ -12,10 +12,10 @@
     "flower_yellow": {"color": [0.7, 0.5, 0.06], "roughness": 0.7}
   },
   "classes": {
-    "Lamp": {"mesh": "SM_LampPost", "light": {"offset_m": 2.57, "candela": 12, "radius_m": 11, "temperature": 2600, "source_radius_cm": 8, "night_only": true}, "moths": {"offset_m": 2.57}},
+    "Lamp": {"mesh": "SM_LampPost", "light": {"offset_m": 2.57, "candela": 6.75, "radius_m": 11, "temperature": 2600, "source_radius_cm": 8, "night_only": true}, "moths": {"offset_m": 2.57}},
     "DynamicLight": {"light": {"kod_intensity": 255, "kod_color": 32767, "offset_m": 1.8, "source_radius_cm": 10, "shadows": false, "flicker": "sector"}},
     "Candle": {"mesh": "SM_Candle", "fire": {"preset": "candle", "base_m": 0.715}, "light": {"kod_intensity": 5, "kod_color": 32518, "offset_m": 0.8, "source_radius_cm": 2, "shadows": false, "flicker": true}},
-    "Brazier": {"mesh": "SM_Brazier", "fire": {"preset": "brazier", "base_m": 0.98}, "light": {"kod_intensity": 40, "kod_color": 32518, "offset_m": 1.2, "source_radius_cm": 20, "flicker": true}}
+    "Brazier": {"mesh": "SM_Brazier", "fire": {"preset": "brazier", "base_m": 0.98}, "light": {"kod_intensity": 40, "candela_scale": 0.56, "kod_color": 32518, "offset_m": 1.2, "source_radius_cm": 20, "flicker": true}}
   },
   "smoke": {
     "_doc": "Chimney smoke (docs/adr/0005 phase 5): tools/environment/chimneys.py finds every chimney the blockout draws with these wall textures, and build_world.py stands a plume (SM_Puffs with M_Smoke, materials.json \"smoke\") on each top. How much smoke: moods.json \"atmosphere\" \"smoke\". A class's \"moths\": moths circle its light at night, offset_m above the object (SM_Puffs with M_Moth).",
