@@ -1,5 +1,5 @@
 {
-  "_doc": "Features painted into original facade textures, in the texture's own pixels (x right, y down from the top-left of build/textures/<grd>.png). tools/blender/build_zone_art.py rebuilds them as geometry wherever a wall uses the texture: openings are cut and recessed (glass/door panel at the back keeps the painted image), frame_px wide surrounds, bands (horizontal) and piers (vertical) stand proud of the wall, crenels become solid merlons, roofs get thickness and overhangs. Timber framing and masonry relief come from Nanite displacement instead (height modes in tools/textures/make_placeholders.py, strengths in materials.json). Check alignment with: python tools/environment/facades.py. Sizes in metres; 'trim' names the texture used for reveals and the stone faces the painting doesn't cover.",
+  "_doc": "Features painted into original facade textures, in the texture's own pixels (x right, y down from the top-left of build/textures/<grd>.png). tools/blender/build_zone_art.py rebuilds them as geometry wherever a wall uses the texture: openings are cut and recessed (glass/door panel at the back keeps the painted image), frame_px wide surrounds, bands (horizontal) and piers (vertical) stand proud of the wall, crenels become solid merlons, roofs get thickness and overhangs. Timber framing and masonry relief come from Nanite displacement instead (height modes in tools/textures/make_placeholders.py, strengths in materials.json). Check alignment with: python tools/environment/facades.py. Sizes in metres; 'trim' names the texture used for reveals and the stone faces the painting doesn't cover. Window glow at night (docs/adr/0005): every window glows in its own painted glass colour x moods.json Collection WindowGlowColor x WindowGlow, dark glass brought up by make_placeholders.py (up to 4x); on a texture, glow_gain multiplies that, and glow_tint (default 1) is how much of the glass's own colour it glows in (0 = only the shared colour).",
   "defaults": {
     "cut_openings": false,
     "_cut_openings_doc": "false (2026-10-05): windows and doors are not cut and recessed; Marigold height maps at the full displacement range give them their depth. The openings below still stop the plinth at doors, and true brings the cut recesses back.",
@@ -57,7 +57,7 @@
     },
     "grd09625": {
       "name": "raz-bldg-g frntwl w/out dr (Inn)",
-      "glow_gain": 7,
+      "glow_gain": 2.2,
       "openings": [{"kind": "window", "shape": "rect", "x": [64, 133], "y": [158, 232], "frame_px": 7, "sill": true}],
       "trim": "grd09637"
     },
@@ -68,7 +68,7 @@
     },
     "grd09593": {
       "name": "raz-bldgL-Afrntwall (Tavern)",
-      "glow_gain": 4,
+      "glow_gain": 2,
       "openings": [
         {"kind": "window", "shape": "round", "x": [56, 114], "y": [28, 108], "spring": 57, "frame_px": 8},
         {"kind": "window", "shape": "rect", "x": [56, 121], "y": [183, 253], "frame_px": 6, "sill": true}
@@ -110,7 +110,7 @@
     },
     "grd09599": {
       "name": "RAZ-BLDG-M A FRNTW CENT (Temple)",
-      "glow_gain": 4,
+      "glow_gain": 2,
       "openings": [
         {"kind": "window", "shape": "round", "x": [33, 69], "y": [128, 211], "spring": 146, "frame_px": 8, "sill": true},
         {"kind": "window", "shape": "round", "x": [110, 146], "y": [128, 211], "spring": 146, "frame_px": 8, "sill": true},
@@ -122,7 +122,7 @@
     },
     "grd09600": {
       "name": "RAZ-BLDG-M B FRNTW SIDE MIR (Temple)",
-      "glow_gain": 4,
+      "glow_gain": 2.48,
       "openings": [
         {"kind": "door", "shape": "round", "x": [36, 122], "y": [192, 384], "spring": 235, "frame_px": 6, "reveal_depth_m": 0.3},
         {"kind": "door", "shape": "round", "x": [134, 220], "y": [192, 384], "spring": 235, "frame_px": 6, "reveal_depth_m": 0.3},

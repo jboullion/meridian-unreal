@@ -24,7 +24,7 @@ Output (everything under /Game/Generated, git-ignored):
                                             zone's "scatter" rules and the meshes in build/environment/kit/.
   /Game/Generated/Environment/...           placeholder textures + material instances per original
                                             texture, assigned to the zone meshes (environment_materials.py)
-  /Game/Generated/Maps/Zones/L_Zone_<rid>   one streaming sublevel per zone *geometry*: the zone mesh
+  /Game/Generated/Maps/Zones/L_Zone_<rid>_<KodClass>   one streaming sublevel per zone *geometry*: the zone mesh
                                             at its world_origin_cm (data/zone_layout.json). Zones that
                                             share geometry (Raza town + Outskirts) share one sublevel,
                                             named after the zone that owns the geometry.
@@ -546,7 +546,7 @@ def open_level(path, maps):
 
 
 def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, props, maps, effects=(), atmosphere=None):
-    """Rebuild L_Zone_<rid> when what it places changed (not when a mesh it places was re-imported:
+    """Rebuild L_Zone_<rid>_<KodClass> when what it places changed (not when a mesh it places was re-imported:
     actors reference the asset, so they show the new mesh as is)."""
     path = zone_level_path(zone)
     cache = build_cache.CACHE

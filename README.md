@@ -124,7 +124,7 @@ python tools/lookdev/profile_report.py mytest
 
 ### Zone streaming
 
-`L_World` is a persistent level that holds only lighting and sky. Every zone's geometry is its own streaming sublevel, `Generated/Maps/Zones/L_Zone_<rid>`; the town and Outskirts share `L_Zone_300`.
+`L_World` is a persistent level that holds only lighting and sky. Every zone's geometry is its own streaming sublevel, `Generated/Maps/Zones/L_Zone_<rid>_<KodClass>` (e.g. `L_Zone_307_RazaBar`, the tavern); the town and Outskirts share `L_Zone_300`.
 
 - **Server:** loads every zone at startup.
 - **Client:** keeps its current zone and every zone one exit away loaded and visible, so taking an exit is a same-frame switch. Zones it has just left stay loaded for 30 s.

@@ -278,6 +278,14 @@ The user played the build and reported four things, with screenshots in `Referen
   - **Fix:** `make_placeholders.py` now measures every window's painted glass and writes `glow_gain` into `placeholders.json`. The gain is 1 up to 4×, bringing dark glass to the typical pane's brightness and never dimming a bright one. The materials multiply their glow by it (`GlowGain`). The barns' darker windows get 1.2–1.45×.
   - **The inn:** even at equal measured brightness its teal glass looked dull, so `facades.json` can override the gain per texture. The inn uses `"glow_gain": 7`, chosen from 3.14, 5, 7 and 9 (`inn_gain.png`).
   - Then all window glow halved at the user's request (too bright): `WindowGlow` dusk 0.09 → 0.045, night 0.26 → 0.13.
+  - The tavern's and the temple's windows still disappeared next to the lamps: `glow_gain` 3 on `grd09593`, `grd09599`, `grd09600` (bracketed 2, 3, 4: `win_gain.png`).
+- **One window glow for every building: tried and reverted.** Glowing every window in one shared colour (patterned by its glass) evened the town out but lost what the user loved: the temple's stained glass and the shops' self-coloured panes (`oneglow.png`).
+  - Back to each window glowing in its own glass colour (`glow_tint` 1, the default), times `WindowGlowColor` (MPC vector, [1.0, 0.62, 0.3], what the warm lamplight constant was) × `WindowGlow`.
+  - Dark glass is still brought up towards the typical pane (`GLOW_TARGET_LUM` 0.04, gain 1–4), and pale glass is never dimmed.
+  - `facades.json` `glow_gain` is now a multiplier on that automatic gain. The Inn has 2.2 (= its old 7) and the tavern and temple 2, 2 and 2.48 (= their old 2, 2, 3), so the look is as before (`ownglow.png`).
+  - `glow_tint` below 1 remains available per texture for a shared colour.
+- **Torches lit twice.** The original lights each wall torch with a room light (`DynamicLight`, strength 30) about half a metre below the flame, and we had added the torch's own light on top. `build_world.py` `merge_torch_lights()` drops a room light within 1 m (in plan) of a flame and puts its strength and colour on the flame's light: 27 merged across the interiors.
+- **Moths read as sticks.** They were masked quads, which motion blur smeared into streaks. `M_Moth` is now translucent (no velocity, no smear), lit by the lamp with an emissive of 1.5, 3 cm, and at half the speed (orbit, bob and jitter halved; wing beat 38 → 24).
 
 ### Hazy interiors (2026-10-05)
 - **Goal:** the dusty air of the buildings and the Mausoleum shows around their lights.

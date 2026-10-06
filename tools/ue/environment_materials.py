@@ -126,7 +126,9 @@ MPC_SCALARS = {"WindowGlow": 0.0, "GameHour": 0.0, "LampsOn": 1.0, "Stars": 0.0,
                "Night": 0.0, "Spring": 0.0, "Autumn": 0.0, "Winter": 0.0, "Smoke": 0.0,
                "Motes": 0.0, "Pollen": 0.0, "Fireflies": 0.0, "Leaves": 0.0}
 # vectors in MPC_Environment (moods.json "Collection" arrays)
-MPC_VECTORS = {"AmbientTint": (1.0, 1.0, 1.0, 1.0)}
+MPC_VECTORS = {"AmbientTint": (1.0, 1.0, 1.0, 1.0),
+               # the lit windows' colour at night (moods.json "Collection"; _window_glow)
+               "WindowGlowColor": (1.0, 0.62, 0.3, 1.0)}
 
 
 def ensure_mpc():
@@ -201,10 +203,10 @@ def _atlas_uv(mat, atlas, mpc, x, y):
 
 
 def _window_glow(mat, base_rgb, glow, x, y, uv=None):
-    """Emissive for painted windows: base colour * light * Emissive mask (T_<grd>_E), so the painted
-    glass glows and its leading and frames stay dark. The light is warm lamplight * MPC_Environment.
-    WindowGlow (seen from outside at night) plus cool daylight * WindowDaylight (seen from inside by
-    day; the environment director sets it only while the view is in an interior, docs/adr/0005).
+    """Emissive for painted windows, inside the Emissive mask (T_<grd>_E): at night, the glass's
+    brightness pattern (GlowTint of its own colour) * MPC_Environment.WindowGlowColor * WindowGlow *
+    GlowGain, so the leading and frames stay dark; by day from inside, the glass colour * cool
+    daylight * WindowDaylight (set only while the view is in an interior, docs/adr/0005).
 
     Plus the ambient floor of interiors and underground zones: base colour * the original sector light
     level (vertex colour R, roo2gltf) * MPC_Environment.SectorAmbient * AmbientTint, as the original
@@ -216,30 +218,49 @@ def _window_glow(mat, base_rgb, glow, x, y, uv=None):
     if uv:
         mel.connect_material_expressions(uv, "", mask, "UVs")
     collection = eal.load_asset(mpc)
-    warm = _expr(mat, unreal.MaterialExpressionConstant3Vector, x, y + 220, constant=unreal.LinearColor(1.0, 0.62, 0.3, 0))
-    level = _expr(mat, unreal.MaterialExpressionCollectionParameter, x, y + 330, collection=collection, parameter_name="WindowGlow")
-    warm_l = _expr(mat, unreal.MaterialExpressionMultiply, x + 150, y + 260)
-    mel.connect_material_expressions(warm, "", warm_l, "A")
-    mel.connect_material_expressions(level, "", warm_l, "B")
-    cool = _expr(mat, unreal.MaterialExpressionConstant3Vector, x, y + 440, constant=unreal.LinearColor(0.85, 0.92, 1.0, 0))
-    day = _expr(mat, unreal.MaterialExpressionCollectionParameter, x, y + 550, collection=collection, parameter_name="WindowDaylight")
-    cool_l = _expr(mat, unreal.MaterialExpressionMultiply, x + 150, y + 480)
+    # night, seen from outside: one colour for every window (MPC_Environment.WindowGlowColor x
+    # WindowGlow), patterned by the painted glass's brightness so the leading and frames stay dark.
+    # GlowGain evens out how brightly each texture's glass is painted (make_placeholders.py
+    # glow_gain, x facades.json "glow_gain"); GlowTint keeps that much of the glass's own colour
+    # (stained glass). 2026-10-06: the glass's own colour made every building glow differently.
+    lum = _expr(mat, unreal.MaterialExpressionDotProduct, x, y + 160)
+    mel.connect_material_expressions(base_rgb, "", lum, "A")
+    weights = _expr(mat, unreal.MaterialExpressionConstant3Vector, x - 150, y + 200, constant=unreal.LinearColor(0.2126, 0.7152, 0.0722, 0))
+    mel.connect_material_expressions(weights, "", lum, "B")
+    tint = _expr(mat, unreal.MaterialExpressionScalarParameter, x, y + 260, parameter_name="GlowTint", default_value=1.0)
+    glass = _expr(mat, unreal.MaterialExpressionLinearInterpolate, x + 150, y + 200)
+    mel.connect_material_expressions(lum, "", glass, "A")
+    mel.connect_material_expressions(base_rgb, "", glass, "B")
+    mel.connect_material_expressions(tint, "", glass, "Alpha")
+    color = _expr(mat, unreal.MaterialExpressionCollectionParameter, x, y + 330, collection=collection, parameter_name="WindowGlowColor")
+    color_rgb = _expr(mat, unreal.MaterialExpressionComponentMask, x + 150, y + 330, r=True, g=True, b=True, a=False)
+    mel.connect_material_expressions(color, "", color_rgb, "")
+    level = _expr(mat, unreal.MaterialExpressionCollectionParameter, x, y + 400, collection=collection, parameter_name="WindowGlow")
+    gain = _expr(mat, unreal.MaterialExpressionScalarParameter, x, y + 470, parameter_name="GlowGain", default_value=1.0)
+    k = _expr(mat, unreal.MaterialExpressionMultiply, x + 150, y + 430)
+    mel.connect_material_expressions(level, "", k, "A")
+    mel.connect_material_expressions(gain, "", k, "B")
+    lamp = _expr(mat, unreal.MaterialExpressionMultiply, x + 300, y + 380)
+    mel.connect_material_expressions(color_rgb, "", lamp, "A")
+    mel.connect_material_expressions(k, "", lamp, "B")
+    night = _expr(mat, unreal.MaterialExpressionMultiply, x + 450, y + 250)
+    mel.connect_material_expressions(glass, "", night, "A")
+    mel.connect_material_expressions(lamp, "", night, "B")
+    # by day, seen from inside: daylight through the glass, in the glass's own colour
+    cool = _expr(mat, unreal.MaterialExpressionConstant3Vector, x, y + 560, constant=unreal.LinearColor(0.85, 0.92, 1.0, 0))
+    day = _expr(mat, unreal.MaterialExpressionCollectionParameter, x, y + 640, collection=collection, parameter_name="WindowDaylight")
+    cool_l = _expr(mat, unreal.MaterialExpressionMultiply, x + 150, y + 600)
     mel.connect_material_expressions(cool, "", cool_l, "A")
     mel.connect_material_expressions(day, "", cool_l, "B")
-    light = _expr(mat, unreal.MaterialExpressionAdd, x + 300, y + 350)
-    mel.connect_material_expressions(warm_l, "", light, "A")
-    mel.connect_material_expressions(cool_l, "", light, "B")
-    col = _expr(mat, unreal.MaterialExpressionMultiply, x + 450, y + 150)
-    mel.connect_material_expressions(base_rgb, "", col, "A")
-    mel.connect_material_expressions(light, "", col, "B")
-    # GlowGain: dark-painted glass brought up to the typical pane (make_placeholders.py glow_gain)
-    gain = _expr(mat, unreal.MaterialExpressionScalarParameter, x + 300, y + 60, parameter_name="GlowGain", default_value=1.0)
-    lit_mask = _expr(mat, unreal.MaterialExpressionMultiply, x + 450, y + 40)
-    mel.connect_material_expressions(mask, "R", lit_mask, "A")
-    mel.connect_material_expressions(gain, "", lit_mask, "B")
-    em = _expr(mat, unreal.MaterialExpressionMultiply, x + 600, y + 100)
+    daylit = _expr(mat, unreal.MaterialExpressionMultiply, x + 300, y + 560)
+    mel.connect_material_expressions(base_rgb, "", daylit, "A")
+    mel.connect_material_expressions(cool_l, "", daylit, "B")
+    col = _expr(mat, unreal.MaterialExpressionAdd, x + 600, y + 300)
+    mel.connect_material_expressions(night, "", col, "A")
+    mel.connect_material_expressions(daylit, "", col, "B")
+    em = _expr(mat, unreal.MaterialExpressionMultiply, x + 750, y + 100)
     mel.connect_material_expressions(col, "", em, "A")
-    mel.connect_material_expressions(lit_mask, "", em, "B")
+    mel.connect_material_expressions(mask, "R", em, "B")
     # ambient floor: base * sector light (vertex colour) * SectorAmbient * AmbientTint
     vcol = _expr(mat, unreal.MaterialExpressionVertexColor, x, y + 700)
     amb = _expr(mat, unreal.MaterialExpressionCollectionParameter, x, y + 820, collection=collection, parameter_name="SectorAmbient")
@@ -1999,6 +2020,11 @@ def build_atmosphere(shelter_default, cfg):
     return {"ambient": ambient, "smoke": smoke, "moth": moth}
 
 
+def _glow_scalars(t):
+    """A window texture's GlowGain and GlowTint (placeholders.json glow_gain, glow_tint)."""
+    return {"GlowGain": float(t.get("glow_gain", 1.0)), "GlowTint": float(t.get("glow_tint", 1.0))}
+
+
 def build_placeholders(normals_for=lambda key, entry: True, glow=None):
     """-> ({grd key: MI path}, {grd key: (manifest entry, D, N, H texture paths)}).
     Both empty if make_placeholders.py hasn't been run."""
@@ -2041,8 +2067,8 @@ def build_placeholders(normals_for=lambda key, entry: True, glow=None):
         e = paths.get(t.get("emissive")) if glow else None
         loaded[key] = (t, d, n, h, e)
         scalars = {"Roughness": t["roughness"], "NormalStrength": 1.0 if normals_for(key, t) else 0.0}
-        if e and t.get("glow_gain", 1.0) != 1.0:
-            scalars["GlowGain"] = t["glow_gain"]
+        if e:
+            scalars.update(_glow_scalars(t))
         out[key] = _instance("MI_" + key, master_for(t), textures=dict({"BaseColor": d, "Normal": n}, **({"Emissive": e} if e else {})),
                              scalars=scalars)
     log("%d placeholder material instances (%s)" % (len(out), build_cache.CACHE.summary()))
@@ -2267,7 +2293,7 @@ class ZoneMaterials:
             cache[base] = _instance("MI_%s__flat" % base, master,
                                     textures=dict({"BaseColor": d, "Normal": n, "Height": h}, **({"Emissive": e} if e else {})),
                                     scalars={"Roughness": t["roughness"], "NormalStrength": 1.0 if self.normals_for(base, t) else 0.0,
-                                             **({"GlowGain": t["glow_gain"]} if e and t.get("glow_gain", 1.0) != 1.0 else {}),
+                                             **(_glow_scalars(t) if e else {}),
                                              "DisplacementStrength": 0.0})
         if base not in cache:
             if flat:
@@ -2284,7 +2310,7 @@ class ZoneMaterials:
             cache[base] = _instance("MI_%s%s" % (base, suffix), master,
                                     textures=dict({"BaseColor": d, "Normal": n, "Height": h}, **({"Emissive": e} if e else {})),
                                     scalars={"Roughness": t["roughness"], "NormalStrength": 1.0 if self.normals_for(base, t) else 0.0,
-                                             **({"GlowGain": t["glow_gain"]} if e and t.get("glow_gain", 1.0) != 1.0 else {}),
+                                             **(_glow_scalars(t) if e else {}),
                                              "DisplacementStrength": 0.0 if flat else self.displacement_strength(base)})
         if variant:
             cache[key] = self.variant_instance(base, variant, parent=cache[base], suffix="__flat" if flat else "__art")

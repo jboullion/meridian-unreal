@@ -778,23 +778,24 @@ def window_mask(size: tuple, windows: list, orig_size: tuple) -> Image.Image:
     return mask.filter(ImageFilter.GaussianBlur(max(0.5, sx * 0.5)))
 
 
-# a painted window's glow is its glass colour x lamplight (environment_materials _window_glow); glass
-# painted much darker than the usual pale pane barely glowed (the Inn's dark blue-grey glass,
-# 2026-10-06): such windows get a gain up to the typical pane's brightness
-GLOW_TARGET_LUM = 0.04   # linear luminance of the typical pane (Raza's window textures: 0.03-0.07)
-GLOW_MAX_GAIN = 4.0
+# a painted window glows in its own glass colour x the window light (environment_materials
+# _window_glow); glass painted much darker than the usual pale pane barely glowed (the Inn's dark
+# teal, 2026-10-06), so dark glass is brought up towards the typical pane. Pale glass is never
+# dimmed: the shops' bright panes and the stained glass look right in their own colours.
+GLOW_TARGET_LUM = 0.04   # linear luminance of the typical pane (Raza's: 0.013-0.18)
+GLOW_GAIN_RANGE = (1.0, 4.0)
 
 
 def glow_gain(d_path: Path, e_path: Path) -> float:
-    """1..GLOW_MAX_GAIN: how much to brighten a texture's window glow so its painted glass glows as a
-    typical pane does (mean linear luminance under the window mask). Never dims a bright one."""
+    """How much to brighten a texture's window glow so dark painted glass (mean linear luminance under
+    the window mask) glows like a typical pane: 1 for pale glass, up to GLOW_GAIN_RANGE[1]."""
     d = Image.open(d_path).convert("RGB")
     mask = Image.open(e_path).convert("L").resize(d.size)
     lum = d.convert("L").point(lambda v: round(255 * ((v / 255) / 12.92 if v / 255 <= 0.04045 else ((v / 255 + 0.055) / 1.055) ** 2.4)))
     sel = mask.point(lambda v: 255 if v > 127 else 0)
     stat = ImageStat.Stat(lum, sel)
     mean = stat.mean[0] / 255 if stat.count[0] else 0.0
-    return round(min(GLOW_MAX_GAIN, max(1.0, GLOW_TARGET_LUM / max(mean, 1e-4))), 2)
+    return round(min(GLOW_GAIN_RANGE[1], max(GLOW_GAIN_RANGE[0], GLOW_TARGET_LUM / max(mean, 1e-4))), 3)
 
 
 # the code a texture set depends on (rule tables are resolved per texture instead, see set_rules)
@@ -937,9 +938,12 @@ def main():
     facade_cfg = json.loads(FACADES.read_text(encoding="utf-8")).get("textures", {}) if FACADES.exists() else {}
     for key, entry in manifest.items():
         if entry.get("emissive"):
-            # facades.json "glow_gain" on a texture overrides the measured one (judged by eye)
-            override = facade_cfg.get(key, {}).get("glow_gain")
-            entry["glow_gain"] = float(override) if override else glow_gain(OUT / entry["d"], OUT / entry["emissive"])
+            # facades.json "glow_gain": a multiplier on top (1 = as bright as every other window);
+            # "glow_tint": how much of the glass's own colour to keep (1, the default: all of it;
+            # 0: the shared WindowGlowColor only)
+            cfg = facade_cfg.get(key, {})
+            entry["glow_gain"] = round(glow_gain(OUT / entry["d"], OUT / entry["emissive"]) * float(cfg.get("glow_gain", 1.0)), 3)
+            entry["glow_tint"] = float(cfg.get("glow_tint", 1.0))
     (OUT / "placeholders.json").write_text(json.dumps({"textures": manifest, "extras": extras, "fires": fires}, indent=1, sort_keys=True))
     cache_path.write_text(json.dumps(new_cache, indent=0, sort_keys=True))
     print("%d placeholder texture sets in %s: %d remade, %d unchanged, base colour %s (%.0f s)"

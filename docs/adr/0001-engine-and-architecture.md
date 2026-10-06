@@ -48,6 +48,7 @@ The target is 100–200 concurrent players. The original code is GPLv2. The orig
 - **Binary assets:** they're harder for AI-assisted editing. We offset this by keeping logic in C++ and data in JSON.
 - **Naming:** the product is **Meridian Remastered** (UE module `MeridianRemastered`). The Server 104 team approved the "Meridian" name on 2026-10-04, on the condition that "104" is not used in the name or branding.
 - **Art:** the Server 103 and Server 104 teams gave permission on 2026-10-04 to use **all original game assets**, on two conditions: the product uses a different name and runs on its own server. Both are met. Upscaled or reworked originals may ship; models derived from the original sprites are still reference-driven remakes. Raw extracted art stays out of git and is rebuilt from the installed client. See [ADR 0003](0003-environment-art-pipeline.md).
+- **Zone level names (2026-10-06):** each zone's streaming level is `L_Zone_<rid>_<KodClass>` (e.g. `L_Zone_307_RazaBar`, the tavern), the original's room id and room class, so the editor's Levels window says what each one is. The name is built in two places that must agree: `tools/ue/build_world.py` `zone_level_path()` and `UMRZoneSubsystem` (`LevelName`).
 
 ## Alternatives considered
 - **Unity 6:** a good fit for text-based assets, but we'd have to assemble the networking, action combat and character stack ourselves.

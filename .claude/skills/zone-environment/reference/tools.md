@@ -61,7 +61,7 @@ Run `bgf2png` before `roo2gltf`, which needs texture sizes for its UVs.
 ## Unreal
 **World build: `powershell -File tools/ue/build_world.ps1 [-Script zone_mood.py] [-Clean] [-Headless]`**
 - **Where it runs:** in the open editor through Python remote execution (`run_in_editor.py`). With no editor open it starts a headless editor on the Entry map. Stop PIE first.
-- **What it builds:** `build_world.py` imports textures, materials (`environment_materials.py`), zone meshes (blockout as hidden collision, the rendered blockout minus rebuilt faces, the art meshes, grime as decals), props and scatter. It then builds `L_Zone_<rid>` sublevels and `L_World`.
+- **What it builds:** `build_world.py` imports textures, materials (`environment_materials.py`), zone meshes (blockout as hidden collision, the rendered blockout minus rebuilt faces, the art meshes, grime as decals), props and scatter. It then builds `L_Zone_<rid>_<KodClass> (e.g. L_Zone_307_RazaBar)` sublevels and `L_World`.
 - **Incremental:** every asset is keyed by its inputs in `game/MeridianRemastered/Saved/MRBuild/world_cache.json` (`build_cache.py`). Changed assets are rebuilt in place.
 - **`-Script zone_mood.py`:** applies the mood only. `$env:MR_MOOD` picks a mood without editing `levels`.
 
