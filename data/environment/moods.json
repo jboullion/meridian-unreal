@@ -312,7 +312,7 @@
         }
       },
       "Collection": {
-        "WindowGlow": 0.09,
+        "WindowGlow": 0.045,
         "Stars": 0.2
       }
     },
@@ -345,7 +345,7 @@
       },
       "Collection": {
         "WindowGlow": 0.0,
-        "WindowDaylight": 1.0,
+        "WindowDaylight": 0.5,
         "Stars": 0.0,
         "SectorAmbient": 1.0,
         "AmbientTint": [1.0, 0.86, 0.7]
@@ -463,7 +463,7 @@
         }
       },
       "Collection": {
-        "WindowGlow": 0.26,
+        "WindowGlow": 0.08,
         "Stars": 1.0
       }
     }

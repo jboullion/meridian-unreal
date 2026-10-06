@@ -49,6 +49,8 @@ param(
     [double]$Audio = 0,
     # the player's character at each camera, seen through its own camera (the look-dev hides it otherwise)
     [switch]$WithPawn,
+    # frames at these times (s) after each camera cut, unsettled: what a zone change looks like, e.g. "0.05,0.2,0.5,1,2,4"
+    [string]$Burst = "",
     [string]$Engine = "G:\Unreal Engine\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe",
     [int]$TimeoutSeconds = 900
 )
@@ -66,6 +68,7 @@ if ($Only) { $gameArgs += " -MRLookDevOnly=" + ($Only -join ",") }
 if ($Profile) { $gameArgs += " -MRLookDevProfile" }
 if ($Audio -gt 0) { $gameArgs += " -MRLookDevAudio=$Audio" }
 if ($WithPawn) { $gameArgs += " -MRLookDevWithPawn" }
+if ($Burst) { $gameArgs += " -MRLookDevBurst=$Burst" }
 if ($Settle -gt 0) { $gameArgs += " -MRLookDevSettle=$Settle" }
 if ($GameHour -ge 0) { $gameArgs += " -MRGameHour=$GameHour" }
 if ($Mood) { $gameArgs += " -MRMood=$Mood" }

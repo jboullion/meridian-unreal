@@ -57,6 +57,7 @@
     },
     "grd09625": {
       "name": "raz-bldg-g frntwl w/out dr (Inn)",
+      "glow_gain": 7,
       "openings": [{"kind": "window", "shape": "rect", "x": [64, 133], "y": [158, 232], "frame_px": 7, "sill": true}],
       "trim": "grd09637"
     },
@@ -67,6 +68,7 @@
     },
     "grd09593": {
       "name": "raz-bldgL-Afrntwall (Tavern)",
+      "glow_gain": 4,
       "openings": [
         {"kind": "window", "shape": "round", "x": [56, 114], "y": [28, 108], "spring": 57, "frame_px": 8},
         {"kind": "window", "shape": "rect", "x": [56, 121], "y": [183, 253], "frame_px": 6, "sill": true}
@@ -108,6 +110,7 @@
     },
     "grd09599": {
       "name": "RAZ-BLDG-M A FRNTW CENT (Temple)",
+      "glow_gain": 4,
       "openings": [
         {"kind": "window", "shape": "round", "x": [33, 69], "y": [128, 211], "spring": 146, "frame_px": 8, "sill": true},
         {"kind": "window", "shape": "round", "x": [110, 146], "y": [128, 211], "spring": 146, "frame_px": 8, "sill": true},
@@ -119,6 +122,7 @@
     },
     "grd09600": {
       "name": "RAZ-BLDG-M B FRNTW SIDE MIR (Temple)",
+      "glow_gain": 4,
       "openings": [
         {"kind": "door", "shape": "round", "x": [36, 122], "y": [192, 384], "spring": 235, "frame_px": 6, "reveal_depth_m": 0.3},
         {"kind": "door", "shape": "round", "x": [134, 220], "y": [192, 384], "spring": 235, "frame_px": 6, "reveal_depth_m": 0.3},

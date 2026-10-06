@@ -179,5 +179,7 @@ private:
 	bool bHoldLightning = false;  // -MRLightningHold: look-dev stills of a stroke
 	double NextUpdate = 0.0;
 	int32 LastZone = -1;
+	double SkySliceRestoreAt = 0.0;  // when to time-slice the sky capture again after a zone change
+	int32 SkySliceSaved = 1;
 	bool bForce = true;
 };

@@ -267,6 +267,18 @@ The user played the build and reported four things, with screenshots in `Referen
   - **Also:** exposure adaptation speed is 100 in every mood. A fixed exposure still eases from the old value to the new one, which was the fade when stepping outside (interior EV −1.3, night −5.7). It's instant now.
   - **Tooling:** `run_lookdev.ps1 -WithPawn` puts the player's character at each camera and views through its own camera; the look-dev otherwise hides it.
 
+- **The fourth round: the lighting lag at every door.**
+  - `run_lookdev.ps1 -Burst "0.05,0.15,..."` saves frames at set times after a cut, at game speed. It showed every zone change lit by the *previous* place's sky for about 2 s, then snapping over: the inn was grey-blue (daylight) before going warm, and the town was dim before brightening (`burst_cmp.png`).
+  - **Not the cause:** the director applies the new mood on the very frame of the change (logged), exposure is instant, and neither volumetric-fog reprojection nor faster Lumen updates changed the lag.
+  - **Cause:** the sky light's real-time capture is time-sliced over several frames by default. After the sun turns off (going in) or on (going out), the old sky kept lighting the new place until the capture caught up.
+  - **Fix:** on a zone change the director turns the time-slicing off for 2 s (`r.SkyLight.RealTimeReflectionCapture.TimeSlice 0`), then restores it, and cuts the camera's history. Day and night, both directions are right from the first frame (`burst_fixed.png`). No loading delay is needed.
+
+- **The starting inn's windows didn't glow at night.**
+  - Their window mask was right, but a painted window glows as its glass colour × lamplight, and the inn's glass is painted a dark teal. It came out about 3× dimmer than a typical pane, and muddy brown under warm light.
+  - **Fix:** `make_placeholders.py` now measures every window's painted glass and writes `glow_gain` into `placeholders.json`. The gain is 1 up to 4×, bringing dark glass to the typical pane's brightness and never dimming a bright one. The materials multiply their glow by it (`GlowGain`). The barns' darker windows get 1.2–1.45×.
+  - **The inn:** even at equal measured brightness its teal glass looked dull, so `facades.json` can override the gain per texture. The inn uses `"glow_gain": 7`, chosen from 3.14, 5, 7 and 9 (`inn_gain.png`).
+  - Then all window glow halved at the user's request (too bright): `WindowGlow` dusk 0.09 → 0.045, night 0.26 → 0.13.
+
 ### Hazy interiors (2026-10-05)
 - **Goal:** the dusty air of the buildings and the Mausoleum shows around their lights.
 - **How:** it's the volumetric fog that was already on, given density. The interior moods set it to 0.3, with full extinction, and a near-black warm fog colour so nothing glows without a light. The sky light is mostly taken out of the fog (`volumetric_scattering_intensity` 0.15). The crypt keeps its cold mood at the same density.

@@ -58,6 +58,7 @@ Work in this order; each step is cheap to re-run (everything is incremental).
    Show the sheet to the user.
 3. **`facades.json`.** For every texture with painted windows, add `openings` with `"kind": "window"` (doors: `"kind": "door"`).
    With facade relief off, these still drive the night-glow mask (`T_<grd>_E`), the window flattening and `flat_openings`.
+   If a window's painted glass is dark, its night glow is weak: `make_placeholders.py` brightens it up to 4× by measurement (`glow_gain` in placeholders.json), and a texture's `"glow_gain"` in facades.json overrides that, judged by eye (the Inn's teal glass: 7).
    Add sloped roof textures to `roofs`. Check whether cut-outs need a `cutouts.thickness_m` rule or `exclude`.
    A time-driven animated texture gets a `"clock"` block. Run `python tools/environment/facades.py` and check `build/environment/facade_check/openings_sheet.png`.
 4. **`materials.json`.**

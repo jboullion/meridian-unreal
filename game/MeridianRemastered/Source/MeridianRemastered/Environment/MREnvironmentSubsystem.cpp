@@ -767,6 +767,7 @@ void UMREnvironmentSubsystem::Apply(const TSharedPtr<FJsonObject>& State, double
 		return;  // nothing changed (a pinned hour, or the same 5 seconds)
 	}
 	LastApplied = Key;
+	UE_LOG(LogMeridian, Verbose, TEXT("MREnvironment: applied zone %d at hour %.2f (frame %llu)"), LastZone, Hour, (unsigned long long)GFrameCounter);
 
 	if (Collection)
 	{
@@ -959,8 +960,39 @@ void UMREnvironmentSubsystem::Tick(float DeltaTime)
 	const double Now = FPlatformTime::Seconds();
 	if (Zone != LastZone)
 	{
+		// a zone change is a jump of up to 2 km (the buildings are their own levels): cut the
+		// camera, so Lumen's and the exposure's history start from the new place instead of
+		// blending the old one's lighting in and out over the next moment
+		if (LastZone > 0 && World->IsGameWorld())
+		{
+			if (APlayerController* PC = World->GetFirstPlayerController(); PC && PC->PlayerCameraManager)
+			{
+				PC->PlayerCameraManager->SetGameCameraCutThisFrame();
+			}
+			// the sky light's real-time capture is time-sliced: after the sun turns off (in) or on
+			// (out), it kept lighting the new place with the old sky for about 2 s, the fade players
+			// saw at every door (build/lookdev/burst_sky.png). Capture it whole every frame for a
+			// moment, then go back to slicing.
+			if (IConsoleVariable* Slice = IConsoleManager::Get().FindConsoleVariable(TEXT("r.SkyLight.RealTimeReflectionCapture.TimeSlice")))
+			{
+				if (SkySliceRestoreAt <= 0.0)
+				{
+					SkySliceSaved = Slice->GetInt();
+				}
+				Slice->Set(0, ECVF_SetByCode);
+				SkySliceRestoreAt = Now + 2.0;
+			}
+		}
 		LastZone = Zone;
 		bForce = true;
+	}
+	if (SkySliceRestoreAt > 0.0 && Now >= SkySliceRestoreAt)
+	{
+		if (IConsoleVariable* Slice = IConsoleManager::Get().FindConsoleVariable(TEXT("r.SkyLight.RealTimeReflectionCapture.TimeSlice")))
+		{
+			Slice->Set(SkySliceSaved, ECVF_SetByCode);
+		}
+		SkySliceRestoreAt = 0.0;
 	}
 	TickLightning(DeltaTime);
 	if (!bForce && Now < NextUpdate)

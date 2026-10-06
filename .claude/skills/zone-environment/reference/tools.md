@@ -80,6 +80,7 @@ Run `bgf2png` before `roo2gltf`, which needs texture sizes for its UVs.
   - `-Mood <name>`: pin one mood (no cycle; the mood's own sun rotation; the zone profile still applies)
   - `-StartZone <rid>` (default 300): the zone the game starts in; its neighbours stream in too
   - `-Weather storm|clear|roll` (default clear, so captures compare) and `-Season <0..3>` (default 1, summer: the original's colours; 2 fall: autumn foliage, 3 winter: Raza snows, straw grass; -1 follows the clock); `-WeatherKind rain|snow|sand` overrides the season; `-Lightning` keeps lightning on in stills, `-LightningHold` holds one stroke (bolt and flash) on screen
+  - `-Burst "0.05,0.3,1,2"`: frames at those times after each camera cut, unsettled, at game speed (`<camera>_t<ms>.png`): what a zone change looks like
   - `-WithPawn`: the player's character at each camera, seen through its own camera (otherwise it's hidden)
   - `-Audio <seconds>`: sound on, each camera's mix recorded to `<camera>.wav` with `audio.log`; `python tools/audio/audio_report.py <label>` makes `audio_sheet.png` (ADR 0006)
   - `-Exec "cmd, cmd"`: console commands at start (`mr.Weather.Splashes 0`, `mr.Fire.Flicker 0`...)

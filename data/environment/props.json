@@ -12,10 +12,10 @@
     "flower_yellow": {"color": [0.7, 0.5, 0.06], "roughness": 0.7}
   },
   "classes": {
-    "Lamp": {"mesh": "SM_LampPost", "light": {"offset_m": 2.57, "candela": 6.75, "radius_m": 11, "temperature": 2600, "source_radius_cm": 8, "night_only": true}, "moths": {"offset_m": 2.57}},
+    "Lamp": {"mesh": "SM_LampPost", "light": {"offset_m": 2.57, "candela": 2, "radius_m": 11, "temperature": 2600, "source_radius_cm": 8, "night_only": true}, "moths": {"offset_m": 2.57}},
     "DynamicLight": {"light": {"kod_intensity": 255, "kod_color": 32767, "offset_m": 1.8, "source_radius_cm": 10, "shadows": false, "flicker": "sector"}},
     "Candle": {"mesh": "SM_Candle", "fire": {"preset": "candle", "base_m": 0.715}, "light": {"kod_intensity": 5, "kod_color": 32518, "offset_m": 0.8, "source_radius_cm": 2, "shadows": false, "flicker": true}},
-    "Brazier": {"mesh": "SM_Brazier", "fire": {"preset": "brazier", "base_m": 0.98}, "light": {"kod_intensity": 40, "candela_scale": 0.56, "kod_color": 32518, "offset_m": 1.2, "source_radius_cm": 20, "flicker": true}}
+    "Brazier": {"mesh": "SM_Brazier", "fire": {"preset": "brazier", "base_m": 0.98}, "light": {"kod_intensity": 40, "candela_scale": 0.4, "kod_color": 32518, "offset_m": 1.2, "source_radius_cm": 20, "flicker": true}}
   },
   "smoke": {
     "_doc": "Chimney smoke (docs/adr/0005 phase 5): tools/environment/chimneys.py finds every chimney the blockout draws with these wall textures, and build_world.py stands a plume (SM_Puffs with M_Smoke, materials.json \"smoke\") on each top. How much smoke: moods.json \"atmosphere\" \"smoke\". A class's \"moths\": moths circle its light at night, offset_m above the object (SM_Puffs with M_Moth).",
@@ -23,11 +23,11 @@
   },
   "fires": {
     "_doc": "Flame presets (docs/adr/0005 phase 3). Each is a flipbook of the original's own flame frames: \"texture\" (a wall texture's animation frames) or \"bgf\" + \"frames\" (an object's, from python tools/bgf2png/bgf2png.py <name>), cropped to \"crop\" [x0, y0, x1, y1] (original pixels; \"keep\": \"flame\" keeps only flame-coloured pixels, \"all\" every opaque one), upscaled by make_placeholders.py into T_Fire_<name> and drawn by AMRFireActor as a camera-facing sprite at the original's size, cycling at \"fps\" (each fire from its own phase) with emissive \"brightness\". \"walls\": wall textures with this flame painted on (the wall torches): \"at\" the flame centre in the texture's pixels, \"out\" the texture direction pointing away from the wall it's mounted on, \"erase\" the rect whose flame-coloured pixels are made transparent; tools/environment/fires.py finds every flame where the blockout uses them, and \"light\" lights each (the original torches had none of their own: their sectors were lit). A class's \"fire\": the preset, and \"base_m\" the height of the flame's bottom above the object. \"flicker\" on a light: true always, \"sector\" only in the original's flickering sectors (SF_FLICKER); flickering lights are spawned as AMRFireActor and driven by UMRFireSubsystem (seeded noise, about the original's +-40 of 255, a shadow budget for the nearest few).",
-    "torch": {"texture": "grd08886", "crop": [12, 0, 38, 38], "keep": "flame", "fps": 8, "brightness": 2.0,
+    "torch": {"texture": "grd08886", "crop": [12, 0, 38, 38], "keep": "flame", "fps": 8, "brightness": 0.5,
               "walls": {"grd08886": {"at": [24, 19], "out": [1, 0], "erase": [0, 0, 40, 40]},
                         "grd08887": {"at": [15, 19], "erase": [0, 0, 32, 40]}},
-              "light": {"kod_intensity": 20, "kod_color": 32518, "source_radius_cm": 6, "flicker": true}},
-    "brazier": {"bgf": "brazier", "frames": [1, 2, 3, 4, 5, 6], "crop": [0, 4, 75, 49], "keep": "flame", "fps": 9, "brightness": 2.0},
-    "candle": {"bgf": "candle", "frames": [0, 1, 2], "crop": [11, 0, 20, 11], "keep": "all", "fps": 8, "brightness": 2.0}
+              "light": {"kod_intensity": 20, "candela_scale": 0.4, "kod_color": 32518, "source_radius_cm": 6, "flicker": true}},
+    "brazier": {"bgf": "brazier", "frames": [1, 2, 3, 4, 5, 6], "crop": [0, 4, 75, 49], "keep": "flame", "fps": 9, "brightness": 0.5},
+    "candle": {"bgf": "candle", "frames": [0, 1, 2], "crop": [11, 0, 20, 11], "keep": "all", "fps": 8, "brightness": 0.5}
   }
 }

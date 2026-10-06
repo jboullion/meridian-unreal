@@ -778,6 +778,25 @@ def window_mask(size: tuple, windows: list, orig_size: tuple) -> Image.Image:
     return mask.filter(ImageFilter.GaussianBlur(max(0.5, sx * 0.5)))
 
 
+# a painted window's glow is its glass colour x lamplight (environment_materials _window_glow); glass
+# painted much darker than the usual pale pane barely glowed (the Inn's dark blue-grey glass,
+# 2026-10-06): such windows get a gain up to the typical pane's brightness
+GLOW_TARGET_LUM = 0.04   # linear luminance of the typical pane (Raza's window textures: 0.03-0.07)
+GLOW_MAX_GAIN = 4.0
+
+
+def glow_gain(d_path: Path, e_path: Path) -> float:
+    """1..GLOW_MAX_GAIN: how much to brighten a texture's window glow so its painted glass glows as a
+    typical pane does (mean linear luminance under the window mask). Never dims a bright one."""
+    d = Image.open(d_path).convert("RGB")
+    mask = Image.open(e_path).convert("L").resize(d.size)
+    lum = d.convert("L").point(lambda v: round(255 * ((v / 255) / 12.92 if v / 255 <= 0.04045 else ((v / 255 + 0.055) / 1.055) ** 2.4)))
+    sel = mask.point(lambda v: 255 if v > 127 else 0)
+    stat = ImageStat.Stat(lum, sel)
+    mean = stat.mean[0] / 255 if stat.count[0] else 0.0
+    return round(min(GLOW_MAX_GAIN, max(1.0, GLOW_TARGET_LUM / max(mean, 1e-4))), 2)
+
+
 # the code a texture set depends on (rule tables are resolved per texture instead, see set_rules)
 SET_CODE = (source_image, clock_layout, make_set, fill_cutout, height_map, normal_map, beam_mask, _beam_mask, otsu, _normalise, target_size, pow2,
             wrap_crop, flatten_windows, window_mask, erase_flame, is_flame)
@@ -915,6 +934,12 @@ def main():
             f.unlink()
 
     manifest = dict(sorted(manifest.items()))
+    facade_cfg = json.loads(FACADES.read_text(encoding="utf-8")).get("textures", {}) if FACADES.exists() else {}
+    for key, entry in manifest.items():
+        if entry.get("emissive"):
+            # facades.json "glow_gain" on a texture overrides the measured one (judged by eye)
+            override = facade_cfg.get(key, {}).get("glow_gain")
+            entry["glow_gain"] = float(override) if override else glow_gain(OUT / entry["d"], OUT / entry["emissive"])
     (OUT / "placeholders.json").write_text(json.dumps({"textures": manifest, "extras": extras, "fires": fires}, indent=1, sort_keys=True))
     cache_path.write_text(json.dumps(new_cache, indent=0, sort_keys=True))
     print("%d placeholder texture sets in %s: %d remade, %d unchanged, base colour %s (%.0f s)"

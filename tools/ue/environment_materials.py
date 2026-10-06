@@ -232,9 +232,14 @@ def _window_glow(mat, base_rgb, glow, x, y, uv=None):
     col = _expr(mat, unreal.MaterialExpressionMultiply, x + 450, y + 150)
     mel.connect_material_expressions(base_rgb, "", col, "A")
     mel.connect_material_expressions(light, "", col, "B")
+    # GlowGain: dark-painted glass brought up to the typical pane (make_placeholders.py glow_gain)
+    gain = _expr(mat, unreal.MaterialExpressionScalarParameter, x + 300, y + 60, parameter_name="GlowGain", default_value=1.0)
+    lit_mask = _expr(mat, unreal.MaterialExpressionMultiply, x + 450, y + 40)
+    mel.connect_material_expressions(mask, "R", lit_mask, "A")
+    mel.connect_material_expressions(gain, "", lit_mask, "B")
     em = _expr(mat, unreal.MaterialExpressionMultiply, x + 600, y + 100)
     mel.connect_material_expressions(col, "", em, "A")
-    mel.connect_material_expressions(mask, "R", em, "B")
+    mel.connect_material_expressions(lit_mask, "", em, "B")
     # ambient floor: base * sector light (vertex colour) * SectorAmbient * AmbientTint
     vcol = _expr(mat, unreal.MaterialExpressionVertexColor, x, y + 700)
     amb = _expr(mat, unreal.MaterialExpressionCollectionParameter, x, y + 820, collection=collection, parameter_name="SectorAmbient")
@@ -1851,15 +1856,15 @@ float on = LampsOn * Night * (1.0 - Winter);
 float vis = step(Seed.x, Share) * step(0.5, on);
 float s = frac(Seed.y * 7.0 + ph);
 float dir = Seed.y > 0.5 ? 1.0 : -1.0;
-float th = T * (2.0 + s * 3.0) * dir + Seed.y * 40.0;
+float th = T * (1.0 + s * 1.5) * dir + Seed.y * 40.0;
 float R = Radius * (0.45 + s);
-float3 pos = float3(cos(th) * R, sin(th) * R * 0.8, sin(T * 2.3 + Seed.y * 30.0) * 18.0 + (frac(Seed.y * 13.0) - 0.5) * 40.0);
-pos += float3(sin(T * 17.0 + Seed.y * 50.0), cos(T * 13.0 + Seed.y * 40.0), sin(T * 11.0 + Seed.y * 20.0)) * 4.0;
+float3 pos = float3(cos(th) * R, sin(th) * R * 0.8, sin(T * 1.15 + Seed.y * 30.0) * 18.0 + (frac(Seed.y * 13.0) - 0.5) * 40.0);
+pos += float3(sin(T * 8.5 + Seed.y * 50.0), cos(T * 6.5 + Seed.y * 40.0), sin(T * 5.5 + Seed.y * 20.0)) * 3.0;
 float3 centre = Obj + pos;
 float3 toCam = normalize(Cam - centre);
 float3 right = normalize(cross(float3(0.0, 0.0, 1.0), toCam) + float3(0.0001, 0.0, 0.0));
 float3 up = cross(toCam, right);
-float flap = 0.3 + 0.7 * abs(sin(T * 38.0 + Seed.y * 90.0));
+float flap = 0.3 + 0.7 * abs(sin(T * 24.0 + Seed.y * 90.0));
 float2 c = Corner - 0.5;
 return centre + (right * c.x * Size * flap - up * c.y * Size * 0.7) * vis - WPN;
 """
@@ -1928,13 +1933,15 @@ def build_smoke_master(name, wpo, look):
 
 
 def build_moth_master(name, wpo, shape):
-    """M_Moth (docs/adr/0005 phase 5): SM_Puffs as moths around a lamp (MOTH_WPO): masked, lit (the
-    lamp's own light), with a faint emissive so they read against the night."""
+    """M_Moth (docs/adr/0005 phase 5): SM_Puffs as moths around a lamp (MOTH_WPO): translucent (no
+    velocity, so motion blur doesn't smear the fast little quads into sticks, 2026-10-06), lit by
+    the translucency volume (the lamp's own light), with a faint emissive so they read at night."""
     mat = _new_material(name)
-    mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+    mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_TRANSLUCENT)
+    mat.set_editor_property("translucency_lighting_mode", unreal.TranslucencyLightingMode.TLM_VOLUMETRIC_NON_DIRECTIONAL)
     mat.set_editor_property("two_sided", True)
     params = {}
-    for i, (pname, default) in enumerate((("Share", 0.25), ("Radius", 40.0), ("Size", 2.6), ("Glow", 0.2))):
+    for i, (pname, default) in enumerate((("Share", 0.25), ("Radius", 40.0), ("Size", 1.4), ("Glow", 0.2))):
         params[pname] = _expr(mat, unreal.MaterialExpressionScalarParameter, -1800, -400 + i * 80,
                               parameter_name=pname, default_value=default)
     pin = _puff_inputs(mat, -1800, 0)
@@ -1944,7 +1951,7 @@ def build_moth_master(name, wpo, shape):
                    + [(k, params[k], "") for k in ("Share", "Radius", "Size")], "MothMotion")
     mel.connect_material_property(move, "", unreal.MaterialProperty.MP_WORLD_POSITION_OFFSET)
     mask = _custom(mat, -900, -300, shape, unreal.CustomMaterialOutputType.CMOT_FLOAT1, [("Corner", pin["Corner"], "")], "MothShape")
-    mel.connect_material_property(mask, "", unreal.MaterialProperty.MP_OPACITY_MASK)
+    mel.connect_material_property(mask, "", unreal.MaterialProperty.MP_OPACITY)
     color = _expr(mat, unreal.MaterialExpressionVectorParameter, -650, -500, parameter_name="Color",
                   default_value=unreal.LinearColor(0.25, 0.21, 0.16, 1))
     mel.connect_material_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
@@ -2034,6 +2041,8 @@ def build_placeholders(normals_for=lambda key, entry: True, glow=None):
         e = paths.get(t.get("emissive")) if glow else None
         loaded[key] = (t, d, n, h, e)
         scalars = {"Roughness": t["roughness"], "NormalStrength": 1.0 if normals_for(key, t) else 0.0}
+        if e and t.get("glow_gain", 1.0) != 1.0:
+            scalars["GlowGain"] = t["glow_gain"]
         out[key] = _instance("MI_" + key, master_for(t), textures=dict({"BaseColor": d, "Normal": n}, **({"Emissive": e} if e else {})),
                              scalars=scalars)
     log("%d placeholder material instances (%s)" % (len(out), build_cache.CACHE.summary()))
@@ -2258,6 +2267,7 @@ class ZoneMaterials:
             cache[base] = _instance("MI_%s__flat" % base, master,
                                     textures=dict({"BaseColor": d, "Normal": n, "Height": h}, **({"Emissive": e} if e else {})),
                                     scalars={"Roughness": t["roughness"], "NormalStrength": 1.0 if self.normals_for(base, t) else 0.0,
+                                             **({"GlowGain": t["glow_gain"]} if e and t.get("glow_gain", 1.0) != 1.0 else {}),
                                              "DisplacementStrength": 0.0})
         if base not in cache:
             if flat:
@@ -2274,6 +2284,7 @@ class ZoneMaterials:
             cache[base] = _instance("MI_%s%s" % (base, suffix), master,
                                     textures=dict({"BaseColor": d, "Normal": n, "Height": h}, **({"Emissive": e} if e else {})),
                                     scalars={"Roughness": t["roughness"], "NormalStrength": 1.0 if self.normals_for(base, t) else 0.0,
+                                             **({"GlowGain": t["glow_gain"]} if e and t.get("glow_gain", 1.0) != 1.0 else {}),
                                              "DisplacementStrength": 0.0 if flat else self.displacement_strength(base)})
         if variant:
             cache[key] = self.variant_instance(base, variant, parent=cache[base], suffix="__flat" if flat else "__art")

@@ -259,8 +259,7 @@ bool UMRZoneSubsystem::LoadData()
 		}
 		// The layout records sharing on the zone that reuses another's geometry, so this is the
 		// zone that owns the streaming level (matches build_world.py).
-		Info.GeometryRid = Info.SharesGeometryWith ? Info.SharesGeometryWith : Info.Rid;
-		Info.LevelName = FName(*FString::Printf(TEXT("L_Zone_%d"), Info.GeometryRid));
+		Info.GeometryRid = Info.SharesGeometryWith ? Info.SharesGeometryWith : Info.Rid;  // LevelName: below
 
 		if (const TSharedPtr<FJsonObject>* KodPtr = KodZones.Find(Info.Rid))
 		{
@@ -309,6 +308,14 @@ bool UMRZoneSubsystem::LoadData()
 			}
 		}
 		Zones.Add(Info.Rid, MoveTemp(Info));
+	}
+	// the streaming level's name: L_Zone_<geometry rid>_<its Kod class>, e.g. L_Zone_307_RazaBar
+	// (tools/ue/build_world.py zone_level_path); the Outskirts use the town's, L_Zone_300_Raza
+	for (TPair<int32, FMRZoneInfo>& Pair : Zones)
+	{
+		const FMRZoneInfo* Geo = Zones.Find(Pair.Value.GeometryRid);
+		Pair.Value.LevelName = FName(*FString::Printf(TEXT("L_Zone_%d_%s"), Pair.Value.GeometryRid,
+			*(Geo ? Geo->KodClass : Pair.Value.KodClass)));
 	}
 
 	// zone_layout.json records sharing on one side only (the later zone); make it symmetric so

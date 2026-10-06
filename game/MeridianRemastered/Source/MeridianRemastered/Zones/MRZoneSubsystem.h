@@ -62,7 +62,7 @@ struct FMRZoneInfo
 	UPROPERTY(BlueprintReadOnly) int32 SharesGeometryWith = 0;
 	/** Zone whose streaming level holds this zone's geometry (itself unless it shares). */
 	UPROPERTY(BlueprintReadOnly) int32 GeometryRid = 0;
-	/** Short name of that streaming level, e.g. L_Zone_300 (tools/ue/build_world.py). */
+	/** Short name of that streaming level, e.g. L_Zone_307_RazaBar: geometry rid and its Kod class (tools/ue/build_world.py). */
 	UPROPERTY(BlueprintReadOnly) FName LevelName;
 	UPROPERTY(BlueprintReadOnly) TArray<FMRZoneExit> Exits;
 	UPROPERTY(BlueprintReadOnly) TArray<FMREdgeExit> EdgeExits;
@@ -82,7 +82,7 @@ class ULevelStreaming;
  * the current zone (the town and the Outskirts) only the zone ID changes, with no teleport,
  * so walking out of the north gate is seamless.
  *
- * Streaming: every zone's geometry is a streaming sublevel of L_World (L_Zone_<rid>).
+ * Streaming: every zone's geometry is a streaming sublevel of L_World (L_Zone_<rid>_<KodClass>).
  *  - The server loads all of them at startup (authoritative collision, AI, traces).
  *  - Each client loads its current zone plus every zone one exit away and keeps them visible
  *    (AMRPlayerController drives this), so taking an exit is a same-frame switch.

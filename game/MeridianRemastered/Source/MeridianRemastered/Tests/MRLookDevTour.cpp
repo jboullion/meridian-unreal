@@ -158,6 +158,19 @@ void UMRLookDevTour::Start(APlayerController* InController)
 	FParse::Value(FCommandLine::Get(), TEXT("MRLookDevSettle="), FixedSettle);
 	FParse::Value(FCommandLine::Get(), TEXT("MRLookDevAudio="), AudioSeconds);
 	bWithPawn = FParse::Param(FCommandLine::Get(), TEXT("MRLookDevWithPawn"));
+	FString Burst;
+	if (FParse::Value(FCommandLine::Get(), TEXT("MRLookDevBurst="), Burst, false))
+	{
+		// what the first seconds after a cut look like (a zone change: lighting catching up)
+		TArray<FString> Parts;
+		Burst.ParseIntoArray(Parts, TEXT(","));
+		for (const FString& P : Parts)
+		{
+			BurstTimes.Add(FCString::Atof(*P));
+		}
+		BurstTimes.Sort();
+		FixedSettle = FMath::Max(FixedSettle, 1.f);  // no slowed world clock
+	}
 	if (AudioSeconds > 0.f && FixedSettle <= 0.f)
 	{
 		FixedSettle = 2.f;  // no slowed world clock while recording sound
@@ -252,6 +265,12 @@ void UMRLookDevTour::Next()
 	bExposureCut = false;
 	Grids.Reset();
 	StableCount = 0;
+	if (BurstTimes.Num() > 0)
+	{
+		BurstIndex = 0;
+		After(BurstTimes[0], &UMRLookDevTour::Sample);
+		return;
+	}
 	After(FixedSettle > 0.f ? FixedSettle : MinSettleSeconds, &UMRLookDevTour::Sample);
 }
 
@@ -274,6 +293,23 @@ void UMRLookDevTour::OnFrame(int32 Width, int32 Height, const TArray<FColor>& Pi
 	}
 	const FShot& Shot = Shots[Index];
 	const double Elapsed = FPlatformTime::Seconds() - ShotStart;
+	if (BurstTimes.IsValidIndex(BurstIndex))
+	{
+		const FString BurstFile = FPaths::Combine(OutDir, FString::Printf(TEXT("%s_t%05d.png"), *Shot.Name, FMath::RoundToInt32(Elapsed * 1000.0)));
+		TArray64<uint8> BurstPng;
+		FImageUtils::PNGCompressImageArray(Width, Height, TArrayView64<const FColor>(Pixels.GetData(), Pixels.Num()), BurstPng);
+		FFileHelper::SaveArrayToFile(BurstPng, *BurstFile);
+		UE_LOG(LogMeridian, Display, TEXT("MRLookDev: %s (burst at %.2f s)"), *BurstFile, Elapsed);
+		if (++BurstIndex < BurstTimes.Num())
+		{
+			After(FMath::Max(0.f, BurstTimes[BurstIndex] - float(Elapsed)), &UMRLookDevTour::Sample);
+		}
+		else
+		{
+			After(0.f, &UMRLookDevTour::Captured);
+		}
+		return;
+	}
 	Grids.Add(BrightnessGrid(Width, Height, Pixels));
 	const float Diff = Grids.Num() > CompareBack ? MeanDiff(Grids.Last(), Grids[Grids.Num() - 1 - CompareBack]) : -1.f;
 	StableCount = Diff >= 0.f && Diff < SettledDiff ? StableCount + 1 : 0;

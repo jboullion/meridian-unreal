@@ -83,9 +83,29 @@ def log(msg):
     unreal.log("[build_world] " + msg)
 
 
-def zone_level_path(rid):
-    """Must match UMRZoneSubsystem's naming: L_Zone_<geometry rid>."""
-    return "%s/L_Zone_%d" % (ZONE_LEVEL_DIR, rid)
+def zone_level_path(zone):
+    """Must match UMRZoneSubsystem's naming: L_Zone_<rid>_<Kod class> of the zone owning the geometry,
+    e.g. L_Zone_307_RazaBar (the original's room id and room class, so the Levels window says what
+    each one is)."""
+    return "%s/L_Zone_%d_%s" % (ZONE_LEVEL_DIR, zone["rid"], zone["class"])
+
+
+def remove_stale_levels(zone_levels):
+    """Delete zone levels this build no longer makes (renamed or removed zones; the old
+    L_Zone_<rid> names). Run after L_World has been rebuilt to stream only zone_levels."""
+    registry = unreal.AssetRegistryHelpers.get_asset_registry()
+    keep = {p.split(".")[0] for p in zone_levels}
+    for data in registry.get_assets_by_path(ZONE_LEVEL_DIR, recursive=False):
+        path = str(data.package_name)
+        if path not in keep and str(data.asset_class_path.asset_name) == "World":
+            eal.delete_asset(path)
+            # a world package can stay on disk after delete_asset in a headless editor; it's ours
+            # and git-ignored, and nothing streams it any more
+            disk = os.path.join(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_content_dir()),
+                                path[len("/Game/"):] + ".umap")
+            if os.path.exists(disk):
+                os.remove(disk)
+            log("removed old zone level %s" % path)
 
 
 def reset_generated():
@@ -357,6 +377,37 @@ def zone_props(zone, materials, prop_materials):
     return out
 
 
+TORCH_LIGHT_MERGE_CM = 100.0
+
+
+def merge_torch_lights(props, wall_fires):
+    """The original lit its wall torches with a room light (DynamicLight) placed under each flame,
+    so a torch and that light stood about half a metre apart: two lights per torch (2026-10-06).
+    A DynamicLight within TORCH_LIGHT_MERGE_CM (in plan) of a torch flame is dropped, and its light
+    (the original's strength and colour) moves onto the flame. -> (props, wall fires)."""
+    kept, used = [], set()
+    merged = []
+    for label, mesh, pos, light, fire in wall_fires:
+        best, best_d = None, TORCH_LIGHT_MERGE_CM
+        for i, (plabel, pmesh, ppos, plight, pfire) in enumerate(props):
+            if i in used or not plight or pmesh or pfire or "_DynamicLight_" not in plabel:
+                continue
+            d = ((ppos[0] - pos[0]) ** 2 + (ppos[1] - pos[1]) ** 2) ** 0.5
+            if d < best_d:
+                best, best_d = i, d
+        if best is not None:
+            used.add(best)
+            room = props[best][3]
+            light = dict(light or {}, candela=room["candela"], radius_m=room["radius_m"], offset_m=0.0, flicker=True)
+            if "color" in room:
+                light["color"] = room["color"]
+        merged.append((label, mesh, pos, light, fire))
+    kept = [p for i, p in enumerate(props) if i not in used]
+    if used:
+        log("%d torch room lights moved onto their flames" % len(used))
+    return kept, merged
+
+
 def zone_wall_fires(zone, materials):
     """-> [(label, None, [x, y, z] cm, light, fire)] for the wall torches the blockout draws
     (props.json "fires" presets with "walls", found by tools/environment/fires.py)."""
@@ -497,7 +548,7 @@ def open_level(path, maps):
 def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, props, maps, effects=(), atmosphere=None):
     """Rebuild L_Zone_<rid> when what it places changed (not when a mesh it places was re-imported:
     actors reference the asset, so they show the new mesh as is)."""
-    path = zone_level_path(zone["rid"])
+    path = zone_level_path(zone)
     cache = build_cache.CACHE
     recipe = {"origin": zone["world_origin_cm"], "sharers": sharers, "parts": parts, "scatter": scatter_inputs,
               "props": props, "code": source(build_zone_level, spawn_fire), "fire_actor": hasattr(unreal, "MRFireActor"),
@@ -721,7 +772,8 @@ def main(args):
             if any(parts[0][0].startswith(d + "/") for d in cache.built.get("meshes", [])):  # re-imported
                 bad += 0 if check_orientation(z, parts[0][0]) else 1
             scatter_inputs, compute_scatter = zone_scatter(z, materials)
-            props = zone_props(z, materials, prop_materials) + zone_wall_fires(z, materials)
+            room_props, torches = merge_torch_lights(zone_props(z, materials, prop_materials), zone_wall_fires(z, materials))
+            props = room_props + torches
             effects = zone_effects(z, materials)
             path, rebuilt = build_zone_level(z, parts, sharers.get(z["rid"], []), scatter_inputs, compute_scatter, props, maps,
                                              effects, materials.atmosphere)
@@ -730,6 +782,7 @@ def main(args):
             if rebuilt:
                 log("zone %d %s: level rebuilt (%s)" % (z["rid"], z["class"], summary))
         build_persistent_level(zone_levels, maps, materials.night_sky)
+        remove_stale_levels(zone_levels)
     finally:
         cache.save()
     if bad:
