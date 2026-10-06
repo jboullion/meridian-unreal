@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a small deciduous tree: a dense round crown of dark green leaves on a short thin straight trunk",
   "mesh": "SM_AI_Midtree2",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

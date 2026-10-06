@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a miniature golden shrine: a tall slender gilded open tower with thin columns and a pointed spire",
   "mesh": "SM_AI_Modshrin",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

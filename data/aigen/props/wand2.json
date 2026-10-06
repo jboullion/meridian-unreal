@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a thin straight red wand with a small white tip at one end and a black tip at the other",
   "mesh": "SM_AI_Wand2",
-  "face_target": 8000,
   "size_by": "length",
-  "restyle": {"providers": ["openai"], "views": ["front"], "extra": "Show it lying flat on its side, horizontal."},
+  "restyle": {"providers": ["openai"], "extra": "Show it lying flat on its side, horizontal."},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

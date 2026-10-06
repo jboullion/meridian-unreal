@@ -404,7 +404,18 @@ def prop_mesh_available(name):
 
 
 def prop_mesh_name(cfg, label, ordinal):
-    """The mesh for one placed object. "mesh" by default. An entry with "mesh_options" ({option:
+    """The mesh for one placed object: a custom model when one exists, else the entry's mesh.
+    Custom: the entry's "mesh_custom" (a kit GLB name or UE asset path), or else <mesh>_Custom, the
+    kit mesh tools/aigen builds from a manifest's "custom" model (docs/adr/0007 "Custom models").
+    Either falls back to "mesh" (the HD model) while its file doesn't exist."""
+    for custom in (cfg.get("mesh_custom"), cfg.get("mesh") and cfg["mesh"] + "_Custom"):
+        if custom and prop_mesh_available(custom):
+            return custom
+    return prop_mesh_choice(cfg, label, ordinal)
+
+
+def prop_mesh_choice(cfg, label, ordinal):
+    """The entry's own mesh. "mesh" by default. An entry with "mesh_options" ({option:
     [meshes]}) uses the option named by "mesh_use"; "compare" cycles the options over the zone's
     objects of this kind (the ordinal-th object gets option ordinal % n), so they stand side by side
     (docs/adr/0007 "Trees"). Within an option a stable pseudo-random variant per object. Options

@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a glass potion bottle with a round red-filled base and a long curved swan-like neck closed by a gold stopper",
   "mesh": "SM_AI_Potion01",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

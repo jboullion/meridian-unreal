@@ -8,9 +8,8 @@
   "frame": 1,
   "describe": "a pair of polished steel plate gauntlets standing upright side by side, fingers down",
   "mesh": "SM_AI_Gauntlet",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

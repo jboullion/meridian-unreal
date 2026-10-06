@@ -44,6 +44,14 @@ VIEWS = {
 }
 
 
+# the original sprite draws this side itself (sprite.angle_frames): keep its viewpoint and pose
+OWN_VIEWS = {
+    "left": "the object's left side (its front points to the left of the image)",
+    "back": "the object from directly behind",
+    "right": "the object's right side (its front points to the right of the image)",
+}
+
+
 def style_block() -> str:
     text = STYLE_FILE.read_text(encoding="utf-8")
     m = re.search(r"<!-- style-block -->(.*?)<!-- /style-block -->", text, re.S)
@@ -52,13 +60,19 @@ def style_block() -> str:
     return " ".join(line.strip() for line in m.group(1).strip().splitlines() if line.strip())
 
 
-def prompt(describe: str, view: str, has_front_ref: bool, extra: str = "") -> str:
+def prompt(describe: str, view: str, has_front_ref: bool, extra: str = "", own_view: bool = False) -> str:
+    """own_view: the first image is the original's own drawing of this side, so keep its viewpoint
+    rather than turning the object (the front restyle, the second image, gives design and colours)."""
     parts = ["Redraw the object in the first image as a clean, high-resolution reference image for 3D modelling.",
              "Keep it recognisably the same object: same shape, silhouette, proportions, colours and details.",
              "Object: %s." % describe.rstrip(".")]
     if has_front_ref:
         parts.append("The second image is the approved front view of the redraw; match its design, colours and detail exactly.")
-    parts.append(VIEWS[view])
+    if own_view:
+        parts.append("View: exactly the viewpoint of the first image, which shows %s, at eye level. Keep that pose, "
+                     "silhouette and scale; do not turn the object towards the camera." % OWN_VIEWS[view])
+    else:
+        parts.append(VIEWS[view])
     if extra:
         parts.append(extra)
     parts.append(style_block())

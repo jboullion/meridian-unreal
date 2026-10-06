@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a polished steel breastplate of plate armour with rounded shoulder plates and decorated lower lames",
   "mesh": "SM_AI_Plateamr",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"], "extra": "Show it standing upright as on a display."},
+  "restyle": {"providers": ["openai"], "extra": "Show it standing upright as on a display."},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

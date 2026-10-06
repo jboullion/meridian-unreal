@@ -1,5 +1,5 @@
 {
-  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007). Hand-set: class, bgf, frame, describe, mesh, face_target, restyle, tripo.variants (variant -> {view: source}; source 'upscale' or a restyle output's name, e.g. 'vertex', 'fal-flux-pro-kontext'). The pipeline writes height_m, sprite_px, restyle_runs, tripo.runs/chosen and normalized.",
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007). Hand-set: class, bgf, frame, describe, mesh, model (optional: hd default, smart_mesh, custom), polycount (optional; default 4000), retopology (optional: true or {polycount, topology}), custom (optional), restyle, tripo.variants (variant -> {view: source}; source 'upscale' or a restyle output's name, e.g. 'vertex', 'fal-flux-pro-kontext'). The pipeline writes height_m, sprite_px, restyle_runs, tripo.runs/chosen and normalized.",
   "name": "brazier",
   "kind": "props",
   "class": "Brazier",
@@ -8,23 +8,24 @@
   "frame": 0,
   "describe": "a free-standing brazier: a wide shallow round beaten-copper bowl, held by dark iron straps with square lugs standing up at the rim, on a tall slender dark iron stem with a carved collar near the bottom, on a broad round flared iron foot; aged and worn; the bowl is empty and unlit",
   "mesh": "SM_AI_Brazier",
-  "face_target": 4000,
-  "restyle": {
-    "providers": ["vertex", "openai", "fal@fal-ai/flux-pro/kontext", "fal@fal-ai/qwen-image-edit"],
-    "views": ["front"]
-  },
+  "restyle": {"providers": ["vertex", "openai", "fal@fal-ai/flux-pro/kontext", "fal@fal-ai/qwen-image-edit"]},
   "tripo": {
     "variants": {
       "A": {"front": "upscale"},
       "B": {"front": "vertex"},
       "C": {"front": "openai"},
       "D": {"front": "fal-flux-pro-kontext"},
-      "E": {"front": "fal-qwen-image-edit"}
+      "E": {"front": "fal-qwen-image-edit"},
+      "SM2k": {"front": "openai"},
+      "SM4k": {"front": "openai"},
+      "SM8k": {"front": "openai"},
+      "SM16k": {"front": "openai"},
+      "HD1k": {"front": "openai"}
     },
     "runs": {
       "A": {
         "file": "build/aigen/props/brazier/04_tripo_out/A.glb",
-        "digest": "5f4b93cad25b449a",
+        "digest": "e4d7ac47aa0f650d",
         "tris": 7270,
         "size_m": [0.5192, 0.5174, 0.9812],
         "tripo_task": "784d5cc2-8202-4bcc-a825-ac67bc4dd887",
@@ -36,7 +37,7 @@
         "tripo_name": "ancient bowl 3d model",
         "settings": "Studio HD Model, H3.1, Ultra Mesh on, 2K PBR, Remove Lighting on, triangles, 8000 faces, single image (45 credits)",
         "file": "build/aigen/props/brazier/04_tripo_out/B.glb",
-        "digest": "c3afd18db4b23829",
+        "digest": "8bb886ff4082dd91",
         "tris": 7520,
         "size_m": [0.5638, 0.5636, 0.9789]
       },
@@ -45,7 +46,7 @@
         "tripo_name": "rusty goblet 3d model",
         "settings": "Studio HD Model, H3.1, Ultra Mesh on, 2K PBR, Remove Lighting on, triangles, 8000 faces, single image (45 credits)",
         "file": "build/aigen/props/brazier/04_tripo_out/C.glb",
-        "digest": "e40baeb3abbb9b58",
+        "digest": "d7f738ef61292d59",
         "tris": 7520,
         "size_m": [0.5731, 0.5699, 0.9797]
       },
@@ -54,9 +55,64 @@
         "tripo_name": "rusted metal bowl 3d model",
         "settings": "Studio HD Model, H3.0, AI Complete on, 2K PBR, Remove Lighting on, triangles, 8000 faces, single image (30 credits)",
         "file": "build/aigen/props/brazier/04_tripo_out/C_h30.glb",
-        "digest": "a8982fc9be0eacf8",
+        "digest": "201df4dc90d685c3",
         "tris": 7546,
         "size_m": [0.6016, 0.6046, 0.9994]
+      },
+      "SM2k": {
+        "tripo_task": "61a780b2-ab20-46a6-8fd7-a66ebbb5abb0",
+        "faces_studio": 2012,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 2000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "rusted metal bowl 3d model",
+        "tris_raw": 2012,
+        "file": "build/aigen/props/brazier/04_tripo_out/SM2k.glb",
+        "digest": "c60c3e2ae330f7ea",
+        "tris": 2012,
+        "size_m": [0.5366, 0.5366, 0.9995]
+      },
+      "SM4k": {
+        "tripo_task": "e32a2f4a-22b5-40ba-92d7-c1499ef66514",
+        "faces_studio": 4273,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 4000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "rusty pedestal bowl 3d model",
+        "tris_raw": 4273,
+        "file": "build/aigen/props/brazier/04_tripo_out/SM4k.glb",
+        "digest": "2be117086ffa82f8",
+        "tris": 4273,
+        "size_m": [0.5884, 0.5884, 0.9995]
+      },
+      "SM8k": {
+        "tripo_task": "f95d909d-ced4-48bd-b208-8a2f6fd7f078",
+        "faces_studio": 8449,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 8000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "rusty bowl 3d model",
+        "tris_raw": 8449,
+        "file": "build/aigen/props/brazier/04_tripo_out/SM8k.glb",
+        "digest": "c5a45aa02314a0c1",
+        "tris": 8449,
+        "size_m": [0.5884, 0.5864, 0.9995]
+      },
+      "SM16k": {
+        "tripo_task": "25aa2e40-5ff8-4f89-b8ae-cc1e94df8e5b",
+        "faces_studio": 16370,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 16000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "rusted brazier 3d model",
+        "tris_raw": 16370,
+        "file": "build/aigen/props/brazier/04_tripo_out/SM16k.glb",
+        "digest": "2c53be90f9b25413",
+        "tris": 16370,
+        "size_m": [0.5796, 0.5796, 0.9995]
+      },
+      "HD1k": {
+        "tripo_task": "0f5dace3-1924-4a6a-9908-f1fa795d2cf5",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 polycount, single image (45 credits)",
+        "stuck_task": "c14b6722-8aea-459b-a984-c645fc668fc8",
+        "tripo_name": "rusted brazier 3d model",
+        "tris_raw": 986,
+        "file": "build/aigen/props/brazier/04_tripo_out/HD1k.glb",
+        "digest": "d970e2c6616a7f22",
+        "tris": 986,
+        "size_m": [0.563, 0.574, 0.975]
       }
     },
     "chosen": {
@@ -100,5 +156,25 @@
     "tris": 7520,
     "size_m": [0.5751, 0.5719, 0.9831],
     "scale": 1.0035
+  },
+  "normalized_variants": {
+    "SM4k": {
+      "file": "build/environment/kit/SM_AI_Brazier_SM4k.glb",
+      "tris": 4273,
+      "size_m": [0.5787, 0.5787, 0.9831],
+      "scale": 0.98358
+    },
+    "SM8k": {
+      "file": "build/environment/kit/SM_AI_Brazier_SM8k.glb",
+      "tris": 8449,
+      "size_m": [0.5787, 0.5768, 0.9831],
+      "scale": 0.98358
+    },
+    "HD1k": {
+      "file": "build/environment/kit/SM_AI_Brazier_HD1k.glb",
+      "tris": 986,
+      "size_m": [0.5677, 0.5788, 0.9831],
+      "scale": 1.0083
+    }
   }
 }

@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "two wax inkycap mushrooms: dark blue caps with white speckles on thick red stems, one standing tall and one smaller leaning against it",
   "mesh": "SM_AI_Mushroom",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

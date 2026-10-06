@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a glass conical laboratory flask with a narrow neck, the bottom half filled with bright green liquid",
   "mesh": "SM_AI_Flaskgrn",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

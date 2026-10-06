@@ -8,11 +8,13 @@
   "frame": 0,
   "describe": "a miniature statue of a fey elhai: a slender pale winged fairy with large translucent wings, arms outstretched",
   "mesh": "SM_AI_Modfey",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
-    "variants": {"C": {"front": "openai"}},
+    "variants": {
+      "C": {"front": "openai"},
+      "MV1k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
+    },
     "runs": {
       "C": {
         "tripo_task": "3375a29c-fb70-4c44-b5fd-6ca7cc819956",
@@ -39,8 +41,26 @@
     "openai_front": {
       "model": "gpt-image-2.5-sunburst",
       "seconds": null,
-      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "batch": "batch_6ac52539b3d08190a098c00810ec4715",
       "file": "build/aigen/props/modfey/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
+      "file": "build/aigen/props/modfey/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
+      "file": "build/aigen/props/modfey/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
+      "file": "build/aigen/props/modfey/02_restyle/openai_right.png"
     }
   },
   "normalized": {
@@ -48,5 +68,6 @@
     "tris": 7806,
     "size_m": [0.4165, 0.2869, 0.4223],
     "scale": 0.43188
-  }
+  },
+  "angles": {"left": 2, "back": 3, "right": 4}
 }

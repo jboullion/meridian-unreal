@@ -223,6 +223,10 @@ The amplitudes are unchanged.
   - 20k adds little you would see at these sizes.
 - **Cost per asset:** HD MV is 45 credits. Smart Mesh is 100 per run plus 10 per texture, unless all 4 generations go to use.
 
+**The original side views were not used.** The user remembered that the originals have side views, and they do: every museum figure's sprite is drawn from 8 directions (6 bitmaps in the group `[0, 1, 2, 3, 3, 3, 4, 5]`: front, front three-quarter, side, back three-quarter, back). So do `box1` and `helm`; `modportal` and `modthron` have 8 and 7 bitmaps.
+- The test's left, back and right views were instead invented by OpenAI from the front. The original angles show what it got wrong: the centipede's real side is a long S-curve ending in a tail spike, and the fungus beast's back is a plain cap.
+- Next: restyle each side view from its own original frame, not from the front alone.
+
 **Decision (proposed, awaiting the user):**
 - Creatures, figures and anything with legs or an unseen back get 4 views (`restyle.views` all four, `tripo.variants` `MV`). Plain symmetric props keep one image.
 - HD H3.1 with 4 views stays the default for props.
@@ -237,11 +241,102 @@ The amplitudes are unchanged.
   It now takes the exact name each import ended up with from the bridge log ("Renamed imported root: ... -> 'x.001'"). A resend of a model already collected is deleted from the scene.
 - `prop_glb.py preview --wire` renders the geometry (grey, edges drawn). `tripo-ingest` adds "mesh above" and "mesh front" columns to `sheet2_tripo.png`, so untextured Smart Mesh models can be judged too.
 
+## Smart Mesh props (2026-10-06)
+**Question (the user).** Would Smart Mesh make better static props in game than the HD models we placed?
+
+**What was run** (task ids and Studio face counts in each manifest's `tripo.runs.SM*`; log `build/aigen/sm_props_test/runs.tsv`):
+- 10 props the look-dev cameras show: `brazier`, `lamp`, `table`, `barstool`, `stool`, `chandelr`, `box1`, `tallurn`, `sign`, `rockc`.
+- One Smart Mesh P2.0 run each, from the same single image as their HD model (`03_tripo_in/C_front.png`). 4 generations at 2k, 4k, 8k and 16k triangles (`SM2k` … `SM16k`).
+- The 4k and 8k were textured (2K, Remove Lighting). The 2k and 16k stay untextured, for judging the mesh.
+- Spent: 1,200 Studio credits (10 runs × 100 + 20 textures × 10; 22,015 → 20,815).
+- In game: `aigen.py <name> normalize SM8k` builds `SM_AI_<Name>_SM8k` beside the chosen mesh. `props.json` gives each of the 10 entries `"mesh_options"` `hd` / `sm8k` / `sm4k`. One world build and capture per option at 13:00, on 10 cameras: the props' own, plus 3 new bookmarks `prop_box`, `prop_rock`, `prop_sign`.
+
+**Results:**
+- Sheets: `build/aigen/sm_props_test/compare_1.png` and `compare_2.png` (renders), `polycount_1.png` and `polycount_2.png`; in game `ingame_outdoor.png` and `ingame_interior.png` (HD | SM 8k | SM 4k); `rock_back.png`.
+- **In game the difference is small** at normal distances. Brazier, lamp, bar stool, stool, chandelier and urn look all but the same.
+- Smart Mesh's textures are a little crisper: the table's grain, the sign's carved runes.
+- Its meshes are cleaner: an even radial table top against HD's scattered triangles.
+- **4k looks as good as 8k** for every one of these props, at half the triangles of the HD models (about 7,500).
+- **Smart Mesh reinterprets more:**
+  - the crate (`box1`) became a chest with a curved lid, where HD kept the sprite's flat crate;
+  - the sign became separate planks, closer to the sprite than HD's solid block.
+- **Each generation invents its own back.** The rock's 8k has a round plate on its back, which a random turn shows to the camera. Its 4k is a proper rock. So the review sheets now render the mesh from behind (`tripo-ingest`: "mesh above", "mesh back").
+- Cost: HD 45 credits per prop for one try. Smart Mesh 100 per run for 4 tries at different counts, plus 10 per texture.
+
+**Recommendation (awaiting the user):**
+- Keep HD H3.1 as the prop default. Smart Mesh doesn't look better enough to redo Raza: about 6,600 credits for 60 props.
+- Smart Mesh 4k is the choice where triangles matter, and for monsters.
+- For the 10 tested props the meshes exist, so switching costs nothing: `sm4k` for all but the crate (keep `hd`).
+
+**Pipeline additions:**
+- `aigen.py <name> normalize <variant>`: a variant's raw GLB → `SM_AI_<Name>_<variant>.glb`, recorded in `normalized_variants`.
+- Studio: wait about 5 s after an upload before Generate; a click while the image is still uploading does nothing (and costs nothing).
+
+## Custom models, polycount 1000, original angles (2026-10-06)
+**Decisions (the user):**
+- **HD H3.1 stays the default for every asset.**
+- **Custom models:** an optional per-asset override shown in game, with the HD model kept as the fallback.
+  - `props.json` `"mesh_custom"` (a kit GLB name or UE asset path), or a manifest's `"custom"` model: `aigen.py <name> custom <variant>` keeps that Tripo output as `art_src/aigen/<kind>/<name>/<name>_custom.glb`, and `normalize` builds it as `SM_AI_<Name>_Custom`.
+  - `build_world.py` `prop_mesh_name()` places the custom mesh when its file exists, else the HD `"mesh"`. `custom none` removes it.
+- **Polycount default 1000 triangles** (`tripo.DEFAULT_POLYCOUNT`); a manifest's `"polycount"` overrides it. The old `face_target` field is gone. Already generated props keep their 8000-triangle models until regenerated.
+- **Original angle frames are used whenever the sprite has them.**
+  - `sprite.angle_frames()` reads the 8-direction group (`[0, 1, 2, 3, 3, 3, 4, 5]`: front, side, back, other side) and the sprite step upscales each view on one shared canvas scale (`01_upscale/<view>_grey.png`; the manifest records `"angles"`).
+  - `restyle` then redraws each view from its own original drawing, with the approved front restyle as the colour reference (`restyle.prompt(own_view=True)`: keep that viewpoint). Side views wait one round for a fresh front, so a batch takes two rounds.
+  - Without a manifest `tripo.variants`, `tripo-prepare` makes a 4-view variant `MV` when angles exist, else `C` (`tripo.default_variants`).
+  - In Raza: the ten museum figures, `box1` and `helm` (12; the throne has sides but no back).
+
+**Test** (sheets in `build/aigen/sm_props_test/`):
+- `hd1k_compare.png`: 9 props at HD 1000 (`HD1k`) against their 8000 models. In game: `ingame_outdoor_new.png`, `ingame_interior_new.png` (8000 left, 1000 right).
+  - At game distances 1000 holds up for lathe-turned and simple shapes: brazier, lamp, table, bar stool, stool, chandelier, urn, sign. The stool's legs and the chandelier's ring stay whole.
+  - The rock loses its craggy relief and reads as a smooth lump; rocks want a higher `polycount`.
+- `views_orig_1.png`, `views_orig_2.png`: the 12 assets' restyled views next to the original drawings. The side and back views now follow the original (the centipede's S-curve and tail, the fungus beast's plain cap, the throne's profile).
+- `mv1k_compare_1.png`, `_2.png`: HD with the 4 original-angle views at 1000 (`MV1k`) against the single-image models in game. In game: `ingame_museum_new.png` (new cameras `museum_bugs`, `museum_figures_l`, `museum_figures_r`, `museum_throne`, `museum_portal`).
+  - Better: the ant, centipede, fungus beast, lupogg, orc, throne and portal have real sides and backs at under 1000 triangles.
+  - Failed: the baby spider collapsed into a lump at 1000 (thin legs need triangles); with `"polycount": 4000` it came out right (`MV4k`, 3639). The helm came out as a flat sheet at both 1000 and 4000: the original's side and back drawings look nearly the same as the front with the mail drawn as a flat curtain. Keep its single-image model.
+  - The crate became a chest with a domed lid again; keep its HD model.
+  - Not run: `modavar` and `modfey`. Studio asks for an age confirmation ("content that may be sensitive") on these figures' images, which Claude doesn't answer; the user can generate them by hand.
+- Spent: about 1,080 Studio credits (20,815 → 19,735: 11 HD1k jobs, 12 multi-view jobs, 2 at 4k) and 45 OpenAI images over two batches.
+- Two HD jobs (brazier, sign) hung on "Generating" for 25 minutes; they were left running and resubmitted. Studio had not charged a failed or blocked submission.
+
+**State:** the game shows HD everywhere; the test models are built as `SM_AI_<Name>_HD1k`, `_MV1k`, `_MV4k` and can be switched on per prop with `"mesh_custom"`.
+
+## Next run: settings and where we stopped (2026-10-06)
+Implementation is paused here; the next session picks up from this list.
+
+**Manifest properties for the next automated run** (`data/aigen/<kind>/<name>.json`; code in `tools/aigen/tripo.py`):
+- **`polycount`**: triangles to ask Tripo for. **Default 4000** (`tripo.DEFAULT_POLYCOUNT`), half the 8000 the Raza batch used. Set it per asset to go up or down: 1000 held up for lathe-turned props, rocks and thin-legged figures want 4000 or more.
+- **`model`**: how the asset's mesh is made, one of:
+  - `"hd"` (the default): HD Model H3.1, 45 credits. Variants `C` (one image) or `MV` (4 views).
+  - `"smart_mesh"`: Smart Mesh P2.0, then a 2K texture in Studio's Texture tool. 100 credits a run plus 10 per texture. Variants `SM` / `SMMV`.
+  - `"custom"`: no Tripo run; the manifest's `"custom"` model is the mesh.
+  - Whatever the model, a `"custom"` model, once kept, is what the game shows (`SM_AI_<Name>_Custom`, with `SM_AI_<Name>` as the fallback). `props.json` `"mesh_custom"` can also name any mesh directly.
+- **`retopology`**: an optional extra step after generation, using Studio's Retopo tool (left bar). `true` uses the asset's polycount and triangles; `{"polycount": n, "topology": "quad"|"triangle"}` sets them. The settings card (`03_tripo_in/SETTINGS.md`) then lists the step. **Set on no asset yet.** Untested: whether Retopo costs credits, keeps the texture or needs a re-texture, and how its output reaches the bridge. Test it on a few static props first.
+- `tripo-prepare` picks the variants from these when a manifest names none (`tripo.default_variants`): 4 views when the sprite has its own angles, else one image.
+
+**Where we are:**
+- In game: the 61 Raza props at HD 8000 (the brazier, the 60 of the Raza batch). No `mesh_custom` set.
+- Built and ready to switch on (kit meshes `SM_AI_<Name>_<variant>`, raw GLBs in each asset's `04_tripo_out/`), from the tests above:
+  - HD 1000 (`HD1k`): brazier, lamp, table, barstool, stool, chandelr, tallurn, sign, rockc;
+  - original angles, 4 views, 1000 (`MV1k`): modant, modcen, modfung, modlupog, modorc, modportal, modthron, box1;
+  - `MV4k`: modspdr. Smart Mesh `SM4k`/`SM8k`: the 10 static props.
+- Recommended, awaiting the user: the `MV1k` creatures, throne and portal, `MV4k` for the spider, `HD1k` for the brazier, lamp, table, stools, chandelier, urn and sign; keep HD for the rock, crate and helm. Keep each with `aigen.py <name> custom <variant>` then `normalize`.
+- Not generated: `modavar`, `modfey` (Studio's age check on upload); their restyled 4 views are ready in `02_restyle/`.
+- Studio credits: 19,735 left.
+
+**Next steps:**
+1. The user's picks above; keep them as custom models.
+2. Try `retopology` on 2-3 static props (a table, the crate, a rock) and compare topology and textures.
+3. Regenerate the rest of Raza with the new defaults (4000, original angles where they exist): about 45 credits a prop.
+4. The API backend (V3) when the wallet is topped up, so runs need no browser.
+
 ## Open
 - Trees: the Outskirts tree lines (ADR 0003 2g).
 - Emissive parts (lamp glass, embers) on AI meshes: a second material slot or a mask.
 - The API backend (phase 3), once the user tops up the API wallet; Studio plus the bridge covers batches until then.
 - Collision on props (they're NoCollision today).
+- Side views from the original angle frames (`bgf2png` groups of 8; the 12 Raza props that have them are the museum figures, `box1`, `helm`, `modportal` and `modthron`) instead of OpenAI's guesses.
+- Custom models: the user's pick per prop from the 1000-triangle and original-angle tests (`mesh_custom`, or `aigen.py <name> custom <variant>` to keep it in `art_src/`).
+- Static props: the user's pick per prop between `hd`, `sm8k` and `sm4k` (`props.json` `mesh_use`, the 10 tested props). After that, drop the losing options.
 - Creatures: the user's pick between C, MV and Smart Mesh for the museum figures; the other museum figures (`modavar`, `modorc`, `modfey`, `modlupog`, `modspdr`) with 4 views.
 - `SectorLight` per prop from the original sector light where it stands (1 now: props read slightly brighter than the walls indoors).
 - The night glow of lamp glass and other emissive parts on AI meshes.

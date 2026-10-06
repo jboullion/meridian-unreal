@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a statuette of a slender sitting cat carved from dark green translucent jade",
   "mesh": "SM_AI_Tcat",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a heap of old yellowed bones lying flat: a human skull, a ribcage and scattered long bones",
   "mesh": "SM_AI_Bonepile",
-  "face_target": 8000,
   "size_by": "length",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

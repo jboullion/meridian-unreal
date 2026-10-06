@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a heavy gold signet ring with a large flat engraved face, lying on its side",
   "mesh": "SM_AI_Signet",
-  "face_target": 8000,
   "size_by": "length",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

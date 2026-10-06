@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a dark iron urn with a grotesque face moulded on the front and a patterned band at the rim, heaped with brown seeds",
   "mesh": "SM_AI_Urn4",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

@@ -7,9 +7,8 @@
   "frame": 0,
   "describe": "a miniature mana node: a glowing sphere of swirling blue with bright green and yellow veins of energy",
   "mesh": "SM_AI_Modnode",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

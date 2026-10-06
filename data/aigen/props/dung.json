@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a heap of round brown animal dung lumps, with two small lumps lying beside it",
   "mesh": "SM_AI_Dung",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

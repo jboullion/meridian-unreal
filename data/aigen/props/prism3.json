@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a long red crystal prism with pointed ends, held upright in a small black iron three-legged stand",
   "mesh": "SM_AI_Prism3",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

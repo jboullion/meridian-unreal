@@ -136,8 +136,18 @@ def step_sprite(m: dict, a):
     m["lift_m"] = round((sized.height - y1) * mpp, 4)
     m["sprite_px"] = list(img.size)
     img = img.crop(img.getchannel("A").getbbox())
+    # the original's own side and back drawings, when the sprite is drawn from several directions
+    # (sprite.angle_frames): restyled per view from their own drawing (docs/adr/0007 "Original angles")
+    angles = sprite.angle_frames(meta, m.get("frame", 0))
+    if angles:
+        m["angles"] = angles
+    else:
+        m.pop("angles", None)
+    views = {v: sprite.frame(m["bgf"], b)[0] for v, b in angles.items()}
+    views = {v: im.crop(im.getchannel("A").getbbox()) for v, im in views.items()}
+    fit = max(max(im.size) for im in [img] + list(views.values())) * sprite.SCALE if views else 0
     model = m.get("upscale_model", sprite.UPSCALE_MODEL)
-    key = digest(img.tobytes(), model, inspect.getsource(sprite))
+    key = digest(img.tobytes(), model, inspect.getsource(sprite), *[views[v].tobytes() for v in sorted(views)])
     stamp = out / "stamp.json"
     if fresh(stamp, key, a.force):
         print("sprite: cached (%s)" % rel(out))
@@ -146,11 +156,16 @@ def step_sprite(m: dict, a):
     img.save(out / "sprite.png")
     big = sprite.upscale_rgba(img, model)
     big.save(out / "upscaled.png")
-    sprite.on_canvas(big, bg=None).save(out / "canvas.png")      # transparent, for Tripo
-    sprite.on_canvas(big).save(out / "canvas_grey.png")          # flat grey, for the image models
+    sprite.on_canvas(big, bg=None, fit=fit).save(out / "canvas.png")      # transparent, for Tripo
+    sprite.on_canvas(big, fit=fit).save(out / "canvas_grey.png")          # flat grey, for the image models
+    for v, im in views.items():  # 01_upscale/<view>_upscaled.png, <view>_grey.png, at the front's scale
+        vbig = sprite.upscale_rgba(im, model)
+        vbig.save(out / ("%s_upscaled.png" % v))
+        sprite.on_canvas(vbig, fit=fit).save(out / ("%s_grey.png" % v))
     stamp.write_text(json.dumps({"key": key, "model": model}))
-    print("sprite: %s frame %d %dx%d -> %dx%d, height %.3f m (%s)" % (m["bgf"], m.get("frame", 0), *img.size, *big.size,
-                                                                    m["height_m"], rel(out)))
+    print("sprite: %s frame %d %dx%d -> %dx%d, height %.3f m%s (%s)" % (
+        m["bgf"], m.get("frame", 0), *img.size, *big.size, m["height_m"],
+        ", original views %s" % ", ".join("%s=%d" % kv for kv in angles.items()) if angles else "", rel(out)))
 
 
 def restyle_jobs(m: dict, a) -> list:
@@ -160,7 +175,9 @@ def restyle_jobs(m: dict, a) -> list:
         raise SystemExit("%s: run the sprite step first" % m["name"])
     cfg = m.get("restyle", {})
     providers = a.provider.split(",") if a.provider else cfg.get("providers", ["openai"])
-    views = a.views.split(",") if a.views else cfg.get("views", ["front"])
+    # views: the manifest's "views" if set, else the front plus every view the original draws itself
+    angles = m.get("angles", {})
+    views = a.views.split(",") if a.views else cfg.get("views") or ["front"] + list(angles)
     out = work_dir(m) / "02_restyle"
     out.mkdir(parents=True, exist_ok=True)
     jobs = []
@@ -169,9 +186,15 @@ def restyle_jobs(m: dict, a) -> list:
         for view in ["front"] + [v for v in views if v != "front"]:
             target = out / ("%s_%s.png" % (slug, view))
             front = out / ("%s_front.png" % slug)
-            refs = [src] + ([front] if view != "front" and front.exists() else [])
-            text = restyle.prompt(m["describe"], view, len(refs) > 1, cfg.get("extra", ""))
-            key = digest(src, text, model, front if len(refs) > 1 else "")
+            own = view in angles  # redraw the original's own drawing of this side, not a guess from the front
+            front_job = next((j for j in jobs if j["slug"] == slug and j["view"] == "front"), None)
+            if own and (not front.exists() or (front_job and not front_job["fresh"])):
+                print("restyle %s %s %s: waiting for the front restyle (its colours are the reference)" % (m["name"], slug, view))
+                continue
+            vsrc = src.parent / ("%s_grey.png" % view) if own else src
+            refs = [vsrc] + ([front] if view != "front" and front.exists() else [])
+            text = restyle.prompt(m["describe"], view, len(refs) > 1, cfg.get("extra", ""), own_view=own)
+            key = digest(vsrc, text, model, front if len(refs) > 1 else "")
             jobs.append({"provider": provider, "model": model, "slug": slug, "view": view, "target": target,
                          "refs": refs, "text": text, "key": key, "fresh": fresh(target.with_suffix(".json"), key, a.force)})
     return jobs
@@ -276,9 +299,12 @@ def resolve_input(m: dict, source: str, view: str) -> Path:
 
 
 def step_tripo_prepare(m: dict, a):
+    if tripo.model(m) == "custom" and not m.get("tripo", {}).get("variants"):
+        print("tripo-prepare: %s is a custom model (manifest \"model\": \"custom\"); nothing to generate" % m["name"])
+        return
     w = work_dir(m)
     variants = {}
-    for variant, views in m.get("tripo", {}).get("variants", {}).items():
+    for variant, views in (m.get("tripo", {}).get("variants") or tripo.default_variants(m)).items():
         paths = {view: resolve_input(m, source, view) for view, source in views.items()}
         missing = [str(p) for p in paths.values() if not p.exists()]
         if missing:
@@ -314,19 +340,19 @@ def step_tripo_ingest(m: dict, a):
     for glb in glbs:
         variant = glb.stem
         pv = w / "05_review" / "tripo" / variant
-        key = digest(glb, inspect.getsource(tripo), (ROOT / "tools" / "blender" / "prop_glb.py").read_text())
+        key = digest(glb, inspect.getsource(tripo), (ROOT / "tools" / "blender" / "prop_glb.py").read_text(), "views v3")
         stamp = pv / "stamp.json"
         if fresh(stamp, key, a.force):
             stats = json.loads(stamp.read_text())["stats"]
         else:
             stats = blender("preview", glb, pv, "--views", "front,above,left")
-            blender("preview", glb, pv / "wire", "--views", "above,front", "--wire")  # the geometry
+            blender("preview", glb, pv / "wire", "--views", "above,back", "--wire")  # the geometry; the back shows invented unseen sides
             stamp.write_text(json.dumps({"key": key, "stats": stats}))
         run = runs.setdefault(variant, {})
         run.update(file=rel(glb), digest=key, tris=stats["tris"], size_m=stats["size_m"])
         rows.append(("%s  (%d tris)  %s" % (variant, stats["tris"], run.get("settings", "")),
                      [("sprite", sprite_img)] + [(v, Image.open(pv / (v + ".png"))) for v in stats["views"]]
-                     + [("mesh " + v, Image.open(pv / "wire" / (v + ".png"))) for v in ("above", "front")]))
+                     + [("mesh " + v, Image.open(pv / "wire" / (v + ".png"))) for v in ("above", "back")]))
         print("tripo-ingest: %s %d tris, size %s" % (variant, stats["tris"], stats["size_m"]))
     out = review.grid(rows, w / "05_review" / "sheet2_tripo.png", title="%s: Tripo variants" % m["name"])
     print("review: %s" % rel(out))
@@ -343,26 +369,70 @@ def step_choose(m: dict, a):
     print("choose: %s -> %s" % (a.variant, rel(dst)))
 
 
-def step_normalize(m: dict, a):
-    chosen = m.get("tripo", {}).get("chosen")
-    if not chosen:
-        raise SystemExit("choose a variant first (aigen.py %s choose <variant>)" % m["name"])
-    src = ROOT / chosen["file"]
-    dst = KIT / ("%s.glb" % m["mesh"])
+def step_custom(m: dict, a):
+    """A custom model shown in game instead of the HD one: `custom <variant>` keeps that Tripo
+    output as art_src/aigen/<kind>/<name>/<name>_custom.glb (or set "custom": {"file": ...} by hand,
+    e.g. a model made in Blender); `custom none` removes it. `normalize` builds it as
+    SM_AI_<Name>_Custom, which build_world.py places in preference to SM_AI_<Name>; the HD model
+    stays the fallback (docs/adr/0007 "Custom models")."""
+    if not a.variant:
+        raise SystemExit("usage: aigen.py <asset> custom <variant>|none")
+    dst = ART_SRC / m.get("kind", "props") / m["name"] / ("%s_custom.glb" % m["name"])
+    if a.variant == "none":
+        m.pop("custom", None)
+        for f in (dst, KIT / ("%s_Custom.glb" % m["mesh"])):
+            if f.exists():
+                f.unlink()
+        print("custom: removed; %s shows the HD model" % m["mesh"])
+        return
+    src = work_dir(m) / "04_tripo_out" / ("%s.glb" % a.variant)
+    if not src.exists():
+        raise SystemExit("%s not found" % rel(src))
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(src, dst)
+    m["custom"] = {"variant": a.variant, "file": rel(dst), **m.get("tripo", {}).get("runs", {}).get(a.variant, {})}
+    print("custom: %s -> %s (run normalize to build %s_Custom)" % (a.variant, rel(dst), m["mesh"]))
+
+
+def normalize_glb(m: dict, src: Path, name: str) -> dict:
+    """A raw model -> the kit mesh <name>.glb, scaled and placed like the sprite."""
+    dst = KIT / ("%s.glb" % name)
     size_by = m.get("size_by", "height")
     stats = blender("normalize", src, dst, "--size-by", size_by,
                     "--size", m["width_m"] if size_by == "length" else m["height_m"], "--lift", m.get("lift_m", 0),
-                    "--name", m["mesh"], "--yaw", m.get("yaw_deg", 0), "--max-tris", m.get("max_tris", 0),
+                    "--name", name, "--yaw", m.get("yaw_deg", 0), "--max-tris", m.get("max_tris", 0),
                     *(["--lay-flat"] if m.get("lay_flat") else []))
-    m["normalized"] = {"file": rel(dst), "tris": stats["tris"], "size_m": stats["size_m"], "scale": stats["scale"]}
-    pv = work_dir(m) / "05_review" / "normalized"
-    blender("preview", dst, pv, "--views", "front,left,above")
     print("normalize: %s %d tris, size %s m" % (rel(dst), stats["tris"], stats["size_m"]))
+    return {"file": rel(dst), "tris": stats["tris"], "size_m": stats["size_m"], "scale": stats["scale"]}
+
+
+def step_normalize(m: dict, a):
+    """The chosen (HD) variant -> the kit mesh SM_AI_<Name>.glb, and the manifest's custom model, if
+    any, -> SM_AI_<Name>_Custom.glb. With a variant (`normalize SM8k`), that variant's raw GLB ->
+    SM_AI_<Name>_<variant>.glb instead, for a side-by-side test through props.json "mesh_custom" or
+    "mesh_options" (ADR 0007 "Smart Mesh props"); the chosen mesh is untouched."""
+    if a.variant:
+        src = work_dir(m) / "04_tripo_out" / ("%s.glb" % a.variant)
+        if not src.exists():
+            raise SystemExit("%s not found" % rel(src))
+        m.setdefault("normalized_variants", {})[a.variant] = normalize_glb(m, src, "%s_%s" % (m["mesh"], a.variant))
+        return
+    chosen = m.get("tripo", {}).get("chosen")
+    if not chosen:
+        raise SystemExit("choose a variant first (aigen.py %s choose <variant>)" % m["name"])
+    m["normalized"] = normalize_glb(m, ROOT / chosen["file"], m["mesh"])
+    pv = work_dir(m) / "05_review" / "normalized"
+    blender("preview", KIT / ("%s.glb" % m["mesh"]), pv, "--views", "front,left,above")
+    custom = KIT / ("%s_Custom.glb" % m["mesh"])
+    if m.get("custom"):
+        m["custom"]["normalized"] = normalize_glb(m, ROOT / m["custom"]["file"], custom.stem)
+    elif custom.exists():
+        custom.unlink()
 
 
 STEPS = {"sprite": step_sprite, "restyle": step_restyle, "review": step_review,
          "tripo-prepare": step_tripo_prepare, "bridge": step_bridge, "tripo-ingest": step_tripo_ingest,
-         "choose": step_choose, "normalize": step_normalize}
+         "choose": step_choose, "custom": step_custom, "normalize": step_normalize}
 
 
 def bridge_collect(spec: str = "all"):

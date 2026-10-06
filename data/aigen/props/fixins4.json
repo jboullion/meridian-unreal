@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a small round woven wicker basket with a tall arched handle, heaped full of smooth white hen eggs (about a dozen eggs, plainly visible, white and oval)",
   "mesh": "SM_AI_Fixins4",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

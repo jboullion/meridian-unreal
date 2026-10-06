@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a round-bottomed glass flask with a wide neck, the bottom filled with purple liquid, standing in a small dark iron three-legged stand",
   "mesh": "SM_AI_Flaskw",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

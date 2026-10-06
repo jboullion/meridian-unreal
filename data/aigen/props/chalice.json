@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a gold chalice: a wide gold cup with a black band and small red studs, on a short stem with a gold splayed foot of claw-like supports",
   "mesh": "SM_AI_Chalice",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

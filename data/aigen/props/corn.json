@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a single tall corn (maize) plant: one straight green stalk with long narrow arching leaves, no cobs",
   "mesh": "SM_AI_Corn",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

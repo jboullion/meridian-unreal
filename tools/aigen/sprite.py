@@ -41,6 +41,22 @@ def frame(bgf: str, index: int):
     return Image.open(d / ("frame_%02d.png" % index)).convert("RGBA"), json.loads((d / "meta.json").read_text())
 
 
+# positions in an 8-direction rotation group (45-degree steps round the object, starting at its front)
+VIEW_STEPS = {"left": 2, "back": 4, "right": 6}
+
+
+def angle_frames(meta: dict, front: int) -> dict:
+    """{view: bitmap} of the original's own side and back drawings of bitmap `front`, from the
+    8-direction group that starts with it. [0, 1, 2, 3, 3, 3, 4, 5] (the museum figures) is front,
+    front three-quarter, side (2: the front points to the image's left, so the object's left side),
+    back three-quarter, back (4), other side (6). Empty when the sprite has no such group; a view is
+    left out when it's missing (-1) or repeats the front."""
+    for g in meta.get("groups", []):
+        if len(g) == 8 and g[0] == front:
+            return {v: g[i] for v, i in VIEW_STEPS.items() if g[i] >= 0 and g[i] != front}
+    return {}
+
+
 def fill_transparent(img: Image.Image) -> Image.Image:
     """RGB with every transparent pixel set to the mean of its nearest opaque neighbours, grown ring
     by ring (like make_placeholders.fill_cutout, but without wrapping: sprites don't tile). Stops the
@@ -96,10 +112,11 @@ def upscale_rgba(img: Image.Image, model_name: str = UPSCALE_MODEL) -> Image.Ima
     return out.crop((p, p, out.width - p, out.height - p))
 
 
-def on_canvas(img: Image.Image, size: int = 1024, fill: float = 0.86, bg=(200, 200, 200)) -> Image.Image:
-    """The sprite centred on a square canvas, scaled so its longer side is `fill` of the canvas.
+def on_canvas(img: Image.Image, size: int = 1024, fill: float = 0.86, bg=(200, 200, 200), fit: int = 0) -> Image.Image:
+    """The sprite centred on a square canvas, scaled so its longer side (or `fit` pixels, the
+    longest side over all of an object's views, so they share one scale) is `fill` of the canvas.
     bg None keeps it transparent (RGBA), else a flat colour (RGB)."""
-    s = fill * size / max(img.size)
+    s = fill * size / (fit or max(img.size))
     im = img.resize((max(1, round(img.width * s)), max(1, round(img.height * s))), Image.Resampling.LANCZOS)
     canvas = Image.new("RGBA", (size, size), (*(bg or (0, 0, 0)), 0 if bg is None else 255))
     canvas.alpha_composite(im, ((size - im.width) // 2, (size - im.height) // 2))

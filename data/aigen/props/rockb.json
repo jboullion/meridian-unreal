@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a smooth, flattish, rounded rock of pale tan stone with rusty brown patches",
   "mesh": "SM_AI_Rockb",
-  "face_target": 8000,
   "size_by": "length",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

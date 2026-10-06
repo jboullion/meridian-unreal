@@ -13,7 +13,7 @@ More detail, loaded when needed:
 - [reference/prompts.md](reference/prompts.md): how the restyle prompt is built, models, writing `describe`
 - [reference/pitfalls.md](reference/pitfalls.md): known traps (symptom → cause → fix)
 
-**Status (2026-10-06):** every prop in Raza and its interiors (61: the brazier plus 60) has been generated. The procedural kit is retired. Creatures were tested with 4 views and Smart Mesh (ADR 0007 "Creatures"); the user's pick is pending. Update this file when a default changes, and record results in ADR 0007.
+**Status (2026-10-06):** every prop in Raza and its interiors (61: the brazier plus 60) has been generated. The procedural kit is retired. Creatures and Smart Mesh were tested (ADR 0007). Since 2026-10-06: polycount 4000 by default, original angle frames as side views, model type hd / smart_mesh / custom, optional retopology. **Paused:** where we stopped and the next steps are in ADR 0007 "Next run". Update this file when a default changes, and record results in ADR 0007.
 
 ## Current defaults
 
@@ -25,11 +25,15 @@ More detail, loaded when needed:
 | Size | From the frame's **visible** pixels: `height_m`, `width_m` and `lift_m` (empty rows below, e.g. the hanging chandelier). Items lying down use `"size_by": "length"` | "Scale" |
 | Upscale | 4x `4xTextures_GTAV_rgt-s_dither`, alpha rebuilt from the 1-bit original | "Upscale" |
 | Restyle | **OpenAI `gpt-image-2.5-sunburst` only**, via the **Batch API** (50% off, ~30 min for 60): `aigen.py all batch-submit`, then `aigen.py batch-collect`. Single fixes run directly with `aigen.py <name> restyle --force` | "Restyle", "Raza batch" |
-| Tripo | Studio (Max-plan credits), driven by Claude in Chrome. HD Model **H3.1**, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, **8000** faces, **Private**, single image, 45 credits each. Jobs run in parallel | "Brazier", "Raza batch" |
-| Creatures and figures | Anything with legs, a face or an unseen back gets **4 views**: `restyle.views` front/left/back/right and variant `MV` (HD H3.1, multi-view tab, still 45 credits). A single image makes them flat from the side. Check the side views on a sheet first; regenerate any that copy the front | "Creatures" |
-| Smart Mesh | Studio's low-poly mode (P2.0): 4 generations per run at your polygon counts, 100 credits a run, untextured; the Texture tool adds 2K for 10. Cleaner topology at fewer triangles: the candidate for monsters to rig. Polycount: 2k loses features, 5k holds the shape, 10k keeps teeth and joints | "Creatures" |
+| Tripo | Studio (Max-plan credits), driven by Claude in Chrome. HD Model **H3.1**, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, **Private**, 45 credits each. Jobs run in parallel. Polycount **4000** (`tripo.DEFAULT_POLYCOUNT`); a manifest's `"polycount"` overrides it (1000 is fine for simple turned props; rocks and thin legs want 4000+). Models made before 2026-10-06 used 8000 |
+| Model type | Manifest `"model"`: `"hd"` (default), `"smart_mesh"` (Smart Mesh P2.0 + 2K texture, variants `SM`/`SMMV`) or `"custom"` (no Tripo run; the kept custom model is the mesh). The settings card in `03_tripo_in/SETTINGS.md` follows it | "Next run" |
+| Retopology | Optional manifest `"retopology"`: `true` or `{"polycount": n, "topology": "quad"}` adds Studio's Retopo step to the settings card. On no asset yet; untested | "Next run" | "Brazier", "Raza batch" |
+| Side and back views | **From the original sprite whenever it draws them** (8-direction groups; `sprite.angle_frames`, manifest `"angles"`): the sprite step upscales each, `restyle` redraws each from its own drawing (two batch rounds: fronts, then sides), `tripo-prepare` makes the 4-view variant `MV`. Without original angles, 4 views guessed from the front only for creatures (`restyle.views`); otherwise one image. Check the views on a sheet first | "Custom models, polycount 1000, original angles" | "Creatures" |
+| Smart Mesh | Studio's low-poly mode (P2.0): 4 generations per run at your polygon counts, 100 credits a run, untextured; the Texture tool adds 2K for 10. Cleaner topology at fewer triangles: the candidate for monsters to rig. Polycount: 2k loses features, 5k holds the shape, 10k keeps teeth and joints. For static props 4k looks like HD's 8000 in game but reinterprets more (crate → chest) and each generation invents its own back: check the mesh-back column | "Creatures", "Smart Mesh props" |
 | Collect | `aigen.py bridge-collect all` waits in Blender and files each arriving model by its **Tripo task id** and the exact name it got in Blender (both from the bridge log). Send them from Studio in any order. `tripo-ingest` renders each variant textured and as a mesh (`05_review/sheet2_tripo.png`) | "Automating Studio" |
 | Kept source | The chosen raw GLB, `art_src/aigen/<kind>/<name>/<name>_tripo.glb` (LFS) | "Layout" |
+| Comparing in game | `aigen.py <name> normalize <variant>` → `SM_AI_<Name>_<variant>`; list it in the `props.json` entry's `"mesh_options"` and switch `"mesh_use"`, one world build and look-dev capture per option | "Smart Mesh props" |
+| Custom model | HD stays the default. `aigen.py <name> custom <variant>` keeps another model as `<name>_custom.glb` in `art_src/`; `normalize` builds `SM_AI_<Name>_Custom`, which the world build shows instead, the HD mesh as fallback. Or `props.json` `"mesh_custom"` names any kit mesh or UE asset | "Custom models, polycount 1000, original angles" |
 | Kit mesh | `aigen.py <name> normalize` → `build/environment/kit/SM_AI_<Name>.glb`: base-centre origin, +Z up, metres, scaled to the sprite. `build/` is git-ignored: on a fresh clone, `aigen.py every normalize` rebuilds them all from `art_src/` | "Normalise" |
 | Placement | `props.json` `"classes"` (by Kod class) and `"types"` (OrnamentalObjects by OO number) give `"mesh"`. Meshes are AI only and skipped until their GLB exists. Yaw comes from the Kod angle, or a stable random turn with `"random_yaw"` (plants, rocks, clutter). `"mesh_options"` + `"mesh_use"` switch between alternative meshes (`"compare"` alternates them) | "Placement", "Trees" |
 | Material | Every `SM_AI_*` mesh gets `MI_AIProp_<mesh>` on `M_PropTextured` (its glTF textures, plus the interiors' ambient floor, matte specular and weather). Without it, props go black indoors | "Raza batch" |
@@ -41,14 +45,14 @@ More detail, loaded when needed:
 All commands from the repo root. `aigen.py` re-runs itself in `build/texai/.venv`.
 
 1. **Inventory:** `python tools/aigen/inventory.py`. Look at the frames: `python tools/bgf2png/bgf2png.py <bgf...>`, then make an overview sheet of all frames, as in ADR 0007.
-2. **Manifests:** one per prop (copy one from `data/aigen/props/`). Set:
+2. **Manifests:** one per prop (copy one from `data/aigen/props/`). Leave `tripo.variants` out to get the defaults (`MV` when the sprite has angles, else `C`). Set:
    - `class` (+ `oo_type`), `bgf`, `frame`, `size_frame`, `size_by`, `mesh` `SM_AI_<Name>`;
    - `describe`: what the **sprite** shows, written after looking at its upscale;
    - `restyle.extra` (e.g. "lying flat");
-   - `tripo.variants` `{"C": {"front": "openai"}}`.
+   - `polycount` to move off the 4000 default; `model` for Smart Mesh or a custom model; `retopology` to add the Retopo step.
    Add each to `props.json` `classes` / `types`, with `random_yaw` for natural clutter.
 3. **Sprites:** `aigen.py all sprite`. Check `height_m` for oddities.
-4. **Restyles:** `aigen.py all batch-submit`, then `aigen.py batch-collect` (poll it until it reports completed).
+4. **Restyles:** `aigen.py all batch-submit`, then `aigen.py batch-collect` (poll it until it reports completed). With original angles, run `batch-submit` and `batch-collect` a second time for the side and back views.
    - Check them all on one sheet: `aigen.py overview`.
    - Fix single misses by sharpening `describe` and running `aigen.py <name> restyle --force` (the egg basket lost its eggs).
 5. **Tripo:** `aigen.py all tripo-prepare`.

@@ -31,6 +31,12 @@ This is how Claude runs the Tripo step without the user: Studio in the user's Ch
   - **Privacy resets to "Sharing Only"** when you switch to it: set it to Private every time.
   - Topology panel: Triangle (500–50,000) or Quad (500–25,000). Turn off "Use Same Polygon Count" to give each of the 1, 2 or 4 generations its own count. Re-check Triangle when you reopen it.
   - A run costs 100 credits whatever the number of generations. Each generation is its own task id: read them from the Assets grid, and match each to its count by the "Faces" readout or by the triangles the collector reports.
+- **Many Smart Mesh runs:** single-image tab. For each prop:
+  - click the thumbnail's bin (242,221), `find` the file input and `file_upload` the image;
+  - **wait about 5 s** before Generate (175,749); a click during the upload does nothing;
+  - read the 4 new task ids by diffing the Assets grid's `a[href*="/workspace/generate/"]` before and after.
+
+  Then match each id to its count by opening it and reading "Faces". Run that loop as an un-awaited async function in the page and poll a global for the result: a `javascript_tool` call over 45 s times out.
 - **Texturing a Smart Mesh model:** the left bar's Texture tool (page `/workspace/texture/<task id>`).
   - It reuses the model's input images. Set Remove Lighting on and pick 2K (10 credits), 4K, or 8K (30).
   - The bottom bar's **Texture** button starts at once, without the options.
@@ -44,7 +50,15 @@ This is how Claude runs the Tripo step without the user: Studio in the user's Ch
   | Smart Mesh textured | (948,757) | (850,693) | (840,384) |
   | Texture page | (957,757) | (867,693) | (848,384) |
 
+  Once you are on the texture page, `__open(id)` keeps you on it for each model, so one set of positions serves every send. 40 models went through without a miss at about 18 s each (9 s load, 8 s after the send).
+
   Take a screenshot after the first Export on a new page type.
+
+## Things that block a run
+- **Age check:** Studio sometimes shows "Please confirm that you are over 18 ..." on upload (it did for the avar and fey figures). Don't answer it on the user's behalf: close it with the x, skip that asset and tell the user. Closing it clears the front slot.
+- **Hung jobs:** a card can sit on "Generating... 1s" for 25 minutes or more. Leave it and resubmit the same images; the new job usually finishes in a minute. Point the manifest's `tripo_task` at the new one (keep the old as `stuck_task`).
+- **The task id** of a new job is in the page URL (`/workspace/generate/<id>`) right after Generate; read it there.
+- **The polycount box** in Geometry & Texture changes between sessions (it read 500 once): check it before a batch.
 
 ## Collect over the bridge (many models)
 1. **Keep the Chrome window visible on screen.** While it's covered or minimised the page is "hidden" (`document.visibilityState`), and Studio's popovers (DCC Bridge panel, Send To menu) never open.

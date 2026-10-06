@@ -13,14 +13,67 @@ TRIPO_API_KEY; billed from the separate API wallet). V2 and the tripo3d Python S
 import shutil
 from pathlib import Path
 
-# The Studio settings tried first for props (docs/adr/0007); the card repeats them per variant.
-STUDIO_DEFAULTS = {
-    "mode": "Image to 3D (single image)",
-    "model": "latest H model (v3.1) and, as a second try, P2 low-poly",
-    "texture": "on, PBR on, texture quality standard",
-    "mesh": "smart low-poly / face limit at the manifest's face_target",
-    "export": "GLB",
+# The Studio settings in use (docs/adr/0007 "Next run"); the card repeats them per variant.
+DEFAULT_POLYCOUNT = 4000  # triangles; a manifest's "polycount" overrides it
+# manifest "model": how the asset's mesh is made. "hd" (the default): HD Model H3.1. "smart_mesh":
+# Studio's Smart Mesh (P2.0, clean low-poly topology, textured afterwards). "custom": no Tripo run;
+# the manifest's "custom" model (aigen.py <name> custom <variant>, or a hand-made GLB) is the mesh.
+MODELS = ("hd", "smart_mesh", "custom")
+STUDIO = {
+    "hd": {
+        "mode": "HD Model; single image, or the multi-view tab (front/left/back/right slots) for several images",
+        "model": "H3.1, Ultra Mesh Quality + AI Complete",
+        "texture": "on, 2K, Remove Lighting on, PBR on",
+        "mesh": "Triangle topology, polycount below",
+        "privacy": "Private",
+        "cost": "45 credits",
+    },
+    "smart_mesh": {
+        "mode": "Smart Mesh; single image, or the multi-view tab for several images",
+        "model": "P2.0, Triangle; generations: 1 (or up to 4 at different counts to compare)",
+        "mesh": "polycount below",
+        "privacy": "Private (it resets to Sharing Only when you switch to Smart Mesh)",
+        "texture": "afterwards: left bar Texture, 2K, Remove Lighting on (10 credits); same task id",
+        "cost": "100 credits a run + 10 per texture",
+    },
 }
+EXPORT = "Send To Blender over the DCC Bridge (aigen.py bridge-collect)"
+
+
+def model(manifest: dict) -> str:
+    """The asset's mesh source: manifest "model", else "hd"."""
+    m = manifest.get("model", "hd")
+    if m not in MODELS:
+        raise SystemExit("%s: model must be one of %s, not %r" % (manifest["name"], ", ".join(MODELS), m))
+    return m
+
+
+def polycount(manifest: dict) -> int:
+    """Triangles to ask Tripo for: the manifest's "polycount", else DEFAULT_POLYCOUNT."""
+    return int(manifest.get("polycount", DEFAULT_POLYCOUNT))
+
+
+def retopology(manifest: dict):
+    """The optional Retopology step after generation: manifest "retopology" is false/absent (off),
+    true (Studio's Retopo tool at the asset's polycount) or {"polycount": n, "topology": "quad"|"triangle"}.
+    Returns None or {"polycount", "topology"}. Not applied to any asset yet (docs/adr/0007 "Next run")."""
+    r = manifest.get("retopology")
+    if not r:
+        return None
+    r = r if isinstance(r, dict) else {}
+    return {"polycount": int(r.get("polycount", polycount(manifest))), "topology": r.get("topology", "triangle")}
+
+
+def default_variants(manifest: dict) -> dict:
+    """The Tripo inputs when a manifest names none: all four views when the original draws its own
+    sides and back (manifest "angles", the sprite step), else the front. Named by model: "C"/"MV"
+    for HD, "SM"/"SMMV" for Smart Mesh; none for a custom model."""
+    kind = model(manifest)
+    if kind == "custom":
+        return {}
+    views = ["front"] + list(manifest.get("angles", {}))
+    single, multi = ("C", "MV") if kind == "hd" else ("SM", "SMMV")
+    return {multi: {v: "openai" for v in views}} if len(views) > 1 else {single: {"front": "openai"}}
 
 
 def prepare(work: Path, variants: dict, manifest: dict) -> Path:
@@ -36,9 +89,16 @@ def prepare(work: Path, variants: dict, manifest: dict) -> Path:
              "Then run `aigen.py %s tripo-ingest`." % manifest["name"], "",
              "Object: %s" % manifest.get("describe", ""),
              "Real height: %.2f m (normalised later; Tripo's size doesn't matter)." % manifest.get("height_m", 0),
-             "Face target: %s triangles." % manifest.get("face_target", "?"), "",
-             "## Settings to try", ""]
-    lines += ["- **%s:** %s" % (k, v) for k, v in STUDIO_DEFAULTS.items()]
+             "Polycount: %d triangles%s." % (polycount(manifest), "" if "polycount" in manifest else " (the default)"), "",
+             "## Settings (%s)" % model(manifest), ""]
+    lines += ["- **%s:** %s" % (k, v) for k, v in STUDIO[model(manifest)].items()]
+    lines += ["- **export:** %s" % EXPORT]
+    retopo = retopology(manifest)
+    if retopo:
+        lines += ["", "## Retopology (after generation)", "",
+                  "Left bar **Retopo** on the finished model: %s topology, %d polycount. Re-texture if Studio asks;"
+                  % (retopo["topology"], retopo["polycount"]),
+                  "send the retopologised model, not the raw one, and record it as its own variant (e.g. `C_retopo`)."]
     lines += ["", "Multi-view variants (more than one image): use Studio's multi-view mode, with the images in",
               "the slots named by their view (front / left / back / right).", "", "## Variants", ""]
     for variant, views in variants.items():

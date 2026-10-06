@@ -7,17 +7,79 @@
   "frame": 0,
   "describe": "a small wooden stool with a thick round seat on four slightly splayed round legs",
   "mesh": "SM_AI_Stool",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
-    "variants": {"C": {"front": "openai"}},
+    "variants": {
+      "C": {"front": "openai"},
+      "SM2k": {"front": "openai"},
+      "SM4k": {"front": "openai"},
+      "SM8k": {"front": "openai"},
+      "SM16k": {"front": "openai"},
+      "HD1k": {"front": "openai"}
+    },
     "runs": {
       "C": {
         "tripo_task": "3b3a118a-f2fb-40d1-821a-3bf0c4659573",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
         "tripo_name": "wooden cracked stool 3d model",
-        "tris_raw": 7369
+        "tris_raw": 7369,
+        "file": "build/aigen/props/stool/04_tripo_out/C.glb",
+        "digest": "e53ebafc4fd37713",
+        "tris": 7369,
+        "size_m": [0.7993, 0.7869, 0.9794]
+      },
+      "SM2k": {
+        "tripo_task": "df5f9e51-5f91-4945-b883-16e414fe74f5",
+        "faces_studio": 1956,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 2000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "rustic wooden stool 3d model",
+        "tris_raw": 1956,
+        "file": "build/aigen/props/stool/04_tripo_out/SM2k.glb",
+        "digest": "c9e7b26f6c3176f9",
+        "tris": 1956,
+        "size_m": [0.8442, 0.8892, 0.9995]
+      },
+      "SM4k": {
+        "tripo_task": "23b012c4-0a29-43d2-943a-e9f21082a8a3",
+        "faces_studio": 4026,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 4000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "wooden stool 3d model",
+        "tris_raw": 4026,
+        "file": "build/aigen/props/stool/04_tripo_out/SM4k.glb",
+        "digest": "e3c9c1b9f87bf71b",
+        "tris": 4026,
+        "size_m": [0.8218, 0.8247, 0.9995]
+      },
+      "SM8k": {
+        "tripo_task": "0799f473-97a9-42f8-b861-57145f1b77c9",
+        "faces_studio": 8065,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 8000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "wooden stool 3d model",
+        "tris_raw": 8065,
+        "file": "build/aigen/props/stool/04_tripo_out/SM8k.glb",
+        "digest": "688411d217259e0f",
+        "tris": 8065,
+        "size_m": [0.8306, 0.8433, 0.9995]
+      },
+      "SM16k": {
+        "tripo_task": "c2e15d77-7cc1-456f-90c1-21de675bcbff",
+        "faces_studio": 17517,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 16000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "rustic wooden stool 3d model",
+        "tris_raw": 17517,
+        "file": "build/aigen/props/stool/04_tripo_out/SM16k.glb",
+        "digest": "aa7e347b32c37c0a",
+        "tris": 17517,
+        "size_m": [0.8286, 0.8745, 0.9995]
+      },
+      "HD1k": {
+        "tripo_task": "7a57bf72-24fb-4d13-a5f0-b4a6a84dd8bc",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 polycount, single image (45 credits)",
+        "file": "build/aigen/props/stool/04_tripo_out/HD1k.glb",
+        "digest": "96514674028882b0",
+        "tris": 934,
+        "size_m": [0.8189, 0.8125, 0.9853]
       }
     },
     "chosen": {
@@ -47,5 +109,25 @@
     "tris": 7369,
     "size_m": [0.7481, 0.7365, 0.9167],
     "scale": 0.93595
+  },
+  "normalized_variants": {
+    "SM4k": {
+      "file": "build/environment/kit/SM_AI_Stool_SM4k.glb",
+      "tris": 4026,
+      "size_m": [0.7537, 0.7564, 0.9167],
+      "scale": 0.91715
+    },
+    "SM8k": {
+      "file": "build/environment/kit/SM_AI_Stool_SM8k.glb",
+      "tris": 8065,
+      "size_m": [0.7618, 0.7734, 0.9167],
+      "scale": 0.91715
+    },
+    "HD1k": {
+      "file": "build/environment/kit/SM_AI_Stool_HD1k.glb",
+      "tris": 934,
+      "size_m": [0.7619, 0.7559, 0.9167],
+      "scale": 0.93039
+    }
   }
 }

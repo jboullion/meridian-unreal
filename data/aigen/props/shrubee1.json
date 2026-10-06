@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a dense rounded green shrub of small leaves, as wide as it is tall",
   "mesh": "SM_AI_Shrubee1",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

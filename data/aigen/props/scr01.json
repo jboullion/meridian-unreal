@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a rolled parchment scroll tied with a grey ribbon, lying on its side",
   "mesh": "SM_AI_Scr01",
-  "face_target": 8000,
   "size_by": "length",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

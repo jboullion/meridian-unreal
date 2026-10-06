@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a miniature statue of a giant red ant with six legs and large black-and-yellow mandibles",
   "mesh": "SM_AI_Modant",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front", "left", "back", "right"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {
       "C": {"front": "openai"},
@@ -19,7 +18,8 @@
       "SM5k": {"front": "openai"},
       "SM10k": {"front": "openai"},
       "SM20k": {"front": "openai"},
-      "SM5kT": {"front": "openai"}
+      "SM5kT": {"front": "openai"},
+      "MV1k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
     },
     "runs": {
       "C": {
@@ -28,7 +28,7 @@
         "tripo_name": "red insect 3d model",
         "tris_raw": 7810,
         "file": "build/aigen/props/modant/04_tripo_out/C.glb",
-        "digest": "e106db655778e80f",
+        "digest": "c0f9e352ea1bd5d8",
         "tris": 7810,
         "size_m": [0.9814, 0.4942, 0.7868]
       },
@@ -36,7 +36,7 @@
         "tripo_task": "8850fbe1-211e-4bac-8101-ea5703914ca0",
         "settings": "Studio HD Model, H3.1, Ultra Mesh, 2K PBR, Remove Lighting, triangles, 8000 faces, multi-view front/left/back/right (OpenAI views), 45 credits",
         "file": "build/aigen/props/modant/04_tripo_out/MV.glb",
-        "digest": "819a02e6cbe904d5",
+        "digest": "b8d45cf16de1c78a",
         "tris": 7626,
         "size_m": [0.9816, 0.9406, 0.7795]
       },
@@ -44,7 +44,7 @@
         "tripo_task": "8449e097-496e-4386-be81-e060933144da",
         "settings": "Studio Smart Mesh P2.0, single image, triangles, 2000-face target, untextured (one of 4 generations per run; 100 credits per run, first two runs free trials)",
         "file": "build/aigen/props/modant/04_tripo_out/SM2k.glb",
-        "digest": "8363cc7f238dde8c",
+        "digest": "d8f5470b9012eddb",
         "tris": 2059,
         "size_m": [0.9995, 0.9019, 0.8813]
       },
@@ -52,7 +52,7 @@
         "tripo_task": "47d9ad4c-e322-45db-88ad-44ec91c88c7e",
         "settings": "Studio Smart Mesh P2.0, single image, triangles, 5000-face target, untextured (one of 4 generations per run; 100 credits per run, first two runs free trials)",
         "file": "build/aigen/props/modant/04_tripo_out/SM5k.glb",
-        "digest": "2819f5ab88e564fc",
+        "digest": "0632f18e7df6ea85",
         "tris": 5182,
         "size_m": [0.9995, 0.8101, 0.897]
       },
@@ -62,7 +62,7 @@
         "tripo_name": "red insect 3d model",
         "tris_raw": 9946,
         "file": "build/aigen/props/modant/04_tripo_out/SM10k.glb",
-        "digest": "a33b55d27c3deea4",
+        "digest": "0caf51a5d6148cd0",
         "tris": 9946,
         "size_m": [0.9995, 0.894, 0.8315]
       },
@@ -70,7 +70,7 @@
         "tripo_task": "a018ee31-d4cb-4ac3-b619-4075e62f4382",
         "settings": "Studio Smart Mesh P2.0, single image, triangles, 20000-face target, untextured (one of 4 generations per run; 100 credits per run, first two runs free trials)",
         "file": "build/aigen/props/modant/04_tripo_out/SM20k.glb",
-        "digest": "63c5d05d0ff69fe0",
+        "digest": "78a21ce7bdf49337",
         "tris": 20260,
         "size_m": [0.9995, 0.9585, 0.854]
       },
@@ -80,9 +80,19 @@
         "tripo_name": "red insect creature 3d model",
         "tris_raw": 5182,
         "file": "build/aigen/props/modant/04_tripo_out/SM5kT.glb",
-        "digest": "2c5706c8129b65b1",
+        "digest": "e719561909d61cc2",
         "tris": 5182,
         "size_m": [0.9995, 0.8101, 0.897]
+      },
+      "MV1k": {
+        "tripo_task": "3d572634-5831-458b-a8d2-e59284172593",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 polycount, multi-view front/left/back/right restyled from the original's own angle frames (45 credits)",
+        "tripo_name": "red insect creature 3d model",
+        "tris_raw": 946,
+        "file": "build/aigen/props/modant/04_tripo_out/MV1k.glb",
+        "digest": "0bd318be4b4db92b",
+        "tris": 946,
+        "size_m": [0.7102, 0.9656, 0.5429]
       }
     },
     "chosen": {
@@ -103,25 +113,25 @@
     "openai_front": {
       "model": "gpt-image-2.5-sunburst",
       "seconds": null,
-      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "batch": "batch_6ac52539b3d08190a098c00810ec4715",
       "file": "build/aigen/props/modant/02_restyle/openai_front.png"
     },
     "openai_left": {
       "model": "gpt-image-2.5-sunburst",
-      "seconds": 38.0,
-      "batch": null,
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
       "file": "build/aigen/props/modant/02_restyle/openai_left.png"
     },
     "openai_back": {
       "model": "gpt-image-2.5-sunburst",
-      "seconds": 38.6,
-      "batch": null,
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
       "file": "build/aigen/props/modant/02_restyle/openai_back.png"
     },
     "openai_right": {
       "model": "gpt-image-2.5-sunburst",
-      "seconds": 40.9,
-      "batch": null,
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
       "file": "build/aigen/props/modant/02_restyle/openai_right.png"
     }
   },
@@ -130,5 +140,14 @@
     "tris": 7810,
     "size_m": [0.8468, 0.4264, 0.6789],
     "scale": 0.86282
+  },
+  "angles": {"left": 2, "back": 3, "right": 4},
+  "normalized_variants": {
+    "MV1k": {
+      "file": "build/environment/kit/SM_AI_Modant_MV1k.glb",
+      "tris": 946,
+      "size_m": [0.8881, 1.2075, 0.6789],
+      "scale": 1.25056
+    }
   }
 }

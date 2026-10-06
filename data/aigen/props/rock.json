@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a large rough brown boulder made of several jagged rock chunks piled together",
   "mesh": "SM_AI_Rock",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

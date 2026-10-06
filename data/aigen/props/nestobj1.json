@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a low, flat, wide mound of loose brown earth on the ground",
   "mesh": "SM_AI_Nestobj1",
-  "face_target": 8000,
   "size_by": "length",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

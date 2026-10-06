@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a miniature altar: a small wooden barrel-shaped base with skulls, topped by a fan of bones crowned with a skull",
   "mesh": "SM_AI_Modaltar",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

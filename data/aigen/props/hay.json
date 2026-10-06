@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "an upright sheaf of dry golden straw (hay), tied with a band around the middle, splayed out at the bottom and the top",
   "mesh": "SM_AI_Hay",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

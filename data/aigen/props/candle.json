@@ -7,9 +7,8 @@
   "frame": 0,
   "describe": "a tall thin candlestick: a slender turned bronze stand on a round foot holding one white wax candle, unlit",
   "mesh": "SM_AI_Candle",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

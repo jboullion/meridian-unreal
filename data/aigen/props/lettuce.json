@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a large head of green cabbage with broad curly outer leaves, sitting on the ground",
   "mesh": "SM_AI_Lettuce",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

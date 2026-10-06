@@ -8,17 +8,79 @@
   "frame": 0,
   "describe": "a large round-bellied earthenware urn with a short wide neck, dark brown with a lattice pattern of lighter lines",
   "mesh": "SM_AI_Tallurn",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
-    "variants": {"C": {"front": "openai"}},
+    "variants": {
+      "C": {"front": "openai"},
+      "SM2k": {"front": "openai"},
+      "SM4k": {"front": "openai"},
+      "SM8k": {"front": "openai"},
+      "SM16k": {"front": "openai"},
+      "HD1k": {"front": "openai"}
+    },
     "runs": {
       "C": {
         "tripo_task": "aff4e76e-bd35-40c7-a276-145f7a03279e",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
         "tripo_name": "clay pot 3d model",
-        "tris_raw": 7778
+        "tris_raw": 7778,
+        "file": "build/aigen/props/tallurn/04_tripo_out/C.glb",
+        "digest": "52109f16fc2401d0",
+        "tris": 7778,
+        "size_m": [0.9776, 0.9818, 0.8596]
+      },
+      "SM2k": {
+        "tripo_task": "dd387d33-8a18-4198-8260-0baf9d98c236",
+        "faces_studio": 2112,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 2000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "ancient pot 3d model",
+        "tris_raw": 2112,
+        "file": "build/aigen/props/tallurn/04_tripo_out/SM2k.glb",
+        "digest": "10d24728741db91b",
+        "tris": 2112,
+        "size_m": [0.9927, 0.9917, 0.9224]
+      },
+      "SM4k": {
+        "tripo_task": "84f65f2d-43a7-4259-944c-1fb4877b47c4",
+        "faces_studio": 4107,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 4000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "clay pot 3d model",
+        "tris_raw": 4107,
+        "file": "build/aigen/props/tallurn/04_tripo_out/SM4k.glb",
+        "digest": "9c12bf78f2f21572",
+        "tris": 4107,
+        "size_m": [0.9985, 0.9995, 0.939]
+      },
+      "SM8k": {
+        "tripo_task": "8db4a0d3-abef-4b16-ab1f-14f1663d840e",
+        "faces_studio": 7102,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 8000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "ancient pot 3d model",
+        "tris_raw": 7102,
+        "file": "build/aigen/props/tallurn/04_tripo_out/SM8k.glb",
+        "digest": "6d9d2eb9b1574998",
+        "tris": 7102,
+        "size_m": [0.9995, 0.9829, 0.939]
+      },
+      "SM16k": {
+        "tripo_task": "1967db34-590d-4b30-b88e-a0303a9a65f4",
+        "faces_studio": 14908,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 16000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "ancient pot 3d model",
+        "tris_raw": 14908,
+        "file": "build/aigen/props/tallurn/04_tripo_out/SM16k.glb",
+        "digest": "9f6e9a703d146217",
+        "tris": 14908,
+        "size_m": [0.9995, 0.9995, 0.9409]
+      },
+      "HD1k": {
+        "tripo_task": "70f86fe2-9cfc-43a6-b94c-b66678c72404",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 polycount, single image (45 credits)",
+        "file": "build/aigen/props/tallurn/04_tripo_out/HD1k.glb",
+        "digest": "043a91bc0153939a",
+        "tris": 966,
+        "size_m": [0.9719, 0.9712, 0.8448]
       }
     },
     "chosen": {
@@ -48,5 +110,25 @@
     "tris": 7778,
     "size_m": [1.1044, 1.1092, 0.9711],
     "scale": 1.12973
+  },
+  "normalized_variants": {
+    "SM4k": {
+      "file": "build/environment/kit/SM_AI_Tallurn_SM4k.glb",
+      "tris": 4107,
+      "size_m": [1.0327, 1.0337, 0.9711],
+      "scale": 1.03422
+    },
+    "SM8k": {
+      "file": "build/environment/kit/SM_AI_Tallurn_SM8k.glb",
+      "tris": 7102,
+      "size_m": [1.0337, 1.0165, 0.9711],
+      "scale": 1.03422
+    },
+    "HD1k": {
+      "file": "build/environment/kit/SM_AI_Tallurn_HD1k.glb",
+      "tris": 966,
+      "size_m": [1.1172, 1.1164, 0.9711],
+      "scale": 1.14956
+    }
   }
 }

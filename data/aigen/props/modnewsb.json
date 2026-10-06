@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a miniature newsball: a dark marbled glass sphere on a short fluted pale blue-grey column",
   "mesh": "SM_AI_Modnewsb",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "a lute: a rounded wooden body with a sound hole and strings, a short neck and a bent-back peg head, lying on its back",
   "mesh": "SM_AI_Music",
-  "face_target": 8000,
   "size_by": "length",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

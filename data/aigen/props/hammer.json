@@ -8,9 +8,8 @@
   "frame": 2,
   "describe": "a war hammer: a heavy square steel head engraved with a rune, on a long wooden handle",
   "mesh": "SM_AI_Hammer",
-  "face_target": 8000,
   "size_by": "length",
-  "restyle": {"providers": ["openai"], "views": ["front"], "extra": "Show it lying flat on its side, horizontal."},
+  "restyle": {"providers": ["openai"], "extra": "Show it lying flat on its side, horizontal."},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

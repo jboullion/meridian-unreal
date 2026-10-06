@@ -7,17 +7,88 @@
   "frame": 0,
   "describe": "a tall slender street lamp post: a dark iron post with ring mouldings on a flared round base, topped by a small square iron lantern with dark unlit glass panes and an open crown of three upright prongs",
   "mesh": "SM_AI_Lamp",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
-    "variants": {"C": {"front": "openai"}},
+    "variants": {
+      "C": {"front": "openai"},
+      "SM2k": {"front": "openai"},
+      "SM4k": {"front": "openai"},
+      "SM8k": {"front": "openai"},
+      "SM16k": {"front": "openai"},
+      "HD1k": {"front": "openai"},
+      "HD1kb": {"front": "openai"}
+    },
     "runs": {
       "C": {
         "tripo_task": "7e55cb8e-e8e9-46bc-a62c-103730f07709",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
         "tripo_name": "rusty metal torch 3d model",
-        "tris_raw": 7650
+        "tris_raw": 7650,
+        "file": "build/aigen/props/lamp/04_tripo_out/C.glb",
+        "digest": "c19da3dd47280091",
+        "tris": 7650,
+        "size_m": [0.3118, 0.3087, 0.9814]
+      },
+      "SM2k": {
+        "tripo_task": "3b1a077e-8e3e-41df-8b06-f35a8ca6331d",
+        "faces_studio": 1942,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 2000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "rusted lantern 3d model",
+        "tris_raw": 1942,
+        "file": "build/aigen/props/lamp/04_tripo_out/SM2k.glb",
+        "digest": "575bffec3e5e1e4b",
+        "tris": 1942,
+        "size_m": [0.3228, 0.3228, 0.9995]
+      },
+      "SM4k": {
+        "tripo_task": "f313a87a-afdc-4fa2-91e5-b0851ca2ca62",
+        "faces_studio": 3802,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 4000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "rusty torch stand 3d model",
+        "tris_raw": 3802,
+        "file": "build/aigen/props/lamp/04_tripo_out/SM4k.glb",
+        "digest": "c509636401bce537",
+        "tris": 3802,
+        "size_m": [0.3188, 0.3149, 0.9995]
+      },
+      "SM8k": {
+        "tripo_task": "254ee01a-9eae-4c31-a296-a8f09fb63226",
+        "faces_studio": 7604,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 8000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "rusty torch 3d model",
+        "tris_raw": 7604,
+        "file": "build/aigen/props/lamp/04_tripo_out/SM8k.glb",
+        "digest": "35c512614cc12205",
+        "tris": 7604,
+        "size_m": [0.3179, 0.3179, 0.9995]
+      },
+      "SM16k": {
+        "tripo_task": "425a4bc0-a595-48b8-9f25-e07a9597bff8",
+        "faces_studio": 17375,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 16000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "rusted medieval torch 3d model",
+        "tris_raw": 17375,
+        "file": "build/aigen/props/lamp/04_tripo_out/SM16k.glb",
+        "digest": "f841dc59452b5254",
+        "tris": 17375,
+        "size_m": [0.314, 0.314, 0.9995]
+      },
+      "HD1k": {
+        "tripo_task": "84895f76-e4a5-44b9-8289-b2905007e2af",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 polycount, single image (45 credits)",
+        "file": "build/aigen/props/lamp/04_tripo_out/HD1k.glb",
+        "digest": "3958a31f0b303089",
+        "tris": 948,
+        "size_m": [0.312, 0.3097, 0.9811]
+      },
+      "HD1kb": {
+        "tripo_task": "77563dbc-ea74-4c5e-afaa-a6e28087c741",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 polycount, single image (45 credits)",
+        "file": "build/aigen/props/lamp/04_tripo_out/HD1kb.glb",
+        "digest": "c2090fc2bc1e0bf1",
+        "tris": 934,
+        "size_m": [0.3138, 0.3113, 0.9813]
       }
     },
     "chosen": {
@@ -47,5 +118,25 @@
     "tris": 7650,
     "size_m": [0.6299, 0.6236, 1.9823],
     "scale": 2.01996
+  },
+  "normalized_variants": {
+    "SM4k": {
+      "file": "build/environment/kit/SM_AI_Lamp_SM4k.glb",
+      "tris": 3802,
+      "size_m": [0.6324, 0.6246, 1.9823],
+      "scale": 1.98327
+    },
+    "SM8k": {
+      "file": "build/environment/kit/SM_AI_Lamp_SM8k.glb",
+      "tris": 7604,
+      "size_m": [0.6304, 0.6304, 1.9823],
+      "scale": 1.98327
+    },
+    "HD1k": {
+      "file": "build/environment/kit/SM_AI_Lamp_HD1k.glb",
+      "tris": 948,
+      "size_m": [0.6303, 0.6257, 1.9823],
+      "scale": 2.0204
+    }
   }
 }

@@ -8,9 +8,8 @@
   "frame": 0,
   "describe": "an old yellowed human skull resting on the ground",
   "mesh": "SM_AI_Skulnorm",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
     "variants": {"C": {"front": "openai"}},
     "runs": {

@@ -7,17 +7,82 @@
   "frame": 0,
   "describe": "a wooden signpost: one dark weathered wooden post holding a small rectangular board of dark planks carved with runic letters",
   "mesh": "SM_AI_Sign",
-  "face_target": 8000,
   "size_by": "height",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
-    "variants": {"C": {"front": "openai"}},
+    "variants": {
+      "C": {"front": "openai"},
+      "SM2k": {"front": "openai"},
+      "SM4k": {"front": "openai"},
+      "SM8k": {"front": "openai"},
+      "SM16k": {"front": "openai"},
+      "HD1k": {"front": "openai"}
+    },
     "runs": {
       "C": {
         "tripo_task": "c2c1a6e3-e6c4-40c4-9c5b-a11fba5bfbb0",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
         "tripo_name": "wooden sign 3d model",
-        "tris_raw": 7482
+        "tris_raw": 7482,
+        "file": "build/aigen/props/sign/04_tripo_out/C.glb",
+        "digest": "f2c21e9a4f1f4c05",
+        "tris": 7482,
+        "size_m": [0.5093, 0.3049, 0.977]
+      },
+      "SM2k": {
+        "tripo_task": "f28091fe-9a76-4a94-8c4a-a9b8a89c93fa",
+        "faces_studio": 2116,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 2000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "wooden sign 3d model",
+        "tris_raw": 2116,
+        "file": "build/aigen/props/sign/04_tripo_out/SM2k.glb",
+        "digest": "be5b3ccf04a7d430",
+        "tris": 2116,
+        "size_m": [0.519, 0.1704, 0.9995]
+      },
+      "SM4k": {
+        "tripo_task": "496f4569-4a66-426e-b0d3-5669d9be851f",
+        "faces_studio": 4029,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 4000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "wooden sign 3d model",
+        "tris_raw": 4029,
+        "file": "build/aigen/props/sign/04_tripo_out/SM4k.glb",
+        "digest": "041e92379fb02335",
+        "tris": 4029,
+        "size_m": [0.52, 0.1655, 0.9995]
+      },
+      "SM8k": {
+        "tripo_task": "0c7dc280-d19d-4e50-8221-889f4834bcab",
+        "faces_studio": 8034,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 8000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "wooden rune sign 3d model",
+        "tris_raw": 8034,
+        "file": "build/aigen/props/sign/04_tripo_out/SM8k.glb",
+        "digest": "759f3a5fe3a1cc4c",
+        "tris": 8034,
+        "size_m": [0.5171, 0.1958, 0.9995]
+      },
+      "SM16k": {
+        "tripo_task": "badee8af-771c-4342-ab83-9fb5e8b41a6d",
+        "faces_studio": 17413,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 16000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "wooden signpost 3d model",
+        "tris_raw": 17413,
+        "file": "build/aigen/props/sign/04_tripo_out/SM16k.glb",
+        "digest": "639f25637d2da2b8",
+        "tris": 17413,
+        "size_m": [0.519, 0.189, 0.9995]
+      },
+      "HD1k": {
+        "tripo_task": "884af977-a38a-4a9c-8037-b2cc823b273f",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 polycount, single image (45 credits)",
+        "stuck_task": "a19270a7-fe9a-4d8f-b96c-41ca198797cf",
+        "tripo_name": "wooden sign 3d model",
+        "tris_raw": 962,
+        "file": "build/aigen/props/sign/04_tripo_out/HD1k.glb",
+        "digest": "4db03b3c72c07cda",
+        "tris": 962,
+        "size_m": [0.5076, 0.3056, 0.98]
       }
     },
     "chosen": {
@@ -47,5 +112,25 @@
     "tris": 7482,
     "size_m": [0.8691, 0.5202, 1.6672],
     "scale": 1.70652
+  },
+  "normalized_variants": {
+    "SM4k": {
+      "file": "build/environment/kit/SM_AI_Sign_SM4k.glb",
+      "tris": 4029,
+      "size_m": [0.8674, 0.2761, 1.6672],
+      "scale": 1.66801
+    },
+    "SM8k": {
+      "file": "build/environment/kit/SM_AI_Sign_SM8k.glb",
+      "tris": 8034,
+      "size_m": [0.8625, 0.3266, 1.6672],
+      "scale": 1.66801
+    },
+    "HD1k": {
+      "file": "build/environment/kit/SM_AI_Sign_HD1k.glb",
+      "tris": 962,
+      "size_m": [0.8635, 0.5198, 1.6672],
+      "scale": 1.70115
+    }
   }
 }
