@@ -57,7 +57,7 @@ Run `bgf2png` before `roo2gltf`, which needs texture sizes for its UVs.
 | Wall flames | `python tools/environment/fires.py <rid> [...]` | Prints the wall torches' flames found in a zone (glTF metres); `build_world.py` uses the same code |
 | Chimneys | `python tools/environment/chimneys.py <rid> [...]` | Prints the chimney tops found in a zone (glTF metres); `build_world.py` puts a smoke plume on each |
 | Grass | `blender -b --factory-startup -P tools/blender/build_grass_kit.py` | Grass tufts into `build/environment/kit/` |
-| Trees | `python tools/textures/make_tree_textures.py` then `blender -b --factory-startup -P tools/blender/build_tree_kit.py` | Leaf atlas and bark (`build/textures_placeholder/T_Tree*`), then `SM_Tree_<Kind>_<A/B/C>` into `build/environment/kit/` (ADR 0007 "Trees") |
+| Trees | `python tools/textures/make_tree_textures.py` then `blender -b --factory-startup -P tools/blender/build_tree_kit.py` | Leaf atlas and bark (`build/textures_placeholder/T_Tree*`), then `SM_Tree_<Kind>_<Variant>` (`Mid`, `Shrub`, `Dead`; `-- <Kind> ...` builds only those) into `build/environment/kit/` (ADR 0007 "Trees") |
 
 ## Unreal
 **World build: `powershell -File tools/ue/build_world.ps1 [-Script zone_mood.py] [-Clean] [-Headless]`**

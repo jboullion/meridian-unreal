@@ -114,7 +114,7 @@
     }
  },
  "grass": {
-  "_doc": "Grass tuft colours (sRGB), sampled from the original grass texture (grd02306): its middle fifth at the root, a little above its lightest fifth at the tip. Wind: base sway `wind` at `wind_speed`, scaled between `calm` and 1 by a slowly drifting gust field (`gust_cm` across). `vertex_colors`: the tufts' root-to-tip gradient and per-blade variation from build_grass_kit.py (false: the look before the 2026-10-06 export fix, when every blade read white: all tip colour, wind at the roots).",
+  "_doc": "Grass tuft colours (sRGB), sampled from the original grass texture (grd02306): its middle fifth at the root, a little above its lightest fifth at the tip. Wind: base sway `wind` at `wind_speed` (0.15 since 2026-10-06, half the first: the user found it too quick), scaled between `calm` and 1 by a slowly drifting gust field (`gust_cm` across). `vertex_colors`: the tufts' root-to-tip gradient and per-blade variation from build_grass_kit.py (false: the look before the 2026-10-06 export fix, when every blade read white: all tip colour, wind at the roots).",
   "vertex_colors": true,
   "root": [
    0.189,
@@ -127,7 +127,7 @@
    0.22
   ],
   "wind": 0.3,
-  "wind_speed": 0.3,
+  "wind_speed": 0.15,
   "calm": 0.25,
   "gust_cm": 9000
  },

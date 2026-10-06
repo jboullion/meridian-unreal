@@ -60,6 +60,7 @@
     {"name": "crypt_entrance", "location_cm": [6150, 5936, 190], "rotation": [4.0, 180.0], "fov": 75},
     {"name": "brazier_close", "location_cm": [5365, 5785, 219], "rotation": [-18.0, -154.4], "fov": 60},
     {"name": "trees_grove", "location_cm": [2150, 5800, 200], "rotation": [8.0, -173.0], "fov": 90},
+    {"name": "dead_tree", "location_cm": [9880, 6080, 170], "rotation": [14.0, 10.8], "fov": 70},
     {"name": "trees_close", "location_cm": [2150, 5900, 180], "rotation": [14.0, -150.0], "fov": 60},
     {"name": "shops_wall_2m", "location_cm": [10080, 3300, 170], "rotation": [5.0, 0.0], "fov": 90},
     {"name": "shops_wall_7m", "location_cm": [9540, 3300, 170], "rotation": [5.0, 0.0], "fov": 90},

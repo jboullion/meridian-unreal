@@ -1199,16 +1199,18 @@ TREE_WIND_HLSL = """
 // by the tree's position, and the leaf cards flutter on top. MPC Wind: 1 calm, more in a storm.
 // The sway bends with the square of the height in the mesh (LP.z / HeightCm), so the trunk's foot
 // stays planted whatever the vertex colours say.
+// Rate scales every frequency (0.5 since 2026-10-06: the user found the motion too quick).
 float2 dir = normalize(float2(1.0, 0.35));
 float phase = dot(Obj.xy, float2(0.0013, 0.0021));
-float gust = 0.55 + 0.45 * sin(T * 0.23 + phase * 0.7);
-float sway = (0.35 + 0.6 * sin(T * 0.9 + phase) + 0.25 * sin(T * 2.1 + phase * 1.7)) * gust;
+float t = T * Rate;
+float gust = 0.55 + 0.45 * sin(t * 0.23 + phase * 0.7);
+float sway = (0.35 + 0.6 * sin(t * 0.9 + phase) + 0.25 * sin(t * 2.1 + phase * 1.7)) * gust;
 float w = Wind * Strength;
 float h = saturate(LP.z / HeightCm);
 float bend = h * h;
 float3 o = float3(dir * sway * SwayCm * w * bend, -abs(sway) * SwayCm * 0.15 * w * bend);
-float fl = sin(T * 5.3 + VC.g * 40.0 + dot(WP, float3(0.031, 0.027, 0.019)));
-float fl2 = sin(T * 3.7 + VC.g * 23.0);
+float fl = sin(t * 5.3 + VC.g * 40.0 + dot(WP, float3(0.031, 0.027, 0.019)));
+float fl2 = sin(t * 3.7 + VC.g * 23.0);
 o += float3(fl, fl2, fl * fl2) * FlutterCm * w * VC.r * Leaf * h;
 return o;
 """
@@ -1225,7 +1227,7 @@ def _tree_wind(mat, x, y):
               ("LP", _expr(mat, unreal.MaterialExpressionLocalPosition, x - 200, y + 300), ""),
               ("Wind", _collection(mat, "Wind", x, y + 400), "")]
     inputs += [(n, _expr(mat, unreal.MaterialExpressionScalarParameter, x, y + 500 + i * 80, parameter_name=n, default_value=v), "")
-               for i, (n, v) in enumerate((("Strength", 1.0), ("SwayCm", 9.0), ("FlutterCm", 2.5), ("HeightCm", 490.0)))]
+               for i, (n, v) in enumerate((("Strength", 1.0), ("SwayCm", 9.0), ("FlutterCm", 2.5), ("HeightCm", 490.0), ("Rate", 0.5)))]
     return _custom(mat, x + 400, y, TREE_WIND_HLSL, unreal.CustomMaterialOutputType.CMOT_FLOAT3, inputs, "TreeWind")
 
 
@@ -1285,8 +1287,11 @@ def build_tree_master(name, leaves):
 
 def tree_materials(kind):
     """{"tree_bark": MI, "tree_leaves": MI} for SM_Tree_<kind>_* (textures T_TreeBark_<kind> and
-    T_TreeLeaves_<kind> from tools/textures/make_tree_textures.py), or {} when they're missing."""
+    T_TreeLeaves_<kind> from tools/textures/make_tree_textures.py; bark only for a leafless tree),
+    or {} when they're missing."""
     files = ["T_TreeBark_%s.png" % kind, "T_TreeLeaves_%s.png" % kind]
+    if not os.path.exists(os.path.join(PLACEHOLDERS, files[1])):
+        files = files[:1]  # a leafless tree: bark only
     if not all(os.path.exists(os.path.join(PLACEHOLDERS, f)) for f in files):
         log("WARNING: no tree textures for %s (run tools/textures/make_tree_textures.py)" % kind)
         return {}
@@ -1294,12 +1299,12 @@ def tree_materials(kind):
     # The leaf atlas is small (1024 px) and streaming judged the cards' texel density badly: the
     # leaves were drawn from a low mip, and the alpha cut turned them into blobs (2026-10-06,
     # build/lookdev/trees_v8). Keep every mip resident.
-    leaves = eal.load_asset(tex[files[1]])
+    leaves = eal.load_asset(tex[files[1]]) if len(files) > 1 else None
     if leaves and not leaves.get_editor_property("never_stream"):
         leaves.set_editor_property("never_stream", True)
         eal.save_loaded_asset(leaves)
     out = {}
-    for slot, f, leaves in (("tree_bark", files[0], False), ("tree_leaves", files[1], True)):
+    for slot, f, leaves in (("tree_bark", files[0], False), ("tree_leaves", files[-1], True))[:len(files)]:
         master = _master("M_TreeLeaves" if leaves else "M_TreeBark", build_tree_master, leaves)
         out[slot] = _instance("MI_Tree_%s_%s" % (kind, "Leaves" if leaves else "Bark"), master, textures={"BaseColor": tex[f]})
     return out

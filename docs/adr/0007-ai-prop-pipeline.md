@@ -181,8 +181,25 @@ The bridge connection drops when the Studio page reloads, so it's re-toggled bef
   - **`M_PropTextured` failed to compile** after the shader recompile, so every AI prop drew the grey default (the shrub in `trees_v10`). Cause: its `MetallicRoughness` default was the engine's sRGB `WhiteSquareTexture` on a Linear Color sampler. `default_orm()` now makes a linear `T_DefaultORM` (roughness 1, metal 0) as the default.
 - `build_grass_kit.py` had the same white `COLOR_0`. Fixed the same way at the user's request (ADR 0003 "Grass vertex colours").
 
+**Shrub and dead tree (2026-10-06, the user).** Both now come from the kit too (`props.json` `"198"`, `"91"`: `mesh_use` `blender`, the AI meshes kept as `ai`).
+- `SM_Tree_Shrub_A/B/C` (`shrubee1`, 2.26 m): the leafy generator with the crown ellipsoid dipped below the ground, so the dome meets it wide, as the sprite's does. A hidden stem. A finer leaf atlas (230 small leaves per cluster) cut from the shrub's own canopy; bark from `midtree2` (`trunk_bgf`; the shrub shows none).
+- `SM_Tree_Dead_A/B` (`nectree1`, 3.76 m): a new bare generator (`bare_tree`).
+  - a flared, wandering trunk forks at about a third of the height into 4-6 thick limbs;
+  - the limbs branch four times (2-4 children, 22-55 degrees, crooked by `gnarl`), and every branch tapers almost to a point, so no cut ends show;
+  - scaled to the sprite's height. Bark only (`T_TreeBark_Dead` from the sprite's trunk); `tree_materials()` handles a tree without leaves.
+- `build_tree_kit.py -- Shrub Dead` builds only the named kinds.
+- Sheets: `build/lookdev/plants_v2/dead_tree.png`, `trees_grove.png` (the shrub). Blender previews: three of each.
+
+**Dead tree back to AI (2026-10-06, the user).** The user prefers the Tripo `SM_AI_Nectree1`: `"91"` `mesh_use` `ai`. Rule for now: the kit makes leafy trees and shrubs; static leafless trees stay AI props. `SM_Tree_Dead_*` and `bare_tree` stay as the `blender` option.
+
+**Slower wind (2026-10-06, the user: "constantly moving a little too fast").** Every frequency is halved:
+- trees: `TREE_WIND_HLSL` `Rate` 0.5 (sway, gusts and flutter);
+- grass: `materials.json` `grass` `wind_speed` from 0.3 to 0.15.
+
+The amplitudes are unchanged.
+
 ## Open
-- Trees: the shrub (`shrubee1`, type 198), the dead tree (`nectree1`, 91) and the Outskirts tree lines (ADR 0003 2g).
+- Trees: the Outskirts tree lines (ADR 0003 2g).
 - Emissive parts (lamp glass, embers) on AI meshes: a second material slot or a mask.
 - The API backend (phase 3), once the user tops up the API wallet; Studio plus the bridge covers batches until then.
 - Collision on props (they're NoCollision today).

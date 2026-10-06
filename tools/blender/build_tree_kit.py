@@ -21,6 +21,7 @@ Deterministic: the same seed gives the same tree.
 import math
 import os
 import random
+import sys
 
 import bmesh
 import bpy
@@ -36,6 +37,17 @@ TREES = {
         "height_m": 4.92, "crown_base_m": 1.41, "crown_r_m": (1.72, 1.78), "trunk_d_m": 0.19,
         "limbs": (4, 6), "twigs": (3, 5), "cards": 460, "card_m": (0.68, 0.98),
         "variants": {"A": 11, "B": 23, "C": 37},
+    },
+    "Shrub": {  # shrubee1 (198): a dense dome of small leaves from the ground up, a hidden stem. The
+        # crown's ellipsoid dips below the ground, so the dome meets the ground wide, as the sprite's
+        "height_m": 2.26, "crown_base_m": -0.32, "crown_r_m": (1.12, 1.28), "trunk_d_m": 0.08,
+        "limbs": (5, 7), "twigs": (2, 3), "cards": 340, "card_m": (0.48, 0.72), "min_card_z_m": 0.06,
+        "variants": {"A": 41, "B": 53, "C": 67},
+    },
+    "Dead": {  # nectree1 (91): leafless and gnarled: a flared trunk splitting into crooked limbs and twigs
+        "bare": True, "height_m": 3.76, "width_m": 2.64, "split_m": 1.15, "trunk_d_m": 0.4,
+        "limbs": (4, 6), "depth": 4, "children": (2, 4), "gnarl": 0.3,
+        "variants": {"A": 71, "B": 83},
     },
 }
 
@@ -220,7 +232,7 @@ def leaf_cards(b, cfg, rng, centre):
             continue
         rho = 1.0 - 0.5 * rng.random() ** 2  # mostly near the shell, some deeper
         p = crown_point(cfg, centre, d, rho * lumpy(bulges, d))
-        if p.z < cfg["crown_base_m"] + 0.1:
+        if p.z < cfg["crown_base_m"] + cfg.get("min_card_z_m", 0.1):
             continue
         out = ellipsoid_normal(cfg, centre, p)
         facing = (out + Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-1, 1))) * 0.55).normalized()
@@ -251,9 +263,68 @@ def leaf_cards(b, cfg, rng, centre):
         placed += 1
 
 
+SIDES_BY_DEPTH = (7, 5, 4, 3, 3)
+
+
+def bare_branch(b, cfg, rng, start, direction, length, radius, depth):
+    """One crooked branch of a leafless tree and, recursively, its children. Vertex colour R (wind
+    weight) rises with depth; the material's height bend keeps the trunk planted anyway."""
+    segs = max(2, 5 - depth)
+    pts = curve(start, direction, length, segs, rng, lift=0.06, wobble=cfg["gnarl"] * (1.0 + 0.25 * depth))
+    radii = [radius * (1 - 0.85 * k / segs) for k in range(segs + 1)]  # nearly to a point: no cut ends
+    wind = [min(1.0, 0.25 + 0.2 * depth + 0.1 * k / segs) for k in range(segs + 1)]
+    tube(b, pts, radii, SIDES_BY_DEPTH[depth], wind, rng.random(), [1.0] * len(pts))
+    if depth >= cfg["depth"]:
+        return
+    for _ in range(rng.randint(*cfg["children"])):
+        t = rng.uniform(0.45, 1.0)
+        i = min(segs - 1, int(t * segs))
+        s = pts[i].lerp(pts[i + 1], t * segs - i)
+        axis = direction.orthogonal().normalized()
+        axis = Matrix.Rotation(rng.uniform(0, 2 * math.pi), 3, direction.normalized()) @ axis
+        d = Matrix.Rotation(math.radians(rng.uniform(22, 55)), 3, axis) @ direction.normalized()
+        d = (d + Vector((0, 0, 0.15))).normalized()
+        bare_branch(b, cfg, rng, s, d, length * rng.uniform(0.58, 0.74), radii[i] * rng.uniform(0.58, 0.72), depth + 1)
+
+
+def bare_tree(b, cfg, rng):
+    """A leafless tree: a gnarled trunk with a flared foot up to split_m, then limbs that branch
+    `depth` times. Built at a nominal size, then scaled to height_m by the caller."""
+    r0 = cfg["trunk_d_m"] / 2
+    split = cfg["split_m"]
+    lean = Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), 0)) * 0.08
+    ts = [0.0, 0.06, 0.18, 0.4, 0.65, 0.85, 1.0]
+    trunk = [Vector((0, 0, -0.15))] + [Vector((0, 0, split * t)) + lean * t * split +
+                                       Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), 0)) * 0.09 * t for t in ts[1:]]
+    # the foot flares out, then the bole swells and narrows into the fork
+    radii = [r0 * f for f in (1.9, 1.45, 1.1, 0.95, 1.0, 0.85, 0.4)]  # tapers into the fork, no stub
+    tube(b, trunk, radii, 10, [0.0, 0.0, 0.02, 0.05, 0.1, 0.15, 0.2], rng.random(), [1.0] * len(trunk))
+    n = rng.randint(*cfg["limbs"])
+    phase = rng.uniform(0, 2 * math.pi)
+    for i in range(n):
+        az = phase + 2 * math.pi * (i + rng.uniform(-0.3, 0.3)) / n
+        el = math.radians(rng.uniform(25, 62))
+        d = Vector((math.cos(az) * math.cos(el), math.sin(az) * math.cos(el), math.sin(el)))
+        start = trunk[-2].lerp(trunk[-3], rng.uniform(0.0, 0.5))
+        bare_branch(b, cfg, rng, start, d, rng.uniform(1.0, 1.4), r0 * rng.uniform(0.62, 0.8), 0)
+
+
+def fit(obj, cfg):
+    """Scale a mesh uniformly (about its foot) so its top is at height_m."""
+    top = max(v.co.z for v in obj.data.vertices)
+    k = cfg["height_m"] / top
+    for v in obj.data.vertices:
+        v.co *= k
+
+
 def build(name, variant, seed, cfg):
     rng = random.Random(seed)
     b = Builder()
+    if cfg.get("bare"):
+        bare_tree(b, cfg, rng)
+        obj = b.to_object("SM_Tree_%s_%s" % (name, variant), ["tree_bark"])
+        fit(obj, cfg)
+        return obj
     centre = Vector((0, 0, cfg["crown_base_m"] + cfg["crown_r_m"][1]))
     skeleton(b, cfg, rng, centre)
     leaf_cards(b, cfg, rng, centre)
@@ -263,7 +334,10 @@ def build(name, variant, seed, cfg):
 def main():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     os.makedirs(OUT, exist_ok=True)
+    only = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     for name, cfg in TREES.items():
+        if only and name not in only:
+            continue
         for variant, seed in cfg["variants"].items():
             obj = build(name, variant, seed, cfg)
             bpy.ops.object.select_all(action="DESELECT")

@@ -12,7 +12,8 @@ python tools/bgf2png/bgf2png.py <bgf>) and writes into build/textures_placeholde
   painted texture are the original's; inner leaves are drawn first and darker, which gives each
   cluster depth. A thin twig runs up each cell.
 - T_TreeBark_<Name>.png: a tileable bark strip in the colours of the sprite's trunk (vertical
-  streaks from stretched, wrapped noise).
+  streaks from stretched, wrapped noise); `trunk_bgf` takes them from another sprite (the shrub
+  shows no trunk). A tree with no `canopy` (leafless) gets bark only.
 
 Deterministic (seeded); skipped when the output is newer than the sprite and this script.
 """
@@ -32,6 +33,11 @@ OUT = os.path.join(REPO, "build", "textures_placeholder")
 # trunk box, seed. The canopy box keeps clear of the darkest bottom band, which is shadow.
 TREES = {
     "Mid": {"bgf": "midtree2", "canopy": (60, 40, 450, 430), "trunk": (246, 520, 268, 715), "seed": 7},
+    # shrubee1 (198): small boxwood-like leaves, densely packed; no trunk shows, so midtree2's bark
+    "Shrub": {"bgf": "shrubee1", "canopy": (60, 110, 450, 470), "trunk_bgf": "midtree2", "trunk": (246, 520, 268, 715),
+              "seed": 13, "leaves": 230, "leaf_len": (24, 38)},
+    # nectree1 (91): leafless, so bark only, from its gnarled trunk
+    "Dead": {"bgf": "nectree1", "canopy": None, "trunk": (140, 350, 190, 425), "seed": 19},
 }
 
 CELL = 512          # atlas cell, px (the atlas is 2x2 cells)
@@ -61,7 +67,7 @@ def canopy_patches(sprite, box):
     return region[..., :3], region[..., 3] > 250
 
 
-def draw_cluster(rng, canopy, opaque, size):
+def draw_cluster(rng, canopy, opaque, size, cfg):
     """One leaf cluster in a size x size RGBA image."""
     s = size * SS
     img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
@@ -78,7 +84,7 @@ def draw_cluster(rng, canopy, opaque, size):
     centre = (s * 0.5, s * 0.46)
     radius = s * 0.40
     leaves = []
-    for _ in range(LEAVES):
+    for _ in range(cfg.get("leaves", LEAVES)):
         # base points fill a disc (denser inside); leaves point outwards with some scatter
         r = radius * rng.random() ** 0.75 * 0.84
         a = rng.uniform(0, 2 * math.pi)
@@ -89,7 +95,7 @@ def draw_cluster(rng, canopy, opaque, size):
         leaves.append((depth + rng.uniform(-0.25, 0.25), bx, by, angle))
     leaves.sort()  # inner (deep) first, outer drawn on top
     for depth, bx, by, angle in leaves:
-        length = rng.uniform(*LEAF_LEN) * SS
+        length = rng.uniform(*cfg.get("leaf_len", LEAF_LEN)) * SS
         poly = leaf_polygon(bx, by, length, length * rng.uniform(*LEAF_W), angle)
         xs, ys = [p[0] for p in poly], [p[1] for p in poly]
         x0, y0 = int(min(xs)) - 1, int(min(ys)) - 1
@@ -133,7 +139,7 @@ def leaf_atlas(sprite, cfg):
     canopy, opaque = canopy_patches(sprite, cfg["canopy"])
     atlas = Image.new("RGBA", (CELL * 2, CELL * 2), (0, 0, 0, 0))
     for i in range(4):
-        atlas.alpha_composite(draw_cluster(rng, canopy, opaque, CELL), ((i % 2) * CELL, (i // 2) * CELL))
+        atlas.alpha_composite(draw_cluster(rng, canopy, opaque, CELL, cfg), ((i % 2) * CELL, (i // 2) * CELL))
     # fill the clear pixels with the nearby leaf colour (alpha stays), so filtering and mips don't
     # pull a dark or bright fringe into the leaf edges: a normalised blur of colour by alpha
     px = np.asarray(atlas).astype(np.float32)
@@ -180,13 +186,17 @@ def main():
         if not os.path.exists(src):
             print("[make_tree_textures] missing %s (run python tools/bgf2png/bgf2png.py %s)" % (src, cfg["bgf"]))
             sys.exit(1)
-        newest = max(me, os.path.getmtime(src))
+        trunk_src = os.path.join(REPO, "build", "bgf", cfg.get("trunk_bgf", cfg["bgf"]), "frame_00.png")
+        newest = max(me, os.path.getmtime(src), os.path.getmtime(trunk_src))
         sprite = Image.open(src).convert("RGBA")
-        for kind, make in (("Leaves", leaf_atlas), ("Bark", bark)):
+        jobs = [("Bark", bark, Image.open(trunk_src).convert("RGBA"))]
+        if cfg["canopy"]:  # leafless trees have no leaf atlas
+            jobs.insert(0, ("Leaves", leaf_atlas, sprite))
+        for kind, make, image in jobs:
             path = os.path.join(OUT, "T_Tree%s_%s.png" % (kind, name))
             if not args.force and os.path.exists(path) and os.path.getmtime(path) > newest:
                 continue
-            make(sprite, cfg).save(path)
+            make(image, cfg).save(path)
             print("[make_tree_textures] %s" % path)
 
 
