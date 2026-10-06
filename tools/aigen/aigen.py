@@ -314,17 +314,19 @@ def step_tripo_ingest(m: dict, a):
     for glb in glbs:
         variant = glb.stem
         pv = w / "05_review" / "tripo" / variant
-        key = digest(glb, inspect.getsource(tripo))
+        key = digest(glb, inspect.getsource(tripo), (ROOT / "tools" / "blender" / "prop_glb.py").read_text())
         stamp = pv / "stamp.json"
         if fresh(stamp, key, a.force):
             stats = json.loads(stamp.read_text())["stats"]
         else:
-            stats = blender("preview", glb, pv, "--views", "front,left,back,above")
+            stats = blender("preview", glb, pv, "--views", "front,above,left")
+            blender("preview", glb, pv / "wire", "--views", "above,front", "--wire")  # the geometry
             stamp.write_text(json.dumps({"key": key, "stats": stats}))
         run = runs.setdefault(variant, {})
         run.update(file=rel(glb), digest=key, tris=stats["tris"], size_m=stats["size_m"])
         rows.append(("%s  (%d tris)  %s" % (variant, stats["tris"], run.get("settings", "")),
-                     [("sprite", sprite_img)] + [(v, Image.open(pv / (v + ".png"))) for v in stats["views"]]))
+                     [("sprite", sprite_img)] + [(v, Image.open(pv / (v + ".png"))) for v in stats["views"]]
+                     + [("mesh " + v, Image.open(pv / "wire" / (v + ".png"))) for v in ("above", "front")]))
         print("tripo-ingest: %s %d tris, size %s" % (variant, stats["tris"], stats["size_m"]))
     out = review.grid(rows, w / "05_review" / "sheet2_tripo.png", title="%s: Tripo variants" % m["name"])
     print("review: %s" % rel(out))

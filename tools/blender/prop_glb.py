@@ -2,12 +2,13 @@
 AI-generated prop GLBs (tools/aigen, docs/adr/0007): preview renders for review, and normalising a
 generated model into a kit mesh build_world.py can place.
 
-    blender -b --factory-startup -P tools/blender/prop_glb.py -- preview IN.glb OUT_DIR [--views front,left,back,above] [--size 768]
+    blender -b --factory-startup -P tools/blender/prop_glb.py -- preview IN.glb OUT_DIR [--views front,left,back,above] [--size 768] [--wire]
     blender -b --factory-startup -P tools/blender/prop_glb.py -- normalize IN.glb OUT.glb --size 0.98 [--size-by height|length] [--lift 0] --name SM_AI_Brazier [--yaw 0] [--max-tris 0]
 
 preview: orthographic Workbench renders with the model's own textures on a transparent background,
 <view>.png per view. The front is the glTF +Z side (what Tripo faces to the camera), seen at eye
-level like the original sprites.
+level like the original sprites. `--wire` renders the geometry instead: plain grey with the mesh's
+edges drawn dark (judging topology, and untextured Smart Mesh models).
 normalize: joins the meshes, turns the model `--yaw` degrees about up, scales it uniformly so its
 height (or with --size-by length its longest horizontal side: items lying down) is `--size` metres,
 puts the origin at the centre of its base (+Z up, metres), raises it `--lift` metres above the origin
@@ -74,11 +75,23 @@ def preview():
     scene.display.shading.light = "STUDIO"
     scene.display.shading.color_type = "TEXTURE"
     scene.display.shading.show_cavity = True
+    if "--wire" in argv:
+        scene.display.shading.color_type = "OBJECT"
+        for o in objs:
+            o.color = (0.72, 0.72, 0.72, 1)
+            wire = o.copy()
+            wire.data = o.data.copy()
+            wire.color = (0.08, 0.08, 0.1, 1)
+            scene.collection.objects.link(wire)
+            mod = wire.modifiers.new("wire", "WIREFRAME")
+            mod.thickness = max(extent) * 0.0015 / max(o.matrix_world.to_scale())
+            mod.use_relative_offset = False
+            mod.offset = 1.0
     scene.render.film_transparent = True
     scene.render.resolution_x = scene.render.resolution_y = size
     cam_data = bpy.data.cameras.new("cam")
     cam_data.type = "ORTHO"
-    cam_data.ortho_scale = max(extent) * 1.1
+    cam_data.ortho_scale = max(extent) * 1.25
     cam_data.clip_end = max(extent) * 20
     cam = bpy.data.objects.new("cam", cam_data)
     scene.collection.objects.link(cam)

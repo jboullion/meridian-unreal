@@ -11,7 +11,9 @@ Facts checked 2026-10-06 against the vendor docs. Re-check prices and model ids 
 ## Studio settings that worked
 | Asset | Input | Model | Settings | Result |
 |---|---|---|---|---|
-| (fill in per object) | | | | |
+| Props (Raza batch) | 1 image (OpenAI restyle) | HD H3.1 | Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, tri 8000 | 45 credits; good for symmetric objects |
+| Creatures (ant, fungus beast) | 4 views (OpenAI) | HD H3.1 | as above, multi-view tab | 45 credits; real depth from the side; the most painted detail |
+| Creatures | 4 views or 1 image | Smart Mesh P2.0 | tri 2k/5k/10k/20k (4 generations), then Texture 2K + Remove Lighting | 100 a run + 10 per texture; clean topology; 10k keeps teeth and joints |
 
 Record each run in the manifest too (`tripo.runs.<variant>.settings`).
 

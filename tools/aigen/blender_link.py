@@ -72,7 +72,9 @@ def snapshot() -> list:
 
 
 def bridge_imports(offset: int) -> list:
-    """[(task id, model name)] the bridge imported since `offset` bytes into its log."""
+    """[(task id, root object name)] the bridge imported since `offset` bytes into its log. The name is
+    the one the root actually got in Blender ("Renamed imported root: ... -> 'x.001'"): Tripo reuses
+    model names ("alien creature 3d model"), so a second arrival with the same name gets a suffix."""
     if not BRIDGE_LOG.exists():
         return []
     with open(BRIDGE_LOG, "rb") as f:
@@ -83,6 +85,9 @@ def bridge_imports(offset: int) -> list:
         m = re.search(r"Received complete model name: (.*)$", line)
         if m:
             name = m.group(1).strip()
+        m = re.search(r"Renamed imported root: '.*?' -> '(.*?)' \(requested", line)
+        if m:
+            name = m.group(1)
         m = re.search(r"Successfully imported (\S+)", line)
         if m:
             out.append((m.group(1), name))
@@ -135,20 +140,19 @@ def grab(path: Path, wait: float = 120, task: str = None) -> dict:
 
 EXPORT_ROOT = r'''
 name, path = %(name)r, %(path)r
-done = set(%(done)s)
-roots = [o for o in bpy.data.objects if o.parent is None and o.name not in done
-         and (o.name == name or o.name.startswith(name + "."))]
+roots = [o for o in bpy.data.objects if o.parent is None and o.name == name]
 if roots:
     root = roots[0]
     objs = [root] + list(root.children_recursive)
-    bpy.ops.object.select_all(action="DESELECT")
-    for o in objs:
-        o.select_set(True)
-    bpy.context.view_layer.objects.active = root
-    bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", use_selection=True,
-                              export_materials="EXPORT", export_image_format="AUTO", export_yup=True)
     meshes = [o for o in objs if o.type == "MESH"]
     out = {"root": root.name, "tris": sum(len(p.vertices) - 2 for o in meshes for p in o.data.polygons)}
+    if path:
+        bpy.ops.object.select_all(action="DESELECT")
+        for o in objs:
+            o.select_set(True)
+        bpy.context.view_layer.objects.active = root
+        bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", use_selection=True,
+                                  export_materials="EXPORT", export_image_format="AUTO", export_yup=True)
     for o in objs:
         bpy.data.objects.remove(o, do_unlink=True)
     for block in (bpy.data.meshes, bpy.data.materials, bpy.data.images):
@@ -160,21 +164,34 @@ if roots:
 
 def collect(targets: dict, timeout: float = 3600, log=print) -> dict:
     """Export every model the bridge imports whose Tripo task id is a key of `targets` (task id ->
-    GLB path), in whatever order they arrive: each import's root object is found by the name the
-    bridge log gives it. Returns {task id: stats}; stops when all have arrived or at `timeout`."""
+    GLB path), in whatever order they arrive: each import's root object is found by the exact name the
+    bridge log says it got. A resent model that was already collected is deleted from the scene.
+    Returns {task id: stats}; stops when all have arrived or at `timeout`."""
     offset = BRIDGE_LOG.stat().st_size if BRIDGE_LOG.exists() else 0
-    got, done_roots, deadline = {}, [], time.time() + timeout
+    got, seen, tries, deadline = {}, 0, 0, time.time() + timeout
     while len(got) < len(targets) and time.time() < deadline:
-        for task, name in bridge_imports(offset):
-            if task in got or task not in targets:
+        imports = bridge_imports(offset)
+        for task, name in imports[seen:]:
+            if task not in targets:
+                seen += 1
                 continue
-            path = Path(targets[task])
-            path.parent.mkdir(parents=True, exist_ok=True)
-            out = run(EXPORT_ROOT % {"name": name, "path": str(path), "done": done_roots})
-            if out:
-                done_roots.append(out["root"])
+            path = "" if task in got else str(Path(targets[task]))
+            if path:
+                Path(path).parent.mkdir(parents=True, exist_ok=True)
+            out = run(EXPORT_ROOT % {"name": name, "path": path})
+            if not out:
+                tries += 1
+                if tries < 15:
+                    break  # the root isn't in the scene yet: retry this entry next poll
+                log("skipped %s: no root named %r in the scene" % (task[:8], name))
+            seen, tries = seen + 1, 0
+            if not out:
+                continue
+            if path:
                 got[task] = out
                 log("collected %s (%s, %d tris) -> %s  [%d/%d]" % (task[:8], name, out["tris"], path, len(got), len(targets)))
+            else:
+                log("dropped a resend of %s (%s)" % (task[:8], name))
         time.sleep(2)
     return got
 

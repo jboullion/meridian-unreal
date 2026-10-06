@@ -13,7 +13,7 @@ More detail, loaded when needed:
 - [reference/prompts.md](reference/prompts.md): how the restyle prompt is built, models, writing `describe`
 - [reference/pitfalls.md](reference/pitfalls.md): known traps (symptom → cause → fix)
 
-**Status (2026-10-06):** every prop in Raza and its interiors (61: the brazier plus 60) has been generated. The procedural kit is retired. Update this file when a default changes, and record results in ADR 0007.
+**Status (2026-10-06):** every prop in Raza and its interiors (61: the brazier plus 60) has been generated. The procedural kit is retired. Creatures were tested with 4 views and Smart Mesh (ADR 0007 "Creatures"); the user's pick is pending. Update this file when a default changes, and record results in ADR 0007.
 
 ## Current defaults
 
@@ -26,7 +26,9 @@ More detail, loaded when needed:
 | Upscale | 4x `4xTextures_GTAV_rgt-s_dither`, alpha rebuilt from the 1-bit original | "Upscale" |
 | Restyle | **OpenAI `gpt-image-2.5-sunburst` only**, via the **Batch API** (50% off, ~30 min for 60): `aigen.py all batch-submit`, then `aigen.py batch-collect`. Single fixes run directly with `aigen.py <name> restyle --force` | "Restyle", "Raza batch" |
 | Tripo | Studio (Max-plan credits), driven by Claude in Chrome. HD Model **H3.1**, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, **8000** faces, **Private**, single image, 45 credits each. Jobs run in parallel | "Brazier", "Raza batch" |
-| Collect | `aigen.py bridge-collect all` waits in Blender and files each arriving model by its **Tripo task id** (from the bridge log). Send them from Studio in any order | "Automating Studio" |
+| Creatures and figures | Anything with legs, a face or an unseen back gets **4 views**: `restyle.views` front/left/back/right and variant `MV` (HD H3.1, multi-view tab, still 45 credits). A single image makes them flat from the side. Check the side views on a sheet first; regenerate any that copy the front | "Creatures" |
+| Smart Mesh | Studio's low-poly mode (P2.0): 4 generations per run at your polygon counts, 100 credits a run, untextured; the Texture tool adds 2K for 10. Cleaner topology at fewer triangles: the candidate for monsters to rig. Polycount: 2k loses features, 5k holds the shape, 10k keeps teeth and joints | "Creatures" |
+| Collect | `aigen.py bridge-collect all` waits in Blender and files each arriving model by its **Tripo task id** and the exact name it got in Blender (both from the bridge log). Send them from Studio in any order. `tripo-ingest` renders each variant textured and as a mesh (`05_review/sheet2_tripo.png`) | "Automating Studio" |
 | Kept source | The chosen raw GLB, `art_src/aigen/<kind>/<name>/<name>_tripo.glb` (LFS) | "Layout" |
 | Kit mesh | `aigen.py <name> normalize` → `build/environment/kit/SM_AI_<Name>.glb`: base-centre origin, +Z up, metres, scaled to the sprite. `build/` is git-ignored: on a fresh clone, `aigen.py every normalize` rebuilds them all from `art_src/` | "Normalise" |
 | Placement | `props.json` `"classes"` (by Kod class) and `"types"` (OrnamentalObjects by OO number) give `"mesh"`. Meshes are AI only and skipped until their GLB exists. Yaw comes from the Kod angle, or a stable random turn with `"random_yaw"` (plants, rocks, clutter). `"mesh_options"` + `"mesh_use"` switch between alternative meshes (`"compare"` alternates them) | "Placement", "Trees" |

@@ -198,10 +198,50 @@ The bridge connection drops when the Studio page reloads, so it's re-toggled bef
 
 The amplitudes are unchanged.
 
+## Creatures: 4 views and Smart Mesh (2026-10-06)
+**Problem (the user).** The museum miniatures of monsters (the mutant ant `modant`, the centipede `modcen`, the fungus beast `modfung`) "don't look quite right". The user asked for a test of Studio's multi-view input and its **Smart Mesh** mode, and of higher and lower polygon counts.
+
+**What was run** (task ids and settings in each manifest's `tripo.runs`; log `build/aigen/creature_test/tasks.tsv`):
+- **Side views:** left, back and right from OpenAI (`restyle.views`), 3 per creature.
+  - The first centipede left and back views were near-copies of its front. `restyle.VIEWS` now asks for "a true side profile", says which way the front points, and says it must not copy the front. The centipede's second set turned properly.
+- **MV:** HD Model H3.1 with the 4 views, our usual settings (8000 triangles, 2K PBR). 45 credits, the same as a single image.
+- **Smart Mesh P2.0:** one run makes up to 4 generations, each with its own polygon count. We used 2k, 5k, 10k and 20k triangles.
+  - The ant was run from its single image; the centipede and fungus from the 4 views.
+  - 100 credits a run (the first two runs were free trials). Each generation takes under a minute.
+  - Smart Mesh models come **untextured**. Studio's Texture tool adds one: 2K for 10 credits, 4K, or 8K for 30 (the ant's 10k used the one free 8K trial).
+- Spent: 265 Studio credits (22,280 → 22,015), plus 12 OpenAI images.
+
+**Results** (sheets: `build/aigen/creature_test/modant_compare.png`, `modcen_compare.png`, `modfung_compare.png`, `polycount.png`; every variant in each asset's `05_review/sheet2_tripo.png`, now with mesh renders):
+- **A single image was the problem.** From the front, C matches the sprite. From the side, the ant is a thin flat cut-out and the fungus beast leans forward like a blob. The centipede's coil was already plausible.
+- **4 views fix it.** The MV ant has a real thorax and abdomen behind the head; the MV fungus beast stands upright on its root legs. HD MV keeps the most painted detail (the fungus's teeth and roots).
+- **Smart Mesh** comes close to HD MV in form, at fewer triangles and with cleaner, even topology (the mesh renders show it). Even from a single image its ant had real depth. Its textures are a little softer.
+  - Each polygon count is its own generation, so the shape varies between them (the centipede's 5k grew a long tail spike).
+- **Polygon count**, for figures under 1 m:
+  - 2k loses features: the ant's mandibles thin out, and the fungus loses its teeth and most of its roots;
+  - 5k holds the overall shape;
+  - 10k brings back the fine parts (teeth, roots, leg joints);
+  - 20k adds little you would see at these sizes.
+- **Cost per asset:** HD MV is 45 credits. Smart Mesh is 100 per run plus 10 per texture, unless all 4 generations go to use.
+
+**Decision (proposed, awaiting the user):**
+- Creatures, figures and anything with legs or an unseen back get 4 views (`restyle.views` all four, `tripo.variants` `MV`). Plain symmetric props keep one image.
+- HD H3.1 with 4 views stays the default for props.
+- Smart Mesh (10k, 2K texture) is the candidate for monsters that will be rigged and animated, where clean topology matters.
+- The three test assets keep C in game until the user picks; `aigen.py <name> choose MV` then `normalize` swaps one.
+
+**Pipeline fixes from the test:**
+- `blender_link.collect` found each arrival in Blender by Tripo's model name. Tripo reuses names ("alien creature 3d model" for every fungus), and Blender gives a second copy a `.001` suffix. Two things went wrong:
+  - the collector skipped any name it had already filed, so the first sends of two models were ignored;
+  - a later arrival was filed under the wrong task (the 5k fungus file was really the 10k).
+
+  It now takes the exact name each import ended up with from the bridge log ("Renamed imported root: ... -> 'x.001'"). A resend of a model already collected is deleted from the scene.
+- `prop_glb.py preview --wire` renders the geometry (grey, edges drawn). `tripo-ingest` adds "mesh above" and "mesh front" columns to `sheet2_tripo.png`, so untextured Smart Mesh models can be judged too.
+
 ## Open
 - Trees: the Outskirts tree lines (ADR 0003 2g).
 - Emissive parts (lamp glass, embers) on AI meshes: a second material slot or a mask.
 - The API backend (phase 3), once the user tops up the API wallet; Studio plus the bridge covers batches until then.
 - Collision on props (they're NoCollision today).
+- Creatures: the user's pick between C, MV and Smart Mesh for the museum figures; the other museum figures (`modavar`, `modorc`, `modfey`, `modlupog`, `modspdr`) with 4 views.
 - `SectorLight` per prop from the original sector light where it stands (1 now: props read slightly brighter than the walls indoors).
 - The night glow of lamp glass and other emissive parts on AI meshes.

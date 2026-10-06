@@ -33,11 +33,13 @@ TIMEOUT = 600
 
 VIEWS = {
     "front": "View: straight from the front at eye level, the same viewpoint as the reference image.",
-    "left": "View: the same object turned 90 degrees, so we see its left side, at eye level and the same scale. "
-            "Infer the unseen side so it is consistent with the front.",
-    "back": "View: the same object turned 180 degrees, seen from behind at eye level and the same scale. "
-            "Infer the unseen side so it is consistent with the front.",
-    "right": "View: the same object turned 90 degrees the other way, so we see its right side, at eye level and the same scale.",
+    "left": "View: a true side profile. The object itself is rotated 90 degrees about its vertical axis so we see its "
+            "left side, at eye level and the same scale; its front now points to the left of the image. This must look "
+            "clearly different from the front view, not a copy of it. Infer the unseen side so it is consistent with the front.",
+    "back": "View: the object itself is rotated 180 degrees about its vertical axis, seen from directly behind at eye level "
+            "and the same scale: no face or front details are visible. Infer the unseen side so it is consistent with the front.",
+    "right": "View: a true side profile. The object itself is rotated 90 degrees the other way about its vertical axis so "
+             "we see its right side, at eye level and the same scale; its front now points to the right of the image.",
     "above": "View: a three-quarter view from about 35 degrees above, so the top and any opening are visible.",
 }
 
