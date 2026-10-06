@@ -4,9 +4,10 @@ Headless Blender:
 
     blender -b --factory-startup -P tools/blender/build_prop_kit.py
 
-Writes build/environment/kit/SM_LampPost.glb and SM_Brazier.glb: mid-poly, ironwork in the
+Writes build/environment/kit/SM_LampPost.glb, SM_Brazier.glb, SM_Candle.glb, SM_Precip.glb (rain, snow,
+ambient particles) and SM_Puffs.glb (chimney smoke, moths): mid-poly, ironwork in the
 spirit of the original sprites. Material slots (props.json "materials"): iron, lamp_glass,
-embers. Origin at the base, +Z up (Blender), metres.
+embers, bronze, wax. Origin at the base, +Z up (Blender), metres.
 """
 import math
 import os
@@ -102,10 +103,80 @@ def brazier():
     return b.finish()
 
 
+def candle():
+    """The original's candlestick (candle.bgf: a turned stand about 0.76 m tall); the flame is a
+    sprite (props.json "fires" candle) on the wick at 0.715 m."""
+    b = Builder("SM_Candle")
+    b.cylinder("bronze", 0.11, 0.09, 0.0, 0.03, sides=10)     # foot
+    b.cylinder("bronze", 0.07, 0.03, 0.03, 0.09, sides=10)    # foot moulding
+    b.cylinder("bronze", 0.018, 0.016, 0.09, 0.53, sides=8)   # stem
+    for z in (0.2, 0.36):
+        b.cylinder("bronze", 0.03, 0.03, z, z + 0.025, sides=8)  # turned rings
+    b.cylinder("bronze", 0.03, 0.07, 0.53, 0.56, sides=10)    # drip tray
+    b.cylinder("wax", 0.022, 0.021, 0.56, 0.70, sides=10)     # candle
+    b.cylinder("wax", 0.021, 0.012, 0.70, 0.708, sides=10)
+    b.cylinder("iron", 0.002, 0.002, 0.708, 0.72, sides=4)    # wick
+    return b.finish()
+
+
+PRECIP_QUADS = 10000
+PRECIP_BOX_M = (32.0, 32.0, 16.0)  # AMRPrecipitationActor::BoxCm / BoxHeightCm
+
+
+def quads(name, count, box, slot, stratified=False):
+    """Tiny quads (1 cm) scattered through a box around the origin, for materials that move them on
+    the GPU (world position offset): the vertex position is the quad's seed in the box, UV0 its
+    corner, UV1 two random numbers per quad (which quads show at a given amount, their size and
+    phase). stratified: UV1.x is (i + 0.5) / count instead, so the quads' phases spread evenly."""
+    import random
+    rng = random.Random(59)
+    bx, by, bz = box
+    verts, faces, uv0, uv1 = [], [], [], []
+    h = 0.005
+    for i in range(count):
+        x, y, z = rng.uniform(-bx / 2, bx / 2), rng.uniform(-by / 2, by / 2), rng.uniform(-bz / 2, bz / 2)
+        r = ((i + 0.5) / count if stratified else rng.random(), rng.random())
+        n = len(verts)
+        verts += [(x - h, y, z - h), (x + h, y, z - h), (x + h, y, z + h), (x - h, y, z + h)]
+        faces.append((n, n + 1, n + 2, n + 3))
+        uv0 += [(0.0, 1.0), (1.0, 1.0), (1.0, 0.0), (0.0, 0.0)]
+        uv1 += [r] * 4
+    mesh = bpy.data.meshes.new(name)
+    mesh.from_pydata(verts, [], faces)
+    for layer_name, uvs in (("UVMap", uv0), ("Seed", uv1)):
+        layer = mesh.uv_layers.new(name=layer_name)
+        for loop in mesh.loops:
+            layer.data[loop.index].uv = uvs[loop.vertex_index]
+    mesh.materials.append(material(slot))
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    return obj
+
+
+def precip():
+    """SM_Precip (docs/adr/0005 phase 4): PRECIP_QUADS quads through one box. M_Precip turns each
+    into a falling streak or flake, M_Splash into a splash, M_Ambient (phase 5) into a dust mote,
+    a speck of pollen, a firefly or a leaf."""
+    return quads("SM_Precip", PRECIP_QUADS, PRECIP_BOX_M, "precip")
+
+
+PUFF_QUADS = 48
+
+
+def puffs():
+    """SM_Puffs (docs/adr/0005 phase 5): PUFF_QUADS quads in a 1 m box standing on the origin, phases
+    spread evenly. M_Smoke turns them into a chimney's plume of puffs, M_Moth into moths around a
+    lamp; build_world.py scales the actor to the effect's extent (it sets the bounds)."""
+    obj = quads("SM_Puffs", PUFF_QUADS, (1.0, 1.0, 1.0), "puffs", stratified=True)
+    for v in obj.data.vertices:
+        v.co.z += 0.5
+    return obj
+
+
 def main():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     os.makedirs(OUT, exist_ok=True)
-    for make in (lamp_post, brazier):
+    for make in (lamp_post, brazier, candle, precip, puffs):
         obj = make()
         bpy.ops.object.select_all(action="DESELECT")
         obj.select_set(True)

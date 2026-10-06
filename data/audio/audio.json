@@ -1,0 +1,11 @@
+{
+ "_doc": "How UMRAudioSubsystem plays the original's sounds (docs/adr/0006); hand-written, unlike rooms.json and sounds.json (tools/audio/extract_audio.py). rolloff_per_m and max_distance_m: the original client's 3D attenuation (irrKlang rolloff 0.00016 per fine unit, 1024 fine units to a 2.2 m square, silent beyond 32 squares) read as volume = 1 / (1 + rolloff x distance) up to max_distance_m, then nothing. music_fade_s: the crossfade between two zones' tracks (the original cut; decided 2026-10-05). loop_fade_s: loops fading in and out as you enter and leave a zone (the original cut them). loop_height_m: how high above the floor a room's loops stand (the original's sounds had no height). periodic_jitter: the original's +-20% on the periodic interval. random_pitch: false, as the 104 client (Kod asks for it on periodic sounds; decided 2026-10-05). volumes: a level per sound class (0..1) under the player's settings, 1 everywhere until set by ear against the original client.",
+ "rolloff_per_m": 0.07447,
+ "max_distance_m": 70.4,
+ "music_fade_s": 1.5,
+ "loop_fade_s": 0.5,
+ "loop_height_m": 1.5,
+ "periodic_jitter": 0.2,
+ "random_pitch": false,
+ "volumes": {"SC_Music": 1.0, "SC_Loops": 1.0, "SC_Periodic": 1.0, "SC_Weather": 1.0, "SC_Combat": 1.0, "SC_Spells": 1.0, "SC_World": 1.0, "SC_UI": 1.0}
+}

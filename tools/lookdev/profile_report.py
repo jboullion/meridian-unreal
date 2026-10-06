@@ -6,7 +6,7 @@ Summarise a look-dev profile run (tools/ue/run_lookdev.ps1 -Profile).
 
 Reads build/lookdev/<label>/<camera>__<variant>.csv (CSV-profiler captures with per-pass GPU
 timings, r.GPUCsvStatsEnabled) and prints:
-  1. GPU frame time per camera and variant, and what tessellation and grass cost;
+  1. GPU frame time per camera and variant, and what tessellation, grass and the fire lights cost;
   2. the most expensive GPU passes, averaged over all cameras, per variant.
 """
 from __future__ import annotations
@@ -18,7 +18,7 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-VARIANTS = ("full", "no_tess", "no_grass")
+VARIANTS = ("full", "no_tess", "no_grass", "no_fire")
 
 
 def read_capture(path: Path) -> dict[str, float]:
@@ -44,6 +44,9 @@ def main():
     folder = ROOT / "build" / "lookdev" / args.label
     caps: dict[str, dict[str, dict[str, float]]] = defaultdict(dict)
     for p in sorted(folder.glob("*__*.csv")):
+        if p.stat().st_size == 0:
+            print("(skipping %s: empty, the run quit before the profiler wrote it)" % p.name)
+            continue
         cam, variant = p.stem.split("__", 1)
         caps[cam][variant] = read_capture(p)
     if not caps:
@@ -52,18 +55,20 @@ def main():
     def gpu_total(c):
         return sum(v for k, v in c.items() if k.startswith("GPU/"))
 
-    print("| camera | GPU full (ms) | tessellation cost | grass cost | frame time full (ms) |")
-    print("|---|---:|---:|---:|---:|")
-    tess, grass = [], []
+    print("| camera | GPU full (ms) | tessellation cost | grass cost | fire lights cost | frame time full (ms) |")
+    print("|---|---:|---:|---:|---:|---:|")
+    tess, grass, fire = [], [], []
     for cam, v in caps.items():
-        if not all(k in v for k in VARIANTS):
+        if not all(k in v for k in VARIANTS[:3]):
             continue
-        full, nt, ng = (gpu_total(v[k]) for k in VARIANTS)
+        full, nt, ng = (gpu_total(v[k]) for k in VARIANTS[:3])
+        nf = gpu_total(v["no_fire"]) if "no_fire" in v else full  # captures from before the variant
         tess.append(full - nt)
         grass.append(full - ng)
-        print("| %s | %.2f | %+.2f | %+.2f | %.2f |" % (cam, full, full - nt, full - ng, v["full"].get("FrameTime", 0)))
+        fire.append(full - nf)
+        print("| %s | %.2f | %+.2f | %+.2f | %+.2f | %.2f |" % (cam, full, full - nt, full - ng, full - nf, v["full"].get("FrameTime", 0)))
     if tess:
-        print("| **mean** | | **%+.2f** | **%+.2f** | |" % (statistics.fmean(tess), statistics.fmean(grass)))
+        print("| **mean** | | **%+.2f** | **%+.2f** | **%+.2f** | |" % (statistics.fmean(tess), statistics.fmean(grass), statistics.fmean(fire)))
 
     print()
     passes: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))

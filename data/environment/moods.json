@@ -1,10 +1,128 @@
 {
-  "_doc": "Lighting moods (docs/adr/0003 pass 4). tools/ue/zone_mood.py applies a mood to the lighting actors build_world.py spawns in L_World, by actor label. Each actor block sets `rotation` ([pitch, yaw], directional light only) and properties on its main component; `settings` on GlobalPostProcess sets PostProcessSettings fields and turns their override flags on. Values: numbers, bools, [r,g,b(,a)] for colours/vectors, strings for enums. For now one outdoor mood is baked into L_World (`levels`); per-zone runtime blending (UMRZoneMood) comes later. Exposure is in EV100 (r.DefaultFeature.AutoExposure.ExtendDefaultLuminanceRange); with the sun at ~8 lux the town sits around EV -1..1, so clamping above that blackens the shade. \"Collection\": values for MPC_Environment (WindowGlow: how brightly the painted windows glow, 0 by day).",
+  "_doc": "Lighting moods (docs/adr/0003 pass 4, docs/adr/0005). In game the environment director (UMREnvironmentSubsystem) blends moods by the game hour along a zone's cycle (\"cycles\", \"zones\") and moves the sun and moon (\"sky\"); in the editor tools/ue/zone_mood.py bakes one mood (\"levels\") into L_World. Both apply a mood to the lighting actors build_world.py spawns in L_World, by actor label (a tag in game). Each actor block sets `rotation` ([pitch, yaw], directional light only) and properties on its main component; `settings` on GlobalPostProcess sets PostProcessSettings fields and turns their override flags on. Values: numbers, bools, [r,g,b(,a)] for colours/vectors, strings for enums. Exposure is in EV100 (r.DefaultFeature.AutoExposure.ExtendDefaultLuminanceRange); with the sun at ~8 lux the town sits around EV -1..1, so clamping above that blackens the shade. \"Collection\": values for MPC_Environment (WindowGlow: how brightly the painted windows glow, 0 by day; Stars: the night sky's stars, 0 by day, 1 at night).",
   "levels": {
     "L_World": "raza_afternoon"
   },
+  "sky": {
+    "_doc": "The directional light's path (UMREnvironmentSubsystem, docs/adr/0005): the sun by day, the moon by night. Each rises in the east-north-east, is highest in the south halfway between rise and set, and sets in the west-north-west; game hours. The sun peaks at 14, where the original server's brightness peaks (kod SysRecalcLightAndDayPhase), and is in the south-west at 17 as the tuned afternoon mood. The moon is up from 18 to 10 the next day, highest at 2; moon_intensity (lux) and moon_temperature replace the moods' Sun values while the sun is down. The moods' Sun rotation is ignored except when one mood is pinned (-MRMood, mood_test.ps1).",
+    "sun_rise": 6.0,
+    "sun_set": 22.0,
+    "sun_max_elevation": 50.0,
+    "moon_rise": 18.0,
+    "moon_set": 34.0,
+    "moon_max_elevation": 40.0,
+    "moon_intensity": 0.12,
+    "moon_temperature": 8000
+  },
+  "cycles": {
+    "_doc": "Day/night cycles: [game hour, mood] keys. The environment director blends the two keys around the hour (numbers and colours interpolate, everything else switches halfway), wrapping over midnight. The original's phases: night before 6 and after 20, dawn 6-8, day 9-17, dusk 18-20 (kod).",
+    "raza_outdoor": {
+      "_doc": "Raza and the Outskirts: night until 4:30, the misty morning by 6:30, day (the afternoon mood) from 9:30 to 17, dusk by 19:30, night again from 21:30.",
+      "keys": [
+        [0.0, "raza_night"],
+        [4.5, "raza_night"],
+        [6.5, "raza_morning"],
+        [9.5, "raza_afternoon"],
+        [17.0, "raza_afternoon"],
+        [19.5, "raza_dusk"],
+        [21.5, "raza_night"]
+      ]
+    },
+    "raza_interior": {
+      "_doc": "Raza's buildings: lit by their own lights, with daylight through the painted windows from dawn to dusk (the original: dawn 6-8, dusk 18-20).",
+      "keys": [
+        [0.0, "raza_interior_night"],
+        [5.5, "raza_interior_night"],
+        [8.0, "raza_interior_day"],
+        [18.0, "raza_interior_day"],
+        [20.5, "raza_interior_night"]
+      ]
+    },
+    "raza_crypt": {
+      "_doc": "The Mausoleum: no daylight (the original's outside factor 0), the same at every hour.",
+      "keys": [
+        [0.0, "raza_crypt"]
+      ]
+    }
+  },
+  "zones": {
+    "_doc": "Per zone (original room id) environment profile. cycle: which cycle it follows. kind: outdoor (default), interior or underground. sun: false turns the sun and moon off while the view is in the zone (interiors are closed boxes, but their single-sided walls and ceilings don't stop the sun's shadows). daylight: scales the moods' WindowDaylight (painted windows lit from outside by day): the original's outside factor / 10 (kod: 10 the Inn, 5 shops and the Hall, 3 the bank and vault, 0 underground). lamps: \"always\" keeps night-only lamps lit (the original's indoor lamps with outside factor 0). base_light, outside: the original room's base light (0-255) and outside factor (0-10) from data/zones.json; the director scales the moods' SectorAmbient by the original's room light, base + outside * (brightness - 50) / 4 (kod room.kod GetRoomLight), so rooms with windows dim at night. \"default\" covers every zone not listed. weather_zone: the original's weather zone (kod WEATHER_ZONE_*: Raza and its forest 13, Marion 4; 0 none, as the Mausoleum), whose storms the server rolls (AMRGameState). weather_mask: what a storm brings by season (kod WEATHER_MASK_* without the prefix: DEFAULT_NS is Raza's, rain in spring, summer and fall, snow in winter). Both fall back to \"default\". ambient: which ambient particles show here and how many ({kind: weight}; kinds in \"atmosphere\" \"ambient\"), also falling back to \"default\": Raza outdoors has pollen and fireflies, the forest also leaves, the buildings dust motes.",
+    "default": {
+      "cycle": "raza_outdoor",
+      "weather_zone": 13,
+      "weather_mask": "DEFAULT_NS",
+      "ambient": {"pollen": 1, "fireflies": 1}
+    },
+    "330": {"cycle": "raza_outdoor", "ambient": {"pollen": 1, "fireflies": 1, "leaves": 1}},
+    "301": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 1.0, "base_light": 255, "outside": 10, "ambient": {"motes": 1}},
+    "302": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.5, "base_light": 164, "outside": 5, "ambient": {"motes": 1}},
+    "303": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.5, "base_light": 164, "outside": 5, "ambient": {"motes": 1}},
+    "304": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.5, "base_light": 164, "outside": 5, "ambient": {"motes": 1}},
+    "305": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.5, "base_light": 164, "outside": 5, "ambient": {"motes": 1}},
+    "306": {"cycle": "raza_crypt", "kind": "underground", "sun": false, "daylight": 0.0, "lamps": "always", "base_light": 124, "outside": 0, "weather_zone": 0, "ambient": {"motes": 0.6}},
+    "331": {"cycle": "raza_outdoor", "weather_zone": 4, "weather_mask": "DEFAULT", "ambient": {"pollen": 1, "fireflies": 1, "leaves": 0.5}},
+    "307": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.5, "base_light": 164, "outside": 5, "ambient": {"motes": 1}},
+    "308": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.5, "base_light": 164, "outside": 5, "ambient": {"motes": 1}},
+    "332": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.3, "base_light": 164, "outside": 3, "ambient": {"motes": 1}},
+    "333": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.3, "base_light": 164, "outside": 3, "ambient": {"motes": 1}}
+  },
+  "atmosphere": {
+    "_doc": "Phase 5 (docs/adr/0005; UMREnvironmentSubsystem::AtmosphereFor). night_deg: the sun's elevation (degrees) below which it's full night and above which full day (MPC_Environment.Night: fireflies, moths, smoke). seasons: tint per season [spring, summer, fall, winter] on foliage and grass (materials.json \"seasons\"; summer is the original), and winter_snow_cover, snow that lies outdoors all winter where winter storms bring snow (0: off; 0.12, an even dusting, read as pale sand in look-dev p5b_winter_17; the original has none; keep below the pond's 0.15 so it doesn't ice over without a storm). smoke: how thickly the chimneys smoke (0..1): base, plus morning over morning_hours [rising from, full, full until, gone by], plus night x Night, plus winter; times 1 - storm x the storm. ambient: per kind, the share by season [spring, summer, fall, winter], when (day, night, always) and storm (the share a full storm takes away outdoors; negative brings more); the zone profiles' \"ambient\" say which kinds show where. The look of each (sizes, colours, counts): materials.json \"atmosphere\".",
+    "night_deg": [-4, 6],
+    "seasons": {"tint": [1, 0, 1, 1], "winter_snow_cover": 0},
+    "smoke": {"base": 0.45, "morning": 0.35, "morning_hours": [4, 6, 9, 11], "night": 0.1, "winter": 0.35, "storm": 0.6},
+    "ambient": {
+      "motes": {"seasons": [1, 1, 1, 1], "when": "always"},
+      "pollen": {"seasons": [1, 0.7, 0.2, 0], "when": "day", "storm": 1},
+      "fireflies": {"seasons": [0.4, 1, 0.3, 0], "when": "night", "storm": 1},
+      "leaves": {"seasons": [0.15, 0.25, 1, 0.05], "when": "always", "storm": -1}
+    }
+  },
+  "weather": {
+    "_doc": "Weather (docs/adr/0005 phase 4). The server rolls a storm per weather zone each game day (15%, kod settings.kod piStormChance; AMRGameState). On the client a storm builds over build_seconds and clears over clear_seconds; the zone's state blends toward the overlay mood in \"storm\" for its kind (rain or snow by season and the zone's weather_mask; \"interior\" for buildings, which only lose window daylight). Overlay moods name only what changes: a number or array replaces, {\"mul\": x} multiplies and {\"add\": x} adds (per component for arrays; the base mood must have the field, so it blends back when the storm clears), and \"CloudMaterial\" sets the clouds' material parameters. Outdoors the ground gets wet over wet_seconds and dries over dry_seconds (MPC_Environment.Wetness), or white over snow_seconds and melts over melt_seconds (SnowCover); the wind (MPC Wind) goes from wind_clear to wind_storm. Rainstorms bring lightning every min_seconds..max_seconds: the \"Lightning\" light flashes to lux outdoors, and the windows by window_flash inside.",
+    "build_seconds": 90,
+    "clear_seconds": 120,
+    "wet_seconds": 180,
+    "dry_seconds": 600,
+    "snow_seconds": 300,
+    "melt_seconds": 900,
+    "wind_clear": 1.0,
+    "wind_storm": 2.5,
+    "storm": {"rain": "storm_rain", "snow": "storm_snow", "sand": "storm_sand", "interior": "storm_interior"},
+    "lightning": {"min_seconds": 8, "max_seconds": 30, "lux": 1.5, "window_flash": 2.0, "bolt_distance_m": 2200, "bolt_height_m": 900},
+    "sounds": {"_doc": "The original client's sounds (resource/<name>.ogg), imported by build_world.py: rain and wind loop with the storm (muffled inside), thunder follows each lightning stroke. follow_mask: true plays them only where the zone's weather_mask has the sound bit, as the original did (Raza's DEFAULT_NS has none: its rain was silent); false plays them everywhere a storm is.", "rain": "rain", "wind": "Rs_wind", "thunder": "thunderclap", "follow_mask": false}
+  },
   "moods": {
+    "storm_rain": {
+      "_doc": "Overlay for a rainstorm (blended in by the storm's strength): overcast - the sun mostly gone, a dimmer sky, thick low clouds - grey rain haze close in, colours washed out, and an exposure that keeps the storm dark.",
+      "Sun": {"intensity": {"mul": 0.12}, "volumetric_scattering_intensity": {"mul": 0.3}, "atmosphere_sun_disk_color_scale": {"mul": [0.0, 0.0, 0.0, 1.0]}},
+      "SkyLight": {"intensity": {"mul": 0.65}},
+      "HeightFog": {"fog_density": {"mul": 3.0}, "fog_height_falloff": {"mul": 0.6}, "start_distance": 0, "fog_inscattering_luminance": {"mul": [0.75, 0.8, 0.9, 1.0]}, "directional_inscattering_luminance": {"mul": 0.15}},
+      "CloudMaterial": {"Cloud_GlobalCoverage": {"mul": 2.2}, "Cloud_GlobalDensity": {"mul": 2.0}},
+      "GlobalPostProcess": {"settings": {"auto_exposure_bias": {"add": -0.6}, "color_saturation": {"mul": [0.78, 0.8, 0.84, 1.0]}, "color_contrast": {"mul": [0.95, 0.95, 0.95, 1.0]}}}
+    },
+    "storm_snow": {
+      "_doc": "Overlay for a snowstorm: a white, flat light - the sun dimmed, a brighter sky fill than rain, whiter haze, soft contrast.",
+      "Sun": {"intensity": {"mul": 0.25}, "volumetric_scattering_intensity": {"mul": 0.5}, "atmosphere_sun_disk_color_scale": {"mul": [0.0, 0.0, 0.0, 1.0]}},
+      "SkyLight": {"intensity": {"mul": 0.85}},
+      "HeightFog": {"fog_density": {"mul": 2.5}, "fog_height_falloff": {"mul": 0.6}, "start_distance": 0, "fog_inscattering_luminance": {"mul": [1.0, 1.03, 1.08, 1.0]}, "directional_inscattering_luminance": {"mul": 0.3}},
+      "CloudMaterial": {"Cloud_GlobalCoverage": {"mul": 2.0}, "Cloud_GlobalDensity": {"mul": 1.6}},
+      "GlobalPostProcess": {"settings": {"auto_exposure_bias": {"add": -0.3}, "color_saturation": {"mul": [0.8, 0.82, 0.86, 1.0]}, "color_contrast": {"mul": [0.94, 0.94, 0.94, 1.0]}}}
+    },
+    "storm_sand": {
+      "_doc": "Overlay for a sandstorm (desert masks only; not in Raza): a dim, ochre, dusty light - the sun dimmed and hidden, thick low brown haze, warm washed-out colours.",
+      "Sun": {"intensity": {"mul": 0.3}, "atmosphere_sun_disk_color_scale": {"mul": [0.0, 0.0, 0.0, 1.0]}},
+      "SkyLight": {"intensity": {"mul": 0.75}},
+      "HeightFog": {"fog_density": {"mul": 4.0}, "fog_height_falloff": {"mul": 0.8}, "start_distance": 0, "fog_inscattering_luminance": {"mul": [1.25, 0.95, 0.62, 1.0]}, "directional_inscattering_luminance": {"mul": [1.4, 1.0, 0.6, 1.0]}},
+      "CloudMaterial": {"Cloud_GlobalCoverage": {"mul": 1.6}},
+      "GlobalPostProcess": {"settings": {"auto_exposure_bias": {"add": -0.3}, "color_saturation": {"mul": [0.85, 0.8, 0.7, 1.0]}, "color_gain_highlights": {"mul": [1.06, 1.0, 0.88, 1.0]}}}
+    },
+    "storm_interior": {
+      "_doc": "Overlay for a building in a storm: less daylight through the windows (lightning still flashes them).",
+      "Collection": {"WindowDaylight": {"mul": 0.35}}
+    },
     "raza_afternoon": {
+      "_exposure_doc": "Fixed exposure (min = max), as inside: the camera never adapts (and switches between moods at once: adaptation speed 100, else a fixed exposure still eases to the next value), so walking up to a wall or out of a building doesn't fade the light (2026-10-06, the user). Each key mood names its EV, chosen by bracketing against what auto exposure had settled on in wide views (look-dev mood_zz_ev_*, ev_*.png): afternoon -0.7, morning -1.2, dusk -2.5, night -5.7, each a little brighter than the match to soften close shade; the cycle blends them by hour.",
       "_doc": "Late-afternoon sun raking across the Hall's long facades from the south-west, warm key against a cooler sky fill, light haze for depth. Shade floor: lumen_skylight_leaking keeps occluded corners from going black, local exposure lifts deep shade without flattening the sunlit areas; lamps and braziers (props.json) add warm pools.",
       "Sun": {
         "rotation": [
@@ -17,10 +135,12 @@
         "light_source_angle": 1.2,
         "contact_shadow_length": 0.05,
         "cast_shadows_on_clouds": true,
+        "atmosphere_sun_disk_color_scale": [1.0, 1.0, 1.0, 1.0],
         "volumetric_scattering_intensity": 1.0
       },
       "SkyLight": {
         "intensity": 1.4,
+        "volumetric_scattering_intensity": 1.0,
         "lower_hemisphere_is_black": false,
         "lower_hemisphere_color": [
           0.11,
@@ -55,8 +175,10 @@
       "GlobalPostProcess": {
         "settings": {
           "auto_exposure_method": "AEM_HISTOGRAM",
-          "auto_exposure_min_brightness": -3.0,
-          "auto_exposure_max_brightness": 3.0,
+          "auto_exposure_min_brightness": -0.7,
+          "auto_exposure_max_brightness": -0.7,
+          "auto_exposure_speed_up": 100.0,
+          "auto_exposure_speed_down": 100.0,
           "auto_exposure_bias": -0.3,
           "bloom_intensity": 0.45,
           "bloom_threshold": 1.0,
@@ -100,7 +222,7 @@
       }
     },
     "raza_morning": {
-      "_doc": "Early morning: low sun from the east-south-east, cool and hazy, mist in the low ground; long soft shadows across the square.",
+      "_doc": "Early morning: low sun from the east-south-east, cool and hazy, a thin ground mist (fog dense near the ground, falling off fast with height, clear for the first 12 m; forward-scattering toward the sun) that softens the distance without hiding anything; long soft shadows across the square. Mist chosen 2026-10-05 over a fuller haze (look-dev mood_raza_morning_fogA/fogB).",
       "inherit": "raza_afternoon",
       "Sun": {
         "rotation": [
@@ -114,9 +236,11 @@
         "intensity": 1.5
       },
       "HeightFog": {
-        "fog_density": 0.06,
-        "fog_height_falloff": 0.45,
-        "start_distance": 800,
+        "fog_density": 0.12,
+        "fog_height_falloff": 0.9,
+        "start_distance": 1200,
+        "fog_max_opacity": 0.65,
+        "volumetric_fog_scattering_distribution": 0.75,
         "fog_inscattering_luminance": [
           0.5,
           0.55,
@@ -132,6 +256,8 @@
       },
       "GlobalPostProcess": {
         "settings": {
+          "auto_exposure_min_brightness": -1.2,
+          "auto_exposure_max_brightness": -1.2,
           "color_gain_highlights": [
             1.0,
             1.0,
@@ -180,15 +306,101 @@
       },
       "GlobalPostProcess": {
         "settings": {
-          "auto_exposure_bias": 0.0
+          "auto_exposure_bias": 0.0,
+          "auto_exposure_min_brightness": -2.5,
+          "auto_exposure_max_brightness": -2.5
         }
       },
       "Collection": {
-        "WindowGlow": 0.12
+        "WindowGlow": 0.09,
+        "Stars": 0.2
+      }
+    },
+    "raza_interior_day": {
+      "_doc": "Inside a Raza building by day: no sun (the zone profile turns it off), the room's own lights, the painted windows lit with daylight (Collection WindowDaylight, scaled by the zone's daylight), a warm ambient floor so corners away from the lights stay readable (Lumen skylight leaking, tinted warm, over the sky light's constant lower hemisphere), a dusty haze that only the room's lights show up in (volumetric fog at density 0.3 with a near-black warm fog colour and the sky light mostly out of it: warm glows around the lamps, torches and candles, no grey veil; chosen 2026-10-05 from mood_zz_haze_* in look-dev, docs/adr/0005 \"Hazy interiors\"), and a fixed exposure (EV -1, chosen by bracketing: mood_raza_interior_day_ev*), as the original renders at a fixed brightness: the room light itself dims at night instead of the camera adapting it away.",
+      "inherit": "raza_afternoon",
+      "SkyLight": {
+        "intensity": 1.0,
+        "volumetric_scattering_intensity": 0.15,
+        "lower_hemisphere_is_black": false,
+        "lower_hemisphere_color": [0.1, 0.075, 0.05, 1.0]
+      },
+      "HeightFog": {
+        "fog_density": 0.3,
+        "start_distance": 0,
+        "fog_inscattering_luminance": [0.012, 0.009, 0.006, 1.0],
+        "volumetric_fog_scattering_distribution": 0.4,
+        "volumetric_fog_extinction_scale": 1.0
+      },
+      "GlobalPostProcess": {
+        "settings": {
+          "auto_exposure_min_brightness": -1.0,
+          "auto_exposure_max_brightness": -1.0,
+          "auto_exposure_bias": 0.0,
+          "lumen_skylight_leaking": 0.3,
+          "lumen_skylight_leaking_tint": [1.0, 0.82, 0.65, 1.0],
+          "bloom_intensity": 0.6,
+          "vignette_intensity": 0.4
+        }
+      },
+      "Collection": {
+        "WindowGlow": 0.0,
+        "WindowDaylight": 1.0,
+        "Stars": 0.0,
+        "SectorAmbient": 1.0,
+        "AmbientTint": [1.0, 0.86, 0.7]
+      }
+    },
+    "raza_interior_night": {
+      "_doc": "Inside a Raza building at night: the windows dark, the room lit by its own lights over a dimmer warm ambient floor, exposure allowed to go darker.",
+      "inherit": "raza_interior_day",
+      "SkyLight": {
+        "lower_hemisphere_color": [0.06, 0.042, 0.026, 1.0]
+      },
+      "GlobalPostProcess": {
+        "settings": {
+          "auto_exposure_min_brightness": -1.3,
+          "auto_exposure_max_brightness": -1.3,
+          "auto_exposure_bias": 0.0,
+          "lumen_skylight_leaking": 0.25
+        }
+      },
+      "Collection": {
+        "WindowDaylight": 0.0
+      }
+    },
+    "raza_crypt": {
+      "_doc": "The Mausoleum (ADR 0003 mood target: cold, high contrast, torch-lit): no daylight, a cold dim ambient floor, a faint cold mist that the torches and braziers glow in (the interiors' haze), desaturated cool grading with strong contrast; braziers and lights give the warm pools.",
+      "inherit": "raza_interior_night",
+      "SkyLight": {
+        "lower_hemisphere_color": [0.03, 0.036, 0.048, 1.0]
+      },
+      "HeightFog": {
+        "fog_density": 0.3,
+        "fog_height_falloff": 0.02,
+        "fog_inscattering_luminance": [0.01, 0.013, 0.02, 1.0],
+        "directional_inscattering_luminance": [0.0, 0.0, 0.0, 1.0]
+      },
+      "GlobalPostProcess": {
+        "settings": {
+          "auto_exposure_min_brightness": 0.0,
+          "auto_exposure_max_brightness": 0.0,
+          "auto_exposure_bias": 0.0,
+          "lumen_skylight_leaking": 0.2,
+          "lumen_skylight_leaking_tint": [0.7, 0.82, 1.0, 1.0],
+          "color_saturation": [0.82, 0.82, 0.82, 1.0],
+          "color_contrast": [1.15, 1.15, 1.15, 1.0],
+          "color_gain_shadows": [0.88, 0.95, 1.12, 1.0],
+          "color_gain_highlights": [1.06, 1.0, 0.92, 1.0]
+        }
+      },
+      "Collection": {
+        "WindowDaylight": 0.0,
+        "AmbientTint": [0.72, 0.82, 1.0]
       }
     },
     "raza_night": {
-      "_doc": "Night: cool moonlight from the south-east, the town lit by its lamps, braziers and glowing windows; exposure allowed to go dark but kept below full adaptation so night reads as night.",
+      "_doc": "Night: cool moonlight (moods.json sky), the town lit by its lamps, braziers and glowing windows; a sky-light fill (intensity 1.0, skylight leaking 0.18; 2026-10-06, after the zone meshes got two-sided distance fields and Lumen could light walls with the sky at all: night_fill2.png) keeps shade readable instead of black; exposure allowed to go dark but kept below full adaptation so night reads as night.",
       "inherit": "raza_afternoon",
       "Sun": {
         "rotation": [
@@ -200,7 +412,7 @@
         "light_source_angle": 0.6
       },
       "SkyLight": {
-        "intensity": 0.35,
+        "intensity": 1.0,
         "lower_hemisphere_color": [
           0.02,
           0.02,
@@ -225,8 +437,8 @@
       },
       "GlobalPostProcess": {
         "settings": {
-          "auto_exposure_min_brightness": -9.0,
-          "auto_exposure_max_brightness": -4.0,
+          "auto_exposure_min_brightness": -5.7,
+          "auto_exposure_max_brightness": -5.7,
           "auto_exposure_bias": -0.8,
           "bloom_intensity": 0.8,
           "color_saturation": [
@@ -247,11 +459,12 @@
             0.9,
             1.0
           ],
-          "lumen_skylight_leaking": 0.05
+          "lumen_skylight_leaking": 0.18
         }
       },
       "Collection": {
-        "WindowGlow": 0.35
+        "WindowGlow": 0.26,
+        "Stars": 1.0
       }
     }
   }

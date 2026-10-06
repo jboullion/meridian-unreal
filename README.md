@@ -5,6 +5,8 @@ This is a free fan remaster of Meridian 59, built on the Server 104 ruleset, usi
 - **Decisions:** [docs/adr/0001-engine-and-architecture.md](docs/adr/0001-engine-and-architecture.md)
 - **Findings from the original data** (scale, zone layout, missing assets): [docs/findings.md](docs/findings.md)
 - **Environment art pipeline** (terrain, buildings, materials, lighting): [docs/adr/0003-environment-art-pipeline.md](docs/adr/0003-environment-art-pipeline.md)
+- **Time of day, weather and atmosphere** (day/night, interiors, fire, weather): [docs/adr/0005-time-weather-and-atmosphere.md](docs/adr/0005-time-weather-and-atmosphere.md)
+- **Audio** (the original's music, ambience and sounds, then more): [docs/adr/0006-audio.md](docs/adr/0006-audio.md)
 - **Characters** (appearance system, MetaHumans, first person): [docs/characters.md](docs/characters.md)
 - **Hosting** (game server, Supabase, costs): [docs/adr/0004-hosting-and-operations.md](docs/adr/0004-hosting-and-operations.md)
 
@@ -48,10 +50,10 @@ blender -b --factory-startup -P tools/blender/render_glb.py -- build/zones/300_R
 
 Run `bgf2png` before `roo2gltf` so the blockouts pick up the real texture sizes for UV tiling and for walls that shouldn't tile vertically.
 
-Environment art for the world build (see [ADR 0003](docs/adr/0003-environment-art-pipeline.md), "Raza look-dev"):
+Environment art for the world build. The step-by-step recipe for a zone (current defaults, workflow, tools, pitfalls) is the `zone-environment` skill in [.claude/skills/zone-environment/](.claude/skills/zone-environment/SKILL.md). The experiments and decisions behind it are in [ADR 0003](docs/adr/0003-environment-art-pipeline.md).
 
 ```bash
-powershell -File tools/textures/setup_ai.ps1                                  # once: Real-ESRGAN + Marigold environment (build/texai/, ~5 GB)
+powershell -File tools/textures/setup_ai.ps1                                  # once: upscaler models + Marigold environment (build/texai/, ~5 GB)
 python tools/textures/make_placeholders.py                                   # textures (Real-ESRGAN), Marigold height/normal maps, macro noise (incremental; --force)
 blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 # rebuilt buildings (the Hall) -> build/environment/
 blender -b --factory-startup -P tools/blender/build_grass_kit.py              # grass tufts -> build/environment/kit/
@@ -113,6 +115,12 @@ python tools/lookdev/profile_report.py mytest
 | `Tests/MRScreenshotTour`, `Tests/MRProfileTour` | `-MRScreenshots` visual check and `-MRProfile` character cost measurement |
 | `Tests/MRLookDevTour` | `-MRLookDev` environment captures from fixed cameras; console `MRBookmark <name>` logs a new camera |
 | `Environment/MRScatterActor` | Instanced decoration (grass tufts) placed by the world build |
+| `Environment/MRGameTimeSubsystem` | Meridian game time from UTC (2-hour days), the original's day phases, brightness and seasons; drives the clock faces |
+| `Environment/MREnvironmentSubsystem` | Client-side day/night director: blends `moods.json` by hour, sun and moon, lamps, stars ([ADR 0005](docs/adr/0005-time-weather-and-atmosphere.md)) |
+| `Audio/MRAudioSubsystem` | Client-side sound: the original's music, room loops and periodic sounds per zone, the original's attenuation and settings ([ADR 0006](docs/adr/0006-audio.md)) |
+| `Environment/MRWeather`, `Game/MRGameState` | The original's weather rules (daily storm rolls per weather zone, masks, seasons) and their replicated state ([ADR 0005](docs/adr/0005-time-weather-and-atmosphere.md)) |
+| `Environment/MRPrecipitationActor` | Rain and snow around the camera: a mesh of tiny quads the material moves on the GPU |
+| `Environment/MRFireActor`, `MRFireSubsystem` | Fires from the world build (flame sprite of the original frames + light); the subsystem flickers the lights, culls them by distance and gives the nearest 4 shadows |
 
 ### Zone streaming
 
@@ -138,8 +146,10 @@ The game reads `data/zones.json` and `data/zone_layout.json` directly from the r
 - **`tools/blender/build_grass_kit.py`**: grass tuft meshes for the ground scatter.
 - **`tools/blender/build_prop_kit.py`**: meshes for Kod-placed objects listed in `data/environment/props.json` (lamp posts, braziers), spawned with their lights by the world build.
 - **`tools/environment/`**: shared pure-Python helpers: blockout glb reading and the rebuilt-face selection (`blockout.py`), facade outlines with an overlay per texture and a one-image review sheet of every opening (`facades.py`, writes `build/environment/facade_check/`), and seeded ground scatter (`scatter.py`).
-- **`tools/textures/make_placeholders.py`**: textures from the originals. Base colour is upscaled with an AI model chosen by texture name (`ESRGAN_RULES`: Real-ESRGAN `realesrgan-x4plus`, and `-x4plus-anime` for signs). Any 4x model from openmodeldb saved as `build/texai/models/<name>.safetensors` also works (`tools/textures/upscale.py`); `--esrgan-model <name>` applies one model to everything, and `tools/lookdev/upscaler_test.ps1` compares models in-engine. Upscales are cached in `build/texai/upscaled/`. Height and normal maps come from Marigold (`ai_maps.py --apply`), and from rules by brightness and texture name when the AI tools aren't installed. It also makes the macro-variation noise. Both steps are incremental.
+- **`tools/textures/make_placeholders.py`**: textures from the originals. Base colour is upscaled with `4xTextures_GTAV_rgt-s_dither` (`ESRGAN_MODEL`; Real-ESRGAN `realesrgan-x4plus` when its weights aren't installed). Any 4x model from openmodeldb saved as `build/texai/models/<name>.safetensors` also works (`tools/textures/upscale.py`); `--esrgan-model <name>` applies one model to everything, and `tools/lookdev/upscaler_test.ps1` compares models in-engine. Upscales are cached in `build/texai/upscaled/`. Height and normal maps come from Marigold (`ai_maps.py --apply`), and from rules by brightness and texture name when the AI tools aren't installed. It also makes the macro-variation noise. Both steps are incremental.
 - **`tools/textures/ai_maps.py`**: height and normal maps from learned models (DeepBump, Marigold normals, Depth Anything V2) for comparison with `make_placeholders.py`'s. It runs in its own environment, `build/texai/.venv` (PyTorch CUDA, diffusers, onnxruntime, DeepBump cloned into `build/texai/DeepBump`). `--sheet` draws a per-texture comparison. `tools/lookdev/ai_maps_test.ps1` swaps each method into the world and captures look-dev images.
+- **`Environment/MREnvironmentSubsystem`** (C++): the day/night cycle in game: blends the moods in `data/environment/moods.json` by game hour, moves the sun and moon, switches the lamps and lights the stars (ADR 0005). `tools/lookdev/cycle_test.ps1` captures fixed hours; `run_lookdev.ps1 -GameHour <h>` / `-Mood <name>` pin one. Torches, braziers and candles burn with the original flames and flicker (`data/environment/props.json` "fires", ADR 0005 phase 3). Storms follow the original's daily rolls: rain or snow by season, wet or snowy ground with puddles, ripples and splashes, ice on the pond, lightning with distant bolts and the original's rain, wind and thunder sounds (phase 4; `run_lookdev.ps1 -Weather storm -Season 3` for snow). Chimneys smoke, moths circle the lamps at night, dust motes, pollen, fireflies and falling leaves drift by zone and hour, and the foliage and grass turn with the season (phase 5; `run_lookdev.ps1 -Season 2` for autumn).
+- **`Audio/MRAudioSubsystem`** (C++): the original's music, room loops and random ambient sounds per zone, from `data/audio/` (`python tools/audio/extract_audio.py` reads them from the Kod; `build_world.ps1` imports the original client's files). `run_lookdev.ps1 -Audio 12` records each camera's mix, and `python tools/audio/audio_report.py <label>` draws it ([ADR 0006](docs/adr/0006-audio.md)).
 - **`tools/ue/zone_mood.py`**, **`tools/ue/run_lookdev.ps1`**, **`tools/lookdev/compare.py`**: lighting moods from `data/environment/moods.json`, and the look-dev capture and comparison loop.
 - **`tools/blender/install_mpfb_packs.py`**: installs MakeHuman asset packs (zips) into Blender's MPFB extension.
 - **`tools/blender/mpfb_character.py`**: builds a MakeHuman character kit on the UE5 mannequin skeleton: one body mesh with head-slider morph targets, hairstyles, textures and a manifest. Settings live in `tools/blender/characters/*.json`.

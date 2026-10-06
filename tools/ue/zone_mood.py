@@ -90,15 +90,20 @@ def _apply_collection(values):
         log("WARNING: no %s (build_world.py makes it)" % MPC_PATH)
         return
     params = list(mpc.get_editor_property("scalar_parameters"))
+    vectors = list(mpc.get_editor_property("vector_parameters"))
     by_name = {str(p.get_editor_property("parameter_name")): p for p in params}
+    by_name_v = {str(p.get_editor_property("parameter_name")): p for p in vectors}
     for name, value in values.items():
         if name.startswith("_"):
             continue
-        if name not in by_name:
+        if isinstance(value, list) and name in by_name_v:
+            by_name_v[name].set_editor_property("default_value", unreal.LinearColor(*(list(value) + [1.0] * (4 - len(value)))))
+        elif not isinstance(value, list) and name in by_name:
+            by_name[name].set_editor_property("default_value", float(value))
+        else:
             log("WARNING: MPC_Environment has no %s" % name)
-            continue
-        by_name[name].set_editor_property("default_value", float(value))
     mpc.set_editor_property("scalar_parameters", params)
+    mpc.set_editor_property("vector_parameters", vectors)
     unreal.EditorAssetLibrary.save_loaded_asset(mpc)
 
 

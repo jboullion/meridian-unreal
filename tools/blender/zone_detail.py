@@ -328,7 +328,12 @@ def cutout_solid(out, wall, grd, thickness, add_face_st, ups, tol=0.75):
                 built = False
                 for tri in tris:
                     piece = clip_convex([wall.st_of_px(p, ku, kv) for p in tri], clip)
-                    if len(piece) >= 3 and abs(_signed_area(piece)) > 1e-7:
+                    # a repeat that only touches the wall's edge (a wall exactly one texture tall:
+                    # the next repeat starts on its top edge) clips to pieces with no height; built,
+                    # they showed as a thin line of side faces along the top of a fence
+                    if (len(piece) >= 3 and abs(_signed_area(piece)) > 1e-7
+                            and max(p.y for p in piece) - min(p.y for p in piece) > 0.002
+                            and max(p.x for p in piece) - min(p.x for p in piece) > 0.002):
                         add_face_st(out, wall, [piece], half, mat, wall.n)
                         add_face_st(out, wall, [piece], -half, mat, -wall.n)
                         built = True

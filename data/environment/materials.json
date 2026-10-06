@@ -5,9 +5,9 @@
   "normals": true,
   "displacement": false,
   "flat_openings": true,
-  "rules_for": "roof",
+  "rules_for": "roof|RAZ-GRASSTONE PATH|RAZ-STONEPATH|Path Generic|rockgrnd",
   "flat": "sign|door|w/ ?dr|gate|win|glass|picture|tapestry|carpet|clock|tower|razmus|shelf|cab|frnt|weapons|torch",
-  "_doc": "Relief from the height maps (T_<grd>_N/_H, Marigold) by texture. normals: normal maps on, except textures with painted windows or doors (facades.json openings, when flat_openings) and names matching flat (painted doors, gates, windows, pictures, signs, clocks that facades.json doesn't describe): inferred relief reads wrong on those. displacement: Nanite displacement (and the zone-art displacement grid). rules_for: names that keep make_placeholders.py's rule-based maps instead of Marigold's (Marigold gives roofs nearly flat normals; the rules give them relief that follows the painted strokes). true / false for the whole value switches both. 2026-10-05: normals on plain walls, roofs and ground; no displacement (see docs/adr/0003)."
+  "_doc": "Relief from the height maps (T_<grd>_N/_H, Marigold) by texture. normals: normal maps on, except textures with painted windows or doors (facades.json openings, when flat_openings) and names matching flat (painted doors, gates, windows, pictures, signs, clocks that facades.json doesn't describe): inferred relief reads wrong on those. displacement: Nanite displacement (and the zone-art displacement grid). rules_for: names that keep make_placeholders.py's rule-based maps instead of Marigold's (Marigold gives roofs nearly flat normals; the rules give them relief that follows the painted strokes; the path, stone-path and rocky-ground floors use the rules' domed stones, chosen 2026-10-05 from tools/lookdev/ground_normals_test.ps1). true / false for the whole value switches both. 2026-10-05: normals on plain walls, roofs and ground; no displacement (see docs/adr/0003)."
  },
  "grime": {
   "enabled": true,
@@ -23,10 +23,12 @@
   "_doc": "Material parameter overrides for <grd>__<variant> slots (written by tools/blender/build_zone_art.py): glass = stained glass panels at the back of a cut recess, pane = flush window glazing when facades.json cut_openings is false (glossy like glass with flat normals; displaced with the wall, DisplacementStrength inherited, but make_placeholders.py flattens the height inside painted windows so the glass stays flat), panel = door leaves, solid = cut-out originals rebuilt as solid geometry (merlons).",
   "pane": {
    "Roughness": 0.18,
+   "Specular": 0.5,
    "NormalStrength": 0.0
   },
   "glass": {
    "Roughness": 0.18,
+   "Specular": 0.5,
    "NormalStrength": 0.35,
    "DisplacementStrength": 0.0
   },
@@ -87,7 +89,7 @@
   "grd09629": 0.5
  },
  "ground": {
-  "_doc": "Floors drawn with the world-aligned ground master instead of the blockout UVs: the original texture at two scales blended by macro noise (breaks up tiling), tinted by the macro noise. tile_m = the original repeat size (floors tile once per 2.2 m grid square in the original client, whatever the texture's size).",
+  "_doc": "Floors drawn with the world-aligned ground master instead of the blockout UVs: the original texture at two scales blended by macro noise (breaks up tiling), tinted by the macro noise. tile_m = the original repeat size (floors tile once per 2.2 m grid square in the original client, whatever the texture's size). normal_strength: the normal map's strength on that floor (default M_Ground's 0.8). large_normal_scale: extra strength for the large-scale layer, whose relief is stretched 2.73x and comes out flatter (default 1.5; 2.73 makes the big stones as steep as the small).",
   "grd02306": {
    "tile_m": 2.2
   },
@@ -95,17 +97,21 @@
    "tile_m": 2.2
   },
   "grd09603": {
-   "tile_m": 2.2
-  },
+      "tile_m": 2.2,
+      "normal_strength": 1.0
+    },
   "grd09604": {
-   "tile_m": 2.2
-  },
+      "tile_m": 2.2,
+      "normal_strength": 1.0
+    },
   "grd03811": {
-   "tile_m": 2.2
-  },
+      "tile_m": 2.2,
+      "normal_strength": 1.0
+    },
   "grd09629": {
-   "tile_m": 2.2
-  }
+      "tile_m": 2.2,
+      "normal_strength": 1.0
+    }
  },
  "grass": {
   "_doc": "Grass tuft colours (sRGB), sampled from the original grass texture (grd02306): its middle fifth at the root, a little above its lightest fifth at the tip. Wind: base sway `wind` at `wind_speed`, scaled between `calm` and 1 by a slowly drifting gust field (`gust_cm` across).",
@@ -145,5 +151,30 @@
   "ripple_cm": 260,
   "ripple_strength": 0.5,
   "speed": 1.0
+ },
+ "precip": {
+  "_doc": "Rain and snow (M_Precip, docs/adr/0005 phase 4): fall speeds in cm/s (Fall rain, SnowFall), sideways drift per unit of MPC_Environment.Wind (WindDrift, SnowDrift), how far flakes wander (Sway, cm), streak Length and Width and Flake size (cm), and opacity. How much falls follows the storm (MPC Precip).",
+  "Fall": 1100,
+  "SnowFall": 110,
+  "WindDrift": 120,
+  "SnowDrift": 60,
+  "Sway": 35,
+  "Length": 70,
+  "Width": 1.2,
+  "Flake": 2.6,
+  "RainOpacity": 0.3,
+  "SnowOpacity": 0.9,
+  "splash": {"_doc": "Rain splashes (M_Splash): each lasts Period seconds at a random spot within Area cm of the camera, Size cm tall; Density of the quads at full rain.", "Period": 0.45, "Area": 2600, "Density": 0.5, "Size": 9, "Opacity": 0.55},
+  "bolt": {"_doc": "Distant lightning bolts (M_Bolt): emissive Brightness at the stroke's peak.", "Brightness": 40}
+ },
+ "seasons": {
+  "_doc": "The season's tint (docs/adr/0005 phase 5; MPC_Environment Spring, Autumn, Winter from the game's season): textures whose catalog name matches foliage get the Seasonal masters (environment_materials.py SEASON_HLSL), as do M_Ground and M_Grass. Only plant colours change (greens, yellow-greens): gold, orange and rust in autumn, dormant straw in winter, fresher in spring; summer is the original. The fields' wheat is orange, so it keeps its colour.",
+  "foliage": "tree|bush|hedge|ivy|vine"
+ },
+ "atmosphere": {
+  "_doc": "Phase 5 looks (docs/adr/0005). How many of each show and when: moods.json \"atmosphere\".",
+  "ambient": {"_doc": "M_Ambient around the camera: the share of SM_Precip's quads each kind may use at full amount (each kind has a quarter), sizes (cm), the leaves' fall (cm/s), opacities and colours (linear), the fireflies' glow (emissive).", "MoteShare": 0.5, "PollenShare": 0.12, "FireflyShare": 0.04, "LeafShare": 0.2, "MoteSize": 0.9, "PollenSize": 0.8, "FireflySize": 6.0, "LeafSize": 7.0, "LeafFall": 70, "MoteOpacity": 0.7, "PollenOpacity": 0.8, "FireflyGlow": 6, "MoteColor": [0.85, 0.78, 0.66], "PollenColor": [1.0, 0.9, 0.55], "FireflyColor": [0.55, 1.0, 0.12]},
+  "smoke": {"_doc": "M_Smoke, a chimney's plume: each puff lives Life seconds, rising Rise cm and bending Bend cm downwind per unit of wind, from Size0 to Size1 cm across, Opacity at full smoke (MPC Smoke), Color (linear, lit).", "Life": 14, "Rise": 650, "Bend": 420, "Size0": 70, "Size1": 420, "Opacity": 0.9, "Color": [0.4, 0.39, 0.38]},
+  "moths": {"_doc": "M_Moth around a lamp: Share of SM_Puffs' 48 quads, orbit Radius (cm), wing Size (cm), Glow (emissive x the lamp).", "Share": 0.125, "Radius": 40, "Size": 2.6, "Glow": 0.2, "Color": [0.25, 0.21, 0.16]}
  }
 }

@@ -1,0 +1,1667 @@
+{
+ "_doc": "The original's sound, from the Server-104 Kod (docs/adr/0006 phase 1a): what each demo zone plays\nand every sound the game names, so the remaster plays the same files by the same rules. See tools/audio/extract_audio.py and docs/adr/0006-audio.md.",
+ "sounds": {
+  "ambcave.ogg": {
+   "file": "ambcave.ogg",
+   "category": "loop",
+   "loop": true,
+   "used_by": [
+    "room 306"
+   ]
+  },
+  "ambcntry.ogg": {
+   "file": "ambcntry.ogg",
+   "category": "loop",
+   "loop": true,
+   "used_by": [
+    "room 300",
+    "room 330",
+    "room 331"
+   ]
+  },
+  "bank.ogg": {
+   "file": "bank.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 333"
+   ]
+  },
+  "beach.ogg": {
+   "file": "beach.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300"
+   ]
+  },
+  "bsp_atkh.ogg": {
+   "file": "bsp_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "SpiderBaby hit"
+   ]
+  },
+  "bsp_atkm.ogg": {
+   "file": "bsp_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "SpiderBaby miss"
+   ]
+  },
+  "bsp_awr.ogg": {
+   "file": "bsp_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "SpiderBaby aware"
+   ]
+  },
+  "bsp_dth.ogg": {
+   "file": "bsp_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "SpiderBaby death"
+   ]
+  },
+  "bunny_atkh.ogg": {
+   "file": "bunny_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Bunny hit",
+    "Bunny miss"
+   ]
+  },
+  "bunny_awr.ogg": {
+   "file": "bunny_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Bunny aware"
+   ]
+  },
+  "bunny_dth.ogg": {
+   "file": "bunny_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Bunny death"
+   ]
+  },
+  "cant_go_anywhere_louder.ogg": {
+   "file": "cant_go_anywhere_louder.ogg",
+   "category": "ui",
+   "loop": false,
+   "used_by": [
+    "User user_cant_go_wav_rsc"
+   ]
+  },
+  "cnt_atkh.ogg": {
+   "file": "cnt_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Centipede hit"
+   ]
+  },
+  "cnt_atkm.ogg": {
+   "file": "cnt_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Centipede miss"
+   ]
+  },
+  "cnt_awr.ogg": {
+   "file": "cnt_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Centipede aware"
+   ]
+  },
+  "cnt_dth.ogg": {
+   "file": "cnt_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Centipede death"
+   ]
+  },
+  "doropen1.ogg": {
+   "file": "doropen1.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 300 door",
+    "room 301 door",
+    "room 302 door",
+    "room 303 door",
+    "room 304 door",
+    "room 305 door",
+    "room 306 door",
+    "room 307 door",
+    "room 308 door",
+    "room 330 door",
+    "room 331 door",
+    "room 332 door",
+    "room 333 door"
+   ]
+  },
+  "down2.ogg": {
+   "file": "down2.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 306"
+   ]
+  },
+  "drop.ogg": {
+   "file": "drop.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 306"
+   ]
+  },
+  "faren.ogg": {
+   "file": "faren.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell LightningWall",
+    "spell BrambleWall",
+    "spell Sweep",
+    "spell IceWall"
+   ]
+  },
+  "farenspore822m.ogg": {
+   "file": "farenspore822m.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell SporeBurst"
+   ]
+  },
+  "farenwala822m.ogg": {
+   "file": "farenwala822m.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell FireWall",
+    "spell IllusionaryFireWall",
+    "spell SummonWeb"
+   ]
+  },
+  "fbolt.ogg": {
+   "file": "fbolt.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Lightning"
+   ]
+  },
+  "fbrit.ogg": {
+   "file": "fbrit.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Brittle"
+   ]
+  },
+  "ffirebal.ogg": {
+   "file": "ffirebal.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Fireball",
+    "spell FireStorm"
+   ]
+  },
+  "fflame.ogg": {
+   "file": "fflame.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell TouchOfFlame",
+    "spell BlastOfFire"
+   ]
+  },
+  "ffog.ogg": {
+   "file": "ffog.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell SummonFog"
+   ]
+  },
+  "fheat.ogg": {
+   "file": "fheat.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Heat",
+    "spell SandStorm",
+    "spell Freezing"
+   ]
+  },
+  "fhit1b.ogg": {
+   "file": "fhit1b.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_hit_monster_flesh1"
+   ]
+  },
+  "fhit2b.ogg": {
+   "file": "fhit2b.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_hit_monster_flesh2"
+   ]
+  },
+  "fhit3b.ogg": {
+   "file": "fhit3b.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_hit_monster_flesh3"
+   ]
+  },
+  "ficefing.ogg": {
+   "file": "ficefing.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell IcyFingers",
+    "spell ExplosiveFrost",
+    "spell Iceshard"
+   ]
+  },
+  "fireplac.ogg": {
+   "file": "fireplac.ogg",
+   "category": "loop",
+   "loop": true,
+   "used_by": [
+    "room 303"
+   ]
+  },
+  "flight.ogg": {
+   "file": "flight.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Light"
+   ],
+   "missing": true
+  },
+  "fmystic.ogg": {
+   "file": "fmystic.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell MysticTouch"
+   ]
+  },
+  "frngfir.ogg": {
+   "file": "frngfir.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell RingOfFlames"
+   ]
+  },
+  "fshatter.ogg": {
+   "file": "fshatter.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell IceNova",
+    "spell Shatter"
+   ]
+  },
+  "fwinds.ogg": {
+   "file": "fwinds.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Winds"
+   ]
+  },
+  "fzap.ogg": {
+   "file": "fzap.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Zap",
+    "spell ShockingFury"
+   ]
+  },
+  "gong.ogg": {
+   "file": "gong.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player pvp_notify_wav"
+   ]
+  },
+  "gulls.ogg": {
+   "file": "gulls.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300"
+   ]
+  },
+  "hit.ogg": {
+   "file": "hit.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_wave_hit"
+   ]
+  },
+  "imp.ogg": {
+   "file": "imp.ogg",
+   "category": "ui",
+   "loop": false,
+   "used_by": [
+    "Player player_improved_wav_rsc"
+   ]
+  },
+  "jdistill.ogg": {
+   "file": "Jdistill.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Distill"
+   ]
+  },
+  "kantimag.ogg": {
+   "file": "kantimag.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell AntiMagicAura"
+   ]
+  },
+  "kcreatef.ogg": {
+   "file": "kcreatef.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell CreateFood"
+   ]
+  },
+  "kdeflect.ogg": {
+   "file": "kdeflect.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Deflect"
+   ]
+  },
+  "kdiscord.ogg": {
+   "file": "kdiscord.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Discordance"
+   ]
+  },
+  "kdispill.ogg": {
+   "file": "kdispill.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell DispelIllusion"
+   ]
+  },
+  "keagleye.ogg": {
+   "file": "keagleye.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell EagleEyes"
+   ]
+  },
+  "kfreeact.ogg": {
+   "file": "kfreeact.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell FreeAction"
+   ]
+  },
+  "kglow.ogg": {
+   "file": "kglow.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell GlowWeapon"
+   ]
+  },
+  "khaste.ogg": {
+   "file": "khaste.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Haste"
+   ]
+  },
+  "khunt.ogg": {
+   "file": "khunt.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Hunt"
+   ]
+  },
+  "killed1.ogg": {
+   "file": "killed1.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "User user_wave_killed",
+    "User user_midi_killed"
+   ]
+  },
+  "kmbomb.ogg": {
+   "file": "kmbomb.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell ManaBomb"
+   ]
+  },
+  "kmend.ogg": {
+   "file": "kmend.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Mend"
+   ]
+  },
+  "kraanan.ogg": {
+   "file": "kraanan.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell CreateWeapon",
+    "spell ShatterLock",
+    "spell CraftMace",
+    "spell CraftAxe",
+    "spell CraftHammer",
+    "spell CraftChain",
+    "spell CraftIvyCirclet",
+    "spell CraftLeather",
+    "spell CraftNeruditeSword",
+    "spell CraftShortSword",
+    "spell CraftSmallShield",
+    "spell CraftBattleBow",
+    "spell CraftNeruditeShield",
+    "spell CraftGoldShield",
+    "spell CraftGauntlets",
+    "spell CraftHelmet",
+    "spell CraftCirclet",
+    "spell CraftScale",
+    "spell CraftLongBow",
+    "spell CraftNerudite",
+    "spell CraftKnightShield",
+    "spell CraftMysticSword",
+    "spell CraftPlate",
+    "spell CraftDaemonHelm",
+    "spell CraftGuildShield",
+    "spell CraftScimitar",
+    "spell CraftLongSword",
+    "spell CraftApparel",
+    "spell CraftMagicRobes",
+    "spell CraftPickAxe",
+    "spell CraftWoodAxe",
+    "spell CraftSickle",
+    "spell CraftSkinningKnife",
+    "spell CraftMahicSpiritHelm",
+    "spell CraftNeruditeBow",
+    "spell CraftBrawlingGloves",
+    "spell CraftKnightsHelmet",
+    "spell CraftWizardHat",
+    "spell CraftLightMagicRobes",
+    "spell CraftThornCirclet"
+   ]
+  },
+  "krelay.ogg": {
+   "file": "krelay.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Relay"
+   ]
+  },
+  "kresistp.ogg": {
+   "file": "kresistp.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell ResistPoison"
+   ]
+  },
+  "lhit1b.ogg": {
+   "file": "lhit1b.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_hit_monster_leather1"
+   ]
+  },
+  "lhit2b.ogg": {
+   "file": "lhit2b.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_hit_monster_leather2"
+   ]
+  },
+  "lhit3b.ogg": {
+   "file": "lhit3b.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_hit_monster_leather3"
+   ]
+  },
+  "lichres.ogg": {
+   "file": "lichres.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell SummonCow"
+   ]
+  },
+  "login.ogg": {
+   "file": "login.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 300",
+    "room 301",
+    "room 302",
+    "room 304",
+    "room 305",
+    "room 307",
+    "room 308"
+   ]
+  },
+  "lute_equip.ogg": {
+   "file": "lute_equip.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Truth",
+    "spell Spellbane",
+    "spell WarpTime",
+    "spell ManaConvergence",
+    "spell Jig",
+    "spell Civility",
+    "spell Conciliation",
+    "spell SacredResonance",
+    "spell ProfaneResonance",
+    "spell Disharmony",
+    "spell Invigorate",
+    "spell Restorate",
+    "spell Rejuvenate",
+    "spell Mirth",
+    "spell Melancholy"
+   ]
+  },
+  "mhit1b.ogg": {
+   "file": "mhit1b.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_hit_monster_metal1"
+   ]
+  },
+  "mhit2b.ogg": {
+   "file": "mhit2b.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_hit_monster_metal2"
+   ]
+  },
+  "mhit3b.ogg": {
+   "file": "mhit3b.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_hit_monster_metal3"
+   ]
+  },
+  "mum_atkh.ogg": {
+   "file": "mum_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Mummy hit",
+    "MummyNoTreasure hit"
+   ]
+  },
+  "mum_atkm.ogg": {
+   "file": "mum_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Mummy miss",
+    "MummyNoTreasure miss"
+   ]
+  },
+  "mum_awr2.ogg": {
+   "file": "mum_awr2.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Mummy aware",
+    "MummyNoTreasure aware"
+   ]
+  },
+  "mum_die.ogg": {
+   "file": "mum_die.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Mummy death",
+    "MummyNoTreasure death"
+   ]
+  },
+  "nec03.ogg": {
+   "file": "nec03.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 306"
+   ]
+  },
+  "necro01.ogg": {
+   "file": "necro01.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 306"
+   ]
+  },
+  "necro02.ogg": {
+   "file": "necro02.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 306"
+   ]
+  },
+  "necro03.ogg": {
+   "file": "necro03.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 306"
+   ]
+  },
+  "necro04.ogg": {
+   "file": "necro04.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 306"
+   ]
+  },
+  "necro05.ogg": {
+   "file": "necro05.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 306"
+   ]
+  },
+  "necro06.ogg": {
+   "file": "necro06.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 306"
+   ]
+  },
+  "necro07.ogg": {
+   "file": "necro07.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 306"
+   ]
+  },
+  "necro08.ogg": {
+   "file": "necro08.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 306"
+   ]
+  },
+  "necro09.ogg": {
+   "file": "necro09.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 306"
+   ]
+  },
+  "ouchf1.ogg": {
+   "file": "ouchf1.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_female_ouch1"
+   ]
+  },
+  "ouchf2.ogg": {
+   "file": "ouchf2.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_female_ouch2"
+   ]
+  },
+  "ouchf3.ogg": {
+   "file": "ouchf3.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_female_ouch3"
+   ]
+  },
+  "ouchf4.ogg": {
+   "file": "ouchf4.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_female_ouch4"
+   ]
+  },
+  "ouchm1.ogg": {
+   "file": "ouchm1.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_male_ouch1"
+   ]
+  },
+  "ouchm2.ogg": {
+   "file": "ouchm2.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_male_ouch2"
+   ]
+  },
+  "ouchm3.ogg": {
+   "file": "ouchm3.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_male_ouch3"
+   ]
+  },
+  "ouchm4.ogg": {
+   "file": "ouchm4.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_male_ouch4"
+   ]
+  },
+  "pdeath.ogg": {
+   "file": "pdeath.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player playerm_death_wav"
+   ]
+  },
+  "pdeathf.ogg": {
+   "file": "pdeathf.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player playerf_death_wav"
+   ]
+  },
+  "perc2.ogg": {
+   "file": "perc2.ogg",
+   "category": "ui",
+   "loop": false,
+   "used_by": [
+    "Player player_level_music"
+   ],
+   "missing": true
+  },
+  "player_cannot_carry.ogg": {
+   "file": "player_cannot_carry.ogg",
+   "category": "ui",
+   "loop": false,
+   "used_by": [
+    "User user_cant_pickup_item_wav_rsc"
+   ]
+  },
+  "player_login_or_out.ogg": {
+   "file": "player_login_or_out.ogg",
+   "category": "ui",
+   "loop": false,
+   "used_by": [
+    "Player player_logged_on_wav_rsc"
+   ]
+  },
+  "player_logout2.ogg": {
+   "file": "player_logout2.ogg",
+   "category": "ui",
+   "loop": false,
+   "used_by": [
+    "Player player_logged_off_wav_rsc"
+   ]
+  },
+  "poisoned.ogg": {
+   "file": "poisoned.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Poison"
+   ]
+  },
+  "qacid.ogg": {
+   "file": "qacid.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell AcidTouch",
+    "spell SplashOfAcid"
+   ]
+  },
+  "qanimate.ogg": {
+   "file": "qanimate.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Animate"
+   ]
+  },
+  "qblind.ogg": {
+   "file": "qblind.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Blind"
+   ]
+  },
+  "qcloak.ogg": {
+   "file": "qcloak.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Cloak"
+   ]
+  },
+  "qcurweap.ogg": {
+   "file": "qcurweap.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell CurseWeapon",
+    "spell UnholyTouch"
+   ]
+  },
+  "qdeathlk.ogg": {
+   "file": "qdeathlk.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell DeathLink"
+   ]
+  },
+  "qdefile.ogg": {
+   "file": "qdefile.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Defile"
+   ]
+  },
+  "qdetgood.ogg": {
+   "file": "qdetgood.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell DetectGood"
+   ]
+  },
+  "qdthdoor.ogg": {
+   "file": "qdthdoor.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell DeathsDoor",
+    "spell DeathRift"
+   ]
+  },
+  "qenfeebl.ogg": {
+   "file": "qenfeebl.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Enfeeble"
+   ]
+  },
+  "qfade.ogg": {
+   "file": "qfade.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Fade"
+   ]
+  },
+  "qinvis.ogg": {
+   "file": "qinvis.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Darkness",
+    "spell Invisibility"
+   ]
+  },
+  "qkcurse.ogg": {
+   "file": "qkcurse.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell KaraholsCurse"
+   ]
+  },
+  "qor.ogg": {
+   "file": "qor.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Nodeburst",
+    "spell SummonPoisonFog"
+   ]
+  },
+  "qparalyz.ogg": {
+   "file": "qparalyz.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Paralyze"
+   ]
+  },
+  "qshalban.ogg": {
+   "file": "qshalban.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell ShalilleBane"
+   ]
+  },
+  "qswap.ogg": {
+   "file": "qswap.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Swap"
+   ]
+  },
+  "qunbond.ogg": {
+   "file": "qunbond.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell BloodInheritance"
+   ]
+  },
+  "qvtouch.ogg": {
+   "file": "qvtouch.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell VampiricDrain"
+   ]
+  },
+  "rain.ogg": {
+   "file": "rain.ogg",
+   "category": "weather",
+   "loop": true,
+   "used_by": [
+    "weather rain"
+   ]
+  },
+  "ranonym.ogg": {
+   "file": "ranonym.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Anonymity"
+   ]
+  },
+  "rapparit.ogg": {
+   "file": "rapparit.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell SummonApparition"
+   ]
+  },
+  "rartific.ogg": {
+   "file": "rartific.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Artifice"
+   ]
+  },
+  "rat_atkh.ogg": {
+   "file": "rat_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "GiantRat hit"
+   ]
+  },
+  "rat_atkm.ogg": {
+   "file": "rat_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "GiantRat miss"
+   ]
+  },
+  "rat_awr.ogg": {
+   "file": "rat_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "GiantRat aware"
+   ]
+  },
+  "rat_dth.ogg": {
+   "file": "rat_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "GiantRat death"
+   ]
+  },
+  "rdenial.ogg": {
+   "file": "rdenial.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell denial"
+   ]
+  },
+  "rdistrac.ogg": {
+   "file": "rdistrac.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Bait"
+   ]
+  },
+  "rflash.ogg": {
+   "file": "rflash.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Flash"
+   ]
+  },
+  "rforget.ogg": {
+   "file": "rforget.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell ForgetSpell"
+   ]
+  },
+  "riija.ogg": {
+   "file": "riija.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell IllusionaryWounds",
+    "spell Eavesdrop"
+   ]
+  },
+  "riluswnd.ogg": {
+   "file": "riluswnd.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Elusion"
+   ]
+  },
+  "rmirrimg.ogg": {
+   "file": "rmirrimg.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell SummonReflection",
+    "spell SummonEvilTwin"
+   ]
+  },
+  "rmorph.ogg": {
+   "file": "rmorph.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Morph",
+    "spell TransmogrifyMonster"
+   ]
+  },
+  "rperappr.ogg": {
+   "file": "rperappr.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Seduce"
+   ]
+  },
+  "rperappr.wav": {
+   "file": "rperappr.wav",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Charm"
+   ],
+   "missing": true
+  },
+  "rs_for01.ogg": {
+   "file": "rs_for01.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300",
+    "room 330",
+    "room 331"
+   ]
+  },
+  "rs_for02.ogg": {
+   "file": "rs_for02.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300",
+    "room 330",
+    "room 331"
+   ]
+  },
+  "rs_for03.ogg": {
+   "file": "rs_for03.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300",
+    "room 330",
+    "room 331"
+   ]
+  },
+  "rs_for05.ogg": {
+   "file": "rs_for05.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300",
+    "room 330",
+    "room 331"
+   ]
+  },
+  "rs_for14.ogg": {
+   "file": "rs_for14.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300",
+    "room 330",
+    "room 331"
+   ]
+  },
+  "rs_for18.ogg": {
+   "file": "rs_for18.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300",
+    "room 330",
+    "room 331"
+   ]
+  },
+  "rs_for20.ogg": {
+   "file": "rs_for20.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300",
+    "room 330",
+    "room 331"
+   ]
+  },
+  "rs_wind.ogg": {
+   "file": "Rs_wind.ogg",
+   "category": "weather",
+   "loop": true,
+   "used_by": [
+    "weather wind"
+   ]
+  },
+  "rvertigo.ogg": {
+   "file": "rvertigo.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Vertigo"
+   ]
+  },
+  "safety_off.ogg": {
+   "file": "safety_off.ogg",
+   "category": "ui",
+   "loop": false,
+   "used_by": [
+    "User user_safety_off_wav_rsc"
+   ]
+  },
+  "safety_on.ogg": {
+   "file": "safety_on.ogg",
+   "category": "ui",
+   "loop": false,
+   "used_by": [
+    "User user_safety_on_wav_rsc"
+   ]
+  },
+  "sbond.ogg": {
+   "file": "sbond.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Bond"
+   ]
+  },
+  "sbrthlf.ogg": {
+   "file": "sbrthlf.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell BreathOfLife"
+   ]
+  },
+  "sdazzle.ogg": {
+   "file": "sDazzle.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Dazzle"
+   ]
+  },
+  "sdevil.ogg": {
+   "file": "sdevil.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell DetectEvil"
+   ]
+  },
+  "sforcelt.ogg": {
+   "file": "sforcelt.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell ForcesOfLight"
+   ]
+  },
+  "sfrites.ogg": {
+   "file": "sfrites.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell FinalRites"
+   ]
+  },
+  "shadi11m.ogg": {
+   "file": "shadI11m.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell ShadowForm"
+   ]
+  },
+  "shalille.ogg": {
+   "file": "shalille.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Truce",
+    "spell ResistAcid"
+   ]
+  },
+  "sholysym.ogg": {
+   "file": "sholysym.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell HolySymbol"
+   ]
+  },
+  "sholytch.ogg": {
+   "file": "sholytch.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell HolyTouch",
+    "spell HolyBlaze"
+   ]
+  },
+  "sident.ogg": {
+   "file": "sident.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Identify"
+   ]
+  },
+  "slitherboltwand.ogg": {
+   "file": "slitherboltwand.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Slitherbolt"
+   ]
+  },
+  "smarkdis.ogg": {
+   "file": "smarkdis.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell MarkOfDishonor"
+   ]
+  },
+  "smatbat.ogg": {
+   "file": "smatbat.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell MartyrsBattleground"
+   ]
+  },
+  "smithy.ogg": {
+   "file": "smithy.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 303",
+    "room 332"
+   ]
+  },
+  "splash.ogg": {
+   "file": "splash.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 301 wading",
+    "room 302 wading",
+    "room 303 wading",
+    "room 304 wading",
+    "room 305 wading",
+    "room 306 wading",
+    "room 307 wading",
+    "room 308 wading",
+    "room 330 wading",
+    "room 331 wading",
+    "room 332 wading",
+    "room 333 wading"
+   ]
+  },
+  "splearn.ogg": {
+   "file": "splearn.ogg",
+   "category": "ui",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_learn_spell"
+   ]
+  },
+  "sqrbane.ogg": {
+   "file": "sqrbane.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell QorBane"
+   ]
+  },
+  "sraised.ogg": {
+   "file": "sraised.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell PortalOfLife"
+   ]
+  },
+  "srescue.ogg": {
+   "file": "srescue.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Rescue"
+   ]
+  },
+  "sreveal.ogg": {
+   "file": "sreveal.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Reveal"
+   ]
+  },
+  "sseance.ogg": {
+   "file": "sseance.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell Seance"
+   ]
+  },
+  "sspham.ogg": {
+   "file": "sspham.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell CreateSpiritualHammer",
+    "spell CreateSpiritualSword"
+   ]
+  },
+  "sword1.ogg": {
+   "file": "sword1.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_sword1"
+   ]
+  },
+  "sword2.ogg": {
+   "file": "sword2.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_sword2"
+   ]
+  },
+  "sword3.ogg": {
+   "file": "sword3.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_sword3"
+   ]
+  },
+  "swordmis.ogg": {
+   "file": "swordmis.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_missed_something_wave_rsc"
+   ]
+  },
+  "swrdmtl1.ogg": {
+   "file": "swrdmtl1.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_metal1"
+   ]
+  },
+  "swrdmtl2.ogg": {
+   "file": "swrdmtl2.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_metal2"
+   ]
+  },
+  "swrdmtl3.ogg": {
+   "file": "swrdmtl3.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Player player_sound_metal3"
+   ]
+  },
+  "sws_wind.ogg": {
+   "file": "sws_wind.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300"
+   ]
+  },
+  "system_save.ogg": {
+   "file": "system_save.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "User user_saving_wav_rsc"
+   ]
+  },
+  "thunderclap.ogg": {
+   "file": "thunderclap.ogg",
+   "category": "weather",
+   "loop": false,
+   "used_by": [
+    "weather thunder"
+   ]
+  },
+  "tougher.ogg": {
+   "file": "tougher.ogg",
+   "category": "ui",
+   "loop": false,
+   "used_by": [
+    "Player player_tougher_wav_rsc"
+   ]
+  },
+  "tranport.ogg": {
+   "file": "tranport.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell DeliveranceTouch"
+   ]
+  },
+  "walk5.ogg": {
+   "file": "walk5.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 330",
+    "room 331"
+   ]
+  },
+  "wave1.ogg": {
+   "file": "wave1.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300"
+   ]
+  },
+  "wave2.ogg": {
+   "file": "wave2.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300"
+   ]
+  },
+  "wave3.ogg": {
+   "file": "wave3.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300"
+   ]
+  },
+  "wave4.ogg": {
+   "file": "wave4.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300"
+   ]
+  },
+  "weatstp1.ogg": {
+   "file": "weatstp1.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 300 wading"
+   ]
+  },
+  "welcome.ogg": {
+   "file": "welcome.ogg",
+   "category": "ui",
+   "loop": false,
+   "used_by": [
+    "User user_wave_welcome"
+   ],
+   "missing": true
+  },
+  "wfront03.ogg": {
+   "file": "wfront03.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300"
+   ]
+  },
+  "wfront05.ogg": {
+   "file": "wfront05.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 300"
+   ]
+  },
+  "wscndwnd.ogg": {
+   "file": "wscndwnd.ogg",
+   "category": "spell",
+   "loop": false,
+   "used_by": [
+    "spell CrystalizeMana"
+   ]
+  }
+ }
+}

@@ -42,10 +42,18 @@ For every texture in build/textures/catalog.json it writes, to build/textures_pl
                   wrap around the tile edges so tiling textures stay seamless. Blue is a constant: UE
                   stores normal maps as BC5 and rebuilds Z from X/Y.
   T_WaterNormal.png   tileable ripple normal map for the water material.
+  T_Stars.png         equirectangular star map for the night sky (M_NightSky, docs/adr/0005).
+  T_Bolts.png         four lightning bolts side by side, white on black, for distant strokes (M_Bolt).
+  T_Fire_<name>.png   flame flipbooks (data/environment/props.json "fires", docs/adr/0005 phase 3): the
+                      original torch, brazier and candle frames, cropped to the flame, upscaled with the
+                      base-colour model, one power-of-two cell per frame (4 per row), soft alpha.
+                      Wall textures in a preset's "walls" lose their painted flame (alpha 0 where the
+                      pixels are flame-coloured inside the "erase" rect): the flipbook replaces it.
   T_MacroNoise.png    tileable low-frequency noise (R large, G medium, B small blobs) for breaking up
                       tiling and tinting ground and grass across the world (world-aligned in UE).
   placeholders.json   per texture: file names, masked (has transparency), roughness, normal strength;
-                      "extras": shared textures (macro noise).
+                      "extras": shared textures (macro noise); "fires": per flame preset its atlas,
+                      cells, frame rate, brightness and size in metres.
 
 These are throwaway: tools/ue/build_world.py turns them into material instances under
 /Game/Generated, and data/environment/materials.json overrides any slot with a real material.
@@ -69,6 +77,9 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageStat
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "build" / "textures"
 FACADES = ROOT / "data" / "environment" / "facades.json"
+PROPS = ROOT / "data" / "environment" / "props.json"
+BGF = ROOT / "build" / "bgf"  # tools/bgf2png <name>: build/bgf/<name>/frame_NN.png + meta.json
+MATERIALS = ROOT / "data" / "environment" / "materials.json"
 OUT = ROOT / "build" / "textures_placeholder"
 
 # (name pattern, roughness, normal strength); first match wins
@@ -220,6 +231,95 @@ def macro_noise(size: int = 512, seed: int = 59) -> Image.Image:
         off = 2 * size // cells
         channels.append(big.crop((off, off, off + size, off + size)).filter(ImageFilter.GaussianBlur(size / cells / 6)))
     return Image.merge("RGB", channels)
+
+
+def bolts(cell=(256, 1024), count: int = 4, seed: int = 13) -> Image.Image:
+    """Lightning bolts for the distant strokes in rainstorms (M_Bolt, docs/adr/0005 phase 4): `count`
+    cells side by side, each a jagged channel from the top (the cloud base) to the bottom (the
+    ground) with a few forks that die out, a white core inside a soft blue-white glow, on black (the
+    material adds it to the sky)."""
+    import math
+    import random
+    rng = random.Random(seed)
+    w, h = cell
+    img = Image.new("RGB", (w * count, h))
+    for i in range(count):
+        core = Image.new("L", (w, h))
+        draw = ImageDraw.Draw(core)
+
+        def channel(x, y, angle, length, width, depth):
+            steps = int(length / 14)
+            for _ in range(steps):
+                # jagged, but the main channel is steered back towards the middle of its cell
+                pull = -(x - w / 2) / (w / 2) * (0.5 if depth == 0 else 0.15)
+                angle = max(-0.7, min(0.7, angle + rng.gauss(0, 0.45) + pull))
+                nx, ny = x + math.sin(angle) * 14, y + math.cos(angle) * 14
+                draw.line((x, y, nx, ny), fill=255, width=max(1, round(width)))
+                x, y = nx, ny
+                width = max(1.0, width * 0.995)
+                if depth < 2 and rng.random() < 0.06:
+                    channel(x, y, angle + rng.choice((-1, 1)) * rng.uniform(0.4, 0.9), length * rng.uniform(0.15, 0.35), width * 0.6, depth + 1)
+                if y >= h - 4 or (depth > 0 and not 4 <= x <= w - 4):
+                    break
+                x = max(8.0, min(w - 8.0, x))
+
+        channel(w / 2 + rng.uniform(-30, 30), 0, rng.uniform(-0.3, 0.3), h * 1.3, 4.0, 0)
+        glow = core.filter(ImageFilter.GaussianBlur(10)).point(lambda v: min(255, v * 3))
+        halo = core.filter(ImageFilter.GaussianBlur(3)).point(lambda v: min(255, v * 2))
+        r = ImageChops.add(ImageChops.add(core, halo.point(lambda v: v * 0.8)), glow.point(lambda v: v * 0.55))
+        b = ImageChops.add(ImageChops.add(core, halo), glow)
+        img.paste(Image.merge("RGB", (r, r, b)), (i * w, 0))
+    return img
+
+
+def stars(width: int = 4096, seed: int = 59) -> Image.Image:
+    """Night-sky star map, equirectangular (u = longitude, v = 0 at the zenith, 0.5 at the horizon),
+    for M_NightSky (docs/adr/0005). Mostly faint stars, a few bright and tinted ones, and a band of
+    extra faint ones along a tilted great circle for a hint of a milky way. Stars are widened towards
+    the poles so they stay round on the sky."""
+    import math
+    import random
+    rng = random.Random(seed)
+    height = width // 2
+    img = Image.new("RGB", (width, height))
+    draw = ImageDraw.Draw(img)
+    tints = [(255, 255, 255)] * 6 + [(205, 218, 255), (255, 232, 205), (255, 214, 186)]
+
+    def star(x, y, z, b):
+        z = max(-1.0, min(1.0, z))
+        lat = math.asin(z)
+        u = (math.atan2(y, x) / (2 * math.pi)) % 1.0 * width
+        v = math.acos(z) / math.pi * height
+        r = 0.35 + 0.8 * b  # about a texel: the map is seen ~1.5x magnified, plus bloom
+        rx = min(r / max(math.cos(lat), 0.05), width / 16)
+        c = tuple(round(t * b) for t in rng.choice(tints))
+        for dx in (-width, 0, width):  # wrap round the seam
+            draw.ellipse((u + dx - rx, v - r, u + dx + rx, v + r), fill=c)
+
+    def point():
+        z = rng.uniform(-1.0, 1.0)
+        a = rng.uniform(0.0, 2 * math.pi)
+        s = math.sqrt(1.0 - z * z)
+        return s * math.cos(a), s * math.sin(a), z
+
+    for _ in range(9000):
+        star(*point(), 0.18 + 0.82 * rng.random() ** 7)
+    # the band: points near a great circle (normal n), spread a little either side
+    n = (0.35, -0.6, 0.72)
+    ln = math.sqrt(sum(c * c for c in n))
+    n = tuple(c / ln for c in n)
+    a = (n[1], -n[0], 0.0)
+    la = math.sqrt(sum(c * c for c in a))
+    a = tuple(c / la for c in a)
+    b = (n[1] * a[2] - n[2] * a[1], n[2] * a[0] - n[0] * a[2], n[0] * a[1] - n[1] * a[0])
+    for _ in range(16000):
+        t = rng.uniform(0.0, 2 * math.pi)
+        off = rng.gauss(0.0, 0.11)
+        p = [a[i] * math.cos(t) + b[i] * math.sin(t) + n[i] * off for i in range(3)]
+        lp = math.sqrt(sum(c * c for c in p))
+        star(p[0] / lp, p[1] / lp, p[2] / lp, 0.08 + 0.45 * rng.random() ** 9)
+    img = img.filter(ImageFilter.GaussianBlur(0.5))
+    return img.point(lambda v: min(255, round(v * 2.0)))
 
 
 def _normalise(premul: Image.Image, weight: Image.Image) -> Image.Image:
@@ -464,7 +564,7 @@ def normal_map(height_img: Image.Image, strength: float, texel_scale: float) -> 
 def make_set(key: str, info: dict, rules: dict, scale: int, max_side: int, upscaled: str | None) -> tuple[dict, list[str]]:
     """One texture set (D, N, H and, for timber, M) -> (manifest entry, files written). `rules` holds
     what the name-based rules resolved to, so editing a rule only remakes the textures it changes."""
-    orig = source_image(key)
+    orig = erase_flame(source_image(key), rules.get("flame"))
     size = target_size(*orig.size, scale, max_side)
     masked = bool(info.get("has_transparency"))
     # cut-outs: replace the key colour before anything filters the image (see fill_cutout)
@@ -519,6 +619,152 @@ def make_set(key: str, info: dict, rules: dict, scale: int, max_side: int, upsca
     return entry, files
 
 
+def wall_flame(key: str) -> dict | None:
+    """props.json "fires" -> the preset "walls" entry for a wall texture with a painted flame (the
+    wall torches): {"at": flame centre px, "out": texture direction away from the wall, "erase": rect}."""
+    if not PROPS.exists():
+        return None
+    for name, preset in json.loads(PROPS.read_text(encoding="utf-8")).get("fires", {}).items():
+        if isinstance(preset, dict) and key in preset.get("walls", {}):
+            return dict(preset["walls"][key], preset=name)
+    return None
+
+
+def is_flame(p) -> bool:
+    """An opaque pixel painted as fire: bright red to yellow (the originals' flames), not the brown
+    torch heads, grey brackets or copper bowls next to them."""
+    r, g, b, a = p
+    return a >= 128 and r >= 150 and r - b >= 70
+
+
+def erase_flame(img: Image.Image, flame: dict | None) -> Image.Image:
+    """The original without its painted flame (props.json fires "walls" "erase": [x0, y0, x1, y1] in the
+    original's pixels): flame-coloured pixels inside the rect become transparent, so a flipbook flame
+    can take their place (docs/adr/0005 phase 3). A clock atlas is never a flame texture."""
+    if not flame or not flame.get("erase"):
+        return img
+    img = img.copy()
+    px = img.load()
+    x0, y0, x1, y1 = flame["erase"]
+    for y in range(max(0, y0), min(img.height, y1)):
+        for x in range(max(0, x0), min(img.width, x1)):
+            if is_flame(px[x, y]):
+                px[x, y] = (0, 255, 255, 0)
+    return img
+
+
+def fire_frames(preset: dict, catalog: dict) -> tuple:
+    """-> ([RGBA frame], metres per pixel) of a props.json "fires" preset: "texture": a wall texture's
+    animation frames (build/textures/<grd>_fNN.png), or "bgf" + "frames": an object's
+    (build/bgf/<name>/frame_NN.png, from tools/bgf2png/bgf2png.py <name>; none if not extracted)."""
+    if "texture" in preset:
+        key = preset["texture"]
+        info = catalog[key]
+        groups = info.get("groups") or [[i] for i in range(info["frames"])]
+        frames = [Image.open(SRC / ("%s_f%02d.png" % (key, g[0]))).convert("RGBA") for g in groups]
+        return frames, info["squares_w"] * 2.2 / info["w"]
+    folder = BGF / preset["bgf"]
+    if not (folder / "meta.json").exists():
+        return [], 0.0
+    shrink = json.loads((folder / "meta.json").read_text())["shrink"]
+    frames = [Image.open(folder / ("frame_%02d.png" % i)).convert("RGBA") for i in preset["frames"]]
+    return frames, 2.2 / 64 / shrink  # 64 fine units to a 2.2 m square, shrunk by the bitmap's shrink
+
+
+FIRE_COLS = 4  # flipbook cells per row
+FIRE_SCALE = 4
+
+
+def make_fires(catalog: dict, model: str | None, exe: Path | None) -> dict:
+    """T_Fire_<name>.png for each props.json "fires" preset -> {name: manifest entry}. The crop
+    ("crop": [x0, y0, x1, y1] in the original's pixels) keeps flame-coloured pixels only ("keep":
+    "flame", for flames drawn over a torch head or a bowl) or every opaque pixel ("keep": "all")."""
+    presets = {k: v for k, v in json.loads(PROPS.read_text(encoding="utf-8")).get("fires", {}).items()
+               if not k.startswith("_")}
+    pad = 8
+    crops = {}
+    for name, preset in list(presets.items()):
+        frames, mpp = fire_frames(preset, catalog)
+        if not frames:
+            print("fire %s: no frames (run python tools/bgf2png/bgf2png.py %s); skipped" % (name, preset.get("bgf")))
+            del presets[name]
+            continue
+        x0, y0, x1, y1 = preset["crop"]
+        out = []
+        for im in frames:
+            c = im.crop((x0, y0, x1, y1))
+            if preset.get("keep", "flame") == "flame":
+                px = c.load()
+                for y in range(c.height):
+                    for x in range(c.width):
+                        if not is_flame(px[x, y]):
+                            px[x, y] = (0, 255, 255, 0)
+            framed = Image.new("RGBA", (c.width + 2 * pad, c.height + 2 * pad), (0, 255, 255, 0))
+            framed.paste(c, (pad, pad))
+            out.append(framed)
+        crops[name] = (out, mpp)
+    # one upscale run over every frame (the base-colour model, as the textures)
+    ups = {}
+    with tempfile.TemporaryDirectory() as tmp:
+        src_dir, dst_dir = Path(tmp) / "in", Path(tmp) / "out"
+        src_dir.mkdir()
+        dst_dir.mkdir()
+        for name, (frames, _) in crops.items():
+            for i, f in enumerate(frames):
+                fill_cutout(f).save(src_dir / ("%s_%02d.png" % (name, i)))
+        if model and exe:
+            weights = MODELS_DIR / (model + ".safetensors")
+            if weights.exists() and RELIEF_PYTHON.exists():
+                cmd = [RELIEF_PYTHON, ROOT / "tools" / "textures" / "upscale.py", "--model", weights, src_dir, dst_dir]
+            else:
+                cmd = [exe, "-i", src_dir, "-o", dst_dir, "-n", model, "-s", "4", "-f", "png"]
+            subprocess.run([str(c) for c in cmd], check=True, capture_output=True)
+        for name, (frames, _) in crops.items():
+            for i, f in enumerate(frames):
+                p = dst_dir / ("%s_%02d.png" % (name, i))
+                big = (f.width * FIRE_SCALE, f.height * FIRE_SCALE)
+                rgb = (Image.open(p).convert("RGB").resize(big, Image.Resampling.LANCZOS) if p.exists()
+                       else fill_cutout(f).resize(big, Image.Resampling.LANCZOS))
+                # soft edges: the originals' 1-bit flame outline, smoothed at the upscaled size
+                alpha = f.getchannel("A").point(lambda a: 255 if a >= 128 else 0).resize(big, Image.Resampling.BILINEAR)
+                alpha = alpha.filter(ImageFilter.GaussianBlur(FIRE_SCALE * 0.4))
+                ups[(name, i)] = Image.merge("RGBA", (*rgb.split(), alpha))
+    entries = {}
+    for name, preset in presets.items():
+        frames, mpp = crops[name]
+        x0, y0, x1, y1 = preset["crop"]
+        cw, ch = (x1 - x0) * FIRE_SCALE, (y1 - y0) * FIRE_SCALE
+        cell = (pow2(cw), pow2(ch))
+        cols = min(FIRE_COLS, len(frames))
+        rows = -(-len(frames) // cols)
+        atlas = Image.new("RGBA", (pow2(cols * cell[0]), pow2(rows * cell[1])), (0, 0, 0, 0))
+        cols = atlas.width // cell[0]
+        rows = -(-len(frames) // cols)
+        p = pad * FIRE_SCALE
+        for i in range(len(frames)):
+            im = ups[(name, i)].crop((p, p, p + cw, p + ch))
+            cx, cy = (i % cols) * cell[0], (i // cols) * cell[1]
+            atlas.paste(im, (cx + (cell[0] - cw) // 2, cy + (cell[1] - ch) // 2))
+        # transparent texels take the flame's colour nearby, so filtering never darkens the edge
+        rgb, solid = atlas.convert("RGB"), atlas.getchannel("A").point(lambda a: 255 if a >= 8 else 0)
+        fill = Image.new("RGB", atlas.size)
+        for radius in (32, 8, 2):
+            premul = ImageChops.multiply(rgb, Image.merge("RGB", (solid,) * 3)).filter(ImageFilter.GaussianBlur(radius))
+            weight = solid.filter(ImageFilter.GaussianBlur(radius))
+            fill = Image.composite(_normalise(premul, weight), fill, weight.point(lambda a: 255 if a > 8 else 0))
+        atlas = Image.merge("RGBA", (*Image.composite(rgb, fill, solid).split(), atlas.getchannel("A")))
+        f = "T_Fire_%s.png" % name
+        atlas.save(OUT / f)
+        scale = mpp / FIRE_SCALE
+        entries[name] = {"file": f, "cols": cols, "rows": atlas.height // cell[1], "frames": len(frames),
+                         "fps": preset.get("fps", 8), "brightness": preset.get("brightness", 4.0),
+                         "size_m": [round(cell[0] * scale, 4), round(cell[1] * scale, 4)],
+                         "flame_m": [round(cw * scale, 4), round(ch * scale, 4)]}
+        print("fire %-8s %d frames, %dx%d atlas, flame %.2f x %.2f m" % (name, len(frames), atlas.width, atlas.height,
+                                                                         cw * scale, ch * scale))
+    return entries
+
+
 def window_mask(size: tuple, windows: list, orig_size: tuple) -> Image.Image:
     """T_<grd>_E.png: where the painted windows are (255 = glass), at a quarter of the base colour's
     size, edges softened by half a texel of the original art. The materials light it up at night
@@ -534,15 +780,26 @@ def window_mask(size: tuple, windows: list, orig_size: tuple) -> Image.Image:
 
 # the code a texture set depends on (rule tables are resolved per texture instead, see set_rules)
 SET_CODE = (source_image, clock_layout, make_set, fill_cutout, height_map, normal_map, beam_mask, _beam_mask, otsu, _normalise, target_size, pow2,
-            wrap_crop, flatten_windows, window_mask)
+            wrap_crop, flatten_windows, window_mask, erase_flame, is_flame)
+FIRE_CODE = (make_fires, fire_frames, is_flame, fill_cutout, pow2, _normalise)
 UPSCALE_CODE = (_upscale_source, run_upscales, wrap_crop, fill_cutout, source_image, clock_layout)
 
 
-def set_rules(key: str, info: dict) -> dict:
+def relief_rules_for() -> str:
+    """materials.json "relief" "rules_for": names whose rule-based maps tools/textures/ai_maps.py
+    --apply leaves in place instead of Marigold's."""
+    relief = json.loads(MATERIALS.read_text(encoding="utf-8")).get("relief", {}) if MATERIALS.exists() else {}
+    return (relief.get("rules_for") or "") if isinstance(relief, dict) else ""
+
+
+def set_rules(key: str, info: dict, rules_for: str = "") -> dict:
     rough, strength = surface(info["name"])
     return {"roughness": rough, "normal_strength": strength, "height_mode": height_mode(info["name"]),
             "dedither": bool(re.search(DEDITHER, info["name"], re.I)), "windows": window_outlines(key), "clock": clock_layout(key),
-            "esrgan_model": esrgan_model(info["name"])}
+            "esrgan_model": esrgan_model(info["name"]), "flame": wall_flame(key),
+            # a texture moving to (or from) the rule-based maps must be remade: ai_maps.py has
+            # overwritten its maps with Marigold's
+            "rule_relief": bool(rules_for and re.search(rules_for, info["name"], re.I))}
 
 
 def file_digest(path: Path) -> str:
@@ -590,8 +847,9 @@ def main():
     options = [args.scale, args.max, bool(args.esrgan)]
 
     manifest, new_cache, jobs, todo, missing = {}, {}, [], {}, set()
+    rules_for = relief_rules_for()
     for key, info in sorted(catalog.items()):
-        rules = set_rules(key, info)
+        rules = set_rules(key, info, rules_for)
         if args.esrgan_model:
             rules["esrgan_model"] = args.esrgan_model
         if args.esrgan:
@@ -623,13 +881,32 @@ def main():
                                                               "masked" if entry["masked"] else "      ",
                                                               entry["roughness"], entry["height_mode"]))
 
-    extras = {"macro": "T_MacroNoise.png", "water_normal": "T_WaterNormal.png", "no_emissive": "T_NoEmissive.png"}
-    extras_code = hashlib.sha1("".join(inspect.getsource(f) for f in (macro_noise, water_normal)).encode()).hexdigest()
+    extras = {"macro": "T_MacroNoise.png", "water_normal": "T_WaterNormal.png", "no_emissive": "T_NoEmissive.png",
+              "stars": "T_Stars.png", "bolts": "T_Bolts.png"}
+    extras_code = hashlib.sha1("".join(inspect.getsource(f) for f in (macro_noise, water_normal, stars, bolts)).encode()).hexdigest()
     if cache.get("_extras", {}).get("key") != extras_code or not all((OUT / f).exists() for f in extras.values()):
         macro_noise().save(OUT / extras["macro"])
         water_normal().save(OUT / extras["water_normal"])
+        stars().save(OUT / extras["stars"])
+        bolts().save(OUT / extras["bolts"])
         Image.new("L", (4, 4), 0).save(OUT / extras["no_emissive"])  # the materials' default window mask
     new_cache["_extras"] = {"key": extras_code, "files": list(extras.values())}
+
+    # flame flipbooks (props.json "fires")
+    fire_model = available_model(esrgan_model("fire"), args.esrgan) if args.esrgan else None
+    fire_inputs = [hashlib.sha1("".join(inspect.getsource(f) for f in FIRE_CODE).encode()).hexdigest(), fire_model,
+                   json.loads(PROPS.read_text(encoding="utf-8")).get("fires", {}) if PROPS.exists() else {}]
+    for d in sorted(BGF.glob("*/frame_*.png")) + sorted(SRC.glob("grd*_f*.png")):
+        if any(d.name.startswith(p.get("texture", "-")) or d.parent.name == p.get("bgf") for p in fire_inputs[2].values()
+               if isinstance(p, dict)):
+            fire_inputs.append(file_digest(d))
+    fire_key = hashlib.sha1(json.dumps(fire_inputs, sort_keys=True).encode()).hexdigest()
+    old_fires = cache.get("_fires", {})
+    if old_fires.get("key") == fire_key and all((OUT / f).exists() for f in old_fires.get("files", [])):
+        fires = old_fires["entries"]
+    else:
+        fires = make_fires(catalog, fire_model, args.esrgan) if PROPS.exists() else {}
+    new_cache["_fires"] = {"key": fire_key, "entries": fires, "files": [e["file"] for e in fires.values()]}
 
     # anything else in the folder is from a texture no longer in the catalog
     keep = {f for entry in new_cache.values() for f in entry.get("files", [])} | {"placeholders.json", "cache.json", "relief.json"}
@@ -638,7 +915,7 @@ def main():
             f.unlink()
 
     manifest = dict(sorted(manifest.items()))
-    (OUT / "placeholders.json").write_text(json.dumps({"textures": manifest, "extras": extras}, indent=1, sort_keys=True))
+    (OUT / "placeholders.json").write_text(json.dumps({"textures": manifest, "extras": extras, "fires": fires}, indent=1, sort_keys=True))
     cache_path.write_text(json.dumps(new_cache, indent=0, sort_keys=True))
     print("%d placeholder texture sets in %s: %d remade, %d unchanged, base colour %s (%.0f s)"
           % (len(manifest), OUT.relative_to(ROOT), len(jobs), len(manifest) - len(jobs),

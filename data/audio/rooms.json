@@ -1,0 +1,328 @@
+{
+ "_doc": "The original's sound, from the Server-104 Kod (docs/adr/0006 phase 1a): what each demo zone plays\nand every sound the game names, so the remaster plays the same files by the same rules. See tools/audio/extract_audio.py and docs/adr/0006-audio.md.",
+ "rooms": {
+  "300": {
+   "class": "Raza",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_LAKE",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
+   ],
+   "music": "login.ogg",
+   "loops": [
+    {
+     "sound": "ambcntry.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 0.344
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "sws_wind.ogg",
+     "beach.ogg",
+     "gulls.ogg",
+     "wave1.ogg",
+     "wave2.ogg",
+     "wave3.ogg",
+     "wave4.ogg",
+     "wfront03.ogg",
+     "wfront05.ogg",
+     "rs_for01.ogg",
+     "rs_for02.ogg",
+     "rs_for03.ogg",
+     "rs_for05.ogg",
+     "rs_for14.ogg",
+     "rs_for18.ogg",
+     "rs_for20.ogg"
+    ],
+    "interval_ms": 5000
+   },
+   "wading": "weatstp1.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    145.2,
+    76.312
+   ]
+  },
+  "301": {
+   "class": "RazaInn",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
+   ],
+   "music": "login.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    27.706,
+    21.828
+   ]
+  },
+  "302": {
+   "class": "RazaHall",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "login.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    28.497,
+    25.575
+   ]
+  },
+  "303": {
+   "class": "RazaSmith",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
+   ],
+   "music": "smithy.ogg",
+   "loops": [
+    {
+     "sound": "fireplac.ogg",
+     "row": 9,
+     "col": 6,
+     "volume": 1.0,
+     "source": "room",
+     "pos_m": [
+      12.1,
+      18.7
+     ],
+     "floor_m": 0.859
+    }
+   ],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    24.097,
+    22.928
+   ]
+  },
+  "304": {
+   "class": "RazaApoth",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
+   ],
+   "music": "login.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    16.638,
+    14.85
+   ]
+  },
+  "305": {
+   "class": "RazaHut",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "login.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    13.441,
+    13.956
+   ]
+  },
+  "306": {
+   "class": "RazaCrypt",
+   "terrain": [
+    "TERRAIN_CAVES",
+    "TERRAIN_NECROPOLIS"
+   ],
+   "music": "nec03.ogg",
+   "loops": [
+    {
+     "sound": "ambcave.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 0.7,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 10.312
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "necro01.ogg",
+     "necro02.ogg",
+     "necro03.ogg",
+     "necro04.ogg",
+     "necro05.ogg",
+     "necro06.ogg",
+     "necro07.ogg",
+     "necro08.ogg",
+     "necro09.ogg",
+     "drop.ogg"
+    ],
+    "interval_ms": 10000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    88.0,
+    85.8
+   ]
+  },
+  "307": {
+   "class": "RazaBar",
+   "terrain": [],
+   "music": "login.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    20.075,
+    21.588
+   ]
+  },
+  "308": {
+   "class": "RazaMuseum",
+   "terrain": [],
+   "music": "login.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    46.269,
+    34.066
+   ]
+  },
+  "330": {
+   "class": "RazaForest",
+   "terrain": [
+    "TERRAIN_FOREST"
+   ],
+   "music": "walk5.ogg",
+   "loops": [
+    {
+     "sound": "ambcntry.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 0.344
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "rs_for01.ogg",
+     "rs_for02.ogg",
+     "rs_for03.ogg",
+     "rs_for05.ogg",
+     "rs_for14.ogg",
+     "rs_for18.ogg",
+     "rs_for20.ogg"
+    ],
+    "interval_ms": 10000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    158.778,
+    94.497
+   ]
+  },
+  "331": {
+   "class": "FarolWest",
+   "terrain": [
+    "TERRAIN_FOREST"
+   ],
+   "music": "walk5.ogg",
+   "loops": [
+    {
+     "sound": "ambcntry.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 4.4
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "rs_for01.ogg",
+     "rs_for02.ogg",
+     "rs_for03.ogg",
+     "rs_for05.ogg",
+     "rs_for14.ogg",
+     "rs_for18.ogg",
+     "rs_for20.ogg"
+    ],
+    "interval_ms": 10000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    118.594,
+    108.9
+   ]
+  },
+  "332": {
+   "class": "RazaVault",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
+   ],
+   "music": "smithy.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    20.075,
+    21.588
+   ]
+  },
+  "333": {
+   "class": "RazaBank",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
+   ],
+   "music": "bank.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    28.497,
+    25.575
+   ]
+  }
+ }
+}
