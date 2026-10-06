@@ -386,6 +386,13 @@ Results (`build/lookdev/compare_gn_*`, `ground_normals_zoom.png`):
 
 **Known flake (seen twice).** A capture right after an in-place mesh reimport can show the reimported meshes with their textures stuck at low mips and their Nanite fallback meshes, which shows as blur and dark gaps in parapets. Forgetting those meshes in `Saved/MRBuild/world_cache.json` and building again fixes it. It happened again on 2026-10-05 after the parapet and roof changes.
 
+**Grass vertex colours (fixed 2026-10-06, user).** The grass GLBs carried a white `COLOR_0` ahead of the real colours (ADR 0007 "Trees": a bmesh colour layer isn't the active one, so the exporter added a blank set). Every blade read colour 1:
+- all at the tip colour, varied x1.2;
+- wind weight 1 from the roots;
+- snow and the winter die-back on the whole blade.
+
+`build_grass_kit.py` now exports a float `Col` layer by name as the only `COLOR_0`. With the root-to-tip gradient and per-blade variation working, the lawns come out about 12-16% darker on average and the tufts sit more firmly on the ground. Sheet: `build/lookdev/compare_grass_before_grass_vc.png`. `materials.json` `grass` `"vertex_colors": false` brings back the old look; to lighten the new one, raise `root`/`tip`.
+
 ### How to run the loop
 ```
 python tools/textures/make_placeholders.py                                   # textures, heights, macro noise

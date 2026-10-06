@@ -74,3 +74,4 @@ Each entry gives the symptom you'll see, then the cause and fix. The ADR 0003 se
 - **Stopping a long upscale also killed its own watcher and left an orphan python worker** (exit 255).
   Run long jobs in the background, and after stopping one, check for leftover `python.exe` from `build/texai/.venv`.
 - **Inline heredocs to `cat` can hang in this shell.** Write patch scripts to the scratchpad and run them.
+- **A kit mesh's vertex colours do nothing in Unreal (a tree's foot slides with the wind, a gradient is flat).** A colour layer made through bmesh isn't the mesh's active colour attribute, so the glTF exporter with `export_vertex_color="ACTIVE"` wrote a white `COLOR_0` and the real data as `COLOR_1`, and Unreal reads `COLOR_0`. Export by name: `export_vertex_color="NAME", export_vertex_color_name="Col", export_all_vertex_colors=False` (`build_tree_kit.py`, `build_grass_kit.py`). Check a GLB's attributes before trusting its colours. [ADR 0007 "Trees"]

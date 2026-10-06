@@ -1,0 +1,52 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "music",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 147,
+  "bgf": "music",
+  "frame": 0,
+  "describe": "a lute: a rounded wooden body with a sound hole and strings, a short neck and a bent-back peg head, lying on its back",
+  "mesh": "SM_AI_Music",
+  "face_target": 8000,
+  "size_by": "length",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "18863a12-cfda-4be9-b902-0ff60d781f68",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "wooden lute 3d model",
+        "tris_raw": 7702
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/music/music_tripo.glb",
+      "tripo_task": "18863a12-cfda-4be9-b902-0ff60d781f68",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "wooden lute 3d model",
+      "tris_raw": 7702
+    }
+  },
+  "status": "done",
+  "height_m": 0.3266,
+  "width_m": 0.7333,
+  "lift_m": 0.0057,
+  "sprite_px": [258, 117],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/music/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Music.glb",
+    "tris": 7702,
+    "size_m": [0.7333, 0.3662, 0.1238],
+    "scale": 0.7487
+  }
+}

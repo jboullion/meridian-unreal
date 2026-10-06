@@ -1,0 +1,52 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "hay",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 105,
+  "bgf": "hay",
+  "frame": 0,
+  "describe": "an upright sheaf of dry golden straw (hay), tied with a band around the middle, splayed out at the bottom and the top",
+  "mesh": "SM_AI_Hay",
+  "face_target": 8000,
+  "size_by": "height",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "483609ab-2a0e-4f1a-b80e-ca507408ea9f",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "straw broom 3d model",
+        "tris_raw": 7637
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/hay/hay_tripo.glb",
+      "tripo_task": "483609ab-2a0e-4f1a-b80e-ca507408ea9f",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "straw broom 3d model",
+      "tris_raw": 7637
+    }
+  },
+  "status": "done",
+  "height_m": 1.2031,
+  "width_m": 0.7219,
+  "lift_m": 0.0,
+  "sprite_px": [147, 245],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/hay/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Hay.glb",
+    "tris": 7637,
+    "size_m": [0.7651, 0.773, 1.2031],
+    "scale": 1.22802
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "hammer",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 138,
+  "bgf": "hammer",
+  "frame": 2,
+  "describe": "a war hammer: a heavy square steel head engraved with a rune, on a long wooden handle",
+  "mesh": "SM_AI_Hammer",
+  "face_target": 8000,
+  "size_by": "length",
+  "restyle": {"providers": ["openai"], "views": ["front"], "extra": "Show it lying flat on its side, horizontal."},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "61da50d0-5deb-4c05-9037-f3ede6f9b09c",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "medieval hammer 3d model",
+        "tris_raw": 7358
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/hammer/hammer_tripo.glb",
+      "tripo_task": "61da50d0-5deb-4c05-9037-f3ede6f9b09c",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "medieval hammer 3d model",
+      "tris_raw": 7358
+    }
+  },
+  "status": "done",
+  "height_m": 0.2922,
+  "width_m": 0.6359,
+  "lift_m": 0.0,
+  "sprite_px": [104, 122],
+  "size_frame": 0,
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/hammer/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Hammer.glb",
+    "tris": 7358,
+    "size_m": [0.6359, 0.2568, 0.1653],
+    "scale": 0.64855
+  },
+  "lay_flat": true
+}

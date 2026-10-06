@@ -1,0 +1,52 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "modshrin",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 123,
+  "bgf": "modshrin",
+  "frame": 0,
+  "describe": "a miniature golden shrine: a tall slender gilded open tower with thin columns and a pointed spire",
+  "mesh": "SM_AI_Modshrin",
+  "face_target": 8000,
+  "size_by": "height",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "e6723886-8043-4394-8c72-3613c0bc93c7",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "ornate lamp 3d model",
+        "tris_raw": 7525
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/modshrin/modshrin_tripo.glb",
+      "tripo_task": "e6723886-8043-4394-8c72-3613c0bc93c7",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "ornate lamp 3d model",
+      "tris_raw": 7525
+    }
+  },
+  "status": "done",
+  "height_m": 0.6605,
+  "width_m": 0.2234,
+  "lift_m": 0.0,
+  "sprite_px": [91, 269],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/modshrin/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Modshrin.glb",
+    "tris": 7525,
+    "size_m": [0.2361, 0.2358, 0.6605],
+    "scale": 0.67479
+  }
+}

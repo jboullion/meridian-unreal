@@ -1,0 +1,51 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "stool",
+  "kind": "props",
+  "class": "Stool",
+  "bgf": "stool",
+  "frame": 0,
+  "describe": "a small wooden stool with a thick round seat on four slightly splayed round legs",
+  "mesh": "SM_AI_Stool",
+  "face_target": 8000,
+  "size_by": "height",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "3b3a118a-f2fb-40d1-821a-3bf0c4659573",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "wooden cracked stool 3d model",
+        "tris_raw": 7369
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/stool/stool_tripo.glb",
+      "tripo_task": "3b3a118a-f2fb-40d1-821a-3bf0c4659573",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "wooden cracked stool 3d model",
+      "tris_raw": 7369
+    }
+  },
+  "status": "done",
+  "height_m": 0.9167,
+  "width_m": 0.676,
+  "lift_m": 0.0,
+  "sprite_px": [64, 80],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/stool/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Stool.glb",
+    "tris": 7369,
+    "size_m": [0.7481, 0.7365, 0.9167],
+    "scale": 0.93595
+  }
+}

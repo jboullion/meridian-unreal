@@ -1,0 +1,52 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "modfung",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 135,
+  "bgf": "modfung",
+  "frame": 0,
+  "describe": "a miniature statue of a fungus beast: a brown mushroom-capped creature with a glossy spotted cap, green eyes, a toothy mouth and many root-like legs",
+  "mesh": "SM_AI_Modfung",
+  "face_target": 8000,
+  "size_by": "height",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "565fa005-b7fe-440c-a32a-320947ee0ad9",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "alien creature 3d model",
+        "tris_raw": 7978
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/modfung/modfung_tripo.glb",
+      "tripo_task": "565fa005-b7fe-440c-a32a-320947ee0ad9",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "alien creature 3d model",
+      "tris_raw": 7978
+    }
+  },
+  "status": "done",
+  "height_m": 0.4076,
+  "width_m": 0.2799,
+  "lift_m": 0.0,
+  "sprite_px": [57, 83],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/modfung/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Modfung.glb",
+    "tris": 7978,
+    "size_m": [0.2908, 0.3178, 0.4076],
+    "scale": 0.41745
+  }
+}

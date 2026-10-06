@@ -1,0 +1,104 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007). Hand-set: class, bgf, frame, describe, mesh, face_target, restyle, tripo.variants (variant -> {view: source}; source 'upscale' or a restyle output's name, e.g. 'vertex', 'fal-flux-pro-kontext'). The pipeline writes height_m, sprite_px, restyle_runs, tripo.runs/chosen and normalized.",
+  "name": "brazier",
+  "kind": "props",
+  "class": "Brazier",
+  "zones": [300, 306, 333],
+  "bgf": "brazier",
+  "frame": 0,
+  "describe": "a free-standing brazier: a wide shallow round beaten-copper bowl, held by dark iron straps with square lugs standing up at the rim, on a tall slender dark iron stem with a carved collar near the bottom, on a broad round flared iron foot; aged and worn; the bowl is empty and unlit",
+  "mesh": "SM_AI_Brazier",
+  "face_target": 4000,
+  "restyle": {
+    "providers": ["vertex", "openai", "fal@fal-ai/flux-pro/kontext", "fal@fal-ai/qwen-image-edit"],
+    "views": ["front"]
+  },
+  "tripo": {
+    "variants": {
+      "A": {"front": "upscale"},
+      "B": {"front": "vertex"},
+      "C": {"front": "openai"},
+      "D": {"front": "fal-flux-pro-kontext"},
+      "E": {"front": "fal-qwen-image-edit"}
+    },
+    "runs": {
+      "A": {
+        "file": "build/aigen/props/brazier/04_tripo_out/A.glb",
+        "digest": "5f4b93cad25b449a",
+        "tris": 7270,
+        "size_m": [0.5192, 0.5174, 0.9812],
+        "tripo_task": "784d5cc2-8202-4bcc-a825-ac67bc4dd887",
+        "tripo_name": "rusty pedestal goblet 3d model",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh on, 2K PBR, Remove Lighting on, triangles, 8000 faces, single image (45 credits)"
+      },
+      "B": {
+        "tripo_task": "d2f0a423-e6bd-4f4b-8fed-918142fae6be",
+        "tripo_name": "ancient bowl 3d model",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh on, 2K PBR, Remove Lighting on, triangles, 8000 faces, single image (45 credits)",
+        "file": "build/aigen/props/brazier/04_tripo_out/B.glb",
+        "digest": "c3afd18db4b23829",
+        "tris": 7520,
+        "size_m": [0.5638, 0.5636, 0.9789]
+      },
+      "C": {
+        "tripo_task": "8859502e-b0dc-4bb8-a31f-836b73d056c9",
+        "tripo_name": "rusty goblet 3d model",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh on, 2K PBR, Remove Lighting on, triangles, 8000 faces, single image (45 credits)",
+        "file": "build/aigen/props/brazier/04_tripo_out/C.glb",
+        "digest": "e40baeb3abbb9b58",
+        "tris": 7520,
+        "size_m": [0.5731, 0.5699, 0.9797]
+      },
+      "C_h30": {
+        "tripo_task": "fcfa3813-52ca-4674-9f2e-714b74a0b334",
+        "tripo_name": "rusted metal bowl 3d model",
+        "settings": "Studio HD Model, H3.0, AI Complete on, 2K PBR, Remove Lighting on, triangles, 8000 faces, single image (30 credits)",
+        "file": "build/aigen/props/brazier/04_tripo_out/C_h30.glb",
+        "digest": "a8982fc9be0eacf8",
+        "tris": 7546,
+        "size_m": [0.6016, 0.6046, 0.9994]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/brazier/04_tripo_out/C.glb",
+      "tripo_task": "8859502e-b0dc-4bb8-a31f-836b73d056c9",
+      "tripo_name": "rusty goblet 3d model",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh on, 2K PBR, Remove Lighting on, triangles, 8000 faces, single image (45 credits)",
+      "digest": "e40baeb3abbb9b58",
+      "tris": 7520,
+      "size_m": [0.5731, 0.5699, 0.9797]
+    }
+  },
+  "status": "done",
+  "height_m": 0.9831,
+  "sprite_px": [75, 143],
+  "restyle_runs": {
+    "vertex_front": {
+      "model": "gemini-3-pro-image",
+      "seconds": 24.8,
+      "file": "build/aigen/props/brazier/02_restyle/vertex_front.png"
+    },
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": 28.7,
+      "file": "build/aigen/props/brazier/02_restyle/openai_front.png"
+    },
+    "fal-flux-pro-kontext_front": {
+      "model": "fal-ai/flux-pro/kontext",
+      "seconds": 7.0,
+      "file": "build/aigen/props/brazier/02_restyle/fal-flux-pro-kontext_front.png"
+    },
+    "fal-qwen-image-edit_front": {
+      "model": "fal-ai/qwen-image-edit",
+      "seconds": 151.5,
+      "file": "build/aigen/props/brazier/02_restyle/fal-qwen-image-edit_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Brazier.glb",
+    "tris": 7520,
+    "size_m": [0.5751, 0.5719, 0.9831],
+    "scale": 1.0035
+  }
+}

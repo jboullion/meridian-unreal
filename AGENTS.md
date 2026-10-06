@@ -26,6 +26,7 @@ Load these before working in their area. Skills are the current *how-to*; ADRs a
 | Area | Read first |
 |---|---|
 | Environment art: zones, textures, facades, roofs, grime, moods, look-dev, `data/environment/*.json` | Skill [.claude/skills/zone-environment/](.claude/skills/zone-environment/SKILL.md) (with [data-files](.claude/skills/zone-environment/reference/data-files.md), [tools](.claude/skills/zone-environment/reference/tools.md), [pitfalls](.claude/skills/zone-environment/reference/pitfalls.md)); log in [ADR 0003](docs/adr/0003-environment-art-pipeline.md) |
+| Props and monsters from sprites: upscale, AI restyle, Tripo image-to-3D, `tools/aigen/`, `data/aigen/`, `props.json` `mesh_ai` | Skill [.claude/skills/sprite-to-3d/](.claude/skills/sprite-to-3d/SKILL.md) (with [tripo](.claude/skills/sprite-to-3d/reference/tripo.md), [prompts](.claude/skills/sprite-to-3d/reference/prompts.md), [pitfalls](.claude/skills/sprite-to-3d/reference/pitfalls.md)); log in [ADR 0007](docs/adr/0007-ai-prop-pipeline.md) |
 | Engine, server architecture, data pipeline | [ADR 0001](docs/adr/0001-engine-and-architecture.md) |
 | Characters, appearance, animation | [docs/characters.md](docs/characters.md), [ADR 0002](docs/adr/0002-metahuman-characters.md) |
 | Hosting, Supabase, costs | [ADR 0004](docs/adr/0004-hosting-and-operations.md) |
@@ -93,6 +94,8 @@ powershell -File tools/textures/setup_ai.ps1                                  # 
 python tools/textures/make_placeholders.py                                   # textures, height/normal maps, macro noise (incremental; --force)
 blender -b --factory-startup -P tools/blender/build_zone_art.py -- --rid 300 # rebuilt buildings -> build/environment/
 blender -b --factory-startup -P tools/blender/build_grass_kit.py
+python tools/textures/make_tree_textures.py                                   # leaf atlas + bark for the procedural trees
+blender -b --factory-startup -P tools/blender/build_tree_kit.py
 blender -b --factory-startup -P tools/blender/build_prop_kit.py
 ```
 
@@ -167,10 +170,11 @@ To play: open the project, press Play with Net Mode "Play As Client" (2+ players
 - `tools/kod_extract/` — `kodparse.py` (case-insensitive Kod reader with inheritance) and `extract.py` (zones, monsters, NPCs and shops, spells, skills, items, constants). Demo zones are `DEMO_RIDS`.
 - `tools/roo2gltf/roo2gltf.py` — `.roo` to glTF blockouts (BSP floors/ceilings, Doom-style walls, slopes, the original client's UV rules) plus world positions of exits, objects and spawns.
 - `tools/bgf2png/bgf2png.py` — BGF v10 decoder: sprite contact sheets, un-rotated textures, size catalog.
-- `tools/blender/` — `render_glb.py` (previews), `build_zone_art.py` + `zone_detail.py` + `zone_grime.py` (rebuilt buildings; `art_src/environment/zones/<rid>/<Building>.blend` overrides, `--seed-override`), `build_grass_kit.py`, `build_prop_kit.py`, `check_overlaps.py`, and the character tools `install_mpfb_packs.py`, `mpfb_character.py`, `preview_character.py`, `retarget_ual.py`.
+- `tools/blender/` — `render_glb.py` (previews), `prop_glb.py` (AI prop previews and normalising), `build_zone_art.py` + `zone_detail.py` + `zone_grime.py` (rebuilt buildings; `art_src/environment/zones/<rid>/<Building>.blend` overrides, `--seed-override`), `build_grass_kit.py`, `build_tree_kit.py` (procedural trees, ADR 0007 "Trees"), `build_prop_kit.py` (rain and smoke quads), `check_overlaps.py`, and the character tools `install_mpfb_packs.py`, `mpfb_character.py`, `preview_character.py`, `retarget_ual.py`.
 - `tools/environment/` — pure-Python helpers: `blockout.py`, `facades.py` (opening review sheet), `scatter.py`, `shelter.py`, `fires.py`, `chimneys.py`.
-- `tools/textures/` — `make_placeholders.py` (upscale with `4xTextures_GTAV_rgt-s_dither`, Real-ESRGAN fallback; Marigold or rule-based normals; incremental), `ai_maps.py` (runs in `build/texai/.venv`), `upscale.py`, `setup_ai.ps1`.
+- `tools/textures/` — `make_placeholders.py` (upscale with `4xTextures_GTAV_rgt-s_dither`, Real-ESRGAN fallback; Marigold or rule-based normals; incremental), `make_tree_textures.py` (leaf atlas and bark from a tree sprite), `ai_maps.py` (runs in `build/texai/.venv`), `upscale.py`, `setup_ai.ps1`.
 - `tools/ue/` — `build_world.ps1/.py`, `build_cache.py`, `run_in_editor.py`, `environment_materials.py`, `zone_mood.py`, `build_audio.py`, `run_lookdev.ps1`, `run_zone_test.ps1`, `export_mannequin.py`, `import_character.ps1`, `import_animations.ps1`.
+- `tools/aigen/` — sprite → 3D assets, one manifest per asset (`data/aigen/<kind>/<name>.json`). `inventory.py` maps a zone's placed objects to sprites. `aigen.py` runs the steps over one asset, `a,b,c` or `all`: sprite, restyle, `batch-submit` / `batch-collect` (OpenAI Batch API), tripo-prepare, `bridge-collect`, choose, normalize, overview. It re-runs itself in `build/texai/.venv`. Also `sprite.py`, `restyle.py` (OpenAI, Vertex, Gemini, fal), `tripo.py`, `blender_link.py` (the open Blender via its MCP add-on socket, plus the Tripo DCC Bridge log), `review.py`, `style/style.md`. Blender side: `tools/blender/prop_glb.py` (preview, normalize).
 - `tools/lookdev/` — `compare.py`, `profile_report.py`, `suggest_cameras.py`, `cycle_test.ps1`, `mood_test.ps1`, `upscaler_test.ps1`, `ai_maps_test.ps1`.
 - `tools/audio/` — `extract_audio.py` (sound data from Kod), `audio_report.py`.
 

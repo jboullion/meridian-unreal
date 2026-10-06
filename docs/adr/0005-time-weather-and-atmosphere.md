@@ -285,6 +285,10 @@ The user played the build and reported four things, with screenshots in `Referen
   - `facades.json` `glow_gain` is now a multiplier on that automatic gain. The Inn has 2.2 (= its old 7) and the tavern and temple 2, 2 and 2.48 (= their old 2, 2, 3), so the look is as before (`ownglow.png`).
   - `glow_tint` below 1 remains available per texture for a shared colour.
 - **Torches lit twice.** The original lights each wall torch with a room light (`DynamicLight`, strength 30) about half a metre below the flame, and we had added the torch's own light on top. `build_world.py` `merge_torch_lights()` drops a room light within 1 m (in plan) of a flame and puts its strength and colour on the flame's light: 27 merged across the interiors.
+- **All added lights dimmed (later the same day).** The user's rule: the environment light carries the scene, and the flames only add subtle warmth and character.
+  - `props.json` `"light_scale"` is one factor on the intensity of every light the world build adds: props, wall torches and the original's room lights. Their reach is unchanged.
+  - We compared 1.0, 0.5 and 0.3 at 01:00 (`build/lookdev/compare_lights10_h1_lights05_h1_lights03_h1.png`) and chose **0.3**.
+  - Walls within a metre of a fire stay bright at any setting; that's the inverse-square falloff, not the scale.
 - **Moths read as sticks.** They were masked quads, which motion blur smeared into streaks. `M_Moth` is now translucent (no velocity, no smear), lit by the lamp with an emissive of 1.5, 3 cm, and at half the speed (orbit, bob and jitter halved; wing beat 38 → 24).
 
 ### Hazy interiors (2026-10-05)

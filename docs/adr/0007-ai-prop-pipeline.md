@@ -1,0 +1,190 @@
+# ADR 0007: AI prop pipeline (sprite → 3D)
+
+- Status: Accepted for props. Every prop in Raza and its interiors is generated and placed (2026-10-06).
+- Date: 2026-10-06
+- Current recipe: skill [sprite-to-3d](../../.claude/skills/sprite-to-3d/SKILL.md). This ADR is the decision log.
+- Background: [docs/research/ai-monster-prop-pipeline.md](../research/ai-monster-prop-pipeline.md) (the full plan, including monsters).
+
+## Context
+Most of Raza's Kod-placed objects (ornamental objects, furniture, lamps, braziers) have no mesh. The few that do (lamp post, brazier, candle) are procedural stand-ins from `build_prop_kit.py`. We want real 3D props that are recognisably the original sprites. The plan is: upscale the sprite, optionally restyle it with an image model, generate a model in Tripo, normalise it and place it.
+
+We work **one object at a time** until the recipe settles, then add batching.
+
+## Decisions (2026-10-06, with the user)
+
+### Tripo access
+The Max plan's credits only work in Tripo Studio (web). The API bills a separate prepaid wallet. So:
+- **Now:** the scripts prepare a handoff folder (`03_tripo_in/` + `SETTINGS.md`). The user generates in Studio and drops GLBs into `04_tripo_out/`, and the scripts take over again.
+- **Later (phase 3):** a V3 API backend behind the same folders, for unattended and parallel runs, once the user tops up the wallet.
+- API V2 and the Python SDK stop working 2026-10-31, so only V3 is built.
+
+### Restyle
+The user has both Gemini (Nano Banana Pro) and OpenAI (GPT Image 2) API keys. The first props are restyled with both and compared, and the winner becomes the default. Restyling is an image edit: the upscaled sprite is the identity reference, and the style bible (`tools/aigen/style/style.md`) and the manifest's `describe` are the text.
+
+### Layout
+- **Manifest per asset:** `data/aigen/<kind>/<name>.json` (committed). It holds the sprite, frame, description, mesh name, face target and variants. The pipeline records heights, restyle runs, Tripo runs and the choice.
+- **Working files:** `build/aigen/<kind>/<name>/`, git-ignored. The numbered step folders are `01_upscale`, `02_restyle`, `03_tripo_in`, `04_tripo_out` and `05_review`.
+- **The chosen raw Tripo GLB** goes in `art_src/aigen/<kind>/<name>/` (LFS). Unlike our other generated output it costs credits and can't be regenerated exactly, so it's kept like a hand-made source. The original-art permission covers reworked assets (ADR 0001).
+- **Every step is cached** by a hash of its inputs, model and prompt, as the textures are. A paid restyle is never repeated for the same inputs.
+
+### Scale
+The model is scaled to the sprite's in-world height, `h / shrink / 64 * 2.2` m (`bgf2png.world_height_m`). Tripo's own scale is ignored. Brazier: 143 px at shrink 5 = 0.983 m. That matches `props.json`'s `fire.base_m` 0.98, so the flame flipbook still sits on the rim.
+
+### Upscale
+The same model as the environment (`4xTextures_GTAV_rgt-s_dither`), with the cut-out kept:
+- transparent pixels are filled from their neighbours before upscaling;
+- alpha is rebuilt from the 1-bit original (bilinear, then a slight blur and levels).
+
+The brazier came out clean: no cyan halo, and the detail is kept. Sheet: `build/aigen/props/brazier/05_review/sheet1_restyle.png`.
+
+### Normalise and place
+- `tools/blender/prop_glb.py normalize` joins the meshes, scales to the height, puts the origin at the base centre (+Z up, metres) and exports with embedded textures to `build/environment/kit/SM_AI_<Name>.glb`.
+- `props.json` classes get `"mesh_ai"`. The top-level `"ai_meshes"` switch picks them over the procedural `"mesh"` when the GLB exists (`build_world.py` `zone_props`).
+- The imported glTF material is kept for now. A shared master-material pass comes later.
+
+## Brazier (first object)
+- Sprite `brazier.bgf` frame 0 is the unlit brazier (frames 1–6 add flames). It shows a copper bowl held by iron straps with square lugs, on a single slender iron stem and a round foot. **The procedural `SM_Brazier` is a tripod**, so the original's shape was never matched.
+- Variants: A (raw upscale), B (Gemini restyle), C (OpenAI restyle), each a single image to Studio.
+- Look-dev bookmark `brazier_close` (the brazier by the crypt entrance in Raza).
+- **Restyle (2026-10-06):** four image-edit models on the same input and prompt. Sheet: `build/aigen/props/brazier/05_review/sheet1_restyle.png`.
+
+  | Variant | Model | Time | Read |
+  |---|---|---|---|
+  | C | OpenAI `gpt-image-2.5-sunburst` | 29 s | **Closest to the sprite**: proportions, hammered bowl, straps and lugs, the collar, the plain domed foot |
+  | B | Vertex `gemini-3-pro-image` (Nano Banana Pro) | 25 s | Very close. It invents a scalloped edge on the foot |
+  | D | fal `flux-pro/kontext` | 7 s | Close, but smoother and less detailed. Cheapest and fastest |
+  | E | fal `qwen-image-edit` | 152 s | Glossier copper and a cast shadow, despite the prompt. Weakest |
+
+  All four keep the identity. Whether the extra detail of C and B survives into Tripo is the next test.
+- **Tripo (2026-10-06):** Studio HD Model, 2K PBR, Remove Lighting, 8000 tris, single image. Sheet: `build/aigen/props/brazier/05_review/sheet2_tripo.png`.
+
+  | Variant | Input | Model | Read |
+  |---|---|---|---|
+  | **C** | OpenAI restyle | H3.1 (45 cr) | **Chosen.** Crisp straps, lugs and collar, broad round foot, clean bowl |
+  | C_h30 | OpenAI restyle | H3.0 (30 cr) | Almost the same, slightly simpler. Good enough for clutter |
+  | B | Vertex restyle | H3.1 | Good, but keeps the restyle's invented scalloped foot |
+  | A | Raw upscale | H3.1 | Soft and lumpy. **The restyle step is worth it** |
+
+  All four came out at 7.3–7.5k tris and about 1 m tall. C was normalised to 0.983 m: `build/environment/kit/SM_AI_Brazier.glb`, kept as `art_src/aigen/props/brazier/brazier_tripo.glb`.
+
+- **In game (2026-10-06):** `ai_meshes` on vs off, by day (13:00) and at night (21:00). Sheets: `build/lookdev/compare_brazier_ai_h13_brazier_proc_h13.png` and `…_h21….png`.
+  - The AI brazier reads as the original: a single stem on a round foot, a copper bowl with iron straps, the right size. The flame flipbook sits on the rim.
+  - The procedural tripod never matched the sprite. **Recommended: keep `ai_meshes` on** (it's on now).
+  - Open: at night the bowl's inside glows almost white, because the fire light (`offset_m` 1.2) sits about 22 cm above the rim. Raise it or dim it if it bothers.
+
+### Automating Studio (2026-10-06)
+The user wants to stay out of the loop. Claude drives Tripo Studio in the user's Chrome (signed in; web credits) and collects each model over the **Tripo DCC Bridge** into the user's open Blender. `tools/aigen/blender_link.py` talks to Blender through the community "MCP for Blender" add-on's socket (port 9876), exports the arrival and checks its Tripo task id in the bridge's log. The recipe is in the skill's reference/studio-automation.md.
+
+The bridge connection drops when the Studio page reloads, so it's re-toggled before each send. Studio runs jobs in parallel and has a batch mode (30 images), which covers parallel runs until the API backend exists.
+
+### Restyle providers
+- **Vertex AI** (`VERTEX_API_KEY`, postpaid Google Cloud) runs the Gemini image models. The user's Google Developer Program monthly credits pay for it; AI Studio's prepaid billing can't use them. The `gemini` provider (AI Studio) stays for completeness.
+- **fal.ai** (`FAL_AI_API_KEY`) gives one key for the open-weight edit models (the later style-LoRA route) and other 3D generators to compare with Tripo.
+
+## Raza batch (2026-10-06)
+**The user's decisions after the brazier:**
+- Drop the procedural props altogether; AI meshes only.
+- Keep the OpenAI restyle (variant C) and stop calling the other image models.
+- Make every prop in Raza.
+- Dim all added lights (ADR 0005, `light_scale` 0.3).
+
+**Inventory:** `tools/aigen/inventory.py` → `data/aigen/inventory.json`.
+- 61 props: Raza outdoors, the interiors, and 30 museum miniatures in 308.
+- Also 7 NPCs, the cows (monster), and logic objects (room lights, food dispensers, news links).
+- `modteleport` (a magic swirl) is an effect, not a mesh, so it was skipped.
+- Overview sheets of every frame: `build/aigen/overview_*.png`.
+
+**Manifests:** one per prop, with `describe` written from each upscale. Frame choices:
+- weapons: their upright frame, sized by the lying frame's width (`size_frame`, `size_by: length`);
+- wand: its diagonal frame (the lying one is 11 px tall);
+- chandelier: hangs 0.6 m up (`lift_m`, from the empty rows under its sprite).
+
+**Restyle through the OpenAI Batch API:** 60 edits in one job (`aigen.py all batch-submit` / `batch-collect`) at half price. It finished in about 30 minutes.
+- One miss: the egg basket's eggs. It was redone directly with a firmer `describe`.
+- Overview: `build/aigen/overview_openai_front.png`.
+
+**Tripo:** 60 single-image jobs, all H3.1 with the brazier's settings (plus AI Complete), 2,700 credits; 22,280 left of the month's 25,145.
+- Claude uploaded each and recorded its task id from the URL. Jobs ran in parallel; all 60 finished within about 15 minutes.
+
+**Collect:** `aigen.py bridge-collect all` matched every arrival in Blender by task id.
+- Sends: Studio in Chrome, switching models through the Assets grid's router links (no reload, so the bridge stays up), then Export → Send To → Blender.
+- Lessons:
+  - the window has to be visible, or the popovers don't open;
+  - a page reload drops the bridge;
+  - sends made before the model finished loading were silently lost (10 of 60), so we resent them.
+- All 60 arrived.
+
+**Placement:**
+- `props.json` now has `"classes"` and `"types"` (OrnamentalObjects by OO number), all `SM_AI_*`.
+- `build_world.py` `zone_props()` skips meshes not generated yet, and turns props by their Kod angle (`(angle − 1024) / 4096` of a turn, since glTF +Z lands on UE +Y). Entries with `random_yaw` get a stable random turn.
+- `build_prop_kit.py` now makes only the effect meshes (rain, smoke).
+
+**Weapons lie flat:** the sword, scimitar, hammer and wand were generated from side views and stood on their edge. The manifest's `lay_flat` makes `normalize` turn them face-up on the ground.
+
+**Material: `M_PropTextured`.** Imported as-is (Interchange's glTF material), the props went near-black inside while the walls around them were lit. Our surface masters add an ambient floor in interiors (sector light × `MPC_Environment.SectorAmbient` × `AmbientTint`), and the imported material had none.
+- `environment_materials.py` `build_textured_prop_master` takes the glTF textures (base colour, normal, metallic-roughness) and adds:
+  - that ambient floor (`SectorLight`, 1 by default);
+  - matte specular;
+  - the weather response (wet, snow).
+- `build_world.py` gives every `SM_AI_*` mesh an `MI_AIProp_<mesh>` of it.
+
+**Look-dev:**
+- Before and after by day: `build/lookdev/compare_props_before_props_final_h13.png`.
+- Summary sheets: `build/lookdev/sheet_props_final_h13.png` and `_h1.png` (night).
+- 3D overview of every model: `build/aigen/overview_05_review_normalized_front.png`.
+- The smoke test passes (13 zones, all ready).
+- One look-dev bookmark (`inn_front`) now stands half a metre behind Raza's welcome sign. The sign is the original's; move the camera if that view matters.
+
+## Trees (2026-10-06)
+**Problem.** Tripo makes one closed surface, so its trees (`SM_AI_Midtree2`, 30 in Raza) came out as a solid green lump with leaves painted on. Normals follow every bump, light doesn't come through, nothing moves in the wind. Good game trees are a trunk mesh plus many small alpha-cut leaf cards. So trees get their own pipeline, and the user picks one from look-dev. Two candidates, compared against the AI tree in game:
+
+**A. Procedural Blender kit** (fully scripted, ours to commit):
+- `python tools/textures/make_tree_textures.py`: `T_TreeLeaves_Mid` (a 2x2 atlas of leaf clusters; every leaf a pointed oval filled with a patch of `midtree2`'s own painted canopy) and `T_TreeBark_Mid` (tileable streaks in the sprite trunk's colours), into `build/textures_placeholder/`.
+- `blender -b --factory-startup -P tools/blender/build_tree_kit.py`: `SM_Tree_Mid_A/B/C` (seeded, about 3,700 triangles). Sized off the sprite: 4.92 m tall, clear trunk to 1.41 m, a 1.72 x 1.78 m ellipsoid crown with a few bulges. Tapered bark tubes for the trunk, limbs and twigs. About 360 folded leaf cards face outwards with scatter.
+- What makes it read as a tree:
+  - leaf normals come from the crown ellipsoid, so the crown shades as one soft volume like the painted original;
+  - cards are doubled in geometry rather than in the material, so their backs keep those normals;
+  - vertex colour R is the wind weight, G per-card variation, B crown occlusion.
+- `environment_materials.py` `build_tree_master`: `M_TreeLeaves` (masked, Two Sided Foliage shading, `Transmission` tint, season tint, weather) and `M_TreeBark`. Both share `TREE_WIND_HLSL`: a downwind sway in slow gusts plus leaf flutter, scaled by `MPC_Environment.Wind`. `build_world.py` gives `SM_Tree_<Kind>_*` meshes `MI_Tree_<Kind>_Bark/Leaves`.
+
+**B. Unreal's Procedural Vegetation Editor (PVE)** (`Engine/Plugins/Experimental/ProceduralVegetationEditor`, enabled for the comparison and disabled again after it):
+- A node graph (a PCG graph) that grows a tree from a sample species and exports a skeletal mesh (Dynamic Wind bones) or a static mesh, with the leaves as Nanite assembly parts.
+- **Not scriptable.** The graph is protected from Python, and the export button (`FPVExporter`, editor-private) has no API. Making our own PVE tree means editing and exporting by hand in the PVE editor. `/Game/Generated/Trees/PVE_Mid` is a copy of `PVE_Sample_Deciduous_Tree_01`, ready for that.
+- For this comparison the `pve` option places the plugin's own exported `PVE_Deciduous_Tree_01` (a skeletal mesh 11.4 m tall), scaled to 4.92 m (`fit_height_m`).
+- **Leaves need Nanite Foliage.** Without `r.Nanite.Foliage=1` (set in `DefaultEngine.ini` for the comparison, read-only at startup, needs a shader recompile; removed again) the tree rendered as bare branches: `build/lookdev/trees_v3/trees_grove.png`.
+- Wind: the Dynamic Wind plugin is driven through `UDynamicWindSubsystem::UpdateWindParameters`. Nothing in the game calls it yet.
+- Licensing: its meshes and textures are Epic sample content. They stay in the plugin or git-ignored `/Game/Generated/`, never in git.
+
+**Switch.** `props.json` `"192"`:
+- `"mesh_options"` lists `ai`, `blender` and `pve` meshes. A kit GLB name or a UE asset path; a stable random variant per tree.
+- `"mesh_use": "compare"` cycles the options over the zone's trees, so they stand side by side. `build_world.py` `prop_mesh_name()` does this.
+- Set `"mesh_use"` to one option to choose. `prop_mesh_name()` also takes UE asset paths, scaled by `"fit_height_m"`, and `build_zone_level()` places skeletal meshes; both stay for later use.
+
+**Look-dev cameras:** `trees_grove`, `trees_close`.
+- Blender kit vs AI: `build/lookdev/trees_v2/`.
+- All three, PVE without leaves (Nanite Foliage off): `build/lookdev/trees_v3/`.
+- **All three, the sheet to judge:** `build/lookdev/trees_compare_v9.png` (`trees_v9/`, captured with `-Settle 6`). By then the Blender kit had 460 smaller cards (0.68–0.98 m), `Brightness` 0.85 and a lower `Transmission` (0.22, 0.32, 0.12).
+- Capture traps met on the way:
+  - right after the shader recompile the PVE leaves came out near-black (`trees_v4`: textures still streaming);
+  - auto-settled captures right after a rebuild showed low mips everywhere (`trees_v7`); `-Settle 6` fixed that;
+  - the Blender leaves stayed on a low mip even then: streaming misjudged the small cards' texel density, and the alpha cut turned the leaves into blobs (`trees_v8`). `tree_materials()` now sets the leaf atlas `never_stream` (1024 px, cheap).
+
+**Decision (2026-10-06, the user): the Blender kit.**
+- `"192"` `"mesh_use": "blender"`. The `pve` option, the PVE plugin and `r.Nanite.Foliage` are gone again.
+- The AI tree stays as the `ai` option.
+- The user's notes on the kit, and the fixes:
+  - **The trunk's foot slid with the sway.** Cause: the GLB had two colour sets. A bmesh byte-colour layer isn't the mesh's active one, so the exporter (`export_vertex_color="ACTIVE"`) wrote a white `COLOR_0` and our data as `COLOR_1`. Unreal reads `COLOR_0`, so every vertex had wind weight 1, no crown occlusion, and the bark fluttered.
+  - `build_tree_kit.py` now writes a float colour layer and exports it by name as the only `COLOR_0` (`export_vertex_color="NAME"`, `export_all_vertex_colors=False`).
+  - `TREE_WIND_HLSL` also bends with the square of the vertex's height in the mesh (`LocalPosition.z / HeightCm`, 490), so the foot stays planted whatever the colours say.
+  - **The leaves looked shiny in direct sun.** `M_TreeLeaves` now has `Specular` 0.05 and `Roughness` 0.95: still lit, but diffuse. Wet leaves still gloss.
+  - **With real vertex colours the crowns went about 40% darker.** The white set had given every card the top colour variation and switched the crown occlusion off. Retuned: `Brightness` 1.3, `AoMin` 0.5 (crown average about 58 in green against v9's 81, with more depth). Sheet: `build/lookdev/compare_trees_v9_trees_v13.png`.
+  - **`M_PropTextured` failed to compile** after the shader recompile, so every AI prop drew the grey default (the shrub in `trees_v10`). Cause: its `MetallicRoughness` default was the engine's sRGB `WhiteSquareTexture` on a Linear Color sampler. `default_orm()` now makes a linear `T_DefaultORM` (roughness 1, metal 0) as the default.
+- `build_grass_kit.py` had the same white `COLOR_0`. Fixed the same way at the user's request (ADR 0003 "Grass vertex colours").
+
+## Open
+- Trees: the shrub (`shrubee1`, type 198), the dead tree (`nectree1`, 91) and the Outskirts tree lines (ADR 0003 2g).
+- Emissive parts (lamp glass, embers) on AI meshes: a second material slot or a mask.
+- The API backend (phase 3), once the user tops up the API wallet; Studio plus the bridge covers batches until then.
+- Collision on props (they're NoCollision today).
+- `SectorLight` per prop from the original sector light where it stands (1 now: props read slightly brighter than the walls indoors).
+- The night glow of lamp glass and other emissive parts on AI meshes.

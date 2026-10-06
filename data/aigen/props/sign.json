@@ -1,0 +1,51 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "sign",
+  "kind": "props",
+  "class": "Sign",
+  "bgf": "sign",
+  "frame": 0,
+  "describe": "a wooden signpost: one dark weathered wooden post holding a small rectangular board of dark planks carved with runic letters",
+  "mesh": "SM_AI_Sign",
+  "face_target": 8000,
+  "size_by": "height",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "c2c1a6e3-e6c4-40c4-9c5b-a11fba5bfbb0",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "wooden sign 3d model",
+        "tris_raw": 7482
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/sign/sign_tripo.glb",
+      "tripo_task": "c2c1a6e3-e6c4-40c4-9c5b-a11fba5bfbb0",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "wooden sign 3d model",
+      "tris_raw": 7482
+    }
+  },
+  "status": "done",
+  "height_m": 1.6672,
+  "width_m": 0.8938,
+  "lift_m": 0.0,
+  "sprite_px": [52, 100],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/sign/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Sign.glb",
+    "tris": 7482,
+    "size_m": [0.8691, 0.5202, 1.6672],
+    "scale": 1.70652
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "modnewsb",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 121,
+  "bgf": "modnewsb",
+  "frame": 0,
+  "describe": "a miniature newsball: a dark marbled glass sphere on a short fluted pale blue-grey column",
+  "mesh": "SM_AI_Modnewsb",
+  "face_target": 8000,
+  "size_by": "height",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "dc52b232-1a25-451e-80f4-acaba3c7b1f7",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "marble pedestal 3d model",
+        "tris_raw": 6735
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/modnewsb/modnewsb_tripo.glb",
+      "tripo_task": "dc52b232-1a25-451e-80f4-acaba3c7b1f7",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "marble pedestal 3d model",
+      "tris_raw": 6735
+    }
+  },
+  "status": "done",
+  "height_m": 0.4091,
+  "width_m": 0.2097,
+  "lift_m": 0.0,
+  "sprite_px": [61, 119],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/modnewsb/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Modnewsb.glb",
+    "tris": 6735,
+    "size_m": [0.1776, 0.1855, 0.4091],
+    "scale": 0.41793
+  }
+}

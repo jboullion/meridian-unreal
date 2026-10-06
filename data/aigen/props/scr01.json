@@ -1,0 +1,52 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "scr01",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 144,
+  "bgf": "scr01",
+  "frame": 0,
+  "describe": "a rolled parchment scroll tied with a grey ribbon, lying on its side",
+  "mesh": "SM_AI_Scr01",
+  "face_target": 8000,
+  "size_by": "length",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "d79f3aa5-ea88-4d48-af67-da1553b3e0f6",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "parchment scroll 3d model",
+        "tris_raw": 7657
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/scr01/scr01_tripo.glb",
+      "tripo_task": "d79f3aa5-ea88-4d48-af67-da1553b3e0f6",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "parchment scroll 3d model",
+      "tris_raw": 7657
+    }
+  },
+  "status": "done",
+  "height_m": 0.1375,
+  "width_m": 0.4056,
+  "lift_m": 0.0,
+  "sprite_px": [118, 40],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/scr01/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Scr01.glb",
+    "tris": 7657,
+    "size_m": [0.4056, 0.1999, 0.1255],
+    "scale": 0.41314
+  }
+}
