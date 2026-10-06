@@ -1,0 +1,53 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "wand2",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 145,
+  "bgf": "wand2",
+  "frame": 0,
+  "describe": "a thin straight red wand with a small white tip at one end and a black tip at the other",
+  "mesh": "SM_AI_Wand2",
+  "size_by": "length",
+  "restyle": {"providers": ["openai"], "extra": "Show it lying flat on its side, horizontal."},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "4c6007f5-9551-4817-ae4f-6cf863b2865c",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "red baton 3d model",
+        "tris_raw": 7574
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/wand2/wand2_tripo.glb",
+      "tripo_task": "4c6007f5-9551-4817-ae4f-6cf863b2865c",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "red baton 3d model",
+      "tris_raw": 7574
+    }
+  },
+  "status": "done",
+  "height_m": 0.063,
+  "width_m": 1.0141,
+  "lift_m": 0.0,
+  "sprite_px": [128, 128],
+  "size_frame": 1,
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/wand2/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Wand2.glb",
+    "tris": 7574,
+    "size_m": [1.0141, 0.0936, 0.1055],
+    "scale": 1.03611
+  },
+  "lay_flat": true
+}

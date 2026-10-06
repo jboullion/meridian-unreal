@@ -172,6 +172,14 @@ def export_texture(bgf: BGF, out_png: Path, pal) -> dict:
             "has_transparency": any(v == TRANSPARENT for v in bgf.bitmaps[0].pixels)}
 
 
+M_PER_SQUARE = 2.2  # one Kod grid square (64 fineness units), docs/findings.md
+
+
+def world_height_m(meta: dict, frame: int = 0) -> float:
+    """In-world height of a sprite bitmap (meta.json of export_sprite): 1/shrink fine units per texel."""
+    return meta["bitmaps"][frame]["h"] / meta["shrink"] / 64.0 * M_PER_SQUARE
+
+
 def zone_texture_ids() -> set[int]:
     sys.path.insert(0, str(ROOT / "Server-104" / "roomedit" / "roogen"))
     from roofile import Room

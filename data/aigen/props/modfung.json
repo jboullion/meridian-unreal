@@ -1,0 +1,157 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "modfung",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 135,
+  "bgf": "modfung",
+  "frame": 0,
+  "describe": "a miniature statue of a fungus beast: a brown mushroom-capped creature with a glossy spotted cap, green eyes, a toothy mouth and many root-like legs",
+  "mesh": "SM_AI_Modfung",
+  "size_by": "height",
+  "restyle": {"providers": ["openai"]},
+  "tripo": {
+    "variants": {
+      "C": {"front": "openai"},
+      "MV": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"},
+      "SMMV2k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"},
+      "SMMV5k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"},
+      "SMMV10k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"},
+      "SMMV20k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"},
+      "SMMV5kT": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"},
+      "MV1k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
+    },
+    "runs": {
+      "C": {
+        "tripo_task": "565fa005-b7fe-440c-a32a-320947ee0ad9",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "alien creature 3d model",
+        "tris_raw": 7978,
+        "file": "build/aigen/props/modfung/04_tripo_out/C.glb",
+        "digest": "65c967e2fcfa33ff",
+        "tris": 7978,
+        "size_m": [0.6967, 0.7612, 0.9764]
+      },
+      "MV": {
+        "tripo_task": "3d27d008-aef5-4e05-8935-48c6feb16b2f",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh, 2K PBR, Remove Lighting, triangles, 8000 faces, multi-view front/left/back/right (OpenAI views), 45 credits",
+        "file": "build/aigen/props/modfung/04_tripo_out/MV.glb",
+        "digest": "a9e8b4f0b9b6a22b",
+        "tris": 7926,
+        "size_m": [0.6691, 0.6757, 0.9833]
+      },
+      "SMMV2k": {
+        "tripo_task": "ddc8c434-2ce0-49f4-bd02-6c8597521935",
+        "settings": "Studio Smart Mesh P2.0, multi-view, triangles, 2000-face target, untextured (one of 4 generations per run; 100 credits per run, first two runs free trials)",
+        "file": "build/aigen/props/modfung/04_tripo_out/SMMV2k.glb",
+        "digest": "b9876eace47bdca9",
+        "tris": 2187,
+        "size_m": [0.6655, 0.7769, 0.9995]
+      },
+      "SMMV5k": {
+        "tripo_task": "845b6061-b04d-4a84-9f57-a43e0f7f7bbc",
+        "settings": "Studio Smart Mesh P2.0, multi-view, triangles, 5000-face target, untextured (one of 4 generations per run; 100 credits per run, first two runs free trials)",
+        "tripo_name": "alien creature 3d model",
+        "tris_raw": 5535,
+        "file": "build/aigen/props/modfung/04_tripo_out/SMMV5k.glb",
+        "digest": "b046dc5c1da5866a",
+        "tris": 5535,
+        "size_m": [0.6567, 0.7388, 0.9995]
+      },
+      "SMMV10k": {
+        "tripo_task": "fcffae45-c357-4d7b-a035-28268f4c7440",
+        "settings": "Studio Smart Mesh P2.0, multi-view, triangles, 10000-face target, untextured (one of 4 generations per run; 100 credits per run, first two runs free trials)",
+        "tripo_name": "alien creature 3d model",
+        "tris_raw": 11001,
+        "file": "build/aigen/props/modfung/04_tripo_out/SMMV10k.glb",
+        "digest": "a10b24e5a3561692",
+        "tris": 11001,
+        "size_m": [0.6587, 0.7495, 0.9995]
+      },
+      "SMMV20k": {
+        "tripo_task": "6574d64a-72b6-4927-a10a-f935abb958ce",
+        "settings": "Studio Smart Mesh P2.0, multi-view, triangles, 20000-face target, untextured (one of 4 generations per run; 100 credits per run, first two runs free trials)",
+        "tripo_name": "alien creature 3d model.001",
+        "tris_raw": 21226,
+        "file": "build/aigen/props/modfung/04_tripo_out/SMMV20k.glb",
+        "digest": "ed06f530132bd595",
+        "tris": 21226,
+        "size_m": [0.6665, 0.7495, 0.9995]
+      },
+      "SMMV5kT": {
+        "tripo_task": "845b6061-b04d-4a84-9f57-a43e0f7f7bbc",
+        "settings": "Studio Smart Mesh P2.0, multi-view, triangles, 5000-face target (one of 4 generations per run; 100 credits per run, first two runs free trials), then textured in Studio's Texture tool: 2K, Remove Lighting (10 credits)",
+        "tripo_name": "alien creature 3d model",
+        "tris_raw": 5535,
+        "file": "build/aigen/props/modfung/04_tripo_out/SMMV5kT.glb",
+        "digest": "14513b347408263d",
+        "tris": 5535,
+        "size_m": [0.6567, 0.7388, 0.9995]
+      },
+      "MV1k": {
+        "tripo_task": "52792895-a65d-4515-8f34-1179049767d5",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 polycount, multi-view front/left/back/right restyled from the original's own angle frames (45 credits)",
+        "tripo_name": "alien creature 3d model",
+        "tris_raw": 878,
+        "file": "build/aigen/props/modfung/04_tripo_out/MV1k.glb",
+        "digest": "b62cd7d5645a5539",
+        "tris": 878,
+        "size_m": [0.5363, 0.9743, 0.7576]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/modfung/modfung_tripo.glb",
+      "tripo_task": "565fa005-b7fe-440c-a32a-320947ee0ad9",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "alien creature 3d model",
+      "tris_raw": 7978
+    }
+  },
+  "status": "done",
+  "height_m": 0.4076,
+  "width_m": 0.2799,
+  "lift_m": 0.0,
+  "sprite_px": [57, 83],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52539b3d08190a098c00810ec4715",
+      "file": "build/aigen/props/modfung/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
+      "file": "build/aigen/props/modfung/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
+      "file": "build/aigen/props/modfung/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
+      "file": "build/aigen/props/modfung/02_restyle/openai_right.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Modfung.glb",
+    "tris": 7978,
+    "size_m": [0.2908, 0.3178, 0.4076],
+    "scale": 0.41745
+  },
+  "angles": {"left": 2, "back": 3, "right": 4},
+  "normalized_variants": {
+    "MV1k": {
+      "file": "build/environment/kit/SM_AI_Modfung_MV1k.glb",
+      "tris": 878,
+      "size_m": [0.2886, 0.5242, 0.4076],
+      "scale": 0.53799
+    }
+  }
+}

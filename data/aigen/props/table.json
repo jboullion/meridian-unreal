@@ -1,0 +1,133 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "table",
+  "kind": "props",
+  "class": "Table",
+  "bgf": "table",
+  "frame": 0,
+  "describe": "a round wooden pedestal table: a wide thin circular top on a single turned central column with a round flared foot",
+  "mesh": "SM_AI_Table",
+  "size_by": "height",
+  "restyle": {"providers": ["openai"]},
+  "tripo": {
+    "variants": {
+      "C": {"front": "openai"},
+      "SM2k": {"front": "openai"},
+      "SM4k": {"front": "openai"},
+      "SM8k": {"front": "openai"},
+      "SM16k": {"front": "openai"},
+      "HD1k": {"front": "openai"}
+    },
+    "runs": {
+      "C": {
+        "tripo_task": "87214e40-5bb7-4b9d-92e3-677b6330f1e2",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "round wooden table 3d model",
+        "tris_raw": 7750,
+        "file": "build/aigen/props/table/04_tripo_out/C.glb",
+        "digest": "700e96df75d2e13e",
+        "tris": 7750,
+        "size_m": [0.9795, 0.9788, 0.5349]
+      },
+      "SM2k": {
+        "tripo_task": "e4e0ef0f-abfd-4a08-9292-42698c1e0787",
+        "faces_studio": 2066,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 2000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "wooden round table 3d model",
+        "tris_raw": 2066,
+        "file": "build/aigen/props/table/04_tripo_out/SM2k.glb",
+        "digest": "d7230d4fa4ef434c",
+        "tris": 2066,
+        "size_m": [0.9995, 0.9995, 0.5103]
+      },
+      "SM4k": {
+        "tripo_task": "000168cd-dbf9-4a3d-9856-e65b6a34190b",
+        "faces_studio": 4304,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 4000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "wooden round table 3d model",
+        "tris_raw": 4304,
+        "file": "build/aigen/props/table/04_tripo_out/SM4k.glb",
+        "digest": "8994156917e8c461",
+        "tris": 4304,
+        "size_m": [0.9995, 0.9995, 0.5103]
+      },
+      "SM8k": {
+        "tripo_task": "6e2c9315-1e36-4445-a5a5-7183d47b928e",
+        "faces_studio": 8248,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 8000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "wooden round table 3d model",
+        "tris_raw": 8248,
+        "file": "build/aigen/props/table/04_tripo_out/SM8k.glb",
+        "digest": "c955172218175820",
+        "tris": 8248,
+        "size_m": [0.9995, 0.9995, 0.5093]
+      },
+      "SM16k": {
+        "tripo_task": "c80b3167-e1e2-462e-83df-a9e474e21b1d",
+        "faces_studio": 14848,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 16000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "wooden round table 3d model",
+        "tris_raw": 14848,
+        "file": "build/aigen/props/table/04_tripo_out/SM16k.glb",
+        "digest": "bfb1d39a8c6574f7",
+        "tris": 14848,
+        "size_m": [0.9995, 0.9995, 0.5327]
+      },
+      "HD1k": {
+        "tripo_task": "4705e930-add7-4bfc-87d3-c2e7a340f5aa",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 polycount, single image (45 credits)",
+        "file": "build/aigen/props/table/04_tripo_out/HD1k.glb",
+        "digest": "4d3941844573b710",
+        "tris": 968,
+        "size_m": [0.9796, 0.9789, 0.5353]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/table/table_tripo.glb",
+      "tripo_task": "87214e40-5bb7-4b9d-92e3-677b6330f1e2",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "round wooden table 3d model",
+      "tris_raw": 7750
+    }
+  },
+  "status": "done",
+  "height_m": 1.1344,
+  "width_m": 2.074,
+  "lift_m": 0.0,
+  "sprite_px": [181, 99],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/table/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Table.glb",
+    "tris": 7750,
+    "size_m": [2.0775, 2.0759, 1.1344],
+    "scale": 2.12096
+  },
+  "normalized_variants": {
+    "SM4k": {
+      "file": "build/environment/kit/SM_AI_Table_SM4k.glb",
+      "tris": 4304,
+      "size_m": [2.2221, 2.2221, 1.1344],
+      "scale": 2.22321
+    },
+    "SM8k": {
+      "file": "build/environment/kit/SM_AI_Table_SM8k.glb",
+      "tris": 8248,
+      "size_m": [2.2264, 2.2264, 1.1344],
+      "scale": 2.22747
+    },
+    "HD1k": {
+      "file": "build/environment/kit/SM_AI_Table_HD1k.glb",
+      "tris": 968,
+      "size_m": [2.0759, 2.0744, 1.1344],
+      "scale": 2.11915
+    }
+  }
+}

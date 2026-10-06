@@ -1,0 +1,133 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "chandelr",
+  "kind": "props",
+  "class": "Chandelier",
+  "bgf": "chandelr",
+  "frame": 0,
+  "describe": "a hanging iron chandelier: a flat dark iron ring with small candle cups around it and a small gold ornament at its centre, hung from a single thin chain",
+  "mesh": "SM_AI_Chandelr",
+  "size_by": "height",
+  "restyle": {"providers": ["openai"]},
+  "tripo": {
+    "variants": {
+      "C": {"front": "openai"},
+      "SM2k": {"front": "openai"},
+      "SM4k": {"front": "openai"},
+      "SM8k": {"front": "openai"},
+      "SM16k": {"front": "openai"},
+      "HD1k": {"front": "openai"}
+    },
+    "runs": {
+      "C": {
+        "tripo_task": "93b8c9f8-9005-4cfe-bfcd-4c67b8a539b6",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "industrial chandelier 3d model",
+        "tris_raw": 7742,
+        "file": "build/aigen/props/chandelr/04_tripo_out/C.glb",
+        "digest": "7707d887930e0434",
+        "tris": 7742,
+        "size_m": [0.981, 0.9781, 0.7603]
+      },
+      "SM2k": {
+        "tripo_task": "b7097fad-ce6e-49dd-aea0-602d5b8b6cab",
+        "faces_studio": 2220,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 2000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "industrial chandelier 3d model",
+        "tris_raw": 2220,
+        "file": "build/aigen/props/chandelr/04_tripo_out/SM2k.glb",
+        "digest": "2f3ae106b5dd96b9",
+        "tris": 2220,
+        "size_m": [0.9995, 0.9995, 0.7769]
+      },
+      "SM4k": {
+        "tripo_task": "c36694c7-3df5-442d-8ca9-d12544b1df09",
+        "faces_studio": 4206,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 4000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "rustic chandelier 3d model",
+        "tris_raw": 4206,
+        "file": "build/aigen/props/chandelr/04_tripo_out/SM4k.glb",
+        "digest": "c0e7d337cdecd8b8",
+        "tris": 4206,
+        "size_m": [0.9995, 0.9995, 0.8091]
+      },
+      "SM8k": {
+        "tripo_task": "4ec4185b-8ec2-4090-89b1-42e680cd1514",
+        "faces_studio": 7305,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 8000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "rustic metal chandelier 3d model",
+        "tris_raw": 7305,
+        "file": "build/aigen/props/chandelr/04_tripo_out/SM8k.glb",
+        "digest": "02eeef3f32dfa802",
+        "tris": 7305,
+        "size_m": [0.9995, 0.9995, 0.8149]
+      },
+      "SM16k": {
+        "tripo_task": "ae2cf502-eae9-466b-be16-0621e850a39b",
+        "faces_studio": 16272,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 16000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "metal chandelier 3d model",
+        "tris_raw": 16272,
+        "file": "build/aigen/props/chandelr/04_tripo_out/SM16k.glb",
+        "digest": "6839f784b8df5aae",
+        "tris": 16272,
+        "size_m": [0.9995, 0.9985, 0.8198]
+      },
+      "HD1k": {
+        "tripo_task": "3f6ec213-6609-42a1-a0ca-b1c4b3b41136",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 polycount, single image (45 credits)",
+        "file": "build/aigen/props/chandelr/04_tripo_out/HD1k.glb",
+        "digest": "bc03a5a0fa7558be",
+        "tris": 988,
+        "size_m": [0.9716, 0.9687, 0.7515]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/chandelr/chandelr_tripo.glb",
+      "tripo_task": "93b8c9f8-9005-4cfe-bfcd-4c67b8a539b6",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "industrial chandelier 3d model",
+      "tris_raw": 7742
+    }
+  },
+  "status": "done",
+  "height_m": 1.5813,
+  "width_m": 1.8648,
+  "lift_m": 0.6188,
+  "sprite_px": [256, 256],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/chandelr/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Chandelr.glb",
+    "tris": 7742,
+    "size_m": [2.0401, 2.0342, 1.5813],
+    "scale": 2.07971
+  },
+  "normalized_variants": {
+    "SM4k": {
+      "file": "build/environment/kit/SM_AI_Chandelr_SM4k.glb",
+      "tris": 4206,
+      "size_m": [1.9535, 1.9535, 1.5813],
+      "scale": 1.95444
+    },
+    "SM8k": {
+      "file": "build/environment/kit/SM_AI_Chandelr_SM8k.glb",
+      "tris": 7305,
+      "size_m": [1.9394, 1.9394, 1.5813],
+      "scale": 1.94038
+    },
+    "HD1k": {
+      "file": "build/environment/kit/SM_AI_Chandelr_HD1k.glb",
+      "tris": 988,
+      "size_m": [2.0446, 2.0383, 1.5813],
+      "scale": 2.10429
+    }
+  }
+}

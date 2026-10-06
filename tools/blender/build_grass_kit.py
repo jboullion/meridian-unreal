@@ -68,7 +68,10 @@ def build(name, seed, count, heights, radius):
     rng = random.Random(seed)
     mesh = bpy.data.meshes.new("SM_GrassClump_" + name)
     bm = bmesh.new()
-    color_layer = bm.loops.layers.color.new("Col")
+    # linear float colour, exported by name as the only COLOR_0: a byte colour layer made through
+    # bmesh isn't the active one, and the exporter wrote a white COLOR_0 ahead of it, so the grass
+    # had no gradient, no per-blade variation and full wind at the roots (2026-10-06, docs/adr/0007 "Trees")
+    color_layer = bm.loops.layers.float_color.new("Col")
     for _ in range(count):
         blade(bm, rng, rng.uniform(*heights), radius, color_layer)
     bmesh.ops.triangulate(bm, faces=bm.faces[:])
@@ -94,7 +97,8 @@ def main():
         path = os.path.join(OUT, obj.name + ".glb")
         bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", use_selection=True,
                                   export_materials="EXPORT", export_image_format="NONE",
-                                  export_yup=True, export_vertex_color="ACTIVE")
+                                  export_yup=True, export_vertex_color="NAME", export_vertex_color_name="Col",
+                                  export_all_vertex_colors=False)
         print("[build_grass_kit] %s: %d triangles -> %s" % (obj.name, len(obj.data.polygons), path), flush=True)
 
 

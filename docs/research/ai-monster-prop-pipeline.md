@@ -1,6 +1,6 @@
 # Research: AI pipeline for monsters and static props
 
-- Status: **Investigation and test plan. Nothing has been generated or built yet.**
+- Status: **Props: being built.** The pipeline is in `tools/aigen/` (recipe: skill [sprite-to-3d](../../.claude/skills/sprite-to-3d/SKILL.md); decisions: [ADR 0007](../adr/0007-ai-prop-pipeline.md)), starting with the Raza brazier. Monsters: investigation only.
 - Date: 2026-10-05
 - Question: can we turn the original monster and object sprites into consistent, rigged and animated 3D monsters and static props, with one shared style, through upscale → 2D restyle → image-to-3D?
 - Related: [ai-character-pipeline.md](ai-character-pipeline.md) (players, outfits and human NPCs; this doc reuses its front end), [ADR 0003](../adr/0003-environment-art-pipeline.md) (environment), `data/environment/props.json`.

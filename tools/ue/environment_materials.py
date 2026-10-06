@@ -83,8 +83,8 @@ def _master(name, builder, *args):
     cache = build_cache.CACHE
     key = cache.key(build_cache.source(builder, _expr, _world_uv, _srgb_to_linear, _new_material, _window_glow, _atlas_uv,
                                        _weather_surface, _collection, _custom, _ripples, _season, _camera_box_inputs, _puff_inputs,
-                                       _matte, _undergrowth),
-                    name, args + (RIPPLE_HLSL, SEASON_HLSL, UNDERGROWTH_HLSL))
+                                       _matte, _undergrowth, _tree_wind),
+                    name, args + (RIPPLE_HLSL, SEASON_HLSL, UNDERGROWTH_HLSL, TREE_WIND_HLSL))
     return cache.get_or_build("%s/%s" % (MAT_DIR, name), key, "masters", lambda: builder(name, *args))
 
 
@@ -890,7 +890,12 @@ def build_grass_material(name, macro, grass):
     macro = eal.load_asset(macro)
     mat.set_editor_property("two_sided", True)
     mat.set_editor_property("used_with_instanced_static_meshes", True)
-    vc = _expr(mat, unreal.MaterialExpressionVertexColor, -1000, 0)
+    # materials.json grass "vertex_colors": false draws the look from before the export fix
+    # (2026-10-06): every blade read colour 1, so all at the tip colour, varied x1.2, wind at the roots
+    if grass.get("vertex_colors", True):
+        vc = _expr(mat, unreal.MaterialExpressionVertexColor, -1000, 0)
+    else:
+        vc = _expr(mat, unreal.MaterialExpressionConstant4Vector, -1000, 0, constant=unreal.LinearColor(1, 1, 1, 1))
     root = _expr(mat, unreal.MaterialExpressionVectorParameter, -1000, -300, parameter_name="Root",
                  default_value=unreal.LinearColor(*(_srgb_to_linear(grass["root"]) + [1])))
     tip = _expr(mat, unreal.MaterialExpressionVectorParameter, -1000, -150, parameter_name="Tip",
@@ -1095,6 +1100,214 @@ def build_prop_materials(cfg, mpc):
                             scalars={"Metallic": v.get("metallic", 0.0), "Roughness": v.get("roughness", 0.6),
                                      "LampSwitch": 1.0 if v.get("night_only") else 0.0})
             for slot, v in cfg.items() if not slot.startswith("_")}
+
+
+def default_orm():
+    """-> path of T_DefaultORM: a linear 4x4 texture (G roughness 1, B metallic 0), the default of
+    M_PropTextured's MetallicRoughness. An engine default won't do: WhiteSquareTexture is sRGB, which
+    the Linear Color sampler rejects, so the master failed to compile and every AI prop drew the grey
+    default material (2026-10-06, found after a full shader recompile)."""
+    import struct
+    import zlib
+    name = "T_DefaultORM.png"
+    path = os.path.join(PLACEHOLDERS, name)
+    if not os.path.exists(path):
+        os.makedirs(PLACEHOLDERS, exist_ok=True)
+        raw = b"".join(bytes([0]) + bytes((255, 255, 0)) * 4 for _ in range(4))  # filter 0 + RGB rows
+
+        def chunk(kind, data):
+            return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xFFFFFFFF)
+        png = (bytes([137, 80, 78, 71, 13, 10, 26, 10]) + chunk(b"IHDR", struct.pack(">IIBBBBB", 4, 4, 8, 2, 0, 0, 0))
+               + chunk(b"IDAT", zlib.compress(raw)) + chunk(b"IEND", b""))
+        with open(path, "wb") as f:
+            f.write(png)
+    return ensure_textures([(name, False, False)])[name]
+
+
+def build_textured_prop_master(name, mpc, orm_default):
+    """M_PropTextured, for the AI-generated props (tools/aigen, docs/adr/0007): their glTF PBR set
+    (BaseColor sRGB, Normal, MetallicRoughness: G roughness, B metallic) with what every other surface
+    master has: matte specular, wet and snowy weather, and the ambient floor of interiors
+    (base * SectorLight * MPC_Environment.SectorAmbient * AmbientTint), without which props went
+    near-black inside while the walls around them were lit (2026-10-06). SectorLight: the original
+    sector light level (0..1) where the prop stands, 1 by default. Two-sided, as Tripo exports."""
+    mat = _new_material(name)
+    base = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, -300, parameter_name="BaseColor",
+                 sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR,
+                 texture=eal.load_asset("/Engine/EngineResources/DefaultTexture"))
+    nrm = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, 0, parameter_name="Normal",
+                sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL,
+                texture=eal.load_asset("/Engine/EngineMaterials/DefaultNormal"))
+    orm = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, 300, parameter_name="MetallicRoughness",
+                sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR,
+                texture=eal.load_asset(orm_default))
+    w_base, w_normal, w_rough, _, wet = _weather_surface(mat, (base, "RGB"), (nrm, "RGB"), (orm, "G"), -400, 700)
+    mel.connect_material_property(w_base[0], w_base[1], unreal.MaterialProperty.MP_BASE_COLOR)
+    mel.connect_material_property(w_normal[0], w_normal[1], unreal.MaterialProperty.MP_NORMAL)
+    mel.connect_material_property(w_rough[0], w_rough[1], unreal.MaterialProperty.MP_ROUGHNESS)
+    mel.connect_material_property(orm, "B", unreal.MaterialProperty.MP_METALLIC)
+    mel.connect_material_property(_matte(mat, wet, -400, 500), "", unreal.MaterialProperty.MP_SPECULAR)
+    collection = eal.load_asset(mpc)
+    sector = _expr(mat, unreal.MaterialExpressionScalarParameter, -900, 600, parameter_name="SectorLight", default_value=1.0)
+    amb = _expr(mat, unreal.MaterialExpressionCollectionParameter, -900, 700, collection=collection, parameter_name="SectorAmbient")
+    tint = _expr(mat, unreal.MaterialExpressionCollectionParameter, -900, 800, collection=collection, parameter_name="AmbientTint")
+    tint_rgb = _expr(mat, unreal.MaterialExpressionComponentMask, -700, 800, r=True, g=True, b=True)
+    mel.connect_material_expressions(tint, "", tint_rgb, "")
+    level = _expr(mat, unreal.MaterialExpressionMultiply, -700, 650)
+    mel.connect_material_expressions(sector, "", level, "A")
+    mel.connect_material_expressions(amb, "", level, "B")
+    lit = _expr(mat, unreal.MaterialExpressionMultiply, -550, 700)
+    mel.connect_material_expressions(level, "", lit, "A")
+    mel.connect_material_expressions(tint_rgb, "", lit, "B")
+    ambient = _expr(mat, unreal.MaterialExpressionMultiply, -400, 650)
+    mel.connect_material_expressions(base, "RGB", ambient, "A")
+    mel.connect_material_expressions(lit, "", ambient, "B")
+    mel.connect_material_property(ambient, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    mat.set_editor_property("two_sided", True)
+    mel.recompile_material(mat)
+    eal.save_loaded_asset(mat)
+
+
+# texture parameters of a material on an imported AI prop: ours (M_PropTextured) or Interchange's glTF ones
+_AI_PROP_TEXTURES = {"BaseColor": ("BaseColor", "BaseColorTexture"), "Normal": ("Normal", "NormalTexture"),
+                     "MetallicRoughness": ("MetallicRoughness", "MetallicRoughnessTexture")}
+
+
+def ai_prop_material(mesh_path, slot_material):
+    """-> path of MI_AIProp_<mesh> on M_PropTextured with the textures of the material the mesh came
+    with (Interchange's glTF instance, or ours on a later run), or None when it has none."""
+    mi = eal.load_asset(slot_material) if isinstance(slot_material, str) else slot_material
+    if not isinstance(mi, unreal.MaterialInstance):
+        return None
+    found = {}
+    for p in mi.get_editor_property("texture_parameter_values"):
+        pname = str(p.get_editor_property("parameter_info").get_editor_property("name"))
+        tex = p.get_editor_property("parameter_value")
+        for ours, names in _AI_PROP_TEXTURES.items():
+            if pname in names and tex:
+                found[ours] = tex.get_path_name().split(".")[0]
+    if "BaseColor" not in found:
+        return None
+    master = _master("M_PropTextured", build_textured_prop_master, ensure_mpc(), default_orm())
+    return _instance("MI_AIProp_" + mesh_path.rsplit("/", 1)[-1], master, textures=found)
+
+
+TREE_WIND_HLSL = """
+// Wind on the procedural trees (tools/blender/build_tree_kit.py, docs/adr/0007 "Trees"). Vertex
+// colour R is the wind weight (0 at the trunk's foot, 1 at the crown's rim), G a random value per
+// card, Leaf its A (1 on leaves). The whole crown sways downwind (the rain's direction) in slow gusts phased
+// by the tree's position, and the leaf cards flutter on top. MPC Wind: 1 calm, more in a storm.
+// The sway bends with the square of the height in the mesh (LP.z / HeightCm), so the trunk's foot
+// stays planted whatever the vertex colours say.
+// Rate scales every frequency (0.5 since 2026-10-06: the user found the motion too quick).
+float2 dir = normalize(float2(1.0, 0.35));
+float phase = dot(Obj.xy, float2(0.0013, 0.0021));
+float t = T * Rate;
+float gust = 0.55 + 0.45 * sin(t * 0.23 + phase * 0.7);
+float sway = (0.35 + 0.6 * sin(t * 0.9 + phase) + 0.25 * sin(t * 2.1 + phase * 1.7)) * gust;
+float w = Wind * Strength;
+float h = saturate(LP.z / HeightCm);
+float bend = h * h;
+float3 o = float3(dir * sway * SwayCm * w * bend, -abs(sway) * SwayCm * 0.15 * w * bend);
+float fl = sin(t * 5.3 + VC.g * 40.0 + dot(WP, float3(0.031, 0.027, 0.019)));
+float fl2 = sin(t * 3.7 + VC.g * 23.0);
+o += float3(fl, fl2, fl * fl2) * FlutterCm * w * VC.r * Leaf * h;
+return o;
+"""
+
+
+def _tree_wind(mat, x, y):
+    """TREE_WIND_HLSL -> expression (World Position Offset). Bark and leaves share it exactly, so
+    the cards stay on their branches."""
+    vc = _expr(mat, unreal.MaterialExpressionVertexColor, x, y)
+    vc_a = _expr(mat, unreal.MaterialExpressionVertexColor, x - 200, y)
+    inputs = [("VC", vc, ""), ("Leaf", vc_a, "A"), ("T", _expr(mat, unreal.MaterialExpressionTime, x, y + 100), ""),
+              ("Obj", _expr(mat, unreal.MaterialExpressionObjectPositionWS, x, y + 200), ""),
+              ("WP", _expr(mat, unreal.MaterialExpressionWorldPosition, x, y + 300), ""),
+              ("LP", _expr(mat, unreal.MaterialExpressionLocalPosition, x - 200, y + 300), ""),
+              ("Wind", _collection(mat, "Wind", x, y + 400), "")]
+    inputs += [(n, _expr(mat, unreal.MaterialExpressionScalarParameter, x, y + 500 + i * 80, parameter_name=n, default_value=v), "")
+               for i, (n, v) in enumerate((("Strength", 1.0), ("SwayCm", 9.0), ("FlutterCm", 2.5), ("HeightCm", 490.0), ("Rate", 0.5)))]
+    return _custom(mat, x + 400, y, TREE_WIND_HLSL, unreal.CustomMaterialOutputType.CMOT_FLOAT3, inputs, "TreeWind")
+
+
+def build_tree_master(name, leaves):
+    """M_TreeLeaves / M_TreeBark for the procedural trees (tools/blender/build_tree_kit.py,
+    docs/adr/0007 "Trees"). BaseColor * per-card variation (vertex colour G, leaves only) * the
+    crown's ambient occlusion (vertex colour B: lerp(AoMin, 1)), the season's tint on leaves, wet and
+    snowy weather, matte specular (leaves Specular 0.05, Roughness 0.95: no sheen in direct sun), and
+    the shared wind (_tree_wind). Leaves: masked on the atlas's
+    alpha, Two Sided Foliage shading (light comes through the leaves, tinted by Transmission), and
+    not two-sided: the cards are doubled in geometry, so both sides keep the crown's normals."""
+    mat = _new_material(name)
+    tex = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -1500, -300, parameter_name="BaseColor",
+                sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR,
+                texture=eal.load_asset("/Engine/EngineResources/DefaultTexture"))
+    vc = _expr(mat, unreal.MaterialExpressionVertexColor, -1500, 0)
+    ao_min = _expr(mat, unreal.MaterialExpressionScalarParameter, -1500, 150, parameter_name="AoMin",
+                   default_value=0.5 if leaves else 0.55)
+    ao = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -1250, 100, const_b=1.0)
+    mel.connect_material_expressions(ao_min, "", ao, "A")
+    mel.connect_material_expressions(vc, "B", ao, "Alpha")
+    col = _expr(mat, unreal.MaterialExpressionMultiply, -1050, -200)
+    mel.connect_material_expressions(tex, "RGB", col, "A")
+    mel.connect_material_expressions(ao, "", col, "B")
+    if leaves:
+        var = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -1250, 250, const_a=0.82, const_b=1.18)
+        mel.connect_material_expressions(vc, "G", var, "Alpha")
+        brightness = _expr(mat, unreal.MaterialExpressionScalarParameter, -1250, 350, parameter_name="Brightness", default_value=1.3)
+        v2 = _expr(mat, unreal.MaterialExpressionMultiply, -1100, 300)
+        mel.connect_material_expressions(var, "", v2, "A")
+        mel.connect_material_expressions(brightness, "", v2, "B")
+        col2 = _expr(mat, unreal.MaterialExpressionMultiply, -900, -150)
+        mel.connect_material_expressions(col, "", col2, "A")
+        mel.connect_material_expressions(v2, "", col2, "B")
+        col = _season(mat, (col2, ""), -900, -900)
+    rough = _expr(mat, unreal.MaterialExpressionScalarParameter, -700, 500, parameter_name="Roughness",
+                  default_value=0.95 if leaves else 0.9)
+    w_base, _, w_rough, _, wet = _weather_surface(mat, (col, ""), None, (rough, ""), -500, 800)
+    mel.connect_material_property(w_base[0], w_base[1], unreal.MaterialProperty.MP_BASE_COLOR)
+    mel.connect_material_property(w_rough[0], w_rough[1], unreal.MaterialProperty.MP_ROUGHNESS)
+    # leaves nearly without a sheen in direct sun (the user, 2026-10-06): lit, but diffuse
+    mel.connect_material_property(_matte(mat, wet, -500, 650, default=0.05 if leaves else 0.2), "", unreal.MaterialProperty.MP_SPECULAR)
+    mel.connect_material_property(_tree_wind(mat, -1100, 1300), "", unreal.MaterialProperty.MP_WORLD_POSITION_OFFSET)
+    if leaves:
+        mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+        mel.connect_material_property(tex, "A", unreal.MaterialProperty.MP_OPACITY_MASK)
+        mat.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_TWO_SIDED_FOLIAGE)
+        transmission = _expr(mat, unreal.MaterialExpressionVectorParameter, -700, 300, parameter_name="Transmission",
+                             default_value=unreal.LinearColor(0.22, 0.32, 0.12, 1))
+        sss = _expr(mat, unreal.MaterialExpressionMultiply, -450, 300)
+        mel.connect_material_expressions(col, "", sss, "A")
+        mel.connect_material_expressions(transmission, "", sss, "B")
+        mel.connect_material_property(sss, "", unreal.MaterialProperty.MP_SUBSURFACE_COLOR)
+    mel.recompile_material(mat)
+    eal.save_loaded_asset(mat)
+
+
+def tree_materials(kind):
+    """{"tree_bark": MI, "tree_leaves": MI} for SM_Tree_<kind>_* (textures T_TreeBark_<kind> and
+    T_TreeLeaves_<kind> from tools/textures/make_tree_textures.py; bark only for a leafless tree),
+    or {} when they're missing."""
+    files = ["T_TreeBark_%s.png" % kind, "T_TreeLeaves_%s.png" % kind]
+    if not os.path.exists(os.path.join(PLACEHOLDERS, files[1])):
+        files = files[:1]  # a leafless tree: bark only
+    if not all(os.path.exists(os.path.join(PLACEHOLDERS, f)) for f in files):
+        log("WARNING: no tree textures for %s (run tools/textures/make_tree_textures.py)" % kind)
+        return {}
+    tex = ensure_textures([(f, True, False) for f in files])
+    # The leaf atlas is small (1024 px) and streaming judged the cards' texel density badly: the
+    # leaves were drawn from a low mip, and the alpha cut turned them into blobs (2026-10-06,
+    # build/lookdev/trees_v8). Keep every mip resident.
+    leaves = eal.load_asset(tex[files[1]]) if len(files) > 1 else None
+    if leaves and not leaves.get_editor_property("never_stream"):
+        leaves.set_editor_property("never_stream", True)
+        eal.save_loaded_asset(leaves)
+    out = {}
+    for slot, f, leaves in (("tree_bark", files[0], False), ("tree_leaves", files[-1], True))[:len(files)]:
+        master = _master("M_TreeLeaves" if leaves else "M_TreeBark", build_tree_master, leaves)
+        out[slot] = _instance("MI_Tree_%s_%s" % (kind, "Leaves" if leaves else "Bark"), master, textures={"BaseColor": tex[f]})
+    return out
 
 
 def build_night_sky_master(name, stars, mpc):

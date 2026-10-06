@@ -63,7 +63,7 @@ import chimneys  # noqa: E402
 import fires  # noqa: E402
 import scatter  # noqa: E402
 from build_cache import file_digest, source  # noqa: E402
-from environment_materials import ENV as ENVIRONMENT_DIR, ZoneMaterials, assign_materials  # noqa: E402
+from environment_materials import ENV as ENVIRONMENT_DIR, ZoneMaterials, ai_prop_material, assign_materials, tree_materials  # noqa: E402
 from zone_mood import MOODS, apply_level_mood  # noqa: E402
 
 LAYOUT = os.path.join(REPO, "data", "zone_layout.json")
@@ -310,12 +310,35 @@ def import_kit_mesh(name, materials, slot_materials=None):
         log("WARNING: %s missing; run tools/blender/build_grass_kit.py" % path)
         return None
     mesh = import_zone_mesh(path, "%s/Kit/%s" % (ENVIRONMENT_DIR, name), collision=False)
+    if name.startswith("SM_AI_"):
+        # AI props (tools/aigen): their textures on M_PropTextured, which adds the interiors' ambient
+        # floor and the weather the imported glTF material lacks (docs/adr/0007)
+        slots = eal.load_asset(mesh).get_editor_property("static_materials")
+        mi = ai_prop_material(mesh, slots[0].get_editor_property("material_interface")) if slots else None
+        if mi:
+            assign_materials(mesh, lambda slot: (mi, 1))
+            _kit[name] = mesh
+            return mesh
+    if name.startswith("SM_Tree_"):
+        # procedural trees (tools/blender/build_tree_kit.py): bark and leaf slots on M_TreeBark /
+        # M_TreeLeaves with the tree kind's textures (docs/adr/0007 "Trees")
+        slot_materials = tree_materials(name.split("_")[2])
     if slot_materials is None:
         assign_materials(mesh, lambda slot: (materials.grass, 1) if materials.grass else (None, 2))
     else:
         assign_materials(mesh, lambda slot: (slot_materials[slot], 1) if slot_materials.get(slot) else (None, 2))
     _kit[name] = mesh
     return mesh
+
+
+def light_scale():
+    """props.json "light_scale": one factor on the intensity of every light the world build adds
+    (props, wall torches, the original's room lights); their reach stays. The environment light
+    carries the scene, fires add warmth (2026-10-06, docs/adr/0005)."""
+    try:
+        return float(json.load(open(PROPS, encoding="utf-8")).get("light_scale", 1.0))
+    except (OSError, ValueError):
+        return 1.0
 
 
 # Kod light intensity (0-255) -> candela and reach: a lamp (Kod 50) is 12 cd and reaches 11.5 m,
@@ -349,20 +372,100 @@ def fire_spec(materials, preset, centre_cm):
     return {"material": mi, "size_cm": [v * 100.0 for v in entry["size_m"]], "centre_cm": centre_cm}
 
 
+# glTF +Z (the side Tripo faces to the camera, docs/adr/0007) lands on UE +Y (south) on import, which
+# is Kod angle 1024: a Kod angle turns the model by (angle - 1024) / 4096 of a turn
+KOD_ANGLE_FRONT = 1024
+
+
+def prop_config(props, obj):
+    """The props.json entry for a Kod object: OrnamentalObjects by their type ("types", keyed by the
+    OO number as a string), every other class by "classes"."""
+    if obj["class"] == "OrnamentalObject":
+        return props.get("types", {}).get(str((obj.get("params") or {}).get("type")))
+    return props.get("classes", {}).get(obj["class"])
+
+
+def prop_yaw(cfg, obj, label):
+    """Yaw in degrees: from the object's Kod angle; else a stable pseudo-random turn when the entry
+    has "random_yaw" (plants, rocks: the original drew them as camera-facing sprites); else 0."""
+    if obj.get("yaw_kod") is not None:
+        return (float(obj["yaw_kod"]) - KOD_ANGLE_FRONT) * 360.0 / 4096.0 + float(cfg.get("yaw_offset", 0.0))
+    if cfg.get("random_yaw"):
+        return (zlib.crc32(label.encode()) % 3600) / 10.0
+    return float(cfg.get("yaw_offset", 0.0))
+
+
+def prop_mesh_available(name):
+    """A props.json mesh: a kit GLB name (build/environment/kit/<name>.glb) or a UE asset path
+    (/Game/..., e.g. a tree exported from the Procedural Vegetation Editor)."""
+    if name.startswith("/"):
+        return eal.does_asset_exist(name)
+    return os.path.exists(os.path.join(KIT_DIR, name + ".glb"))
+
+
+def prop_mesh_name(cfg, label, ordinal):
+    """The mesh for one placed object: a custom model when one exists, else the entry's mesh.
+    Custom: the entry's "mesh_custom" (a kit GLB name or UE asset path), or else <mesh>_Custom, the
+    kit mesh tools/aigen builds from a manifest's "custom" model (docs/adr/0007 "Custom models").
+    Either falls back to "mesh" (the HD model) while its file doesn't exist."""
+    for custom in (cfg.get("mesh_custom"), cfg.get("mesh") and cfg["mesh"] + "_Custom"):
+        if custom and prop_mesh_available(custom):
+            return custom
+    return prop_mesh_choice(cfg, label, ordinal)
+
+
+def prop_mesh_choice(cfg, label, ordinal):
+    """The entry's own mesh. "mesh" by default. An entry with "mesh_options" ({option:
+    [meshes]}) uses the option named by "mesh_use"; "compare" cycles the options over the zone's
+    objects of this kind (the ordinal-th object gets option ordinal % n), so they stand side by side
+    (docs/adr/0007 "Trees"). Within an option a stable pseudo-random variant per object. Options
+    whose meshes don't exist yet are left out; None when nothing is available."""
+    options = cfg.get("mesh_options")
+    if not options:
+        name = cfg.get("mesh")
+        return name if name and prop_mesh_available(name) else None
+    avail = {k: [m for m in v if prop_mesh_available(m)] for k, v in options.items() if not k.startswith("_")}
+    avail = {k: v for k, v in avail.items() if v}
+    use = cfg.get("mesh_use", "compare")
+    if use == "compare":
+        keys = [k for k in options if k in avail]
+        if not keys:
+            return None
+        use = keys[ordinal % len(keys)]
+    meshes = avail.get(use)
+    if not meshes:
+        name = cfg.get("mesh")
+        return name if name and prop_mesh_available(name) else None
+    return meshes[zlib.crc32(label.encode()) % len(meshes)]
+
+
 def zone_props(zone, materials, prop_materials):
-    """-> [(label, mesh path or None, [x, y, z] cm, light config or None, fire or None)] for the zone's
-    Kod objects whose class is in data/environment/props.json. A light with "flicker" (true, or
-    "sector" in the original's flickering sectors) and a class with a "fire" become AMRFireActors."""
+    """-> [(label, mesh path or None, [x, y, z] cm, light config or None, fire or None, yaw deg, scale)] for the
+    zone's Kod objects with an entry in data/environment/props.json ("classes", or "types" for
+    OrnamentalObjects). Meshes are the AI kit meshes (tools/aigen, docs/adr/0007), placed only once
+    their GLB exists. A light with "flicker" (true, or "sector" in the original's flickering sectors)
+    and an entry with a "fire" become AMRFireActors."""
     if not os.path.exists(PROPS):
         return []
-    classes = json.load(open(PROPS, encoding="utf-8")).get("classes", {})
+    props = json.load(open(PROPS, encoding="utf-8"))
     out = []
+    ordinals = {}
     for i, obj in enumerate(zone.get("objects", [])):
-        cfg = classes.get(obj["class"])
+        cfg = prop_config(props, obj)
         if not cfg:
             continue
         x, y, z = obj["pos"]
-        mesh = import_kit_mesh(cfg["mesh"], materials, prop_materials) if cfg.get("mesh") else None
+        kind = obj["class"] if obj["class"] != "OrnamentalObject" else "OO%s" % (obj.get("params") or {}).get("type")
+        label = "Prop_%d_%s_%d" % (zone["rid"], kind, i)
+        ordinals[kind] = ordinals.get(kind, -1) + 1
+        mesh_name = prop_mesh_name(cfg, label, ordinals[kind])  # None: not generated yet
+        scale = 1.0
+        if mesh_name and mesh_name.startswith("/"):
+            mesh = mesh_name  # already a UE asset: scaled to the entry's "fit_height_m"
+            if cfg.get("fit_height_m"):
+                scale = float(cfg["fit_height_m"]) * 100.0 / max(1.0, 2.0 * eal.load_asset(mesh).get_bounds().box_extent.z)
+        else:
+            mesh = import_kit_mesh(mesh_name, materials, prop_materials) if mesh_name else None
         light = cfg.get("light")
         if light and "kod_intensity" in light:
             light = kod_light(light, obj.get("params"))
@@ -373,7 +476,9 @@ def zone_props(zone, materials, prop_materials):
             preset = cfg["fire"]["preset"]
             entry = materials.fires.get(preset, (None, {}))[1]
             fire = fire_spec(materials, preset, (cfg["fire"].get("base_m", 0.0) + entry.get("flame_m", [0, 0])[1] / 2) * 100.0)
-        out.append(("Prop_%d_%s_%d" % (zone["rid"], obj["class"], i), mesh, [x * 100.0, z * 100.0, y * 100.0], light, fire))
+        if not (mesh or light or fire):
+            continue
+        out.append((label, mesh, [x * 100.0, z * 100.0, y * 100.0], light, fire, prop_yaw(cfg, obj, label), scale))
     return out
 
 
@@ -387,9 +492,10 @@ def merge_torch_lights(props, wall_fires):
     (the original's strength and colour) moves onto the flame. -> (props, wall fires)."""
     kept, used = [], set()
     merged = []
-    for label, mesh, pos, light, fire in wall_fires:
+    for label, mesh, pos, light, fire, yaw in wall_fires:
         best, best_d = None, TORCH_LIGHT_MERGE_CM
-        for i, (plabel, pmesh, ppos, plight, pfire) in enumerate(props):
+        for i, p in enumerate(props):
+            plabel, pmesh, ppos, plight, pfire = p[:5]
             if i in used or not plight or pmesh or pfire or "_DynamicLight_" not in plabel:
                 continue
             d = ((ppos[0] - pos[0]) ** 2 + (ppos[1] - pos[1]) ** 2) ** 0.5
@@ -401,7 +507,7 @@ def merge_torch_lights(props, wall_fires):
             light = dict(light or {}, candela=room["candela"], radius_m=room["radius_m"], offset_m=0.0, flicker=True)
             if "color" in room:
                 light["color"] = room["color"]
-        merged.append((label, mesh, pos, light, fire))
+        merged.append((label, mesh, pos, light, fire, yaw))
     kept = [p for i, p in enumerate(props) if i not in used]
     if used:
         log("%d torch room lights moved onto their flames" % len(used))
@@ -421,7 +527,7 @@ def zone_wall_fires(zone, materials):
         if light and "kod_intensity" in light:
             light = dict(kod_light(light, None), offset_m=0.0)
         fire = fire_spec(materials, f["preset"], 0.0)
-        out.append(("Fire_%d_%s_%d" % (zone["rid"], f["preset"], i), None, [x * 100.0, z * 100.0, y * 100.0], light, fire))
+        out.append(("Fire_%d_%s_%d" % (zone["rid"], f["preset"], i), None, [x * 100.0, z * 100.0, y * 100.0], light, fire, 0.0))
     if out:
         log("zone %d: %d wall flames" % (zone["rid"], len(out)))
     return out
@@ -471,7 +577,7 @@ def spawn_fire(label, loc, light, fire, zone_rid):
         a.set_flame(eal.load_asset(fire["material"]), w, h)
     if light:
         r, g, b = light.get("color") or [255, 170, 90]
-        a.set_light(float(light["candela"]), float(light["radius_m"]) * 100.0,
+        a.set_light(float(light["candela"]) * light_scale(), float(light["radius_m"]) * 100.0,
                     unreal.LinearColor(_srgb_to_linear(r), _srgb_to_linear(g), _srgb_to_linear(b), 1.0),
                     unreal.Vector(0, 0, light.get("offset_m", 0.0) * 100.0 - centre),
                     float(light.get("source_radius_cm", 5)), bool(light.get("flicker", True)),
@@ -551,7 +657,8 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
     path = zone_level_path(zone)
     cache = build_cache.CACHE
     recipe = {"origin": zone["world_origin_cm"], "sharers": sharers, "parts": parts, "scatter": scatter_inputs,
-              "props": props, "code": source(build_zone_level, spawn_fire), "fire_actor": hasattr(unreal, "MRFireActor"),
+              "props": props, "light_scale": light_scale(), "code": source(build_zone_level, spawn_fire),
+              "fire_actor": hasattr(unreal, "MRFireActor"),
               "effects": list(effects), "effect_scale": EFFECT_SCALE, "effect_bounds": EFFECT_BOUNDS,
               "atmosphere": {k: v for k, v in (atmosphere or {}).items() if k != "ambient"}}
     key = cache.key(recipe, deps=False)
@@ -587,16 +694,22 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
         a.set_scatter(eal.load_asset(mesh), transforms, cull[0] * 100.0, cull[1] * 100.0, bool(rule.get("shadows", True)))
         a.tags = [unreal.Name("ZoneScatter")] + zone_tags
     has_fire_actor = hasattr(unreal, "MRFireActor")
-    for label, mesh, (x, y, z), light, fire in props:
+    for label, mesh, (x, y, z), light, fire, yaw, *rest in props:
         loc = origin + unreal.Vector(x, y, z)
         if (fire or (light and light.get("flicker"))) and has_fire_actor:
             spawn_fire(label, loc, light, fire, zone["rid"])
             light = None  # the fire actor has it
         if mesh:
             a = actors.spawn_actor_from_object(eal.load_asset(mesh), loc, unreal.Rotator(0, 0, 0))
+            a.set_actor_rotation(unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw), False)
+            if rest and rest[0] != 1.0:
+                a.set_actor_scale3d(unreal.Vector(rest[0], rest[0], rest[0]))
             a.set_actor_label(label)
             comp = a.get_component_by_class(unreal.StaticMeshComponent)
-            comp.set_mobility(unreal.ComponentMobility.STATIC)
+            if comp:
+                comp.set_mobility(unreal.ComponentMobility.STATIC)
+            else:  # a skeletal mesh (a PVE tree with Dynamic Wind bones)
+                comp = a.get_component_by_class(unreal.SkeletalMeshComponent)
             comp.set_collision_profile_name("NoCollision")
             a.tags = [unreal.Name("ZoneProp"), unreal.Name("Zone%d" % zone["rid"])]
         if light:
@@ -605,7 +718,7 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
             lc = pl.light_component
             lc.set_mobility(unreal.ComponentMobility.MOVABLE)
             lc.set_editor_property("intensity_units", unreal.LightUnits.CANDELAS)
-            lc.set_editor_property("intensity", float(light["candela"]))
+            lc.set_editor_property("intensity", float(light["candela"]) * light_scale())
             lc.set_editor_property("attenuation_radius", float(light["radius_m"]) * 100.0)
             if "color" in light:
                 r, g, b = light["color"]

@@ -1,0 +1,133 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "barstool",
+  "kind": "props",
+  "class": "BarStool",
+  "bgf": "barstool",
+  "frame": 0,
+  "describe": "a tall bar stool: a round wooden seat on a single turned wooden column with a round flared base",
+  "mesh": "SM_AI_Barstool",
+  "size_by": "height",
+  "restyle": {"providers": ["openai"]},
+  "tripo": {
+    "variants": {
+      "C": {"front": "openai"},
+      "SM2k": {"front": "openai"},
+      "SM4k": {"front": "openai"},
+      "SM8k": {"front": "openai"},
+      "SM16k": {"front": "openai"},
+      "HD1k": {"front": "openai"}
+    },
+    "runs": {
+      "C": {
+        "tripo_task": "280daf5a-2752-4af2-9bab-f148efc5a9dd",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "wooden pedestal table 3d model",
+        "tris_raw": 7462,
+        "file": "build/aigen/props/barstool/04_tripo_out/C.glb",
+        "digest": "99a096e19b9fc67a",
+        "tris": 7462,
+        "size_m": [0.7607, 0.7611, 0.9793]
+      },
+      "SM2k": {
+        "tripo_task": "b62b690e-2bac-4735-8ff9-a2e027667a61",
+        "faces_studio": 2012,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 2000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "wooden pedestal table 3d model",
+        "tris_raw": 2012,
+        "file": "build/aigen/props/barstool/04_tripo_out/SM2k.glb",
+        "digest": "6df75ee0d3b26e17",
+        "tris": 2012,
+        "size_m": [0.7622, 0.7632, 0.9995]
+      },
+      "SM4k": {
+        "tripo_task": "73e2693a-8c83-47b2-bba4-3791a3f12b79",
+        "faces_studio": 4066,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 4000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "wooden pedestal 3d model",
+        "tris_raw": 4066,
+        "file": "build/aigen/props/barstool/04_tripo_out/SM4k.glb",
+        "digest": "340926ef16290711",
+        "tris": 4066,
+        "size_m": [0.7759, 0.7759, 0.9995]
+      },
+      "SM8k": {
+        "tripo_task": "249cad08-378d-4a64-9e72-b7aa3a99412e",
+        "faces_studio": 7740,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 8000-face target (one of 4 generations; 100 credits per run), then Texture 2K + Remove Lighting (10 credits)",
+        "tripo_name": "wooden pedestal stand 3d model",
+        "tris_raw": 7740,
+        "file": "build/aigen/props/barstool/04_tripo_out/SM8k.glb",
+        "digest": "56df943f130c5b70",
+        "tris": 7740,
+        "size_m": [0.7749, 0.7749, 0.9995]
+      },
+      "SM16k": {
+        "tripo_task": "633770fa-1bd9-4804-b37e-4542c0815a85",
+        "faces_studio": 16498,
+        "settings": "Studio Smart Mesh P2.0, single image (the C restyle), triangles, 16000-face target (one of 4 generations; 100 credits per run), untextured",
+        "tripo_name": "wooden pedestal table 3d model",
+        "tris_raw": 16498,
+        "file": "build/aigen/props/barstool/04_tripo_out/SM16k.glb",
+        "digest": "2f59443623b3e1dd",
+        "tris": 16498,
+        "size_m": [0.7612, 0.7612, 0.9995]
+      },
+      "HD1k": {
+        "tripo_task": "cadb2f62-4e57-44a8-8bd3-ab7390f9e1e4",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 polycount, single image (45 credits)",
+        "file": "build/aigen/props/barstool/04_tripo_out/HD1k.glb",
+        "digest": "8244f172ef6d162b",
+        "tris": 976,
+        "size_m": [0.7624, 0.7648, 0.9796]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/barstool/barstool_tripo.glb",
+      "tripo_task": "280daf5a-2752-4af2-9bab-f148efc5a9dd",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "wooden pedestal table 3d model",
+      "tris_raw": 7462
+    }
+  },
+  "status": "done",
+  "height_m": 0.9281,
+  "width_m": 0.676,
+  "lift_m": 0.0,
+  "sprite_px": [59, 81],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/barstool/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Barstool.glb",
+    "tris": 7462,
+    "size_m": [0.7209, 0.7213, 0.9281],
+    "scale": 0.94768
+  },
+  "normalized_variants": {
+    "SM4k": {
+      "file": "build/environment/kit/SM_AI_Barstool_SM4k.glb",
+      "tris": 4066,
+      "size_m": [0.7204, 0.7204, 0.9281],
+      "scale": 0.92855
+    },
+    "SM8k": {
+      "file": "build/environment/kit/SM_AI_Barstool_SM8k.glb",
+      "tris": 7740,
+      "size_m": [0.7195, 0.7195, 0.9281],
+      "scale": 0.92855
+    },
+    "HD1k": {
+      "file": "build/environment/kit/SM_AI_Barstool_HD1k.glb",
+      "tris": 976,
+      "size_m": [0.7223, 0.7246, 0.9281],
+      "scale": 0.94741
+    }
+  }
+}

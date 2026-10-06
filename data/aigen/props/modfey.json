@@ -1,0 +1,73 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "modfey",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 136,
+  "bgf": "modfey",
+  "frame": 0,
+  "describe": "a miniature statue of a fey elhai: a slender pale winged fairy with large translucent wings, arms outstretched",
+  "mesh": "SM_AI_Modfey",
+  "size_by": "height",
+  "restyle": {"providers": ["openai"]},
+  "tripo": {
+    "variants": {
+      "C": {"front": "openai"},
+      "MV1k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
+    },
+    "runs": {
+      "C": {
+        "tripo_task": "3375a29c-fb70-4c44-b5fd-6ca7cc819956",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "fantasy winged creature 3d model",
+        "tris_raw": 7806
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/modfey/modfey_tripo.glb",
+      "tripo_task": "3375a29c-fb70-4c44-b5fd-6ca7cc819956",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "fantasy winged creature 3d model",
+      "tris_raw": 7806
+    }
+  },
+  "status": "done",
+  "height_m": 0.4223,
+  "width_m": 0.4223,
+  "lift_m": 0.054,
+  "sprite_px": [133, 100],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52539b3d08190a098c00810ec4715",
+      "file": "build/aigen/props/modfey/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
+      "file": "build/aigen/props/modfey/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
+      "file": "build/aigen/props/modfey/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
+      "file": "build/aigen/props/modfey/02_restyle/openai_right.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Modfey.glb",
+    "tris": 7806,
+    "size_m": [0.4165, 0.2869, 0.4223],
+    "scale": 0.43188
+  },
+  "angles": {"left": 2, "back": 3, "right": 4}
+}

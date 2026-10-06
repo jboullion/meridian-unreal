@@ -1,0 +1,942 @@
+{
+ "_doc": "Every Kod-placed object in the demo zones -> its sprite (.bgf), name and count per zone: the \"pick",
+ "items": {
+  "BarStool": {
+   "class": "BarStool",
+   "bgf": "barstool",
+   "name": "bar stool",
+   "kind": "prop",
+   "parents": [
+    "PassiveObject"
+   ],
+   "zones": {
+    "301": 3
+   },
+   "count": 3
+  },
+  "Brazier": {
+   "class": "Brazier",
+   "bgf": "brazier",
+   "name": "brazier",
+   "kind": "prop",
+   "parents": [
+    "Flickerer"
+   ],
+   "zones": {
+    "300": 2,
+    "306": 2,
+    "333": 1
+   },
+   "count": 5
+  },
+  "Candle": {
+   "class": "Candle",
+   "bgf": "candle",
+   "name": null,
+   "kind": "prop",
+   "parents": [
+    "Flickerer"
+   ],
+   "zones": {
+    "307": 1
+   },
+   "count": 1
+  },
+  "Chandelier": {
+   "class": "Chandelier",
+   "bgf": "chandelr",
+   "name": "Chandelier",
+   "kind": "prop",
+   "parents": [
+    "PassiveObject"
+   ],
+   "zones": {
+    "302": 1
+   },
+   "count": 1
+  },
+  "Cow": {
+   "class": "Cow",
+   "bgf": "cow",
+   "name": "nahyijoa",
+   "kind": "monster",
+   "parents": [
+    "Monster"
+   ],
+   "zones": {
+    "300": 3
+   },
+   "count": 3
+  },
+  "DynamicLight": {
+   "class": "DynamicLight",
+   "bgf": "blank",
+   "name": null,
+   "kind": "logic",
+   "parents": [
+    "Flickerer"
+   ],
+   "zones": {
+    "301": 4,
+    "302": 1,
+    "303": 3,
+    "304": 1,
+    "305": 1,
+    "306": 1,
+    "307": 3,
+    "308": 12,
+    "332": 3
+   },
+   "count": 29
+  },
+  "FoodDispenser": {
+   "class": "FoodDispenser",
+   "bgf": null,
+   "name": null,
+   "kind": "logic",
+   "parents": [
+    "PassiveObject",
+    "Object"
+   ],
+   "zones": {
+    "300": 2,
+    "330": 2
+   },
+   "count": 4
+  },
+  "Lamp": {
+   "class": "Lamp",
+   "bgf": "lamp",
+   "name": "lamp",
+   "kind": "prop",
+   "parents": [
+    "Flickerer"
+   ],
+   "zones": {
+    "300": 9,
+    "330": 9
+   },
+   "count": 18
+  },
+  "ModelNode": {
+   "class": "ModelNode",
+   "bgf": "modnode",
+   "name": "miniature mana node",
+   "kind": "prop",
+   "parents": [
+    "PassiveObject"
+   ],
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "NewsLink": {
+   "class": "NewsLink",
+   "bgf": "news",
+   "name": "Newscroll",
+   "kind": "logic",
+   "parents": [
+    "PassiveObject"
+   ],
+   "zones": {
+    "301": 1,
+    "302": 1
+   },
+   "count": 2
+  },
+  "OO_104": {
+   "class": "OrnamentalObject",
+   "oo_type": 104,
+   "const": "OO_DUNG",
+   "bgf": "dung",
+   "name": "dung",
+   "kind": "prop",
+   "zones": {
+    "300": 6,
+    "330": 6
+   },
+   "count": 12
+  },
+  "OO_105": {
+   "class": "OrnamentalObject",
+   "oo_type": 105,
+   "const": "OO_HAY",
+   "bgf": "hay",
+   "name": "hay bundle",
+   "kind": "prop",
+   "zones": {
+    "300": 10,
+    "330": 10
+   },
+   "count": 20
+  },
+  "OO_106": {
+   "class": "OrnamentalObject",
+   "oo_type": 106,
+   "const": "OO_ROCKB",
+   "bgf": "rockb",
+   "name": "rock",
+   "kind": "prop",
+   "zones": {
+    "300": 3,
+    "330": 3
+   },
+   "count": 6
+  },
+  "OO_107": {
+   "class": "OrnamentalObject",
+   "oo_type": 107,
+   "const": "OO_ROCKC",
+   "bgf": "rockc",
+   "name": "boulder",
+   "kind": "prop",
+   "zones": {
+    "300": 1,
+    "330": 1
+   },
+   "count": 2
+  },
+  "OO_117": {
+   "class": "OrnamentalObject",
+   "oo_type": 117,
+   "const": "OO_MUSEUM_ALTAR",
+   "bgf": "modaltar",
+   "name": "miniature altar",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_118": {
+   "class": "OrnamentalObject",
+   "oo_type": 118,
+   "const": "OO_MUSEUM_ANT",
+   "bgf": "modant",
+   "name": "miniature giant ant",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_119": {
+   "class": "OrnamentalObject",
+   "oo_type": 119,
+   "const": "OO_MUSEUM_AVAR",
+   "bgf": "modavar",
+   "name": "miniature avar",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_120": {
+   "class": "OrnamentalObject",
+   "oo_type": 120,
+   "const": "OO_MUSEUM_LUPOGG",
+   "bgf": "modlupog",
+   "name": "miniature lupogg",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_121": {
+   "class": "OrnamentalObject",
+   "oo_type": 121,
+   "const": "OO_MUSEUM_NEWS",
+   "bgf": "modnewsb",
+   "name": "miniature newsball",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_122": {
+   "class": "OrnamentalObject",
+   "oo_type": 122,
+   "const": "OO_MUSEUM_ORC",
+   "bgf": "modorc",
+   "name": "miniature orc",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_123": {
+   "class": "OrnamentalObject",
+   "oo_type": 123,
+   "const": "OO_MUSEUM_SHRINE",
+   "bgf": "modshrin",
+   "name": "miniature shrine",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_124": {
+   "class": "OrnamentalObject",
+   "oo_type": 124,
+   "const": "OO_MUSEUM_THRONE",
+   "bgf": "modthron",
+   "name": "miniature throne",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_126": {
+   "class": "OrnamentalObject",
+   "oo_type": 126,
+   "const": "OO_MUSEUM_CHALICE",
+   "bgf": "chalice",
+   "name": "model chalice of the rain",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_131": {
+   "class": "OrnamentalObject",
+   "oo_type": 131,
+   "const": "OO_FLASK_GREEN",
+   "bgf": "flaskgrn",
+   "name": "flask",
+   "kind": "prop",
+   "zones": {
+    "304": 1
+   },
+   "count": 1
+  },
+  "OO_132": {
+   "class": "OrnamentalObject",
+   "oo_type": 132,
+   "const": "OO_FLASK_STAND",
+   "bgf": "flaskw",
+   "name": "flask",
+   "kind": "prop",
+   "zones": {
+    "304": 1
+   },
+   "count": 1
+  },
+  "OO_133": {
+   "class": "OrnamentalObject",
+   "oo_type": 133,
+   "const": "OO_MUSEUM_SPIDER",
+   "bgf": "modspdr",
+   "name": "miniature baby spider",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_134": {
+   "class": "OrnamentalObject",
+   "oo_type": 134,
+   "const": "OO_MUSEUM_CENTIPEDE",
+   "bgf": "modcen",
+   "name": "miniature giant centipede",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_135": {
+   "class": "OrnamentalObject",
+   "oo_type": 135,
+   "const": "OO_MUSEUM_FUNGUSBEAST",
+   "bgf": "modfung",
+   "name": "miniature fungus beast",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_136": {
+   "class": "OrnamentalObject",
+   "oo_type": 136,
+   "const": "OO_MUSEUM_FEY",
+   "bgf": "modfey",
+   "name": "miniature fey elhai",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_137": {
+   "class": "OrnamentalObject",
+   "oo_type": 137,
+   "const": "OO_MUSEUM_SCIMITAR",
+   "bgf": "scimitar",
+   "name": "model scimitar",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_138": {
+   "class": "OrnamentalObject",
+   "oo_type": 138,
+   "const": "OO_MUSEUM_HAMMER",
+   "bgf": "hammer",
+   "name": "model hammer",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_139": {
+   "class": "OrnamentalObject",
+   "oo_type": 139,
+   "const": "OO_MUSEUM_SHORTSWORD",
+   "bgf": "shswd",
+   "name": "model short sword",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_140": {
+   "class": "OrnamentalObject",
+   "oo_type": 140,
+   "const": "OO_MUSEUM_HELM",
+   "bgf": "helm",
+   "name": "model helm",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_141": {
+   "class": "OrnamentalObject",
+   "oo_type": 141,
+   "const": "OO_MUSEUM_PLATEARMOR",
+   "bgf": "plateamr",
+   "name": "model plate armor",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_142": {
+   "class": "OrnamentalObject",
+   "oo_type": 142,
+   "const": "OO_MUSEUM_GAUNTLETS",
+   "bgf": "gauntlet",
+   "name": "model gauntlets",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_143": {
+   "class": "OrnamentalObject",
+   "oo_type": 143,
+   "const": "OO_MUSEUM_POTION",
+   "bgf": "potion01",
+   "name": "model potion",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_144": {
+   "class": "OrnamentalObject",
+   "oo_type": 144,
+   "const": "OO_MUSEUM_SCROLL",
+   "bgf": "scr01",
+   "name": "model scroll",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_145": {
+   "class": "OrnamentalObject",
+   "oo_type": 145,
+   "const": "OO_MUSEUM_WAND",
+   "bgf": "wand2",
+   "name": "model wand",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_146": {
+   "class": "OrnamentalObject",
+   "oo_type": 146,
+   "const": "OO_MUSEUM_TOKEN",
+   "bgf": "tcat",
+   "name": "model token",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_147": {
+   "class": "OrnamentalObject",
+   "oo_type": 147,
+   "const": "OO_MUSEUM_LUTE",
+   "bgf": "music",
+   "name": "model lute",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_148": {
+   "class": "OrnamentalObject",
+   "oo_type": 148,
+   "const": "OO_MUSEUM_PRISM",
+   "bgf": "prism3",
+   "name": "model prism",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_149": {
+   "class": "OrnamentalObject",
+   "oo_type": 149,
+   "const": "OO_MUSEUM_INKYCAP",
+   "bgf": "mushroom",
+   "name": "wax inkycap mushrooms",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_150": {
+   "class": "OrnamentalObject",
+   "oo_type": 150,
+   "const": "OO_MUSEUM_SIGNETRING",
+   "bgf": "signet",
+   "name": "model signet ring",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_163": {
+   "class": "OrnamentalObject",
+   "oo_type": 163,
+   "const": "OO_BONES_RAZA",
+   "bgf": "bonepile",
+   "name": "pile of bones",
+   "kind": "prop",
+   "zones": {
+    "306": 17
+   },
+   "count": 17
+  },
+  "OO_165": {
+   "class": "OrnamentalObject",
+   "oo_type": 165,
+   "const": "OO_MUSEUM_PORTAL",
+   "bgf": "modportal",
+   "name": "miniature portal",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_166": {
+   "class": "OrnamentalObject",
+   "oo_type": 166,
+   "const": "OO_MUSEUM_TELEPORT",
+   "bgf": "modteleport",
+   "name": "miniature portal",
+   "kind": "prop",
+   "zones": {
+    "308": 1
+   },
+   "count": 1
+  },
+  "OO_192": {
+   "class": "OrnamentalObject",
+   "oo_type": 192,
+   "const": "OO_MIDTREE2",
+   "bgf": "midtree2",
+   "name": "tree",
+   "kind": "prop",
+   "zones": {
+    "300": 15,
+    "330": 15
+   },
+   "count": 30
+  },
+  "OO_198": {
+   "class": "OrnamentalObject",
+   "oo_type": 198,
+   "const": "OO_SHRUBEE1",
+   "bgf": "shrubee1",
+   "name": "shrub",
+   "kind": "prop",
+   "zones": {
+    "300": 2,
+    "330": 2
+   },
+   "count": 4
+  },
+  "OO_20": {
+   "class": "OrnamentalObject",
+   "oo_type": 20,
+   "const": "OO_FIXINS",
+   "bgf": "fixins4",
+   "name": "basket of eggs",
+   "kind": "prop",
+   "zones": {
+    "305": 1
+   },
+   "count": 1
+  },
+  "OO_29": {
+   "class": "OrnamentalObject",
+   "oo_type": 29,
+   "const": "OO_JUG",
+   "bgf": "jug4",
+   "name": "water urn",
+   "kind": "prop",
+   "zones": {
+    "305": 1
+   },
+   "count": 1
+  },
+  "OO_33": {
+   "class": "OrnamentalObject",
+   "oo_type": 33,
+   "const": "OO_POTION",
+   "bgf": "potion4",
+   "name": "apothecary jar",
+   "kind": "prop",
+   "zones": {
+    "304": 1
+   },
+   "count": 1
+  },
+  "OO_34": {
+   "class": "OrnamentalObject",
+   "oo_type": 34,
+   "const": "OO_ROCK1",
+   "bgf": "rock",
+   "name": "rough boulder",
+   "kind": "prop",
+   "zones": {
+    "300": 1,
+    "330": 1
+   },
+   "count": 2
+  },
+  "OO_46": {
+   "class": "OrnamentalObject",
+   "oo_type": 46,
+   "const": "OO_URN",
+   "bgf": "urn4",
+   "name": "achalot urn",
+   "kind": "prop",
+   "zones": {
+    "305": 1
+   },
+   "count": 1
+  },
+  "OO_57": {
+   "class": "OrnamentalObject",
+   "oo_type": 57,
+   "const": "OO_TALLURN",
+   "bgf": "tallurn",
+   "name": "slag urn",
+   "kind": "prop",
+   "zones": {
+    "304": 2,
+    "307": 1
+   },
+   "count": 3
+  },
+  "OO_58": {
+   "class": "OrnamentalObject",
+   "oo_type": 58,
+   "const": "OO_BUCKET",
+   "bgf": "bucket",
+   "name": "well bucket",
+   "kind": "prop",
+   "zones": {
+    "307": 3
+   },
+   "count": 3
+  },
+  "OO_60": {
+   "class": "OrnamentalObject",
+   "oo_type": 60,
+   "const": "OO_CORN",
+   "bgf": "corn",
+   "name": "browncorn plant",
+   "kind": "prop",
+   "zones": {
+    "300": 17,
+    "330": 17
+   },
+   "count": 34
+  },
+  "OO_66": {
+   "class": "OrnamentalObject",
+   "oo_type": 66,
+   "const": "OO_LETTUCE",
+   "bgf": "lettuce",
+   "name": "Marion cabbage",
+   "kind": "prop",
+   "zones": {
+    "300": 2,
+    "330": 2
+   },
+   "count": 4
+  },
+  "OO_83": {
+   "class": "OrnamentalObject",
+   "oo_type": 83,
+   "const": "OO_NESTOBJ1",
+   "bgf": "nestobj1",
+   "name": "mound of dirt",
+   "kind": "prop",
+   "zones": {
+    "300": 2,
+    "330": 2
+   },
+   "count": 4
+  },
+  "OO_84": {
+   "class": "OrnamentalObject",
+   "oo_type": 84,
+   "const": "OO_NESTOBJ2",
+   "bgf": "nestobj2",
+   "name": "mound of dirt",
+   "kind": "prop",
+   "zones": {
+    "300": 3,
+    "330": 3
+   },
+   "count": 6
+  },
+  "OO_91": {
+   "class": "OrnamentalObject",
+   "oo_type": 91,
+   "const": "OO_NECTREE1",
+   "bgf": "nectree1",
+   "name": "gnarlwood tree",
+   "kind": "prop",
+   "zones": {
+    "300": 1,
+    "330": 1
+   },
+   "count": 2
+  },
+  "OO_99": {
+   "class": "OrnamentalObject",
+   "oo_type": 99,
+   "const": "OO_SKULL7",
+   "bgf": "skulnorm",
+   "name": "skull",
+   "kind": "prop",
+   "zones": {
+    "305": 1
+   },
+   "count": 1
+  },
+  "RazaApothecary": {
+   "class": "RazaApothecary",
+   "bgf": "kcshopk",
+   "name": "Ravi",
+   "kind": "npc",
+   "parents": [
+    "RazaTown"
+   ],
+   "zones": {
+    "304": 1
+   },
+   "count": 1
+  },
+  "RazaBanker": {
+   "class": "RazaBanker",
+   "bgf": "gamos",
+   "name": "Gamos",
+   "kind": "npc",
+   "parents": [
+    "RazaTown"
+   ],
+   "zones": {
+    "333": 1
+   },
+   "count": 1
+  },
+  "RazaBartender": {
+   "class": "RazaBartender",
+   "bgf": "tsinnk",
+   "name": "Eric d'Jorn",
+   "kind": "npc",
+   "parents": [
+    "RazaTown"
+   ],
+   "zones": {
+    "307": 1
+   },
+   "count": 1
+  },
+  "RazaBlacksmith": {
+   "class": "RazaBlacksmith",
+   "bgf": "bqsmith",
+   "name": "Tomas",
+   "kind": "npc",
+   "parents": [
+    "RazaTown"
+   ],
+   "zones": {
+    "303": 1
+   },
+   "count": 1
+  },
+  "RazaElder": {
+   "class": "RazaElder",
+   "bgf": "mrelder",
+   "name": "Rodric d'Stane",
+   "kind": "npc",
+   "parents": [
+    "RazaTown"
+   ],
+   "zones": {
+    "305": 1
+   },
+   "count": 1
+  },
+  "RazaInnKeeper": {
+   "class": "RazaInnKeeper",
+   "bgf": "jsmerch",
+   "name": "Marcus",
+   "kind": "npc",
+   "parents": [
+    "RazaTown"
+   ],
+   "zones": {
+    "301": 1
+   },
+   "count": 1
+  },
+  "RazaVaultman": {
+   "class": "RazaVaultman",
+   "bgf": "bentu",
+   "name": "Bentu",
+   "kind": "npc",
+   "parents": [
+    "RazaTown"
+   ],
+   "zones": {
+    "332": 1
+   },
+   "count": 1
+  },
+  "Sign": {
+   "class": "Sign",
+   "bgf": "sign",
+   "name": "sign",
+   "kind": "prop",
+   "parents": [
+    "PassiveObject"
+   ],
+   "zones": {
+    "300": 2,
+    "301": 1,
+    "302": 1,
+    "303": 1,
+    "304": 1,
+    "305": 1,
+    "306": 5,
+    "307": 1,
+    "308": 8,
+    "332": 1,
+    "333": 1
+   },
+   "count": 23
+  },
+  "Skull": {
+   "class": "Skull",
+   "bgf": "skull",
+   "name": "skull",
+   "kind": "prop",
+   "parents": [
+    "PassiveObject"
+   ],
+   "zones": {
+    "306": 1
+   },
+   "count": 1
+  },
+  "Stool": {
+   "class": "Stool",
+   "bgf": "stool",
+   "name": "stool",
+   "kind": "prop",
+   "parents": [
+    "PassiveObject"
+   ],
+   "zones": {
+    "302": 6,
+    "307": 6
+   },
+   "count": 12
+  },
+  "Table": {
+   "class": "Table",
+   "bgf": "table",
+   "name": "table",
+   "kind": "prop",
+   "parents": [
+    "PassiveObject"
+   ],
+   "zones": {
+    "301": 3,
+    "333": 1
+   },
+   "count": 4
+  },
+  "WoodenBox": {
+   "class": "WoodenBox",
+   "bgf": "box1",
+   "name": "wooden box",
+   "kind": "prop",
+   "parents": [
+    "StorageBox"
+   ],
+   "zones": {
+    "300": 1
+   },
+   "count": 1
+  }
+ }
+}

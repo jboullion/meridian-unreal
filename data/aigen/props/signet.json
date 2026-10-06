@@ -1,0 +1,51 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "signet",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 150,
+  "bgf": "signet",
+  "frame": 0,
+  "describe": "a heavy gold signet ring with a large flat engraved face, lying on its side",
+  "mesh": "SM_AI_Signet",
+  "size_by": "length",
+  "restyle": {"providers": ["openai"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "1a604177-20d8-4d6e-85ee-be6129ad82cc",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "gold ring 3d model",
+        "tris_raw": 7716
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/signet/signet_tripo.glb",
+      "tripo_task": "1a604177-20d8-4d6e-85ee-be6129ad82cc",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "gold ring 3d model",
+      "tris_raw": 7716
+    }
+  },
+  "status": "done",
+  "height_m": 0.1375,
+  "width_m": 0.2063,
+  "lift_m": 0.0,
+  "sprite_px": [72, 48],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/signet/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Signet.glb",
+    "tris": 7716,
+    "size_m": [0.1938, 0.2063, 0.128],
+    "scale": 0.21039
+  }
+}

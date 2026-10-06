@@ -1,0 +1,51 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "nestobj1",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 83,
+  "bgf": "nestobj1",
+  "frame": 0,
+  "describe": "a low, flat, wide mound of loose brown earth on the ground",
+  "mesh": "SM_AI_Nestobj1",
+  "size_by": "length",
+  "restyle": {"providers": ["openai"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "4f70eaf7-b138-404d-a87c-6a4526ceef25",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "dirt pile 3d model.001",
+        "tris_raw": 7653
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/nestobj1/nestobj1_tripo.glb",
+      "tripo_task": "4f70eaf7-b138-404d-a87c-6a4526ceef25",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "dirt pile 3d model.001",
+      "tris_raw": 7653
+    }
+  },
+  "status": "done",
+  "height_m": 0.2865,
+  "width_m": 1.3406,
+  "lift_m": 0.0,
+  "sprite_px": [117, 25],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/nestobj1/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Nestobj1.glb",
+    "tris": 7653,
+    "size_m": [1.3406, 0.8039, 0.2209],
+    "scale": 1.36718
+  }
+}

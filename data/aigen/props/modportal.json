@@ -1,0 +1,95 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "modportal",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 165,
+  "bgf": "modportal",
+  "frame": 0,
+  "describe": "a miniature stone portal: a carved grey stone arch with an ornate crest on top, filled by a flat glowing purple surface",
+  "mesh": "SM_AI_Modportal",
+  "size_by": "height",
+  "restyle": {"providers": ["openai"]},
+  "tripo": {
+    "variants": {
+      "C": {"front": "openai"},
+      "MV1k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
+    },
+    "runs": {
+      "C": {
+        "tripo_task": "f4470b0c-15d5-4ae1-9168-b41912a6d1d2",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "stone portal arch 3d model",
+        "tris_raw": 7453,
+        "file": "build/aigen/props/modportal/04_tripo_out/C.glb",
+        "digest": "12ab7083a4b2395b",
+        "tris": 7453,
+        "size_m": [0.5819, 0.2248, 0.9793]
+      },
+      "MV1k": {
+        "tripo_task": "51e30bcb-f149-46ca-a2d3-65347323b234",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 polycount, multi-view front/left/back/right restyled from the original's own angle frames (45 credits)",
+        "tripo_name": "mystic portal 3d model",
+        "tris_raw": 946,
+        "file": "build/aigen/props/modportal/04_tripo_out/MV1k.glb",
+        "digest": "fc3a55b92489e33d",
+        "tris": 946,
+        "size_m": [0.5799, 0.1776, 0.9753]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/modportal/modportal_tripo.glb",
+      "tripo_task": "f4470b0c-15d5-4ae1-9168-b41912a6d1d2",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "stone portal arch 3d model",
+      "tris_raw": 7453
+    }
+  },
+  "status": "done",
+  "height_m": 0.9224,
+  "width_m": 0.55,
+  "lift_m": 0.0,
+  "sprite_px": [96, 161],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52539b3d08190a098c00810ec4715",
+      "file": "build/aigen/props/modportal/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
+      "file": "build/aigen/props/modportal/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
+      "file": "build/aigen/props/modportal/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac52664c32c819082509216c455f70f",
+      "file": "build/aigen/props/modportal/02_restyle/openai_right.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Modportal.glb",
+    "tris": 7453,
+    "size_m": [0.5481, 0.2117, 0.9224],
+    "scale": 0.94189
+  },
+  "angles": {"left": 2, "back": 4, "right": 6},
+  "normalized_variants": {
+    "MV1k": {
+      "file": "build/environment/kit/SM_AI_Modportal_MV1k.glb",
+      "tris": 946,
+      "size_m": [0.5484, 0.168, 0.9224],
+      "scale": 0.94575
+    }
+  }
+}

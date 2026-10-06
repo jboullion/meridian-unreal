@@ -1,0 +1,51 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "corn",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 60,
+  "bgf": "corn",
+  "frame": 0,
+  "describe": "a single tall corn (maize) plant: one straight green stalk with long narrow arching leaves, no cobs",
+  "mesh": "SM_AI_Corn",
+  "size_by": "height",
+  "restyle": {"providers": ["openai"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "a1be88e2-f973-40c0-a54e-5279b2d04be3",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+        "tripo_name": "sugarcane 3d model",
+        "tris_raw": 7590
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/corn/corn_tripo.glb",
+      "tripo_task": "a1be88e2-f973-40c0-a54e-5279b2d04be3",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "tripo_name": "sugarcane 3d model",
+      "tris_raw": 7590
+    }
+  },
+  "status": "done",
+  "height_m": 1.4352,
+  "width_m": 0.7133,
+  "lift_m": 0.0086,
+  "sprite_px": [96, 192],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
+      "file": "build/aigen/props/corn/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Corn.glb",
+    "tris": 7590,
+    "size_m": [0.6897, 0.3905, 1.4352],
+    "scale": 1.46493
+  }
+}
