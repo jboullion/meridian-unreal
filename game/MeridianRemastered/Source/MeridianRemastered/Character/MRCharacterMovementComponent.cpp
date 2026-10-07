@@ -3,6 +3,7 @@
 #include "AbilitySystemGlobals.h"
 #include "Abilities/MRAttributeSet.h"
 #include "GameFramework/Character.h"
+#include "Zones/MRZoneSubsystem.h"
 
 UMRCharacterMovementComponent::UMRCharacterMovementComponent()
 {
@@ -32,23 +33,36 @@ bool UMRCharacterMovementComponent::IsSprinting() const
 		&& Velocity.SizeSquared2D() > FMath::Square(RunSpeed * 0.5f) && HasVigorToSprint();
 }
 
+float UMRCharacterMovementComponent::WadingFactor() const
+{
+	const UWorld* World = GetWorld();
+	const UMRZoneSubsystem* ZoneSub = World ? World->GetSubsystem<UMRZoneSubsystem>() : nullptr;
+	if (!ZoneSub || !UpdatedComponent)
+	{
+		return 1.f;
+	}
+	return UMRZoneSubsystem::DepthSpeedFactor(ZoneSub->DepthAt(UpdatedComponent->GetComponentLocation()));
+}
+
 float UMRCharacterMovementComponent::GetMaxSpeed() const
 {
 	if (MovementMode == MOVE_Walking || MovementMode == MOVE_NavWalking)
 	{
+		float Speed = RunSpeed;
 		if (IsCrouching())
 		{
-			return MaxWalkSpeedCrouched;
+			Speed = MaxWalkSpeedCrouched;
 		}
-		if (bWantsToWalk)
+		else if (bWantsToWalk)
 		{
-			return WalkSpeed;
+			Speed = WalkSpeed;
 		}
-		if (bWantsToSprint && HasVigorToSprint())
+		else if (bWantsToSprint && HasVigorToSprint())
 		{
-			return SprintSpeed;
+			Speed = SprintSpeed;
 		}
-		return RunSpeed;
+		// wading through a field or pool, as the original (clientd3d move.c UserMovePlayer)
+		return Speed * WadingFactor();
 	}
 	return Super::GetMaxSpeed();
 }

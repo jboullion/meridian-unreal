@@ -83,8 +83,8 @@ def _master(name, builder, *args):
     cache = build_cache.CACHE
     key = cache.key(build_cache.source(builder, _expr, _world_uv, _srgb_to_linear, _new_material, _window_glow, _atlas_uv,
                                        _weather_surface, _collection, _custom, _ripples, _season, _camera_box_inputs, _puff_inputs,
-                                       _matte, _undergrowth, _tree_wind),
-                    name, args + (RIPPLE_HLSL, SEASON_HLSL, UNDERGROWTH_HLSL, TREE_WIND_HLSL))
+                                       _matte, _undergrowth, _tree_wind, _prop_glow),
+                    name, args + (RIPPLE_HLSL, SEASON_HLSL, UNDERGROWTH_HLSL, TREE_WIND_HLSL, PROP_GLOW_HLSL, PROP_GLASS_OPACITY_HLSL))
     return cache.get_or_build("%s/%s" % (MAT_DIR, name), key, "masters", lambda: builder(name, *args))
 
 
@@ -1124,7 +1124,63 @@ def default_orm():
     return ensure_textures([(name, False, False)])[name]
 
 
-def build_textured_prop_master(name, mpc, orm_default):
+PROP_GLOW_HLSL = """
+// The lit glass of a lamp on an AI prop (props.json "glow", docs/adr/0007 "Lamp glass"). Tripo bakes
+// lamp and glass into one texture, so the glass is found by rule: pale, unsaturated texels (Lum: the
+// luminance ramp x..y, saturation fading out from z over LumW) inside the lantern (Band: local height
+// x..y and radius z, cm from the mesh's base centre). Off by day with the lamps (MPC LampsOn) when
+// NightOnly; Color 0 (every other prop): no glow. M_PropTexturedGlass also clips the glass away
+// while the lamps are off, so by day you see through the lantern (PROP_GLASS_OPACITY).
+float l = dot(Base, float3(0.2126, 0.7152, 0.0722));
+float mx = max(Base.r, max(Base.g, Base.b));
+float sat = (mx - min(Base.r, min(Base.g, Base.b))) / max(mx, 1e-4);
+float pale = smoothstep(Lum.x, Lum.y, l) * (1.0 - smoothstep(Lum.z, Lum.z + LumW, sat));
+float inside = step(Band.x, LP.z) * step(LP.z, Band.y) * step(length(LP.xy), Band.z);
+float glass = pale * inside;
+float on = lerp(1.0, LampsOn, NightOnly);
+"""
+# By day the glass is clipped by the same rule, or by it on Blur (the base colour 8x smaller, mip 3):
+# the glass is speckled with grime that the sharp rule leaves standing as dark flecks, and its
+# shaded side is dimmer; on the blurred colour, pale and unsaturated on average is enough.
+PROP_GLASS_OPACITY_HLSL = PROP_GLOW_HLSL + """float bl = dot(Blur, float3(0.2126, 0.7152, 0.0722));
+float bmx = max(Blur.r, max(Blur.g, Blur.b));
+float bsat = (bmx - min(Blur.r, min(Blur.g, Blur.b))) / max(bmx, 1e-4);
+float glassB = smoothstep(0.04, 0.08, bl) * (1.0 - smoothstep(0.25, 0.4, bsat)) * inside;
+return 1.0 - max(glass, glassB) * (1.0 - on);
+"""
+PROP_GLOW_HLSL += "return Color.rgb * glass * on;\n"
+
+
+def _prop_glow(mat, base, collection, x, y, glass=False):
+    """PROP_GLOW_HLSL -> expression (emissive): GlowColor, GlowBand, GlowLum, GlowNightOnly. A vector
+    parameter reaches a Custom node as float3, so GlowLum's alpha goes in as its own input.
+    glass: -> (emissive, opacity mask) with PROP_GLASS_OPACITY_HLSL on the same inputs."""
+    lum = _expr(mat, unreal.MaterialExpressionVectorParameter, x - 300, y + 200, parameter_name="GlowLum",
+                default_value=unreal.LinearColor(0.08, 0.16, 0.25, 0.2))
+    inputs = [("Base", base, "RGB"),
+              ("LP", _expr(mat, unreal.MaterialExpressionLocalPosition, x - 300, y), ""),
+              ("Band", _expr(mat, unreal.MaterialExpressionVectorParameter, x - 300, y + 100, parameter_name="GlowBand",
+                             default_value=unreal.LinearColor(0, 0, 0, 0)), ""),
+              ("Lum", lum, ""),
+              ("LumW", lum, "A"),
+              ("Color", _expr(mat, unreal.MaterialExpressionVectorParameter, x - 300, y + 300, parameter_name="GlowColor",
+                              default_value=unreal.LinearColor(0, 0, 0, 0)), ""),
+              ("LampsOn", _expr(mat, unreal.MaterialExpressionCollectionParameter, x - 300, y + 400, collection=collection,
+                                parameter_name="LampsOn"), ""),
+              ("NightOnly", _expr(mat, unreal.MaterialExpressionScalarParameter, x - 300, y + 500, parameter_name="GlowNightOnly",
+                                  default_value=1.0), "")]
+    glow = _custom(mat, x, y, PROP_GLOW_HLSL, unreal.CustomMaterialOutputType.CMOT_FLOAT3, inputs, "PropGlow")
+    if not glass:
+        return glow
+    blur = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, x - 300, y + 600, parameter_name="BaseColor",
+                 sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR,
+                 texture=eal.load_asset("/Engine/EngineResources/DefaultTexture"),
+                 mip_value_mode=unreal.TextureMipValueMode.TMVM_MIP_LEVEL, const_mip_value=3)
+    return glow, _custom(mat, x, y + 300, PROP_GLASS_OPACITY_HLSL, unreal.CustomMaterialOutputType.CMOT_FLOAT1,
+                         inputs + [("Blur", blur, "RGB")], "PropGlass")
+
+
+def build_textured_prop_master(name, mpc, orm_default, glass=False):
     """M_PropTextured, for the AI-generated props (tools/aigen, docs/adr/0007): their glTF PBR set
     (BaseColor sRGB, Normal, MetallicRoughness: G roughness, B metallic) with what every other surface
     master has: matte specular, wet and snowy weather, and the ambient floor of interiors
@@ -1136,7 +1192,10 @@ def build_textured_prop_master(name, mpc, orm_default):
     and seemed to glow (2026-10-07); at the sector light alone, a prop no torch reaches went black.
     AmbientScale (props.json "ambient_scale") scales the fill between. Albedo (a class's props.json
     "albedo", 1 by default) scales the base colour, for a Tripo texture lighter than the original
-    sprite (the Inn's table, 2026-10-07). Two-sided, as Tripo exports."""
+    sprite (the Inn's table, 2026-10-07). Glow* (a class's props.json "glow"): the lamp glass lit at
+    night (PROP_GLOW_HLSL). glass (M_PropTexturedGlass, the props with a "glow"): masked, the glass
+    clipped away while the lamps are off, so a lantern is see-through by day and lit glass at night
+    (2026-10-07, the user's ask). Two-sided, as Tripo exports."""
     mat = _new_material(name)
     base = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, -300, parameter_name="BaseColor",
                  sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR,
@@ -1177,7 +1236,16 @@ def build_textured_prop_master(name, mpc, orm_default):
     ambient = _expr(mat, unreal.MaterialExpressionMultiply, -400, 650)
     mel.connect_material_expressions(base_rgb, "", ambient, "A")
     mel.connect_material_expressions(lit, "", ambient, "B")
-    mel.connect_material_property(ambient, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    emissive = _expr(mat, unreal.MaterialExpressionAdd, -250, 700)
+    mel.connect_material_expressions(ambient, "", emissive, "A")
+    if glass:
+        glow, opacity = _prop_glow(mat, base, collection, -550, 1000, glass=True)
+        mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+        mel.connect_material_property(opacity, "", unreal.MaterialProperty.MP_OPACITY_MASK)
+    else:
+        glow = _prop_glow(mat, base, collection, -550, 1000)
+    mel.connect_material_expressions(glow, "", emissive, "B")
+    mel.connect_material_property(emissive, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     mat.set_editor_property("two_sided", True)
     mel.recompile_material(mat)
     eal.save_loaded_asset(mat)
@@ -1188,11 +1256,13 @@ _AI_PROP_TEXTURES = {"BaseColor": ("BaseColor", "BaseColorTexture"), "Normal": (
                      "MetallicRoughness": ("MetallicRoughness", "MetallicRoughnessTexture")}
 
 
-def ai_prop_material(mesh_path, slot_material, ambient_scale=1.0, albedo=1.0):
+def ai_prop_material(mesh_path, slot_material, ambient_scale=1.0, albedo=1.0, glow=None):
     """-> path of MI_AIProp_<mesh> on M_PropTextured with the textures of the material the mesh came
     with (Interchange's glTF instance, or ours on a later run), or None when it has none.
     ambient_scale: props.json "ambient_scale", on the interiors' ambient floor; albedo: the class's
-    "albedo", on the base colour."""
+    "albedo", on the base colour; glow: the class's "glow" ({"z_m": [lo, hi], "radius_m", "color",
+    optional "lum": [lo, hi, sat, feather], "night_only", "clear_by_day" (true: see-through glass while the
+    lamps are off, M_PropTexturedGlass)}), the lit lamp glass (PROP_GLOW_HLSL)."""
     mi = eal.load_asset(slot_material) if isinstance(slot_material, str) else slot_material
     if not isinstance(mi, unreal.MaterialInstance):
         return None
@@ -1205,9 +1275,19 @@ def ai_prop_material(mesh_path, slot_material, ambient_scale=1.0, albedo=1.0):
                 found[ours] = tex.get_path_name().split(".")[0]
     if "BaseColor" not in found:
         return None
-    master = _master("M_PropTextured", build_textured_prop_master, ensure_mpc(), default_orm())
-    return _instance("MI_AIProp_" + mesh_path.rsplit("/", 1)[-1], master, textures=found,
-                     scalars={"AmbientScale": ambient_scale, "Albedo": albedo})
+    if glow and glow.get("clear_by_day", True):
+        master = _master("M_PropTexturedGlass", build_textured_prop_master, ensure_mpc(), default_orm(), True)
+    else:
+        master = _master("M_PropTextured", build_textured_prop_master, ensure_mpc(), default_orm())
+    scalars, vectors = {"AmbientScale": ambient_scale, "Albedo": albedo}, {}
+    if glow:
+        z0, z1 = glow["z_m"]
+        vectors = {"GlowBand": [z0 * 100.0, z1 * 100.0, float(glow.get("radius_m", 1.0)) * 100.0, 0.0],
+                   "GlowColor": list(glow["color"]) + [0.0]}
+        if glow.get("lum"):
+            vectors["GlowLum"] = list(glow["lum"])
+        scalars["GlowNightOnly"] = 1.0 if glow.get("night_only", True) else 0.0
+    return _instance("MI_AIProp_" + mesh_path.rsplit("/", 1)[-1], master, textures=found, scalars=scalars, vectors=vectors)
 
 
 TREE_WIND_HLSL = """

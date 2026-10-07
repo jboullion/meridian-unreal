@@ -39,6 +39,10 @@ More detail, loaded when needed:
 | Material | Every `SM_AI_*` mesh gets `MI_AIProp_<mesh>` on `M_PropTextured` (its glTF textures, plus the interiors' ambient floor, matte specular and weather). Without it, props go black indoors. The ambient floor is the original sector light under each prop (set per placed prop as custom primitive data 0) × props.json `ambient_scale` (2.5). A class's `albedo` scales a texture lighter than its sprite (the Inn's `Table`: 0.55) | "Raza batch", "Interior fill and albedo" |
 | Lying items | `"lay_flat": true` turns a model generated from a side view (swords, wand) face-up on the ground | "Raza batch" |
 | Lights | `props.json` `"light_scale"` 0.3 dims every added light; the environment carries the scene | ADR 0005 |
+| Lamp glass | A class's `"glow"` lights pale, unsaturated texels inside a height band and radius of the mesh at night (`M_PropTextured` `PROP_GLOW_HLSL`); a light inside a closed lantern wants `"shadows": false` | "Props polish" |
+| Blocking | Props are walked through, as in the original. A class's `"blocks"` (`true` = 26-sided hull, or `"box"` / `"capsule"` / `"sphere"`) makes it solid: `Lamp`, `Brazier`, `Table`, `WoodenBox`. `{"radius_m", "height_m"}` blocks with a hidden cylinder instead: sign posts, tree trunks | "Props polish", "Props round 2" |
+| Facing | Kod angle when the original gives one; else the class's `"facing"` (signs: east). `random_yaw` wins over the Kod angle (outdoors it's always 0). One object: `props.json` `"placed"` by actor label | "Props round 2" |
+| Side views without original angles | Tripo source `"openai@front"` reuses the front restyle for left, back and right (variant `MVF`). Done for the rocks and dung (kept as custom models): single-image models of round things come out as slabs | "Props round 2" |
 
 ## Recipe for a zone (what ran for Raza)
 

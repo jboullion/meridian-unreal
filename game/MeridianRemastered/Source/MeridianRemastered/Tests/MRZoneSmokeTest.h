@@ -33,6 +33,11 @@ private:
 		bool bServerTeleport = false;
 		/** Seconds to wait before the step (e.g. so the client unloads zones it left). */
 		float PreDelay = 0.f;
+		/**
+		 * A wading square (a field, a pool): the original's depth there, or 0 to skip. The pawn must
+		 * stand at the wading floor (not on the raised wheat), and move slower (DepthSpeedFactor).
+		 */
+		int32 ExpectDepth = 0;
 	};
 
 	void RunStep();

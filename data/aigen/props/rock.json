@@ -11,13 +11,30 @@
   "size_by": "height",
   "restyle": {"providers": ["openai"]},
   "tripo": {
-    "variants": {"C": {"front": "openai"}},
+    "variants": {
+      "C": {"front": "openai"},
+      "MVF": {"front": "openai", "left": "openai@front", "back": "openai@front", "right": "openai@front"}
+    },
     "runs": {
+      "MVF": {
+        "tripo_task": "7c04d39e-9b8d-4ed8-90c4-488f22ccc582",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 polycount, multi-view: the front restyle in all four slots (45 credits)",
+        "tripo_name": "rock pile 3d model",
+        "tris_raw": 3430,
+        "file": "build/aigen/props/rock/04_tripo_out/MVF.glb",
+        "digest": "bfe1ba3c2219b050",
+        "tris": 3430,
+        "size_m": [0.9809, 0.9832, 0.8887]
+      },
       "C": {
         "tripo_task": "84c38ec7-6cd1-43cd-afb4-8905ef4e3aac",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
         "tripo_name": "rock pile 3d model",
-        "tris_raw": 7784
+        "tris_raw": 7784,
+        "file": "build/aigen/props/rock/04_tripo_out/C.glb",
+        "digest": "de3d18ab3972d08f",
+        "tris": 7784,
+        "size_m": [0.9789, 0.5556, 0.903]
       }
     },
     "chosen": {
@@ -47,5 +64,30 @@
     "tris": 7784,
     "size_m": [2.5062, 1.4224, 2.3117],
     "scale": 2.56015
+  },
+  "normalized_variants": {
+    "MVF": {
+      "file": "build/environment/kit/SM_AI_Rock_MVF.glb",
+      "tris": 3430,
+      "size_m": [2.5517, 2.5575, 2.3117],
+      "scale": 2.6013
+    }
+  },
+  "custom": {
+    "variant": "MVF",
+    "file": "build/aigen/props/rock/04_tripo_out/MVF.glb",
+    "tripo_task": "7c04d39e-9b8d-4ed8-90c4-488f22ccc582",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 polycount, multi-view: the front restyle in all four slots (45 credits)",
+    "tripo_name": "rock pile 3d model",
+    "tris_raw": 3430,
+    "digest": "bfe1ba3c2219b050",
+    "tris": 3430,
+    "size_m": [0.9809, 0.9832, 0.8887],
+    "normalized": {
+      "file": "build/environment/kit/SM_AI_Rock_Custom.glb",
+      "tris": 3430,
+      "size_m": [2.5517, 2.5575, 2.3117],
+      "scale": 2.6013
+    }
   }
 }

@@ -3,18 +3,37 @@
 ## Current TODOs
 
 ### UI
-
+- The spell and skill menu should be searchable by a search bar at the top of the menu
+- Right now the icon and text have separate hover regions which means hovering between them loses the dialog. Ideally they would share one wrapping hover region for the dialog
+- Add some dividers between the schools
+- Allow the different schools to be collapsed to save room in the menu.
+- There should be a longer list of attributes available on server 104 we want to display.
+  - We eventually want to support both the original, server 104, and our own Shards server as a client (that might never happen). All servers could have different lists here. Let's make sure we are listing these values from a server dependent source.
+  - This includes things like unbound energy, training points, bulk carried, etc. ![face reference](ReferenceImages/issues/server-104-attributes.png)
+  - The unbound energy, training points should be at the top and slighly separated as these are spendable points.
+  - Bulk Carried and other properties can go below in a separated section since these are all "secondary" attributes.
+  - We don't need to show the Health, Mana, and Vigor here since a user can see that in their hotbar.
+- The health and stamina bars show their values, let's also show the stamina values
 
 ### Props
-- let's update the signs to use the "standard mesh" instead of the HD model
-- Lamps should have their light moved down a bit to fit inside the post. Could we make the inside / glass texture glow? ![lamp reference](ReferenceImages/issues/lamp-lighting-position.png)
-- Let's update the stools the same way we did the tables to they have a more similar appearance (if possible). Right now they are a little bit brighter ![stool reference](ReferenceImages/issues/table-vs-chairs-lighting.png)
-- Users should be able to walk through the wheat and other tall grasses with a movement reduction. Code for that should be in the old game as well
-  - This might be an issue with the surrounding wheat texture causing blocking
-  - There is a small field with a lot of props on it that has a tiny grass texture around the border. That grass texture is blocking movement
+- Sign posts, and other props, might need a property for "rotation" in order to get them pointing the the ideal direction since they are not just sprites that always face the player now.
+  - Most sprites are meant to be viewed the same from all angles so not a problem.
+  - The sign needs to turn 90 degress counter clockwise by default. But some signs might need other adjustments. Would it make sense to have two properties: Direction and rotation. So we could set signs as "South" or "Down" direction by default and then just offset that rotation for specific signs? Or do we just have rotation and give signs a default of -90?
+- Lamps are looking GREAT!
+  - Is it possible to remove the emmisive effects from the glass and potentially just make it transparent during the day instead of a solid gray? It should look the same at night.
+- Side View Props:
+  - Some props don't have a side view, but could benefit from one. In these instances we would just use the same image as the front and side view
+  - List:
+    - Dung
+    - Rocks, large and small. Otherwise they appear fairly flat
+- Users should be able to walk through the wheat and other tall grasses with a movement reduction. 
+  - 
 
-- I think a lot of props should still not have blocking elements, but perhaps we can add a property to the props.json, or some other file, to choose which props do block movement. In the original game no props do. Let's start with lamps, braziers, and tables.
-- Create Apple Trees, and Other types of trees in blender kit if possible.
+- Add blockers:
+ - Chests
+ - Signs? (This one might need a lot of testing as some signs might block paths otherwise)
+ - Trees (Ideally just the trunks)
+ - 
 
 
 ### Movement

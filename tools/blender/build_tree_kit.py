@@ -2,7 +2,7 @@
 Procedural trees for the Kod-placed tree objects (docs/adr/0007 "Trees"). Headless Blender:
 
     python tools/textures/make_tree_textures.py      # leaf atlas + bark first
-    blender -b --factory-startup -P tools/blender/build_tree_kit.py
+    blender -b --factory-startup -P tools/blender/build_tree_kit.py [-- Apple Pear ...]
 
 Writes build/environment/kit/SM_Tree_<Name>_<Variant>.glb: a seeded trunk-and-branch skeleton as
 tapered tubes ("tree_bark" slot, T_TreeBark_<Name>) and a crown of leaf-cluster cards ("tree_leaves"
@@ -48,6 +48,29 @@ TREES = {
         "bare": True, "height_m": 3.76, "width_m": 2.64, "split_m": 1.15, "trunk_d_m": 0.4,
         "limbs": (4, 6), "depth": 4, "children": (2, 4), "gnarl": 0.3,
         "variants": {"A": 71, "B": 83},
+    },
+    # The fruit trees (FoodDispenser; build/bgf/appletree, peartree, orangetree): one shape, a round
+    # crown on a stout trunk, its leaf atlas carrying the fruit (make_tree_textures.py "fruit").
+    # Apple and orange share the drawing; the pear's crown is narrower and taller.
+    "Apple": {
+        "height_m": 4.37, "crown_base_m": 1.41, "crown_r_m": (1.54, 1.48), "trunk_d_m": 0.3,
+        "limbs": (4, 6), "twigs": (3, 5), "cards": 400, "card_m": (0.62, 0.9),
+        "variants": {"A": 101, "B": 113},
+    },
+    "Pear": {
+        "height_m": 4.4, "crown_base_m": 1.32, "crown_r_m": (1.39, 1.54), "trunk_d_m": 0.26,
+        "limbs": (4, 5), "twigs": (3, 5), "cards": 380, "card_m": (0.6, 0.88),
+        "variants": {"A": 127, "B": 139},
+    },
+    "Orange": {
+        "height_m": 4.37, "crown_base_m": 1.41, "crown_r_m": (1.54, 1.48), "trunk_d_m": 0.3,
+        "limbs": (4, 6), "twigs": (3, 5), "cards": 400, "card_m": (0.62, 0.9),
+        "variants": {"A": 151, "B": 163},
+    },
+    "Raza": {  # raztree1 (116): a broad yellow-green crown on a stout trunk with heavy limbs
+        "height_m": 4.37, "crown_base_m": 1.38, "crown_r_m": (1.59, 1.5), "trunk_d_m": 0.32,
+        "limbs": (5, 7), "twigs": (3, 5), "cards": 440, "card_m": (0.66, 0.96),
+        "variants": {"A": 173, "B": 181, "C": 191},
     },
 }
 

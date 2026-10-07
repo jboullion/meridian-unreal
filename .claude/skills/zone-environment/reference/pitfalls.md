@@ -64,6 +64,8 @@ Each entry gives the symptom you'll see, then the cause and fix. The ADR 0003 se
   Remove those meshes' entries from `Saved/MRBuild/world_cache.json` (keys starting `/Game/Generated/Zones/Z<rid>/Art/SM_Z<rid>_<Building>`) and build again. It has happened twice, so expect it after big Blender changes and judge look-dev only after the forced reimport. ["Known flake"]
 - **A GPU crash (D3D12 page fault) when a headless editor opens `L_World`.** `build_world.ps1` starts on the Entry map for this reason; don't change that.
   Look-dev runs `-unattended` and retries once. ["Look-dev survives a GPU crash"]
+- **A blockout change (collision, a new glb into an old folder) has no effect in game.** The importer files a mesh under a folder named after its glb, so a folder that once held another glb keeps that mesh too. `import_zone_mesh` takes the mesh named after the file; before 2026-10-07 it took the first, and Raza's collision stayed the full blockout. Check the imported path in the build log.
+- **The whole town is darker after a big re-import** (walls, props and trees alike). A re-import resets a mesh's two-sided distance field. `two_sided_distance_field` is keyed on the mesh's import since 2026-10-07; before, its cache said done and the walls lost their sky light (see "unlit walls" above). Editing `import_zone_mesh` re-imports every mesh (~10 min).
 - **New C++ isn't picked up.** Compile, then restart the editor. The build runs inside the open editor, which still has the old DLL.
 
 ## Look-dev and process

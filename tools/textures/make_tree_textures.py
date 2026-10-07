@@ -11,6 +11,9 @@ python tools/bgf2png/bgf2png.py <bgf>) and writes into build/textures_placeholde
   pointed oval filled with a patch of the sprite's own painted canopy, so the colours and the
   painted texture are the original's; inner leaves are drawn first and darker, which gives each
   cluster depth. A thin twig runs up each cell.
+  A fruit tree (`fruit`) first paints its fruit out of the canopy (filled with the leaf colour
+  around it), then draws fruit into the clusters among the leaves: round (apple, orange) or a
+  teardrop (pear), shaded from the sprite's own fruit colours.
 - T_TreeBark_<Name>.png: a tileable bark strip in the colours of the sprite's trunk (vertical
   streaks from stretched, wrapped noise); `trunk_bgf` takes them from another sprite (the shrub
   shows no trunk). A tree with no `canopy` (leafless) gets bark only.
@@ -38,6 +41,16 @@ TREES = {
               "seed": 13, "leaves": 230, "leaf_len": (24, 38)},
     # nectree1 (91): leafless, so bark only, from its gnarled trunk
     "Dead": {"bgf": "nectree1", "canopy": None, "trunk": (140, 350, 190, 425), "seed": 19},
+    # the fruit trees (FoodDispenser: the Apple, Pear and Orange classes' dispenser icons): one
+    # dark-leaved tree, its fruit drawn on; the sprites are small (200 px), so fewer, larger leaves
+    "Apple": {"bgf": "appletree", "canopy": (8, 6, 178, 160), "trunk": (88, 185, 104, 250), "seed": 29,
+              "leaves": 110, "fruit": {"shape": "round", "count": (0, 2), "size": (40, 52)}},
+    "Pear": {"bgf": "peartree", "canopy": (6, 6, 160, 160), "trunk": (75, 185, 87, 250), "seed": 31,
+             "leaves": 110, "fruit": {"shape": "pear", "count": (0, 2), "size": (40, 52)}},
+    "Orange": {"bgf": "orangetree", "canopy": (8, 6, 178, 160), "trunk": (88, 185, 104, 250), "seed": 37,
+               "leaves": 110, "fruit": {"shape": "round", "count": (0, 2), "size": (46, 58)}},
+    # raztree1 (OrnamentalObject 116, OO_RAZA_TREE1): a broad yellow-green crown on a stout trunk
+    "Raza": {"bgf": "raztree1", "canopy": (8, 6, 182, 160), "trunk": (88, 185, 104, 250), "seed": 43, "leaves": 120},
 }
 
 CELL = 512          # atlas cell, px (the atlas is 2x2 cells)
@@ -61,13 +74,69 @@ def leaf_polygon(cx, cy, length, width, angle, steps=10):
     return pts_l + pts_r[::-1]
 
 
-def canopy_patches(sprite, box):
-    """The canopy region as an RGB array, plus a mask of fully opaque pixels."""
+def fruit_mask(rgb, opaque):
+    """The fruit in a canopy: saturated, bright pixels (the leaves are dark and dull)."""
+    mx, mn = rgb.max(axis=2), rgb.min(axis=2)
+    return opaque & (mx - mn > 60) & (mx > 110)
+
+
+def canopy_patches(sprite, box, fruit=False):
+    """The canopy region as an RGB array, plus a mask of fully opaque pixels. fruit: paint the
+    fruit out first (each fruit pixel, grown by 2 px, takes the leaf colour around it), so leaf
+    patches carry no half-fruit; the clusters draw whole fruit back in (draw_fruit)."""
     region = np.asarray(sprite.crop(box).convert("RGBA")).astype(np.float32)
-    return region[..., :3], region[..., 3] > 250
+    rgb, opaque = region[..., :3], region[..., 3] > 250
+    if fruit:
+        f = fruit_mask(rgb, opaque)
+        f = box_blur(f[..., None].astype(np.float32), 2, 1)[..., 0] > 0.01
+        keep = (opaque & ~f)[..., None].astype(np.float32)
+        spread = box_blur(rgb * keep, 4, 3) / np.maximum(box_blur(keep, 4, 3), 1e-3)
+        rgb = np.where(f[..., None], spread, rgb)
+    return rgb, opaque
 
 
-def draw_cluster(rng, canopy, opaque, size, cfg):
+def fruit_colours(sprite, box):
+    """(dark, mid, light) RGB of the sprite's fruit, from its fruit pixels."""
+    region = np.asarray(sprite.crop(box).convert("RGBA")).astype(np.float32)
+    rgb = region[..., :3]
+    px = rgb[fruit_mask(rgb, region[..., 3] > 250)]
+    return tuple(np.percentile(px, p, axis=0) for p in (10, 50, 92))
+
+
+def draw_fruit(img, cx, cy, size, shape, colours, rng):
+    """One fruit at (cx, cy), `size` px across: a round fruit or a pear's teardrop, shaded from
+    `colours` (dark rim, mid body, a light highlight up and to the left), with a short stem."""
+    dark, mid, light = colours
+    # at least some shading, for sprites whose fruit is one flat colour (the orange's)
+    dark, light = np.minimum(dark, mid * 0.6), np.maximum(light, mid + (255 - mid) * 0.35)
+    h = int(size * (1.35 if shape == "pear" else 1.0))
+    w, x0, y0 = int(size), int(cx - size / 2), int(cy - h / 2)
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    u, v = (xx + 0.5) / w * 2 - 1, (yy + 0.5) / h * 2 - 1  # -1..1, v down
+    if shape == "pear":
+        # narrow neck at the top widening into a round bottom
+        half = np.where(v < 0.1, 0.42 + 0.3 * (v + 1) / 1.1, np.sqrt(np.clip(1 - ((v - 0.1) / 0.9) ** 2, 0, 1)) * 0.75 + 0.0)
+        inside = (np.abs(u) <= half) & (v > -0.97)
+        r = np.clip(np.abs(u) / np.maximum(half, 1e-3), 0, 1) * 0.7 + np.clip(np.abs(v), 0, 1) * 0.3
+    else:
+        rr = np.sqrt(u * u + v * v)
+        inside = rr <= 1.0
+        r = rr
+    hl = np.clip(1.0 - np.sqrt((u + 0.35) ** 2 + (v + 0.4) ** 2) / 0.45, 0, 1) ** 2
+    col = mid[None, None] * (1 - r[..., None] ** 2) + dark[None, None] * (r[..., None] ** 2)
+    col = col + (light - col) * hl[..., None] * 0.8
+    col = col * rng.uniform(0.85, 1.1)
+    alpha = inside.astype(np.float32) * 255
+    fruit = Image.fromarray(np.dstack([np.clip(col, 0, 255), alpha]).astype(np.uint8), "RGBA")
+    img.alpha_composite(fruit, (x0, y0))
+    # the stem, a short dark stroke above the top
+    d = ImageDraw.Draw(img)
+    top = (cx + rng.uniform(-0.05, 0.05) * size, y0 + 2)
+    d.line([top, (top[0] + rng.uniform(-0.15, 0.15) * size, top[1] - size * 0.22)], fill=(48, 32, 16, 255),
+           width=max(2, int(size * 0.07)))
+
+
+def draw_cluster(rng, canopy, opaque, size, cfg, fruit_cols=None):
     """One leaf cluster in a size x size RGBA image."""
     s = size * SS
     img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
@@ -93,8 +162,18 @@ def draw_cluster(rng, canopy, opaque, size, cfg):
         angle = out + rng.uniform(-0.7, 0.7)
         depth = r / radius  # 0 centre .. ~0.82 rim: inner leaves sit deeper in the clump
         leaves.append((depth + rng.uniform(-0.25, 0.25), bx, by, angle))
-    leaves.sort()  # inner (deep) first, outer drawn on top
+    fruit = cfg.get("fruit")
+    if fruit and fruit_cols is not None:
+        # fruit hangs among the leaves: at mid depth, so outer leaves partly cover some of it
+        for _ in range(rng.randint(*fruit["count"])):
+            r = radius * rng.uniform(0.15, 0.7)
+            a = rng.uniform(0, 2 * math.pi)
+            leaves.append((rng.uniform(0.35, 0.75), centre[0] + math.cos(a) * r, centre[1] + math.sin(a) * r * 0.92, None))
+    leaves.sort(key=lambda leaf: leaf[0])  # inner (deep) first, outer drawn on top
     for depth, bx, by, angle in leaves:
+        if angle is None:
+            draw_fruit(img, bx, by, rng.uniform(*fruit["size"]) * SS, fruit["shape"], fruit_cols, rng)
+            continue
         length = rng.uniform(*cfg.get("leaf_len", LEAF_LEN)) * SS
         poly = leaf_polygon(bx, by, length, length * rng.uniform(*LEAF_W), angle)
         xs, ys = [p[0] for p in poly], [p[1] for p in poly]
@@ -136,10 +215,11 @@ def box_blur(arr, r, passes):
 
 def leaf_atlas(sprite, cfg):
     rng = random.Random(cfg["seed"])
-    canopy, opaque = canopy_patches(sprite, cfg["canopy"])
+    canopy, opaque = canopy_patches(sprite, cfg["canopy"], bool(cfg.get("fruit")))
+    fruit_cols = fruit_colours(sprite, cfg["canopy"]) if cfg.get("fruit") else None
     atlas = Image.new("RGBA", (CELL * 2, CELL * 2), (0, 0, 0, 0))
     for i in range(4):
-        atlas.alpha_composite(draw_cluster(rng, canopy, opaque, CELL, cfg), ((i % 2) * CELL, (i // 2) * CELL))
+        atlas.alpha_composite(draw_cluster(rng, canopy, opaque, CELL, cfg, fruit_cols), ((i % 2) * CELL, (i // 2) * CELL))
     # fill the clear pixels with the nearby leaf colour (alpha stays), so filtering and mips don't
     # pull a dark or bright fringe into the leaf edges: a normalised blur of colour by alpha
     px = np.asarray(atlas).astype(np.float32)

@@ -7,6 +7,9 @@ Convert Meridian 59 .roo rooms into glTF (.glb) blockouts + zone metadata.
 
 Outputs (build/ is git-ignored, regenerate any time):
     build/zones/<rid>_<class>.glb        geometry, one primitive per original texture (material "grdNNNNN")
+    build/zones/<rid>_<class>_collision.glb   the same without the walls the original lets you walk
+                                         through (WF_PASSABLE: field tops, hanging signs, wall torches);
+                                         the world build's collision (tools/ue/build_world.py)
     build/zones/<rid>_<class>.png        top-down preview (with --preview)
     data/zone_layout.json                world-space positions of exits / arrivals / spawns per zone
 
@@ -131,11 +134,20 @@ def square_center_roo(row: int, col: int) -> tuple[float, float]:
     return grid_to_roo(row, col, 32, 32)
 
 
-class SectorHeights:
-    """Floor/ceiling height (ROO units) at a point, honouring slopes."""
+# How far you sink into a sector with a wading depth (SF_MASK_DEPTH), ROO units: 0, 1/5, 2/5 and 3/5
+# of a square (blakserv roofile.c DEPTHMODIFY*, clientd3d draw3d.c sector_depths)
+DEPTH_SINK_ROO = (0.0, ROO_PER_SQUARE / 5, 2 * ROO_PER_SQUARE / 5, 3 * ROO_PER_SQUARE / 5)
 
-    def __init__(self, sectors):
+
+class SectorHeights:
+    """Floor/ceiling height (ROO units) at a point, honouring slopes. wading: floors of sectors with
+    a depth are lowered by it, to where the original stands players and objects (floor - depth):
+    Raza's wheat fields are blocks 0.86 m above the grass with depth 2 (0.88 m), so you wade
+    through them at ground level with the wheat at your waist."""
+
+    def __init__(self, sectors, wading=False):
         self.sectors = sectors
+        self.wading = wading
 
     @staticmethod
     def _plane_z(slope, x, y):
@@ -146,7 +158,8 @@ class SectorHeights:
     def floor(self, si: int, x: float, y: float) -> float:
         s = self.sectors[si - 1]
         z = self._plane_z(s.floor_slope, x, y)
-        return z if z is not None else s.floorh * HEIGHT_TO_ROO
+        z = z if z is not None else s.floorh * HEIGHT_TO_ROO
+        return z - DEPTH_SINK_ROO[s.blak_flags & 0x3] if self.wading else z
 
     def ceil(self, si: int, x: float, y: float) -> float:
         s = self.sectors[si - 1]
@@ -215,6 +228,7 @@ def tex_key(t: int) -> str:
 
 
 SF_FLICKER = 0x00000200  # clientd3d bsp.h: the sector's light flickers
+SF_MASK_DEPTH = 0x00000003  # blakserv roofile.c: wading depth 0-3 (fields, pools); slows movement
 
 
 def sector_at(room: Room):
@@ -256,9 +270,15 @@ def sector_lights(room: Room):
     return light_at
 
 
-def build_room_mesh(room: Room) -> MeshBuilder:
+def build_room_mesh(room: Room, collision: bool = False) -> MeshBuilder:
+    """The room's floors, ceilings and walls. collision: the surfaces you walk on and into, as the
+    original moves you: floors of wading sectors at their wading height (SectorHeights wading, the
+    step walls around them to match), and without the middle (normal-texture) sections the original
+    lets you walk through: every sidedef of the wall has WF_PASSABLE (blakserv roofile.c
+    BSPCanMoveInRoomTreeInternal, clientd3d move.c). Raza's wheat and crop field borders, its
+    hanging signs and the interiors' wall torches are such walls."""
     mb = MeshBuilder()
-    H = SectorHeights(room.sectors)
+    H = SectorHeights(room.sectors, wading=collision)
     light_at = sector_lights(room)
 
     # ---- floors & ceilings from BSP leaves (convex polygons)
@@ -353,6 +373,8 @@ def build_room_mesh(room: Room) -> MeshBuilder:
                  min(cP0, cN0), max(cP0, cN0), min(cP1, cN1), max(cP1, cN1), sd_up, "above", 1 if highP else -1)
 
         # middle (fences, windows, railings): only where a normal texture is set
+        if collision and all(sd.flags & WF_PASSABLE for sd in (sd_pos, sd_neg) if sd):
+            continue
         for sd, side in ((sd_pos, 1), (sd_neg, -1)):
             if sd and sd.type_normal:
                 b0, t0 = max(fP0, fN0), min(cP0, cN0)
@@ -440,9 +462,10 @@ def world(room_xy, height_roo: float) -> list[float]:
 
 
 def floor_at(room: Room, x: float, y: float) -> float:
-    """Floor height at a ROO point by descending the BSP tree."""
+    """Where something stands at a ROO point (by descending the BSP tree): the floor, lowered by a
+    wading sector's depth, as the original places players and objects (clientd3d object.c)."""
     node = room.bsp
-    H = SectorHeights(room.sectors)
+    H = SectorHeights(room.sectors, wading=True)
     while node is not None:
         if node.type == BSP_LEAF:
             return H.floor(node.sector, x, y) if node.sector else 0.0
@@ -501,7 +524,22 @@ def zone_layout(zone: dict, room: Room) -> dict:
         "edge_exits": zone["edge_exits"],
         "objects": objects,
         "generators": gens,
+        "depth_areas": depth_areas(room),
     }
+
+
+def depth_areas(room: Room) -> list[dict]:
+    """The sectors with a wading depth (SF_MASK_DEPTH 1-3: fields, pools) as convex BSP-leaf
+    polygons, [x, z] glTF metres in zone coordinates. The original slows you to 3/4, 1/2 and 1/4
+    speed in them (clientd3d move.c UserMovePlayer); UMRCharacterMovementComponent does the same."""
+    out = []
+    for node in room.bsp.walk():
+        if node.type != BSP_LEAF or not node.sector or len(node.points) < 3:
+            continue
+        depth = room.sectors[node.sector - 1].blak_flags & SF_MASK_DEPTH
+        if depth:
+            out.append({"depth": depth, "points": [[w[0], w[2]] for w in (world(p, 0) for p in node.points)]})
+    return out
 
 
 # --------------------------------------------------------------------- preview
@@ -584,6 +622,7 @@ def main():
             print(f"{stem:28s} {n_walls:5d} walls")
             continue
         stats = write_glb(build_room_mesh(room), a.out / f"{stem}.glb", stem)
+        write_glb(build_room_mesh(room, collision=True), a.out / f"{stem}_collision.glb", stem)
         lay = zone_layout(z, room)
         lay["mesh"] = f"build/zones/{stem}.glb"
         lay["roo"] = z["roo"]

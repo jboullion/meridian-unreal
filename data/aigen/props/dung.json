@@ -11,13 +11,30 @@
   "size_by": "height",
   "restyle": {"providers": ["openai"]},
   "tripo": {
-    "variants": {"C": {"front": "openai"}},
+    "variants": {
+      "C": {"front": "openai"},
+      "MVF": {"front": "openai", "left": "openai@front", "back": "openai@front", "right": "openai@front"}
+    },
     "runs": {
+      "MVF": {
+        "tripo_task": "3251121f-504b-42fe-b1c1-3c631726769d",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 polycount, multi-view: the front restyle in all four slots (45 credits)",
+        "tripo_name": "dog poop 3d model",
+        "tris_raw": 3882,
+        "file": "build/aigen/props/dung/04_tripo_out/MVF.glb",
+        "digest": "04400217bd816fcc",
+        "tris": 3882,
+        "size_m": [0.9749, 0.9668, 0.6403]
+      },
       "C": {
         "tripo_task": "d02af324-e301-476f-9f30-c54abb5dcb95",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
         "tripo_name": "dung pile 3d model",
-        "tris_raw": 7721
+        "tris_raw": 7721,
+        "file": "build/aigen/props/dung/04_tripo_out/C.glb",
+        "digest": "6a0abb465fa9083e",
+        "tris": 7721,
+        "size_m": [0.9694, 0.9671, 0.6309]
       }
     },
     "chosen": {
@@ -47,5 +64,30 @@
     "tris": 7721,
     "size_m": [0.3829, 0.382, 0.2492],
     "scale": 0.39502
+  },
+  "normalized_variants": {
+    "MVF": {
+      "file": "build/environment/kit/SM_AI_Dung_MVF.glb",
+      "tris": 3882,
+      "size_m": [0.3794, 0.3763, 0.2492],
+      "scale": 0.38918
+    }
+  },
+  "custom": {
+    "variant": "MVF",
+    "file": "build/aigen/props/dung/04_tripo_out/MVF.glb",
+    "tripo_task": "3251121f-504b-42fe-b1c1-3c631726769d",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 polycount, multi-view: the front restyle in all four slots (45 credits)",
+    "tripo_name": "dog poop 3d model",
+    "tris_raw": 3882,
+    "digest": "04400217bd816fcc",
+    "tris": 3882,
+    "size_m": [0.9749, 0.9668, 0.6403],
+    "normalized": {
+      "file": "build/environment/kit/SM_AI_Dung_Custom.glb",
+      "tris": 3882,
+      "size_m": [0.3794, 0.3763, 0.2492],
+      "scale": 0.38918
+    }
   }
 }

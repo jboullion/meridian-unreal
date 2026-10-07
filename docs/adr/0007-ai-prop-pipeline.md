@@ -342,14 +342,51 @@ Decisions:
 
 Sheets: `build/lookdev/prop_ambient_sheet.png` (fixed 1 against 1.5× and 2.5× the sector light), `build/lookdev/compare_sprite_before_sprite_final.png`. Other props may want an `albedo` too; compare their sprites the same way when one stands out.
 
+## Props polish: signs, lamps, stools, blocking, fruit trees (2026-10-07)
+From the user's TODO list.
+
+- **Signs on Smart Mesh.** `Sign` shows `SM_AI_Sign_SM4k` (`props.json` `"mesh_custom"`): separate planks, closer to the sprite than HD's solid block ("Smart Mesh props"). `SM8k` is built too; `mesh_custom` switches.
+- **Lamp light and glass.** The light sat at 2.57 m, above the 1.98 m lamp: the lantern is 1.50-1.98 m on the mesh, its glass about 1.60-1.80 m. The light is now at 1.7 m, inside the glass.
+  - It casts no shadows (`"shadows": false`): inside the closed lantern mesh a shadowed light lit nothing. The original's lights had no shadows either.
+  - The moths circle at 1.8 m.
+  - **Glass glow:** Tripo bakes the lamp and its glass into one texture, so `M_PropTextured` finds the glass by rule (`PROP_GLOW_HLSL`): pale, unsaturated texels inside the lantern (props.json `"glow"`: `z_m` 1.55-1.85, `radius_m` 0.22), lit `[2.8, 1.8, 0.74]` at night like the old `lamp_glass`. Checked on the texture first: the rule picks the glass islands and nothing else (14% of the band's texels).
+- **Stools.** `albedo` from the sprite's mean linear colour against the texture's, the same way as the Table (which this method reproduces at 0.54-0.58): `Stool` 0.56.
+  - The Inn's `BarStool` came out at 0.78 that way but still rendered about 60% brighter than the table beside it (new camera `inn_stool_table`). At 0.5 they match (seat 87/28/3 against the table top's 96/25/2, sRGB). The user asked for the two to look alike, so the bar stool uses 0.5.
+  - The Hall's stools (0.56) have no table beside them; judge them on `int_hall`.
+- **Blocking props.** props.json `"blocks"` (`true`: a 26-sided hull UE fits around the mesh; or `"box"`, `"capsule"`, `"sphere"`) gives the mesh simple collision and the placed prop `BlockAll` (`build_world.py` `prop_collision`). On: `Lamp`, `Brazier`, `Table`. Every other prop stays walk-through, as in the original. `UMRZoneSubsystem::TraceFloor` looks under props (`ZoneProp` tag), so spawns and arrivals never land on a table.
+- **Wheat and the field borders** blocked because the blockout's collision ignored the original's `WF_PASSABLE` walls; and the original slows you in its fields. See docs/findings.md "Walking".
+- **Fruit trees and the Raza tree** in the Blender kit (ADR "Trees" pipeline): `Apple`, `Pear`, `Orange` (the FoodDispenser icons `appletree`, `peartree`, `orangetree`) and `Raza` (`raztree1`, OrnamentalObject 116), measured off their sprites.
+  - `make_tree_textures.py` paints the fruit out of the canopy before cutting leaf patches, then draws whole fruit among the leaves in the sprite's fruit colours (round, or a pear's teardrop).
+  - props.json `"FoodDispenser/Apple"` (a class key can name the object's classtype) places the apple trees on Raza's two apple dispensers, which had no mesh.
+
+Sheet: `build/lookdev/props_polish_sheet.png` (labels `props_day`, `props_night`, `props_night2`, `stool_078`, `stool_050`, `trees_fruit2`). New cameras: `lamp_glass`, `trees_apple`, `inn_stool_table`; `moths_lamp` re-aimed at the new light height.
+
+## Props round 2: facing, glass, side views, blockers, wading (2026-10-07)
+From the user's second list.
+
+- **Facing.** Most objects have no Kod angle (signs) or the original's 0, meaning none (everything outdoors). One property was enough, not a direction plus a rotation:
+  - a class's `"facing"` (\"south\", the model's front and the default; \"east\", \"north\", \"west\", or degrees) turns the objects the original gives no angle. Signs: east, 90 degrees counter-clockwise from before;
+  - `"placed"` sets anything for one object by its actor label (`Prop_300_Sign_0`, as the outliner shows it). Its `facing` wins over a Kod angle;
+  - `yaw_offset` still adds degrees on top.
+  - `random_yaw` now wins over the Kod angle. Outdoors that angle is always 0, so the rocks, dung and trees all faced one way before.
+- **Lamp glass by day.** Props with a `"glow"` use `M_PropTexturedGlass`, a masked copy of `M_PropTextured`. The glass texels are clipped while the lamps are off, so the lantern is see-through by day and unchanged at night. `"clear_by_day": false` keeps solid glass.
+  - The day clip takes the glow's rule, or the same rule looser on the base colour at mip 3 (`PROP_GLASS_OPACITY_HLSL`): the sharp rule alone left the glass's grime standing as dark flecks. A looser sharp rule ate the iron straps instead (tested on the texture: 46% of the band against 25%).
+- **Side views from the front.** A manifest's Tripo view source `"<provider>@<view>"` reuses another view's image (`aigen.py` `resolve_input`). Variant `MVF` for `dung`, `rock`, `rockb`, `rockc`: front, left, back and right all `openai@front`, so Tripo builds them round instead of flat. Run on 2026-10-07 at the user's go-ahead: HD H3.1, 4000 polycount, 180 credits (19,755 -> 19,575); task ids in each manifest's `tripo.runs.MVF`.
+  - Results (`05_review/sheet2_tripo.png`): every one has a real side and back. The single-image models had been slabs: the big rock 1.42 m deep for 2.51 m wide, `rockb` 0.28 for 0.52, `rockc` 0.45 for 0.75. The new ones are as deep as they are wide, at half the triangles (3,430-3,966).
+  - In game: `build/lookdev/compare_rocks_hd_rocks_mvf.png` (new cameras `prop_dung`, `pen_wide`). Kept as custom models (`aigen.py <name> custom MVF`, `art_src/aigen/props/<name>/<name>_custom.glb`), so the game shows `SM_AI_<Name>_Custom`; `aigen.py <name> custom none` goes back to the HD model.
+  - Studio steps that worked: the multi-view tab took all four slots; one Left upload didn't take and needed a second try (check the slots on a zoom before Generate). A resized Chrome window moves the Generate button: a click that misses costs nothing, so check the URL changed.
+- **Blockers.** `"blocks"` can be `{"radius_m", "height_m"}`: a hidden cylinder (`/Engine/BasicShapes/Cylinder`) at the prop's foot, tagged `ZoneProp` and `ZoneBlocker`, for a tree's trunk and not its crown (`build_world.py` `spawn_blocker`). On: sign posts (0.12 m), the Mid, Dead, Raza and fruit trees' trunks (0.15-0.3 m). Chests (`WoodenBox`) block with a fitted box. Shrubs don't block.
+- **Wheat, really.** The first fix made the field borders passable, but the fields still blocked: they are raised blocks you wade into (docs/findings.md "Walking"). The collision blockout now has their floors at the wading height. And none of the collision changes had reached Raza: `import_zone_mesh` re-imported into a folder that still held the full blockout and kept using that (pitfalls.md). The smoke test now walks into a wheat field.
+- **Re-import side effect.** Fixing `import_zone_mesh` re-imported every mesh, which reset the walls' two-sided distance fields and darkened the town (`props2_day`); that step is now keyed on each mesh's import (pitfalls.md).
+
+Sheet: `build/lookdev/props_round2_sheet.png` (labels `props3_day`, `props3_night` against `props_day`, `props_night`; new camera `sign_east`).
+
 ## Open
 - Trees: the Outskirts tree lines (ADR 0003 2g).
-- Emissive parts (lamp glass, embers) on AI meshes: a second material slot or a mask.
+- Emissive parts on AI meshes other than lamp glass (embers): props.json `"glow"` covers pale glass only.
 - The API backend (phase 3), once the user tops up the API wallet; Studio plus the bridge covers batches until then.
-- Collision on props (they're NoCollision today).
 - Side views from the original angle frames (`bgf2png` groups of 8; the 12 Raza props that have them are the museum figures, `box1`, `helm`, `modportal` and `modthron`) instead of OpenAI's guesses.
 - Custom models: the user's pick per prop from the 1000-triangle and original-angle tests (`mesh_custom`, or `aigen.py <name> custom <variant>` to keep it in `art_src/`).
 - Static props: the user's pick per prop between `hd`, `sm8k` and `sm4k` (`props.json` `mesh_use`, the 10 tested props). After that, drop the losing options.
 - Creatures: the user's pick between C, MV and Smart Mesh for the museum figures; the other museum figures (`modavar`, `modorc`, `modfey`, `modlupog`, `modspdr`) with 4 views.
 - `SectorLight` per prop from the original sector light where it stands (1 now: props read slightly brighter than the walls indoors).
-- The night glow of lamp glass and other emissive parts on AI meshes.

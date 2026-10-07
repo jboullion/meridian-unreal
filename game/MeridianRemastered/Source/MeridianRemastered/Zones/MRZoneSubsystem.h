@@ -74,6 +74,17 @@ struct FMRZoneInfo
 	double GridArea() const { return GridSizeRoo.X * GridSizeRoo.Y; }
 };
 
+/**
+ * A wading area: a sector of the original with a depth (SF_MASK_DEPTH 1-3: fields, pools), one convex
+ * BSP leaf of it in world XY (UE cm), from zone_layout.json "depth_areas" (tools/roo2gltf).
+ */
+struct FMRDepthArea
+{
+	int32 Depth = 0;
+	FBox2D Bounds = FBox2D(ForceInit);
+	TArray<FVector2D> Points;
+};
+
 class ULevelStreaming;
 
 /**
@@ -139,6 +150,15 @@ public:
 	 */
 	bool TraceFloor(FVector& InOut, bool bLowest = false) const;
 
+	/**
+	 * The original's wading depth at a world position (0 none, 1-3 deeper): its fields and pools.
+	 * Pure data, the same on client and server, so movement predicts it (UMRCharacterMovementComponent).
+	 */
+	int32 DepthAt(const FVector& World) const;
+
+	/** How fast you move at a wading depth, as the original (clientd3d move.c): 1, 3/4, 1/2, 1/4. */
+	static float DepthSpeedFactor(int32 Depth);
+
 	/** World -> (row, col) in the given zone's grid. */
 	FIntPoint WorldToGrid(int32 Rid, const FVector& World) const;
 
@@ -163,6 +183,9 @@ private:
 	void SetPawnZone(APawn* Pawn, int32 Rid) const;
 
 	TMap<int32, FMRZoneInfo> Zones;
+
+	/** Every zone geometry's wading areas, world space (DepthAt). */
+	TArray<FMRDepthArea> DepthAreas;
 
 	/** Pawns that just teleported don't take another exit until they leave the arrival square. */
 	TMap<TWeakObjectPtr<APawn>, FIntVector> ArrivalSquare;

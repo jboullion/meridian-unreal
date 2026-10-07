@@ -15,6 +15,17 @@
   - `WF_NO_VTILE` textures are drawn once and clipped where the texture runs out. Raza's iron fences use a y offset of 60 so only the spiked top shows, as railings about 0.7 m tall.
 - **Floor and ceiling textures tile once per grid square** (2.2 m) whatever their pixel size, shifted by the sector's texture offset (`D3DRenderFloorExtract`). The 512 px Raza path textures are therefore denser than their shrink value suggests.
 
+## Walking: passable walls, wading and objects
+- **Passable walls.** A wall side blocks unless it has `WF_PASSABLE` (`blakserv/roofile.c` `BSPCanMoveInRoomTreeInternal`, `clientd3d/move.c`). Raza's field borders ("Field 1/2/3 Tops", `grd08897`, `grd08902`, `grd08905`), its hanging shop signs and the interiors' wall torches are passable middle textures. Six "Field 1 Tops" sides in the north of the town are not.
+  - Farol West (331) has 132 passable "Forest Deep 3" (`grd01502`) tree walls.
+  - `roo2gltf` writes `<rid>_<class>_collision.glb` without the passable middle sections, and the world build uses it as the collision (2026-10-07). Before that every middle texture blocked, so the wheat fields were walls.
+- **Wading.** A sector's `SF_MASK_DEPTH` (0-3) slows movement to 1, 3/4, 1/2 and 1/4 speed (`clientd3d/move.c` `UserMovePlayer`). Players and objects stand at the floor minus 0, 0.2, 0.4 or 0.6 of a square (0, 0.44, 0.88, 1.32 m; `draw3d.c` `sector_depths`, `object.c`, `blakserv/roofile.c` `DEPTHMODIFY`).
+  - Raza's fields are depth 1 and 2 ("Field 1/2/3 Floor"); the Crypt's pool is depth 1.
+  - **The fields are raised blocks**: their floor is 1.20 m against the grass's 0.34 m, edged with "Field Bottom" walls. Sinking 0.88 m puts you back at ground level with the wheat at your waist. A field without depth (the one north of the town, `grd08898`, depth 0) stays a block you can't enter.
+  - `roo2gltf`: the collision blockout's floors are at the wading height (`SectorHeights(wading=True)`), and so are the positions in `data/zone_layout.json`. The render keeps the raised wheat. `depth_areas` in the layout drive `UMRCharacterMovementComponent`'s slowdown.
+  - The smoke test's step "into the wheat field (11,62)" checks the depth, the feet at the wading floor and the halved speed.
+- **Objects never block** in the original. props.json `"blocks"` makes a class solid in the remaster (lamps, braziers, tables, chests; sign posts and tree trunks as hidden cylinders; ADR 0007).
+
 ## Raza town and the Outskirts are one map
 - `raza.roo` (RID 300) and `razaforest.roo` (RID 330) hold the **same geometry**. The forest file's coordinates are the town's plus (2208, 42592) ROO units, which is about (4.7 m, 91.5 m).
 - The Kod object placements in `razaforest.kod` are the town's objects shifted by the same amount.

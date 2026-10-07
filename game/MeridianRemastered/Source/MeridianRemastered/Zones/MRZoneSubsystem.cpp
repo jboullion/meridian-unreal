@@ -273,6 +273,29 @@ bool UMRZoneSubsystem::LoadData()
 		// zone that owns the streaming level (matches build_world.py).
 		Info.GeometryRid = Info.SharesGeometryWith ? Info.SharesGeometryWith : Info.Rid;  // LevelName: below
 
+		// wading areas: only from the zone that owns the geometry (the Outskirts reuse the town's)
+		const TArray<TSharedPtr<FJsonValue>>* Depths = nullptr;
+		if (!Info.SharesGeometryWith && L->TryGetArrayField(TEXT("depth_areas"), Depths))
+		{
+			for (const TSharedPtr<FJsonValue>& DV : *Depths)
+			{
+				const TSharedPtr<FJsonObject> D = DV->AsObject();
+				FMRDepthArea Area;
+				Area.Depth = IntField(D, TEXT("depth"));
+				for (const TSharedPtr<FJsonValue>& PV : D->GetArrayField(TEXT("points")))
+				{
+					const TArray<TSharedPtr<FJsonValue>>& XZ = PV->AsArray();
+					const FVector W = Info.Origin + MRUnits::LayoutToLocal(XZ[0]->AsNumber(), 0.0, XZ[1]->AsNumber());
+					Area.Points.Add(FVector2D(W.X, W.Y));
+					Area.Bounds += Area.Points.Last();
+				}
+				if (Area.Depth > 0 && Area.Points.Num() >= 3)
+				{
+					DepthAreas.Add(MoveTemp(Area));
+				}
+			}
+		}
+
 		if (const TSharedPtr<FJsonObject>* KodPtr = KodZones.Find(Info.Rid))
 		{
 			const TSharedPtr<FJsonObject>& K = *KodPtr;
@@ -409,6 +432,11 @@ bool UMRZoneSubsystem::TraceFloor(FVector& P, bool bLowest) const
 		UE_LOG(LogMeridian, Verbose, TEXT("TraceFloor (%.0f, %.0f): hit z=%.0f on %s / %s%s"), P.X, P.Y, Floor.Z,
 			*GetNameSafe(Hit.GetActor()), *GetNameSafe(Hit.GetComponent()), bRoom ? TEXT("") : TEXT(" (no headroom, looking lower)"));
 		P.Z = Floor.Z;
+		if (const AActor* HitActor = Hit.GetActor(); HitActor && HitActor->ActorHasTag(TEXT("ZoneProp")))
+		{
+			Start = Floor - FVector(0, 0, 1.0);  // a solid prop (props.json "blocks": a table): the floor is under it
+			continue;
+		}
 		if (bRoom && !bLowest)
 		{
 			return Hit.ImpactNormal.Z > 0.6;  // a floor, not a steep slope or a wall's top edge
@@ -425,6 +453,47 @@ bool UMRZoneSubsystem::TraceFloor(FVector& P, bool bLowest) const
 		P.Z = Lowest;
 	}
 	return bFound;  // false: no floor with standing room (P.Z: the last surface hit, if any)
+}
+
+int32 UMRZoneSubsystem::DepthAt(const FVector& World) const
+{
+	const FVector2D P(World.X, World.Y);
+	for (const FMRDepthArea& Area : DepthAreas)
+	{
+		if (!Area.Bounds.IsInside(P))
+		{
+			continue;
+		}
+		// convex (a BSP leaf): inside when on the same side of every edge
+		int32 Sign = 0;
+		bool bInside = true;
+		for (int32 i = 0, n = Area.Points.Num(); i < n && bInside; ++i)
+		{
+			const double C = FVector2D::CrossProduct(Area.Points[(i + 1) % n] - Area.Points[i], P - Area.Points[i]);
+			const int32 S = C > 0.0 ? 1 : (C < 0.0 ? -1 : 0);
+			if (S != 0)
+			{
+				bInside = Sign == 0 || S == Sign;
+				Sign = Sign == 0 ? S : Sign;
+			}
+		}
+		if (bInside)
+		{
+			return Area.Depth;
+		}
+	}
+	return 0;
+}
+
+float UMRZoneSubsystem::DepthSpeedFactor(int32 Depth)
+{
+	switch (Depth)
+	{
+	case 1: return 0.75f;
+	case 2: return 0.5f;
+	case 3: return 0.25f;
+	default: return 1.f;
+	}
 }
 
 FIntPoint UMRZoneSubsystem::WorldToGrid(int32 Rid, const FVector& World) const

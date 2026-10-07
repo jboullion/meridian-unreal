@@ -17,16 +17,27 @@
       "SM4k": {"front": "openai"},
       "SM8k": {"front": "openai"},
       "SM16k": {"front": "openai"},
-      "HD1k": {"front": "openai"}
+      "HD1k": {"front": "openai"},
+      "MVF": {"front": "openai", "left": "openai@front", "back": "openai@front", "right": "openai@front"}
     },
     "runs": {
+      "MVF": {
+        "tripo_task": "6e4d826a-f78d-4d41-b48d-45833ede6b51",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 polycount, multi-view: the front restyle in all four slots (45 credits)",
+        "tripo_name": "rock 3d model",
+        "tris_raw": 3888,
+        "file": "build/aigen/props/rockc/04_tripo_out/MVF.glb",
+        "digest": "2cff689d7e6dbd6d",
+        "tris": 3888,
+        "size_m": [0.9743, 0.982, 0.8742]
+      },
       "C": {
         "tripo_task": "1a3ae5f2-f197-4b64-a934-de841aa7ff79",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
         "tripo_name": "rock 3d model",
         "tris_raw": 7626,
         "file": "build/aigen/props/rockc/04_tripo_out/C.glb",
-        "digest": "ecaf3ad98f8cc68a",
+        "digest": "52bce08922e791dd",
         "tris": 7626,
         "size_m": [0.9815, 0.5851, 0.8422]
       },
@@ -37,7 +48,7 @@
         "tripo_name": "rock 3d model",
         "tris_raw": 2116,
         "file": "build/aigen/props/rockc/04_tripo_out/SM2k.glb",
-        "digest": "d2578c02b08e296e",
+        "digest": "0c6005c8a8d79bc6",
         "tris": 2116,
         "size_m": [0.9995, 0.3306, 0.8296]
       },
@@ -48,7 +59,7 @@
         "tripo_name": "rock 3d model",
         "tris_raw": 4256,
         "file": "build/aigen/props/rockc/04_tripo_out/SM4k.glb",
-        "digest": "90d57e7e84d7bc1a",
+        "digest": "463d52f966f3cd27",
         "tris": 4256,
         "size_m": [0.9995, 0.4985, 0.8374]
       },
@@ -59,7 +70,7 @@
         "tripo_name": "rock 3d model",
         "tris_raw": 8789,
         "file": "build/aigen/props/rockc/04_tripo_out/SM8k.glb",
-        "digest": "cb5e3405e65f0199",
+        "digest": "1d998828ac380e2e",
         "tris": 8789,
         "size_m": [0.9995, 0.4985, 0.8286]
       },
@@ -70,7 +81,7 @@
         "tripo_name": "rock 3d model",
         "tris_raw": 17805,
         "file": "build/aigen/props/rockc/04_tripo_out/SM16k.glb",
-        "digest": "c4e387a564da17ff",
+        "digest": "ebfa460a3cb57a7e",
         "tris": 17805,
         "size_m": [0.9985, 0.4419, 0.8364]
       },
@@ -78,7 +89,7 @@
         "tripo_task": "bbc59827-2db4-4fd2-8d4a-c7dba3da2355",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 polycount, single image (45 credits)",
         "file": "build/aigen/props/rockc/04_tripo_out/HD1k.glb",
-        "digest": "f825fdfe263d89e3",
+        "digest": "08657edc604aa514",
         "tris": 924,
         "size_m": [0.9706, 0.4538, 0.8322]
       }
@@ -129,6 +140,29 @@
       "tris": 924,
       "size_m": [0.7538, 0.3525, 0.6463],
       "scale": 0.77666
+    },
+    "MVF": {
+      "file": "build/environment/kit/SM_AI_Rockc_MVF.glb",
+      "tris": 3888,
+      "size_m": [0.7203, 0.726, 0.6463],
+      "scale": 0.7393
+    }
+  },
+  "custom": {
+    "variant": "MVF",
+    "file": "build/aigen/props/rockc/04_tripo_out/MVF.glb",
+    "tripo_task": "6e4d826a-f78d-4d41-b48d-45833ede6b51",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 polycount, multi-view: the front restyle in all four slots (45 credits)",
+    "tripo_name": "rock 3d model",
+    "tris_raw": 3888,
+    "digest": "2cff689d7e6dbd6d",
+    "tris": 3888,
+    "size_m": [0.9743, 0.982, 0.8742],
+    "normalized": {
+      "file": "build/environment/kit/SM_AI_Rockc_Custom.glb",
+      "tris": 3888,
+      "size_m": [0.7203, 0.726, 0.6463],
+      "scale": 0.7393
     }
   }
 }

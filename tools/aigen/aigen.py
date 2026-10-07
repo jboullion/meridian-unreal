@@ -292,10 +292,14 @@ def step_review(m: dict, a):
 
 
 def resolve_input(m: dict, source: str, view: str) -> Path:
+    """A Tripo input image: "upscale" (the upscaled sprite), "<provider>" (that provider's restyle of
+    this view) or "<provider>@<view>" (its restyle of another view: "openai@front" gives a side or the
+    back the front's image, for props the original draws once, rocks and dung, docs/adr/0007)."""
     w = work_dir(m)
     if source == "upscale":
         return w / "01_upscale" / "canvas.png"
-    return w / "02_restyle" / ("%s_%s.png" % (source, view))
+    source, _, own = source.partition("@")
+    return w / "02_restyle" / ("%s_%s.png" % (source, own or view))
 
 
 def step_tripo_prepare(m: dict, a):

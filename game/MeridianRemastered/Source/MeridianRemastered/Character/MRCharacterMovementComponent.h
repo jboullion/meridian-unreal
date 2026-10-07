@@ -9,6 +9,8 @@
  * The gait travels in the saved-move compressed flags, so the server replays the client's
  * moves at the same speed instead of correcting them.
  * Sprinting needs Vigor; the character stops sprinting when its replicated Vigor runs out.
+ * Wading through the original's fields and pools slows every gait (UMRZoneSubsystem::DepthAt): the
+ * depth comes from the position, so client and server agree without sending it.
  */
 UCLASS()
 class MERIDIANREMASTERED_API UMRCharacterMovementComponent : public UCharacterMovementComponent
@@ -46,6 +48,9 @@ protected:
 	bool bWantsToWalk = false;
 
 	bool HasVigorToSprint() const;
+
+	/** The original's wading slowdown where the character stands: 1, or 3/4, 1/2, 1/4 (UMRZoneSubsystem). */
+	float WadingFactor() const;
 };
 
 class FSavedMove_MR : public FSavedMove_Character

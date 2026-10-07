@@ -14,10 +14,12 @@ and nothing else; the levels that place it don't change, so an open editor shows
 `--clean` (build_world.ps1 -Clean) deletes everything below and builds it from scratch.
 
 Output (everything under /Game/Generated, git-ignored):
-  /Game/Generated/Zones/Z<rid>/...          imported blockout mesh + materials (complex-as-simple collision).
-                                            Zones with art (data/environment/zone_<rid>.json + the meshes
+  /Game/Generated/Zones/Z<rid>/...          imported blockout mesh + materials, and the collision blockout
+                                            (roo2gltf <rid>_<class>_collision.glb: without the walls the
+                                            original lets you walk through) as hidden complex-as-simple
+                                            collision. Zones with art (data/environment/zone_<rid>.json + the meshes
                                             tools/blender/build_zone_art.py wrote to build/environment/zone_<rid>/)
-                                            get three parts instead: the full blockout as hidden collision,
+                                            get three parts instead: the collision blockout as hidden collision,
                                             the blockout without the rebuilt buildings for rendering, and
                                             the art meshes (Nanite, no collision) under Z<rid>/Art,
                                             plus ground scatter (grass tufts, AMRScatterActor) from the
@@ -157,7 +159,7 @@ def import_zone_mesh(glb_path, dest_dir, nanite=False, collision=True):
     mesh = cache.info(dest_dir).get("mesh")
     if mesh and cache.fresh(dest_dir, key, exists=lambda: eal.does_asset_exist(mesh)):
         cache.done(dest_dir, key, "meshes", False)
-        two_sided_distance_field(mesh)
+        two_sided_distance_field(mesh, dest_dir)
         return mesh
     task = unreal.AssetImportTask()
     task.filename = glb_path
@@ -169,7 +171,11 @@ def import_zone_mesh(glb_path, dest_dir, nanite=False, collision=True):
     meshes = _static_meshes(dest_dir)
     if not meshes:
         raise RuntimeError("no static mesh imported from " + glb_path)
-    mesh = meshes[0]
+    # the importer files the mesh under a folder named after the glb; a folder that once held
+    # another glb keeps that one's mesh too (Raza's collision went on using the full blockout,
+    # 2026-10-07), so take the mesh named after this file
+    stem = os.path.splitext(os.path.basename(glb_path))[0]
+    mesh = next((m for m in meshes if m.rsplit("/", 1)[-1] == stem), meshes[0])
     obj = eal.load_asset(mesh)
     # The importer enables Nanite, but its glTF materials lack the Nanite usage flag, so a
     # standalone game would render them with the default grey material. Blockouts are small
@@ -187,19 +193,20 @@ def import_zone_mesh(glb_path, dest_dir, nanite=False, collision=True):
     cache.forget(mesh + "#materials")  # the import put the glTF materials back
     cache.done(dest_dir, key, "meshes", True, mesh=mesh)
     log("imported %s" % mesh)
-    two_sided_distance_field(mesh)
+    two_sided_distance_field(mesh, dest_dir)
     return mesh
 
 
-def two_sided_distance_field(mesh):
+def two_sided_distance_field(mesh, dest_dir):
     """Build the mesh's distance field as if two-sided. The zone walls are single-sided planes, and
     their one-sided distance fields put the wall's own surface "inside", so Lumen's world-space
     rays from it start occluded: unlit walls got no sky light at all, only what screen traces
     picked up from the sky on screen, and went black as the camera came close (2026-10-06,
-    build/lookdev/wall_ef.png). Set on the existing mesh (no re-import), once."""
+    build/lookdev/wall_ef.png). Set on the existing mesh (no re-import), once per import of it: a
+    re-import resets it (`dest_dir`'s key; 2026-10-07 every mesh re-imported and the town went dark)."""
     cache = build_cache.CACHE
     record = mesh + "#distance_field"
-    key = cache.key(source(two_sided_distance_field), deps=False)
+    key = cache.key(source(two_sided_distance_field), dest_dir)
     if cache.fresh(record, key, exists=lambda: True):
         cache.done(record, key, "distance fields", False)
         return
@@ -210,6 +217,7 @@ def two_sided_distance_field(mesh):
         settings.set_editor_property("generate_distance_field_as_if_two_sided", True)
         sub.set_lod_build_settings(obj, 0, settings)
         eal.save_loaded_asset(obj)
+        log("two-sided distance field: %s" % mesh)
     cache.done(record, key, "distance fields", True)
 
 
@@ -250,6 +258,17 @@ def write_render_blockout(glb, render_glb, config):
     return hidden
 
 
+def collision_blockout(glb):
+    """roo2gltf's <rid>_<class>_collision.glb next to the blockout: the same geometry without the
+    walls the original lets you walk through (WF_PASSABLE: Raza's field borders, hanging signs, wall
+    torches). Falls back to the full blockout (everything blocks) for blockouts made before it."""
+    path = glb[:-4] + "_collision.glb"
+    if os.path.exists(path):
+        return path
+    log("WARNING: %s missing (run tools/roo2gltf/roo2gltf.py); passable walls will block" % path)
+    return glb
+
+
 def import_zone_parts(zone, materials):
     """-> [(mesh path, label, role)], role "geometry" (render + collision), "collision" (hidden),
     "render" (no collision), "art" (Nanite, no collision) or "decal" (mesh decals: not Nanite, no
@@ -257,17 +276,24 @@ def import_zone_parts(zone, materials):
     rid, cls = zone["rid"], zone["class"]
     base = "%s/Zones/Z%d" % (GENERATED, rid)
     glb = os.path.join(REPO, zone["mesh"])
+    collision_glb = collision_blockout(glb)
     art = zone_art(zone)
     if not art:
-        mesh = import_zone_mesh(glb, base)
+        if collision_glb == glb:
+            mesh = import_zone_mesh(glb, base)
+            counts = materials.apply(mesh)
+            return [(mesh, "ZoneGeometry_%d_%s" % (rid, cls), "geometry")], "materials %s" % counts
+        mesh = import_zone_mesh(glb, base, collision=False)
         counts = materials.apply(mesh)
-        return [(mesh, "ZoneGeometry_%d_%s" % (rid, cls), "geometry")], "materials %s" % counts
+        collision = import_zone_mesh(collision_glb, base + "/Collision")
+        return [(mesh, "ZoneGeometry_%d_%s" % (rid, cls), "render"),
+                (collision, "ZoneCollision_%d_%s" % (rid, cls), "collision")], "materials %s" % counts
 
     config, manifest = art
     art_dir = os.path.join(REPO, "build", "environment", "zone_%d" % rid)
     render_glb = os.path.join(art_dir, "blockout_render.glb")
     hidden = write_render_blockout(glb, render_glb, config)
-    collision = import_zone_mesh(glb, base + "/Collision")
+    collision = import_zone_mesh(collision_glb, base + "/Collision")
     render = import_zone_mesh(render_glb, base + "/Render", collision=False)
     materials.apply(render)
     parts = [(collision, "ZoneCollision_%d_%s" % (rid, cls), "collision"),
@@ -300,22 +326,26 @@ KIT_DIR = os.path.join(REPO, "build", "environment", "kit")
 _kit = {}
 
 
-def import_kit_mesh(name, materials, slot_materials=None, albedo=1.0):
+def import_kit_mesh(name, materials, slot_materials=None, albedo=1.0, glow=None, collision=None):
     """A kit mesh from build/environment/kit/<name>.glb. Scatter meshes get M_Grass; props get their
     slots' materials from props.json (`slot_materials`); an AI prop's base colour is scaled by its
-    class's props.json "albedo"."""
+    class's props.json "albedo", and its "glow" lights the glass of a lamp (M_PropTextured).
+    collision: the class's props.json "blocks" shape for an AI prop (prop_collision), else none."""
     if name in _kit:
         return _kit[name]
     path = os.path.join(KIT_DIR, name + ".glb")
     if not os.path.exists(path):
         log("WARNING: %s missing; run tools/blender/build_grass_kit.py" % path)
         return None
-    mesh = import_zone_mesh(path, "%s/Kit/%s" % (ENVIRONMENT_DIR, name), collision=False)
+    dest = "%s/Kit/%s" % (ENVIRONMENT_DIR, name)
+    mesh = import_zone_mesh(path, dest, collision=False)
     if name.startswith("SM_AI_"):
+        prop_collision(mesh, dest, collision)
         # AI props (tools/aigen): their textures on M_PropTextured, which adds the interiors' ambient
         # floor and the weather the imported glTF material lacks (docs/adr/0007)
         slots = eal.load_asset(mesh).get_editor_property("static_materials")
-        mi = ai_prop_material(mesh, slots[0].get_editor_property("material_interface"), prop_ambient_scale(), albedo) if slots else None
+        mi = ai_prop_material(mesh, slots[0].get_editor_property("material_interface"), prop_ambient_scale(), albedo,
+                              glow) if slots else None
         if mi:
             assign_materials(mesh, lambda slot: (mi, 1))
             _kit[name] = mesh
@@ -330,6 +360,33 @@ def import_kit_mesh(name, materials, slot_materials=None, albedo=1.0):
         assign_materials(mesh, lambda slot: (slot_materials[slot], 1) if slot_materials.get(slot) else (None, 2))
     _kit[name] = mesh
     return mesh
+
+
+# props.json "blocks" -> the simple collision shape UE fits around the mesh (StaticMeshEditorSubsystem)
+PROP_COLLISION_SHAPES = {"kdop": "NDOP26", "box": "BOX", "capsule": "CAPSULE", "sphere": "SPHERE"}
+
+
+def prop_collision(mesh, dest, shape):
+    """Give an AI prop's mesh simple collision, or none. The original's objects never blocked;
+    props.json "blocks" (true for a 26-sided hull, or "box" / "capsule" / "sphere") makes a class
+    solid (2026-10-07: lamps, braziers, tables). Without simple collision the mesh blocks nothing,
+    as it imports with simple-as-complex. Redone when the mesh is re-imported (`dest`'s key)."""
+    if shape is True:
+        shape = "kdop"
+    shape = PROP_COLLISION_SHAPES.get(shape) if shape else None
+    cache = build_cache.CACHE
+    record = mesh + "#collision"
+    key = cache.key(dest, shape, source(prop_collision))
+    if cache.fresh(record, key, exists=lambda: True):
+        cache.done(record, key, "prop collision", False)
+        return
+    obj = eal.load_asset(mesh)
+    sub = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem)
+    sub.remove_collisions(obj)
+    if shape:
+        sub.add_simple_collisions(obj, getattr(unreal.ScriptCollisionShapeType, shape))
+    eal.save_loaded_asset(obj)
+    cache.done(record, key, "prop collision", True)
 
 
 def prop_ambient_scale():
@@ -388,20 +445,47 @@ KOD_ANGLE_FRONT = 1024
 
 def prop_config(props, obj):
     """The props.json entry for a Kod object: OrnamentalObjects by their type ("types", keyed by the
-    OO number as a string), every other class by "classes"."""
+    OO number as a string), every other class by "classes": "<Class>/<classtype>" first for an
+    object made with a classtype (a FoodDispenser of Apple: the apple tree), then "<Class>"."""
+    params = obj.get("params") or {}
     if obj["class"] == "OrnamentalObject":
-        return props.get("types", {}).get(str((obj.get("params") or {}).get("type")))
-    return props.get("classes", {}).get(obj["class"])
+        return props.get("types", {}).get(str(params.get("type")))
+    classes = props.get("classes", {})
+    classtype = params.get("classtype")
+    if isinstance(classtype, dict) and classtype.get("class"):
+        cfg = classes.get("%s/%s" % (obj["class"], classtype["class"]))
+        if cfg:
+            return cfg
+    return classes.get(obj["class"])
 
 
-def prop_yaw(cfg, obj, label):
-    """Yaw in degrees: from the object's Kod angle; else a stable pseudo-random turn when the entry
-    has "random_yaw" (plants, rocks: the original drew them as camera-facing sprites); else 0."""
-    if obj.get("yaw_kod") is not None:
-        return (float(obj["yaw_kod"]) - KOD_ANGLE_FRONT) * 360.0 / 4096.0 + float(cfg.get("yaw_offset", 0.0))
-    if cfg.get("random_yaw"):
-        return (zlib.crc32(label.encode()) % 3600) / 10.0
-    return float(cfg.get("yaw_offset", 0.0))
+# props.json "facing": where a model's front looks, as a UE yaw (its front, glTF +Z, is UE +Y: south)
+FACINGS = {"south": 0.0, "west": 90.0, "north": 180.0, "east": -90.0}
+
+
+def facing_yaw(facing):
+    """A props.json "facing": a compass direction or degrees (UE yaw, 0 = south, clockwise from above)."""
+    return FACINGS[facing.lower()] if isinstance(facing, str) else float(facing)
+
+
+def prop_yaw(cfg, obj, label, placed=None):
+    """Yaw in degrees, then plus the entry's "yaw_offset":
+    - the object's own "facing" (props.json "placed", by actor label) when it has one;
+    - else a stable pseudo-random turn when the entry has "random_yaw" (plants, rocks: the original
+      drew them as camera-facing sprites, and wrote 0 for their angle, which means none);
+    - else the object's Kod angle;
+    - else the entry's "facing" (signs: east), for the objects the original gives no angle;
+    - else 0 (south)."""
+    placed = placed or {}
+    if "facing" in placed:
+        yaw = facing_yaw(placed["facing"])
+    elif cfg.get("random_yaw"):
+        yaw = (zlib.crc32(label.encode()) % 3600) / 10.0
+    elif obj.get("yaw_kod") is not None:
+        yaw = (float(obj["yaw_kod"]) - KOD_ANGLE_FRONT) * 360.0 / 4096.0
+    else:
+        yaw = facing_yaw(cfg.get("facing", 0.0))
+    return yaw + float(cfg.get("yaw_offset", 0.0))
 
 
 def prop_mesh_available(name):
@@ -450,12 +534,14 @@ def prop_mesh_choice(cfg, label, ordinal):
 
 def zone_props(zone, materials, prop_materials):
     """-> [(label, mesh path or None, [x, y, z] cm, light config or None, fire or None, yaw deg, scale,
-    sector light)] for the
+    sector light, blocks)] for the
     zone's Kod objects with an entry in data/environment/props.json ("classes", or "types" for
     OrnamentalObjects). Meshes are the AI kit meshes (tools/aigen, docs/adr/0007), placed only once
     their GLB exists. A light with "flicker" (true, or "sector" in the original's flickering sectors)
     and an entry with a "fire" become AMRFireActors. Sector light: the original light level of the floor
-    under the prop (blockout.floor_light), for M_PropTextured's ambient floor."""
+    under the prop (blockout.floor_light), for M_PropTextured's ambient floor. blocks: the entry's
+    "blocks": a shape fitted to the mesh (prop_collision), or {"radius_m", "height_m"} for a hidden
+    cylinder (spawn_blocker: a tree's trunk, a sign's post); False to walk through."""
     if not os.path.exists(PROPS):
         return []
     props = json.load(open(PROPS, encoding="utf-8"))
@@ -468,6 +554,9 @@ def zone_props(zone, materials, prop_materials):
         x, y, z = obj["pos"]
         kind = obj["class"] if obj["class"] != "OrnamentalObject" else "OO%s" % (obj.get("params") or {}).get("type")
         label = "Prop_%d_%s_%d" % (zone["rid"], kind, i)
+        # one placed object's own settings (props.json "placed", by its actor label), over its entry's
+        placed = props.get("placed", {}).get(label, {})
+        cfg = dict(cfg, **{k: v for k, v in placed.items() if k != "facing"})
         ordinals[kind] = ordinals.get(kind, -1) + 1
         mesh_name = prop_mesh_name(cfg, label, ordinals[kind])  # None: not generated yet
         scale = 1.0
@@ -476,7 +565,9 @@ def zone_props(zone, materials, prop_materials):
             if cfg.get("fit_height_m"):
                 scale = float(cfg["fit_height_m"]) * 100.0 / max(1.0, 2.0 * eal.load_asset(mesh).get_bounds().box_extent.z)
         else:
-            mesh = import_kit_mesh(mesh_name, materials, prop_materials, float(cfg.get("albedo", 1.0))) if mesh_name else None
+            blocks = cfg.get("blocks")
+            mesh = import_kit_mesh(mesh_name, materials, prop_materials, float(cfg.get("albedo", 1.0)), cfg.get("glow"),
+                                   None if isinstance(blocks, dict) else blocks) if mesh_name else None
         light = cfg.get("light")
         if light and "kod_intensity" in light:
             light = kod_light(light, obj.get("params"))
@@ -490,7 +581,8 @@ def zone_props(zone, materials, prop_materials):
         if not (mesh or light or fire):
             continue
         sector = round(blockout.floor_light(os.path.join(REPO, zone["mesh"]), x, z, y), 3) if mesh else 1.0
-        out.append((label, mesh, [x * 100.0, z * 100.0, y * 100.0], light, fire, prop_yaw(cfg, obj, label), scale, sector))
+        out.append((label, mesh, [x * 100.0, z * 100.0, y * 100.0], light, fire, prop_yaw(cfg, obj, label, placed), scale, sector,
+                    cfg.get("blocks") or False))
     return out
 
 
@@ -669,7 +761,7 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
     path = zone_level_path(zone)
     cache = build_cache.CACHE
     recipe = {"origin": zone["world_origin_cm"], "sharers": sharers, "parts": parts, "scatter": scatter_inputs,
-              "props": props, "light_scale": light_scale(), "code": source(build_zone_level, spawn_fire),
+              "props": props, "light_scale": light_scale(), "code": source(build_zone_level, spawn_fire, spawn_blocker),
               "fire_actor": hasattr(unreal, "MRFireActor"),
               "effects": list(effects), "effect_scale": EFFECT_SCALE, "effect_bounds": EFFECT_BOUNDS,
               "atmosphere": {k: v for k, v in (atmosphere or {}).items() if k != "ambient"}}
@@ -723,7 +815,12 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
                 comp.set_mobility(unreal.ComponentMobility.STATIC)
             else:  # a skeletal mesh (a PVE tree with Dynamic Wind bones)
                 comp = a.get_component_by_class(unreal.SkeletalMeshComponent)
-            comp.set_collision_profile_name("NoCollision")
+            # props.json "blocks": solid (simple collision on the mesh), or a hidden cylinder
+            # (spawn_blocker); else walked through, as every object in the original
+            blocks = rest[2] if len(rest) > 2 else False
+            comp.set_collision_profile_name("BlockAll" if blocks and not isinstance(blocks, dict) else "NoCollision")
+            if isinstance(blocks, dict):
+                spawn_blocker(label, loc, rest[0] if rest else 1.0, blocks, zone["rid"])
             # M_PropTextured's SectorLight; the property, not set_custom_primitive_data_float, which
             # isn't saved with the level (an unset index reads 0: black props)
             cpd = comp.get_editor_property("custom_primitive_data")
@@ -771,6 +868,31 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
         raise RuntimeError("could not save " + path)
     cache.done(path, key, "levels", True)
     return path, True
+
+
+BLOCKER_MESH = "/Engine/BasicShapes/Cylinder"  # 100 cm across and tall, pivot at its centre
+
+
+def spawn_blocker(label, loc, scale, blocks, zone_rid):
+    """A hidden cylinder that blocks: props.json "blocks" {"radius_m", "height_m"}, for a prop of
+    which only a part should stop you (a tree's trunk, not its crown; a sign's post). Tagged
+    ZoneProp, so floor traces look under it (UMRZoneSubsystem::TraceFloor)."""
+    r = float(blocks.get("radius_m", 0.2)) * scale
+    h = float(blocks.get("height_m", 2.0)) * scale
+    cylinder = eal.load_asset(BLOCKER_MESH)
+    geom = cylinder.get_editor_property("body_setup").get_editor_property("agg_geom")
+    if not any(len(geom.get_editor_property(k)) for k in ("convex_elems", "sphyl_elems", "box_elems", "sphere_elems")):
+        log("WARNING: %s has no simple collision; %s blocks nothing" % (BLOCKER_MESH, label))
+    a = actors.spawn_actor_from_object(cylinder, loc + unreal.Vector(0, 0, h * 50.0), unreal.Rotator(0, 0, 0))
+    a.set_actor_label(label + "_Block")
+    a.set_actor_scale3d(unreal.Vector(r * 2.0, r * 2.0, h))
+    a.set_actor_hidden_in_game(True)
+    comp = a.get_component_by_class(unreal.StaticMeshComponent)
+    comp.set_mobility(unreal.ComponentMobility.STATIC)
+    comp.set_visibility(False)
+    comp.set_cast_shadow(False)
+    comp.set_collision_profile_name("BlockAll")
+    a.tags = [unreal.Name("ZoneProp"), unreal.Name("ZoneBlocker"), unreal.Name("Zone%d" % zone_rid)]
 
 
 def spawn(cls, loc=unreal.Vector(0, 0, 0), rot=unreal.Rotator(0, 0, 0), label=None):

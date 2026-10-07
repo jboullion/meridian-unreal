@@ -1,5 +1,6 @@
 #include "Tests/MRZoneSmokeTest.h"
 
+#include "Character/MRCharacterMovementComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 #include "MeridianRemastered.h"
@@ -26,6 +27,8 @@ void UMRZoneSmokeTest::Start(APawn* InPawn)
 		{TEXT("Hall exit (5,9) -> Raza town"),            302, 5,  9,  300},
 		{TEXT("north of the town wall -> Outskirts (no teleport)"), 300, 0, 38, 330, false},
 		{TEXT("back inside the wall -> Raza town (no teleport)"),   330, 46, 40, 300},
+		// Raza's east wheat field (depth 2): a block 0.86 m above the grass that you wade through
+		{TEXT("into the wheat field (11,62): wading, slowed"),      300, 11, 62, 300, true, false, 0.f, 2},
 		// the forest's north passage crosses the grid edge at columns 33-36
 		{TEXT("north passage off the Outskirts' edge -> Western Farol"), 330, 0, 34, 331},
 		{TEXT("Western Farol south passage -> Outskirts"),                331, 51, 24, 330},
@@ -100,7 +103,19 @@ void UMRZoneSmokeTest::CheckStep()
 	const bool bGrounded = Info && P->GetActorLocation().Z > Info->Origin.Z - 2000.0;
 	// the player's client must have streamed the zone's geometry (reported to the server)
 	const bool bClientHasZone = Zones && Zones->IsZoneReadyFor(P->GetController(), Zone);
-	const bool bPass = Zone == S.ExpectZone && bGrounded && bClientHasZone;
+	bool bPass = Zone == S.ExpectZone && bGrounded && bClientHasZone;
+	if (S.ExpectDepth && Zones && Info)
+	{
+		// feet at the wading floor, about the grass's height, not on the wheat 1.2 m up
+		const double FeetM = (P->GetActorLocation().Z - P->GetSimpleCollisionHalfHeight() - Info->Origin.Z) / 100.0;
+		const int32 Depth = Zones->DepthAt(P->GetActorLocation());
+		const UMRCharacterMovementComponent* Move = P->FindComponentByClass<UMRCharacterMovementComponent>();
+		const float Factor = Move ? Move->GetMaxSpeed() / Move->RunSpeed : -1.f;
+		const bool bWading = Depth == S.ExpectDepth && FeetM < 0.7 && FMath::IsNearlyEqual(Factor, UMRZoneSubsystem::DepthSpeedFactor(Depth), 0.01f);
+		UE_LOG(LogMeridian, Display, TEXT("MRZoneTest:   wading: depth %d (expected %d), feet at %.2f m, speed x%.2f"),
+			Depth, S.ExpectDepth, FeetM, Factor);
+		bPass = bPass && bWading;
+	}
 	Passed += bPass ? 1 : 0;
 	UE_LOG(LogMeridian, Display, TEXT("MRZoneTest: %s  %s  (zone %d, expected %d, square %d,%d, z=%.0f, client has level=%d)"),
 		bPass ? TEXT("PASS") : TEXT("FAIL"), *S.Label, Zone, S.ExpectZone, Grid.X, Grid.Y, P->GetActorLocation().Z,

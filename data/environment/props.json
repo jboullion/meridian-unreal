@@ -1,5 +1,5 @@
 {
-  "_doc": "Meshes and lights for Kod-placed objects (data/zone_layout.json objects): `classes` by Kod class, `types` for OrnamentalObjects by their OO type number (docs/adr/0003 pass 3, docs/adr/0007). tools/ue/build_world.py spawns `mesh` (build/environment/kit/<mesh>.glb: the AI-generated meshes from tools/aigen/aigen.py, data/aigen/props/*.json; skipped until generated) at the object's position, turned by the object's Kod angle (else a stable random turn with `random_yaw`, for plants and rocks the original drew as camera-facing sprites), plus a warm point light `offset_m` above it. Light intensity in candela; at ~8 lux of daylight these read as glows and become the main light in deep shade and at night. `light_scale`: one factor on every light the world build adds (props, wall torches, room lights), reach unchanged (2026-10-06: 0.5, the environment carries the scene and fires add warmth). `ambient_scale`: the AI props' ambient floor indoors is the original sector light of the floor under each prop times this (M_PropTextured; 2026-10-07: was a fixed 1, which gave props 4-5x the fill of the Inn's walls). `albedo` (a class): a factor on an AI prop's base colour, for a Tripo texture lighter than the original sprite (2026-10-07: the Inn's Table 0.55, from the sprite's mean colour). `candela_scale`: a factor on a Kod light's candela (2026-10-06: the braziers and lamps dimmed twice by 25%, to 0.56 of the original, at the user's request: too bright at night). `kod_intensity` / `kod_color` (a light): the Kod class's light (0-255, 15-bit colour), overridden by the object's own iIntensity / iColor; build_world.py turns them into candela (0.24 per unit), reach (4 m + 0.15 per unit) and colour (DynamicLight: the invisible lights the original places in rooms; Candle). `shadows`: false for unshadowed pools of light, as the original's. `night_only` (a light, or a material slot): off from 11 to 17 like the original lamps (kod lamp.kod), switched by the environment director in game (docs/adr/0005). `mesh_custom`: an optional custom model shown instead of `mesh` (a kit GLB name or UE asset path); `mesh` (the HD model) stays the fallback while the custom one doesn't exist. A manifest's `custom` model (tools/aigen) is picked up the same way as `<mesh>_Custom` without an entry here (docs/adr/0007 \"Custom models\"). `mesh_options` / `mesh_use`: alternative meshes per option ({option: [meshes]}, a stable random variant per object), `mesh_use` picks one option, or \"compare\" cycles them over the zone's objects of that kind so they stand side by side; `fit_height_m` scales a mesh given as a UE asset path to that height (the trees: AI, procedural Blender kit tools/blender/build_tree_kit.py, Procedural Vegetation Editor exports under /Game/; docs/adr/0007 \"Trees\"). `materials`: the kit's material slots (linear colours; emissive in nits-ish scene units); zone art uses them as 'prop_<name>' slots too (window boxes).",
+  "_doc": "Meshes and lights for Kod-placed objects (data/zone_layout.json objects): `classes` by Kod class (\"<Class>/<classtype>\" first for an object made with a classtype: \"FoodDispenser/Apple\" is the apple tree), `types` for OrnamentalObjects by their OO type number (docs/adr/0003 pass 3, docs/adr/0007). tools/ue/build_world.py spawns `mesh` (build/environment/kit/<mesh>.glb: the AI-generated meshes from tools/aigen/aigen.py, data/aigen/props/*.json; skipped until generated) at the object's position, turned (build_world.py prop_yaw): a stable random turn with `random_yaw` (plants and rocks the original drew as camera-facing sprites; it wins over their Kod angle, which the original writes as 0), else the object's Kod angle, else the entry's `facing` (\"south\" (the model's front, the default), \"east\", \"north\", \"west\" or degrees, UE yaw clockwise from above; signs: east), plus `yaw_offset` degrees, plus a warm point light `offset_m` above it. Light intensity in candela; at ~8 lux of daylight these read as glows and become the main light in deep shade and at night. `light_scale`: one factor on every light the world build adds (props, wall torches, room lights), reach unchanged (2026-10-06: 0.5, the environment carries the scene and fires add warmth). `ambient_scale`: the AI props' ambient floor indoors is the original sector light of the floor under each prop times this (M_PropTextured; 2026-10-07: was a fixed 1, which gave props 4-5x the fill of the Inn's walls). `albedo` (a class): a factor on an AI prop's base colour, for a Tripo texture lighter than the original sprite (2026-10-07: the Inn's Table 0.55 and the Stool 0.56, each from its sprite's mean linear colour against its texture's; the BarStool 0.5, matched to the Table as rendered side by side in the Inn: the sprite method's 0.78 left it 60% brighter). `candela_scale`: a factor on a Kod light's candela (2026-10-06: the braziers and lamps dimmed twice by 25%, to 0.56 of the original, at the user's request: too bright at night). `kod_intensity` / `kod_color` (a light): the Kod class's light (0-255, 15-bit colour), overridden by the object's own iIntensity / iColor; build_world.py turns them into candela (0.24 per unit), reach (4 m + 0.15 per unit) and colour (DynamicLight: the invisible lights the original places in rooms; Candle). `shadows`: false for unshadowed pools of light, as the original's. `night_only` (a light, or a material slot): off from 11 to 17 like the original lamps (kod lamp.kod), switched by the environment director in game (docs/adr/0005). `mesh_custom`: an optional custom model shown instead of `mesh` (a kit GLB name or UE asset path); `mesh` (the HD model) stays the fallback while the custom one doesn't exist. A manifest's `custom` model (tools/aigen) is picked up the same way as `<mesh>_Custom` without an entry here (docs/adr/0007 \"Custom models\"). `mesh_options` / `mesh_use`: alternative meshes per option ({option: [meshes]}, a stable random variant per object), `mesh_use` picks one option, or \"compare\" cycles them over the zone's objects of that kind so they stand side by side; `fit_height_m` scales a mesh given as a UE asset path to that height (the trees: AI, procedural Blender kit tools/blender/build_tree_kit.py, Procedural Vegetation Editor exports under /Game/; docs/adr/0007 \"Trees\"). `blocks` (a class or type): the prop stops players and monsters, with simple collision UE fits around the mesh: true (a 26-sided hull), \"box\", \"capsule\" or \"sphere\" (build_world.py prop_collision); or {\"radius_m\", \"height_m\"}: a hidden cylinder at its foot instead, for a tree's trunk or a sign's post (spawn_blocker). 2026-10-07: lamps, braziers, tables, chests, sign posts and tree trunks; every other prop is walked through, as every object in the original. `placed`: settings for one placed object by its actor label (Prop_<rid>_<class or OO type>_<index>, as the editor's outliner shows it), over its entry's: e.g. {\"Prop_300_Sign_0\": {\"facing\": \"north\"}} (facing here wins over the Kod angle), or `yaw_offset`, `blocks`: false. `glow` (a class): the lit glass of a lamp on its AI mesh (M_PropTextured PROP_GLOW_HLSL): pale, unsaturated texels inside the lantern, `z_m` [lo, hi] and `radius_m` from the mesh's base centre, in `color` (linear, emissive), off by day with `night_only`; `lum` [lum lo, lum hi, sat, feather] tunes what counts as glass. `materials`: the kit's material slots (linear colours; emissive in nits-ish scene units); zone art uses them as 'prop_<name>' slots too (window boxes).",
   "light_scale": 0.3,
   "ambient_scale": 2.5,
   "materials": {
@@ -14,18 +14,24 @@
     "flower_yellow": {"color": [0.7, 0.5, 0.06], "roughness": 0.7}
   },
   "classes": {
-    "Lamp": {"mesh": "SM_AI_Lamp", "light": {"offset_m": 2.57, "candela": 2, "radius_m": 11, "temperature": 2600, "source_radius_cm": 8, "night_only": true}, "moths": {"offset_m": 2.57}},
+    "Lamp": {"mesh": "SM_AI_Lamp", "blocks": true,
+             "light": {"offset_m": 1.7, "candela": 2, "radius_m": 11, "temperature": 2600, "source_radius_cm": 8, "shadows": false, "night_only": true},
+             "glow": {"z_m": [1.55, 1.85], "radius_m": 0.22, "color": [2.8, 1.8, 0.74], "night_only": true},
+             "moths": {"offset_m": 1.8}},
     "DynamicLight": {"light": {"kod_intensity": 255, "kod_color": 32767, "offset_m": 1.8, "source_radius_cm": 10, "shadows": false, "flicker": "sector"}},
     "Candle": {"mesh": "SM_AI_Candle", "fire": {"preset": "candle", "base_m": 0.715}, "light": {"kod_intensity": 5, "kod_color": 32518, "offset_m": 0.8, "source_radius_cm": 2, "shadows": false, "flicker": true}},
-    "Brazier": {"mesh": "SM_AI_Brazier", "fire": {"preset": "brazier", "base_m": 0.98}, "light": {"kod_intensity": 40, "candela_scale": 0.4, "kod_color": 32518, "offset_m": 1.2, "source_radius_cm": 20, "flicker": true}},
-    "WoodenBox": {"mesh": "SM_AI_Box1"},
-    "Sign": {"mesh": "SM_AI_Sign"},
-    "Table": {"mesh": "SM_AI_Table", "albedo": 0.55},
-    "Stool": {"mesh": "SM_AI_Stool", "random_yaw": true},
-    "BarStool": {"mesh": "SM_AI_Barstool", "random_yaw": true},
+    "Brazier": {"mesh": "SM_AI_Brazier", "blocks": true, "fire": {"preset": "brazier", "base_m": 0.98}, "light": {"kod_intensity": 40, "candela_scale": 0.4, "kod_color": 32518, "offset_m": 1.2, "source_radius_cm": 20, "flicker": true}},
+    "WoodenBox": {"mesh": "SM_AI_Box1", "blocks": "box"},
+    "Sign": {"mesh": "SM_AI_Sign", "mesh_custom": "SM_AI_Sign_SM4k", "facing": "east", "blocks": {"radius_m": 0.12, "height_m": 1.7}},
+    "Table": {"mesh": "SM_AI_Table", "albedo": 0.55, "blocks": true},
+    "Stool": {"mesh": "SM_AI_Stool", "albedo": 0.56, "random_yaw": true},
+    "BarStool": {"mesh": "SM_AI_Barstool", "albedo": 0.5, "random_yaw": true},
     "Chandelier": {"mesh": "SM_AI_Chandelr"},
     "Skull": {"mesh": "SM_AI_Skull", "random_yaw": true},
-    "ModelNode": {"mesh": "SM_AI_Modnode"}
+    "ModelNode": {"mesh": "SM_AI_Modnode"},
+    "FoodDispenser/Apple": {"blocks": {"radius_m": 0.2, "height_m": 3.0}, "mesh_use": "blender", "mesh_options": {"blender": ["SM_Tree_Apple_A", "SM_Tree_Apple_B"]}},
+    "FoodDispenser/Pear": {"blocks": {"radius_m": 0.18, "height_m": 3.0}, "mesh_use": "blender", "mesh_options": {"blender": ["SM_Tree_Pear_A", "SM_Tree_Pear_B"]}},
+    "FoodDispenser/Orange": {"blocks": {"radius_m": 0.2, "height_m": 3.0}, "mesh_use": "blender", "mesh_options": {"blender": ["SM_Tree_Orange_A", "SM_Tree_Orange_B"]}}
   },
   "types": {
     "20": {"mesh": "SM_AI_Fixins4"},
@@ -39,13 +45,14 @@
     "66": {"mesh": "SM_AI_Lettuce", "random_yaw": true},
     "83": {"mesh": "SM_AI_Nestobj1", "random_yaw": true},
     "84": {"mesh": "SM_AI_Nestobj2", "random_yaw": true},
-    "91": {"mesh": "SM_AI_Nectree1", "random_yaw": true, "mesh_use": "ai",
+    "91": {"mesh": "SM_AI_Nectree1", "random_yaw": true, "blocks": {"radius_m": 0.3, "height_m": 2.5}, "mesh_use": "ai",
            "mesh_options": {"ai": ["SM_AI_Nectree1"], "blender": ["SM_Tree_Dead_A", "SM_Tree_Dead_B"]}},
     "99": {"mesh": "SM_AI_Skulnorm", "random_yaw": true},
     "104": {"mesh": "SM_AI_Dung", "random_yaw": true},
     "105": {"mesh": "SM_AI_Hay", "random_yaw": true},
     "106": {"mesh": "SM_AI_Rockb", "random_yaw": true},
     "107": {"mesh": "SM_AI_Rockc", "random_yaw": true},
+    "116": {"random_yaw": true, "blocks": {"radius_m": 0.22, "height_m": 3.0}, "mesh_use": "blender", "mesh_options": {"blender": ["SM_Tree_Raza_A", "SM_Tree_Raza_B", "SM_Tree_Raza_C"]}},
     "117": {"mesh": "SM_AI_Modaltar"},
     "118": {"mesh": "SM_AI_Modant"},
     "119": {"mesh": "SM_AI_Modavar"},
@@ -77,10 +84,13 @@
     "150": {"mesh": "SM_AI_Signet"},
     "163": {"mesh": "SM_AI_Bonepile", "random_yaw": true},
     "165": {"mesh": "SM_AI_Modportal"},
-    "192": {"mesh": "SM_AI_Midtree2", "random_yaw": true, "mesh_use": "blender",
+    "192": {"mesh": "SM_AI_Midtree2", "random_yaw": true, "blocks": {"radius_m": 0.15, "height_m": 3.0}, "mesh_use": "blender",
             "mesh_options": {"ai": ["SM_AI_Midtree2"], "blender": ["SM_Tree_Mid_A", "SM_Tree_Mid_B", "SM_Tree_Mid_C"]}},
     "198": {"mesh": "SM_AI_Shrubee1", "random_yaw": true, "mesh_use": "blender",
             "mesh_options": {"ai": ["SM_AI_Shrubee1"], "blender": ["SM_Tree_Shrub_A", "SM_Tree_Shrub_B", "SM_Tree_Shrub_C"]}}
+  },
+  "placed": {
+    "_doc": "Per placed object, by actor label: any entry setting (facing, yaw_offset, blocks, mesh_custom, ...). Empty until a sign or prop needs its own."
   },
   "smoke": {
     "_doc": "Chimney smoke (docs/adr/0005 phase 5): tools/environment/chimneys.py finds every chimney the blockout draws with these wall textures, and build_world.py stands a plume (SM_Puffs with M_Smoke, materials.json \"smoke\") on each top. How much smoke: moods.json \"atmosphere\" \"smoke\". A class's \"moths\": moths circle its light at night, offset_m above the object (SM_Puffs with M_Moth).",
