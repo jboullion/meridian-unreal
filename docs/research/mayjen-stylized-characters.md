@@ -2,7 +2,7 @@
 
 - Status: **Investigation only. Nothing has been bought, imported or decided.**
 - Date: 2026-10-05
-- Why: the MakeHuman (MPFB) bodies don't look good, and fitting them onto the UE5 mannequin skeleton (see [characters.md](../characters.md#building-the-character-kits)) visibly warps the mesh. We want a base that is rigged natively for the UE5 skeleton.
+- Why: the MakeHuman (MPFB) bodies don't look good, and fitting them onto the UE5 mannequin skeleton (see characters.md (removed, in git history)) visibly warps the mesh. We want a base that is rigged natively for the UE5 skeleton.
 - Related: [ADR 0002](../adr/0002-metahuman-characters.md), which covers the MetaHuman vs modular discussion and the MPFB decision.
 
 > **How reliable these notes are.** Fab, the Epic forums and Sketchfab were all blocked from the research environment. Everything below comes from search-engine extracts of those pages, not from reading them directly. Treat it as a lead and check it against the [open questions](#open-questions-check-on-the-fab-page-or-after-buying) before committing.
@@ -37,7 +37,7 @@ Casual set 01, Casual set 03 Blacksmith, Casual set 04 Elves, Monk set 01 (cloth
 - **The add-on catalogue** gives us clothes, armour, hair and weapons on the same rig without making our own.
 
 ### What doesn't fit
-1. **No face sliders.** Our current design replicates **49 head sliders** driving MPFB morph targets ([characters.md](../characters.md#head-sliders)). Mayjen has no morphs, so the creator falls back to **ADR 0002 Option A: presets plus parameters**:
+1. **No face sliders.** Our current design replicates **49 head sliders** driving MPFB morph targets (characters.md (removed, in git history)). Mayjen has no morphs, so the creator falls back to **ADR 0002 Option A: presets plus parameters**:
    - Head: 1 base + 5 pack heads per gender, so about 6
    - Hair: about 10 styles
    - Brows: 5 + 1

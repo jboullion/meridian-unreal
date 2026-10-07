@@ -1,6 +1,6 @@
 # Brainstorm: MetaHuman characters, creator, equipment and animation
 
-- Status: **Decided 2026-10-04: MakeHuman (MPFB) on the UE5 mannequin skeleton; MetaHuman dropped.** See [Decision](#decision-makehuman-2026-10-04). The MetaHuman sections below are kept as background.
+- Status: **Superseded 2026-10-06 by [ADR 0008](0008-sprite-characters.md): every animated character is a sprite; the MPFB pipeline was removed.** Earlier: decided 2026-10-04 for MakeHuman (MPFB) on the UE5 mannequin skeleton; MetaHuman dropped. See [Decision](#decision-makehuman-2026-10-04). The MetaHuman sections below are kept as background.
 - Date: 2026-10-04
 - Related: [ADR 0001](../adr/0001-engine-and-architecture.md), which already picks MetaHuman for characters.
 
@@ -233,7 +233,7 @@ Run both appearances in the Raza square with `-MRAppearance=...` and the screens
 - [ ] Mutable spike: can it merge MetaHuman body and armour while RigLogic still drives the face?
 - [ ] Stylization art test: one MetaHuman with a stylized skin and hair material in the Raza blockout, next to the environment art.
 - [ ] Profile 50 players in Raza at the proposed LOD policy on the minimum-spec machine.
-- [x] First-person approach: **full body, head hidden** (decided 2026-10-04; built, see [characters.md](../characters.md)).
+- [x] First-person approach: **full body, head hidden** (decided 2026-10-04; built, see characters.md (removed, in git history)).
 - [ ] Licensing: confirm the current MetaHuman licence terms for a non-commercial fan project.
 
 ## Findings and first build (2026-10-04)
@@ -245,7 +245,7 @@ Run both appearances in the Raza square with `-MRAppearance=...` and the screens
 - **Runtime customization:** the closest thing is the *Palette / Collection / MetaHuman Instance* system (`UMetaHumanCollection`, `UMetaHumanInstance`). An Instance is a selection of palette items plus instance parameters (bool/float/name/colour), assembled into an output. Its override results distinguish "reassembly required" from "post-assembly parameters modified", which matches Option A (presets plus parameters) closely. **Spike this before building the creator UI.**
 - **Also in 5.8:** Mutable and a new **MetaHuman Crowd** plugin (built on Mass, for MetaHuman crowds). Worth a look for townsfolk.
 
-**What was built** (see [characters.md](../characters.md)):
+**What was built** (see characters.md (removed, in git history)):
 - **Appearance data:** `UMRCharacterAppearance` holds parts plus a mannequin animation driver. This is Option A's "parts" without the creator UI yet.
 - **Script:** `tools/ue/make_appearance.ps1` turns any assembled MetaHuman Blueprint (or Character asset) into an appearance.
 - **Licensing:** MetaHumans and the engine mannequin stay out of git (public repo).
@@ -323,7 +323,7 @@ Run both appearances in the Raza square with `-MRAppearance=...` and the screens
   - **Cost:** MetaHuman needed about 2× the game-thread time and 3–5× the draw calls per character.
   - **Licensing:** MetaHuman content can't be committed to a public repo. MPFB output is CC0.
   - **Scope:** a 100–200 player online game doesn't need cinematic faces.
-- How it's built and used is in [docs/characters.md](../characters.md).
+- How it's built and used is in docs/characters.md (removed, in git history).
 
 **Character model** (planned now, so the creator only needs UI later):
 - **One shared skinned body per gender.** `SKM_MPFB_Male` and `SKM_MPFB_Female` each combine body, eyes, brows and lashes in one mesh with 4 material slots.

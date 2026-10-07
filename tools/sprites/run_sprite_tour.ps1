@@ -1,4 +1,4 @@
-# Sprite player visual check (docs/sprites.md): the -MRScreenshots tour with the sprite body, or the
+# Sprite player visual check (docs/sprites.md): the -MRScreenshots tour, or the
 # -MRProfile crowd, in Raza. Screenshots land in game/MeridianRemastered/Saved/Screenshots/MRTour
 # (tour) or .../MRProfile (crowd); copies go to build/sprites/tour/<label>/.
 #
@@ -10,7 +10,6 @@ param(
     [string]$Label = "tour",
     [switch]$Crowd,
     [switch]$Monsters,      # the monster line-up (-MRMonsters)
-    [switch]$Mesh,          # the 3D character instead (for comparison)
     [string]$Look = "",
     [string]$Extra = "",
     [string]$Cvars = "",    # extra console commands, comma-separated (e.g. "mr.Sprite.Unlit 1")
@@ -25,7 +24,6 @@ $mode = if ($Crowd) { "-MRProfile" } elseif ($Monsters) { "-MRMonsters" } else {
 $shots = Join-Path $projDir ("Saved\Screenshots\" + $(if ($Crowd) { "MRProfile" } elseif ($Monsters) { "MRMonsters" } else { "MRTour" }))
 if (Test-Path $shots) { Remove-Item -Recurse -Force $shots }
 $args = "`"$proj`" /Game/Generated/Maps/L_World -game -windowed -resx=1280 -resy=720 -MRStartZone=$Zone $mode"
-if (-not $Mesh) { $args += " -MRSpriteBody" }
 if ($Look) { $args += " -MRSpriteLook=$Look" }
 $exec = @()
 if ($Hour -ge 0) { $exec += "mr.GameHour $Hour,mr.Season 1" }

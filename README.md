@@ -37,7 +37,7 @@ We'd love help, especially from people who played Meridian and remember how it s
 Good ways to help:
 
 - **Play the demo and tell us what feels wrong.** A missing sign, a wall that doesn't match, a sound that plays at the wrong time. Memories of the original are valuable.
-- **Art:** 3D buildings and props, creature models and animation, character hair and clothing.
+- **Art:** 3D buildings and props; sprite work for characters, monsters, hair and clothing.
 - **Code:** Unreal C++ (gameplay, combat, networking), Python tools, Supabase backend.
 - **Research:** how the original actually behaved, from the Kod source or from playing Server 103/104.
 - **Docs:** if something in setup confused you, fixing the docs helps the next person.
@@ -83,7 +83,7 @@ More detail on building, testing and the tools is in [AGENTS.md](AGENTS.md).
 - [Environment art](docs/adr/0003-environment-art-pipeline.md): how the towns get their look
 - [Time, weather and atmosphere](docs/adr/0005-time-weather-and-atmosphere.md)
 - [Audio](docs/adr/0006-audio.md)
-- [Characters](docs/characters.md)
+- [Characters](docs/adr/0008-sprite-characters.md): players and monsters drawn as sprites, like the original
 - [Hosting](docs/adr/0004-hosting-and-operations.md)
 
 ## Thanks

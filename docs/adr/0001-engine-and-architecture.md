@@ -17,7 +17,7 @@ The target is 100–200 concurrent players. The original code is GPLv2. The orig
 
 1. **Engine: Unreal Engine 5.8.**
    - Gameplay is written in C++ on the Gameplay Ability System (GAS).
-   - Built-in features used: Iris replication, Motion Matching locomotion, Chaos ragdolls, MetaHuman characters and level streaming. (Characters later changed to MakeHuman on the mannequin skeleton: see [ADR 0002](0002-metahuman-characters.md#decision-makehuman-2026-10-04).)
+   - Built-in features used: Iris replication, Motion Matching locomotion, Chaos ragdolls, MetaHuman characters and level streaming. (Characters later changed to MakeHuman on the mannequin skeleton, [ADR 0002](0002-metahuman-characters.md#decision-makehuman-2026-10-04), then to original-style sprites, [ADR 0008](0008-sprite-characters.md).)
    - Blueprints are used only for thin presentation layers.
 2. **Server: a new authoritative UE dedicated server.**
    - It runs as one process that holds the whole world.

@@ -8,12 +8,11 @@ class AMRCharacter;
 class APlayerController;
 
 /**
- * Character cost measurement for the base-character spike (docs/adr/0002), run with -MRProfile
- * (add -MRRandomFaces to give every spawned character random head sliders; with -MRSpriteBody the
- * crowd cycles through the sprite looks, turns 45 degrees per column and every third one dances)
- * on a rendering standalone game (usually with -MRStartZone=300 and -MRAppearance=<candidate>).
+ * Character cost measurement, run with -MRProfile on a rendering standalone game (usually with
+ * -MRStartZone=300). The crowd cycles through the sprite looks with random colours and heights,
+ * turns 45 degrees per column, and every third one dances.
  *
- * For each crowd size (0, 1, 20, 50 extra characters wearing the current appearance) it spawns
+ * For each crowd size (0, 1, 20, 50 extra characters) it spawns
  * the characters in a grid in front of the player, lets them settle, samples frame timings and
  * RHI counters over a few seconds, logs one "MRProfile:" line, saves a screenshot to
  * Saved/Screenshots/MRProfile/, then quits.

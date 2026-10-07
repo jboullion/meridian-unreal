@@ -1,4 +1,4 @@
-# Sprite players and monsters (experiment)
+# Sprite players and monsters
 
 **Question:** can players (later monsters) be drawn the way the original client drew them — 2D sprites composited from overlays, picked by viewing angle — and still sit well in the remastered 3D world? If so, new faces, hair and items become 2D image work instead of modelling, rigging and animation.
 
@@ -12,13 +12,10 @@
   - surface classes
   - lighting tuning
   - multiplayer sync
-- The user is confident this is the way forward.
+- Adopted for every animated character ([ADR 0008](adr/0008-sprite-characters.md)). The 3D MPFB player and its pipeline were removed on 2026-10-06.
 - Monsters and NPCs use the same sprite body (see "Monsters"): every class in the demo zones, their Kod animations, corpses, spawning from the original spawn tables and a stand-in AI.
 
-The 3D MPFB player is untouched. The sprite body is a switch:
-- `-MRSpriteBody` on the command line
-- `mr.Character.SpriteBody 1`
-- `bSpriteBody=True` under `[/Script/MeridianRemastered.MRCharacter]` in `DefaultGame.ini`
+Every `AMRCharacter` is drawn with the sprite body. The default look is `DefaultSpriteLook` under `[/Script/MeridianRemastered.MRCharacter]` in `DefaultGame.ini`; a test client picks its own with `-MRSpriteLook=<name>`.
 
 ## How the original draws a player
 
@@ -184,7 +181,6 @@ Notes:
 
 | Variable | Default | What it does |
 |---|---|---|
-| `mr.Character.SpriteBody` | 0 | 1 = characters spawned from now on are sprites |
 | `mr.Camera.ThirdPersonPitch` | 20 | How far third-person cameras tilt from eye level |
 | `mr.Sprite.Billboard` | 1 | Share of the camera's pitch the quad follows (1 = always parallel to the screen) |
 | `mr.Sprite.Shadow` | 1 | The sun-facing shadow card |
@@ -282,4 +278,4 @@ Monsters and NPCs are drawn by the same `UMRSpriteBodyComponent` as players. A m
    - Monsters in other zones need their spawn tables, once those zones are built.
    - Monster colour variants (`xlat` on some Kod classes) aren't read yet.
    - A spawn could still land somewhere a player can't reach, such as a closed courtyard. The original used the room's movement grid, which we don't have yet.
-7. **Next:** an ADR for the sprite route; the creator UI on `FMRSpriteAppearance`.
+7. **Next:** the creator UI on `FMRSpriteAppearance`.

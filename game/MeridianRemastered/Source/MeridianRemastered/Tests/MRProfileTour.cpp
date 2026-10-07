@@ -1,7 +1,6 @@
 #include "Tests/MRProfileTour.h"
 
 #include "Character/MRCharacter.h"
-#include "Character/MRSpriteBodyComponent.h"
 #include "Character/MRSpriteData.h"
 #include "DynamicRHI.h"
 #include "Engine/World.h"
@@ -55,39 +54,29 @@ void UMRProfileTour::SpawnUpTo(int32 Count)
 			+ Forward * (Distance + (i / PerRow) * Spacing)
 			+ Right * (((i % PerRow) - (PerRow - 1) * 0.5f) * Spacing);
 		FRotator FacePlayer = (-Forward).Rotation();
-		if (Player->UsesSpriteBody())
-		{
-			FacePlayer.Yaw += (i % 8) * 45.f;  // sprites: every view angle in each row
-		}
+		FacePlayer.Yaw += (i % 8) * 45.f;  // every view angle in each row
 		if (AMRCharacter* C = Player->GetWorld()->SpawnActor<AMRCharacter>(Player->GetClass(), Pos, FacePlayer, Params))
 		{
-			if (FParse::Param(FCommandLine::Get(), TEXT("MRRandomFaces")))
+			// every look in turn, random creator colours (the first few keep the look's own),
+			// random heights (Phase 6); every third one dances (docs/sprites.md)
+			TArray<FName> Looks;
+			FMRSpriteLibrary::Get().Looks.GetKeys(Looks);
+			Looks.Sort(FNameLexicalLess());
+			FRandomStream Rng(77 + i);
+			FMRSpriteAppearance A;
+			A.Look = Looks.Num() > 0 ? Looks[i % Looks.Num()] : C->GetSpriteAppearance().Look;
+			A.HeightPct = Rng.RandRange(94, 106);
+			if (i > 2)
 			{
-				C->ApplyRandomHeadSliders(1000 + i);
+				A.Skin = Rng.RandRange(0, 3);
+				A.Hair = Rng.RandRange(0, 13);
+				A.Shirt = Rng.RandRange(0, 10);
+				A.Pants = Rng.RandRange(0, 10);
 			}
-			if (C->UsesSpriteBody())
+			C->SetSpriteAppearance(A);
+			if (i % 3 == 2)
 			{
-				// every look in turn, random creator colours (the first few keep the look's own),
-				// random heights (Phase 6); every third one dances (docs/sprites.md)
-				TArray<FName> Looks;
-				FMRSpriteLibrary::Get().Looks.GetKeys(Looks);
-				Looks.Sort(FNameLexicalLess());
-				FRandomStream Rng(77 + i);
-				FMRSpriteAppearance A;
-				A.Look = Looks.Num() > 0 ? Looks[i % Looks.Num()] : C->GetSpriteAppearance().Look;
-				A.HeightPct = Rng.RandRange(94, 106);
-				if (i > 2)
-				{
-					A.Skin = Rng.RandRange(0, 3);
-					A.Hair = Rng.RandRange(0, 13);
-					A.Shirt = Rng.RandRange(0, 10);
-					A.Pants = Rng.RandRange(0, 10);
-				}
-				C->SetSpriteAppearance(A);
-				if (i % 3 == 2)
-				{
-					C->PlaySpriteAction(TEXT("dance"));
-				}
+				C->PlaySpriteAction(TEXT("dance"));
 			}
 			Spawned.Add(C);
 		}

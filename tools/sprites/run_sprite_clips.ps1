@@ -32,7 +32,7 @@ foreach ($v in $Variants) {
     for ($try = 0; $try -lt 2; $try++) {
         if (Test-Path $shots) { Remove-Item -Recurse -Force $shots }
         if (Test-Path $log) { Remove-Item $log -ErrorAction SilentlyContinue }
-        $args = "`"$proj`" /Game/Generated/Maps/L_World -game -windowed -resx=1280 -resy=720 -MRStartZone=300 -MRSpriteBody " +
+        $args = "`"$proj`" /Game/Generated/Maps/L_World -game -windowed -resx=1280 -resy=720 -MRStartZone=300 " +
                 "-MRSpriteLook=$Look -MRSpriteClip=$Clip -MRClipFrames=$Frames -UseFixedTimeStep -FPS=30 -ExecCmds=`"$common$($cvars[$v])`""
         $p = Start-Process -FilePath $Engine -ArgumentList $args -PassThru
         $crashed = $false

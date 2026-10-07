@@ -29,10 +29,10 @@ while ((Get-Date) -lt $deadline) {
 Start-Sleep -Seconds 5
 
 $a = Start-Process -FilePath $Engine -PassThru -WindowStyle Hidden -ArgumentList `
-    "`"$proj`" 127.0.0.1:$Port -game -nullrhi -nosound -unattended -windowed -MRSpriteBody -MRSpriteNetTest=A -abslog=`"$logA`""
+    "`"$proj`" 127.0.0.1:$Port -game -nullrhi -nosound -unattended -windowed -MRSpriteNetTest=A -abslog=`"$logA`""
 Start-Sleep -Seconds 3
 $b = Start-Process -FilePath $Engine -PassThru -WindowStyle Hidden -ArgumentList `
-    "`"$proj`" 127.0.0.1:$Port -game -nullrhi -nosound -unattended -windowed -MRSpriteBody -MRSpriteNetTest=B -abslog=`"$logB`""
+    "`"$proj`" 127.0.0.1:$Port -game -nullrhi -nosound -unattended -windowed -MRSpriteNetTest=B -abslog=`"$logB`""
 
 $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
 while ((Get-Date) -lt $deadline) {

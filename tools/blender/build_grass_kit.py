@@ -4,7 +4,7 @@ Grass clump meshes for the ground scatter (docs/adr/0003 ground pass). Headless 
     blender -b --factory-startup -P tools/blender/build_grass_kit.py
 
 Writes build/environment/kit/SM_GrassClump_<A|B|C>.glb: a tuft of tapered, gently bent blades,
-mid-poly (about 100 triangles) so it holds up next to the MakeHuman characters. Deterministic (seeded).
+mid-poly (about 100 triangles) so it holds up next to the rebuilt buildings. Deterministic (seeded).
 
 Vertex colour R = height along the blade (0 root, 1 tip: colour gradient and wind weight),
 G = a random value per blade (colour variation). Normals all point up, so the tuft shades like

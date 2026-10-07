@@ -8,14 +8,11 @@
 
 class UCameraComponent;
 class USpringArmComponent;
-class UStaticMeshComponent;
 class UInputAction;
 class UInputMappingContext;
 class UMRCharacterMovementComponent;
 class UMRAttributeSet;
-class UMRCharacterAppearance;
 class UMRSpriteBodyComponent;
-class USceneComponent;
 struct FInputActionValue;
 
 /** Camera views (docs/sprites.md Phase 3). V cycles them. */
@@ -42,12 +39,10 @@ enum class EMRViewMode : uint8
  * - Gaits: run (default), walk (Caps Lock), sprint (Shift, drains Vigor). They are predicted
  *   in UMRCharacterMovementComponent.
  * - The Ability System Component lives on AMRPlayerState.
- * - Looks come from a UMRCharacterAppearance (a MakeHuman body on the mannequin skeleton, plus
- *   parts). Fallbacks: configured appearance -> plain engine mannequin -> placeholder cylinder.
- * - Sprite body experiment (docs/sprites.md): with -MRSpriteBody, mr.Character.SpriteBody 1 or
- *   bSpriteBody in DefaultGame.ini the character is drawn like the original game instead
- *   (UMRSpriteBodyComponent, look from -MRSpriteLook=<name>). Test keys: LMB attack, 1 wave,
- *   2 point, 3 dance, 4 cast, L next look.
+ * - Drawn like the original game: composited directional sprites (UMRSpriteBodyComponent,
+ *   docs/sprites.md). The look, creator colours and height replicate (FMRSpriteAppearance); a
+ *   test client picks its own with -MRSpriteLook=<name>. Test keys: LMB attack, 1 wave, 2 point,
+ *   3 dance, 4 cast, L next look. The ACharacter skeletal mesh is unused and hidden.
  */
 UCLASS(Config = Game)
 class MERIDIANREMASTERED_API AMRCharacter : public ACharacter, public IAbilitySystemInterface
@@ -83,13 +78,6 @@ public:
 	/** Save a screenshot without the HUD (P): Saved/Screenshots/Photos/photo_<time>.png. */
 	void TakePhoto();
 
-	/**
-	 * First-person eyes relative to the driver's head bone (reference pose, actor space: X forward,
-	 * Z up). The head bone sits at the top of the neck; eyes are a little above and in front.
-	 */
-	UPROPERTY(EditDefaultsOnly, Category = "Camera")
-	FVector EyeOffsetFromHeadBone = FVector(10.f, 0.f, 9.f);
-
 	/** Vigor drained per second while sprinting. */
 	UPROPERTY(EditDefaultsOnly, Category = "Vigor")
 	float SprintVigorPerSecond = 12.f;
@@ -114,37 +102,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float FixedPitch = 0.f;
 
-	/** Appearance for player characters (DefaultGame.ini). */
-	UPROPERTY(Config, EditDefaultsOnly, Category = "Appearance")
-	FSoftObjectPath DefaultAppearance;
-
-	/** Apply an appearance (null = fallbacks). Safe to call again to change looks. */
-	void ApplyAppearance(const UMRCharacterAppearance* Appearance);
-
-	/**
-	 * Set the head sliders (values in [-1, 1], in the appearance's HeadSliders order; missing
-	 * values are 0). Applied as morph-target weights on the body and on every part (hair follows
-	 * the head shape because it carries the same morphs).
-	 */
-	void ApplyHeadSliders(const TArray<float>& Values);
-
-	/** Random slider values for testing crowds (deterministic per seed). */
-	void ApplyRandomHeadSliders(int32 Seed, float Strength = 0.6f);
-
-	/** Draw this character as an original-style sprite (DefaultGame.ini; see the class comment). */
-	UPROPERTY(Config, EditDefaultsOnly, Category = "Appearance")
-	bool bSpriteBody = false;
-
-	/** Sprite look (data/sprites/player_parts.json) when drawn as a sprite. */
+	/** Sprite look (data/sprites/player_parts.json) for new characters (DefaultGame.ini). */
 	UPROPERTY(Config, EditDefaultsOnly, Category = "Appearance")
 	FName DefaultSpriteLook = TEXT("test_male");
 
-	/** True if this character is drawn as a sprite (decided at BeginPlay). */
-	bool UsesSpriteBody() const { return bUseSpriteBody; }
+	/** The sprite drawing; null on a dedicated server or a -nullrhi client (nothing is drawn there). */
 	UMRSpriteBodyComponent* GetSpriteBody() const { return SpriteBody; }
-
-	/** Switch to the sprite body with a look (also from tests and crowds). */
-	void ApplySpriteBody(FName Look);
 
 	/**
 	 * How this character looks as a sprite (look, creator colours, height), replicated: set it on
@@ -160,7 +123,7 @@ public:
 	/** Sprite height variety (docs/sprites.md Phase 6): scales the drawing and the eyes, not the capsule. */
 	void SetSpriteHeight(float Scale);
 
-	/** What ended up on screen: "appearance:<name>", "sprite:<look>", "mannequin" or "placeholder". */
+	/** What ended up on screen: "sprite:<look>". */
 	const FString& GetAppearanceDescription() const { return AppearanceDescription; }
 
 protected:
@@ -174,7 +137,6 @@ protected:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UMRSpriteBodyComponent> SpriteBody;
-	bool bUseSpriteBody = false;
 	bool bAppliedCommandLineAppearance = false;
 
 	UPROPERTY(ReplicatedUsing = OnRep_SpriteAppearance)
@@ -197,34 +159,13 @@ protected:
 	/** -MRSpriteLook= / -MRSpriteHeight= / -MRSpriteColours=skin,hair,shirt,pants for this machine's own character. */
 	void ApplyCommandLineAppearance();
 	void ApplySpriteHeight(float Scale);
-
-	/** Last-resort body when no character or mannequin content is installed. */
-	UPROPERTY(VisibleAnywhere, Category = "Body")
-	TObjectPtr<UStaticMeshComponent> PlaceholderBody;
-
-	/** Components created from the appearance's parts, by part name. */
-	UPROPERTY(Transient)
-	TMap<FName, TObjectPtr<USceneComponent>> AppearanceParts;
-
-	/** Parts hidden from the owner in first person. */
-	TSet<FName> FirstPersonHiddenParts;
-	FName FirstPersonBodyPart;
-	FName DriverHiddenBone;
-	FName BodyPartHiddenBone;
-	FString AppearanceDescription = TEXT("placeholder");
-
-	void ClearAppearance();
-
-	/** The appearance currently applied (for its sliders). */
-	UPROPERTY(Transient)
-	TObjectPtr<const UMRCharacterAppearance> CurrentAppearance;
-	USceneComponent* CreateAppearancePart(const struct FMRAppearancePart& Part, USceneComponent* Parent);
-	bool ApplyMannequinFallback();
+	/** Create the sprite body (clients that render) and draw Look on it. */
+	void CreateSpriteBody(FName Look);
 	void ApplyFirstPersonVisibility();
-	/** Place the first-person eyes from the driver skeleton (so taller bodies see from higher up). */
-	void UpdateEyePosition();
 
-	/** First-person camera position in actor space (from UpdateEyePosition). */
+	FString AppearanceDescription;
+
+	/** First-person camera position in actor space: the original's eye height, scaled with the sprite's height. */
 	FVector FirstPersonEye = FVector(12.f, 0.f, 75.f);
 
 	/** Replicated because the rotation rules depend on it (the controller's yaw turns the body in

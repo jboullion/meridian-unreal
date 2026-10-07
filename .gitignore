@@ -42,9 +42,8 @@ game/**/*.xcworkspace
 game/**/*.xcodeproj
 # Content written by tools/ue/build_world.py (rebuild with tools/setup.ps1)
 game/*/Content/Generated/
-# Third-party content that may not be redistributed in a public repo (rebuild/fetch with tools/setup.ps1):
-#   engine mannequin pack (copied from the UE install), MetaHumans (from Fab / MetaHuman Creator),
-#   anything installed from Fab (lands in Content/Fab by default)
+# Third-party content that may not be redistributed in a public repo:
+#   engine template content, MetaHumans, anything installed from Fab (lands in Content/Fab by default)
 game/*/Content/Characters/Mannequins/
 game/*/Content/MetaHumans/
 game/*/Content/Fab/
