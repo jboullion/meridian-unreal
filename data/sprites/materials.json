@@ -1,0 +1,55 @@
+{
+  "_comment": "Surface classes for sprite parts (docs/sprites.md): how M_SpriteBody shades each part's pixels. 'classes' in index order (the index goes into the code render target, so keep the order; append new ones): roughness, metallic, specular. 'parts' maps a bgf to a class; parts not listed use 'roles' by the part's role in the look.",
+  "classes": [
+    {
+      "name": "cloth",
+      "roughness": 0.9,
+      "metallic": 0.0,
+      "specular": 0.25
+    },
+    {
+      "name": "skin",
+      "roughness": 0.65,
+      "metallic": 0.0,
+      "specular": 0.35
+    },
+    {
+      "name": "hair",
+      "roughness": 0.55,
+      "metallic": 0.0,
+      "specular": 0.4
+    },
+    {
+      "name": "leather",
+      "roughness": 0.6,
+      "metallic": 0.0,
+      "specular": 0.4
+    },
+    {
+      "name": "metal",
+      "roughness": 0.3,
+      "metallic": 0.85,
+      "specular": 0.5
+    },
+    {
+      "name": "creature",
+      "roughness": 0.8,
+      "metallic": 0.0,
+      "specular": 0.3
+    }
+  ],
+  "roles": {
+    "body": "cloth",
+    "left_arm": "cloth",
+    "right_arm": "cloth",
+    "legs": "cloth",
+    "head": "skin",
+    "eyes": "skin",
+    "mouth": "skin",
+    "nose": "skin",
+    "hair": "hair",
+    "weapon": "metal",
+    "monster": "creature"
+  },
+  "parts": {}
+}

@@ -7,6 +7,8 @@
 #include "AnimationRuntime.h"
 #include "Character/MRCharacterAppearance.h"
 #include "Character/MRCharacterMovementComponent.h"
+#include "Character/MRSpriteBodyComponent.h"
+#include "Character/MRSpriteData.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -23,7 +25,18 @@
 #include "InputAction.h"
 #include "InputMappingContext.h"
 #include "InputModifiers.h"
+#include "GameFramework/GameStateBase.h"
+#include "GameFramework/HUD.h"
+#include "Misc/App.h"
+#include "EngineUtils.h"
+#include "Monsters/MRMonster.h"
+#include "HAL/FileManager.h"
+#include "HighResScreenshot.h"
+#include "Misc/DateTime.h"
+#include "Misc/Paths.h"
 #include "Net/UnrealNetwork.h"
+#include "TimerManager.h"
+#include "UnrealClient.h"
 #include "Player/MRPlayerState.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Zones/MRZoneSubsystem.h"
@@ -34,6 +47,16 @@ namespace
 	const TCHAR* MannequinMeshPath = TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple");
 	const TCHAR* MannequinAnimPath = TEXT("/Game/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed.ABP_Unarmed_C");
 	const FName DriverPartName(TEXT("Driver"));
+
+	TAutoConsoleVariable<float> CVarThirdPersonPitch(TEXT("mr.Camera.ThirdPersonPitch"), 20.f,
+		TEXT("How far (degrees) the third-person cameras may tilt up or down from eye level (0 = locked at eye level)."));
+
+	float ThirdPersonPitchLimit() { return FMath::Clamp(CVarThirdPersonPitch.GetValueOnGameThread(), 0.f, 89.f); }
+
+	TAutoConsoleVariable<int32> CVarSpriteBody(TEXT("mr.Character.SpriteBody"), 0,
+		TEXT("1: characters spawned from now on are drawn as original-style sprites (docs/sprites.md)."));
+	// test keys 1-4 (OnEmote)
+	const FName EmoteKeys[] = {TEXT("wave"), TEXT("point"), TEXT("dance"), TEXT("cast")};
 }
 
 AMRCharacter::AMRCharacter(const FObjectInitializer& ObjectInitializer)
@@ -123,8 +146,234 @@ void AMRCharacter::BeginPlay()
 				*AppearancePath.ToString());
 		}
 	}
-	ApplyAppearance(Appearance);
+	bUseSpriteBody = bSpriteBody || CVarSpriteBody.GetValueOnGameThread() != 0 || FParse::Param(FCommandLine::Get(), TEXT("MRSpriteBody"));
+	if (HasAuthority() && SpriteAppearance.Look.IsNone())
+	{
+		SpriteAppearance.Look = DefaultSpriteLook;  // replicated: every client draws this look
+	}
+	if (bUseSpriteBody)
+	{
+		ApplySpriteBody(SpriteAppearance.Look.IsNone() ? DefaultSpriteLook : SpriteAppearance.Look);
+	}
+	else
+	{
+		ApplyAppearance(Appearance);
+	}
 	ApplyViewMode();
+}
+
+void AMRCharacter::SetSpriteHeight(float Scale)
+{
+	FMRSpriteAppearance A = SpriteAppearance;
+	A.HeightPct = FMath::RoundToInt(FMath::Clamp(Scale, 0.5f, 1.5f) * 100.f);
+	SetSpriteAppearance(A);
+}
+
+// ------------------------------------------------------------------------- sprite sync
+
+void AMRCharacter::SetSpriteAppearance(const FMRSpriteAppearance& NewAppearance)
+{
+	SpriteAppearance = NewAppearance;
+	ApplySpriteAppearance();  // predicted here
+	if (!HasAuthority())
+	{
+		ServerSetSpriteAppearance(NewAppearance);
+	}
+}
+
+void AMRCharacter::ServerSetSpriteAppearance_Implementation(const FMRSpriteAppearance& NewAppearance)
+{
+	FMRSpriteAppearance A = NewAppearance;
+	if (!FMRSpriteLibrary::Get().Looks.Contains(A.Look))
+	{
+		A.Look = SpriteAppearance.Look;  // only looks the game knows
+	}
+	A.Skin = FMath::Clamp(A.Skin, -1, FMRSpriteColours::NumSkins - 1);
+	A.Hair = FMath::Clamp(A.Hair, -1, FMRSpriteColours::NumHair - 1);
+	A.Shirt = FMath::Clamp(A.Shirt, -1, FMRSpriteColours::NumClothes - 1);
+	A.Pants = FMath::Clamp(A.Pants, -1, FMRSpriteColours::NumClothes - 1);
+	A.HeightPct = FMath::Clamp(A.HeightPct, 90, 110);  // variety, never a game advantage
+	SpriteAppearance = A;
+	ApplySpriteAppearance();
+}
+
+void AMRCharacter::OnRep_SpriteAppearance()
+{
+	ApplySpriteAppearance();
+}
+
+void AMRCharacter::ApplySpriteAppearance()
+{
+	const FMRSpriteAppearance& A = SpriteAppearance;
+	if (SpriteBody)
+	{
+		if (!A.Look.IsNone() && SpriteBody->GetLook() != A.Look)
+		{
+			SpriteBody->SetLook(A.Look);
+			AppearanceDescription = FString::Printf(TEXT("sprite:%s"), *A.Look.ToString());
+		}
+		SpriteBody->SetColours(A.Skin, A.Hair, A.Shirt, A.Pants);
+	}
+	if (bUseSpriteBody)
+	{
+		ApplySpriteHeight(A.HeightPct / 100.f);
+	}
+}
+
+void AMRCharacter::ApplyCommandLineAppearance()
+{
+	if (bAppliedCommandLineAppearance || !IsLocallyControlled())
+	{
+		return;
+	}
+	bAppliedCommandLineAppearance = true;
+	FMRSpriteAppearance A = SpriteAppearance;
+	FString Value;
+	if (FParse::Value(FCommandLine::Get(), TEXT("MRSpriteLook="), Value))
+	{
+		A.Look = FName(*Value);
+	}
+	float Height = 1.f;
+	if (FParse::Value(FCommandLine::Get(), TEXT("MRSpriteHeight="), Height))
+	{
+		A.HeightPct = FMath::RoundToInt(Height * 100.f);
+	}
+	if (FParse::Value(FCommandLine::Get(), TEXT("MRSpriteColours="), Value))
+	{
+		TArray<FString> C;
+		Value.ParseIntoArray(C, TEXT(","));
+		int32* Fields[] = {&A.Skin, &A.Hair, &A.Shirt, &A.Pants};
+		for (int32 i = 0; i < 4 && i < C.Num(); ++i)
+		{
+			*Fields[i] = FCString::Atoi(*C[i]);
+		}
+	}
+	if (A != SpriteAppearance)
+	{
+		SetSpriteAppearance(A);
+	}
+}
+
+void AMRCharacter::PlaySpriteAction(FName Action)
+{
+	if (SpriteBody)
+	{
+		if (Action.IsNone())
+		{
+			SpriteBody->StopAction();
+		}
+		else
+		{
+			SpriteBody->PlayAction(Action);  // predicted here
+		}
+	}
+	if (HasAuthority())
+	{
+		ServerPlaySpriteAction_Implementation(Action);
+	}
+	else
+	{
+		ServerPlaySpriteAction(Action);
+	}
+}
+
+void AMRCharacter::ServerPlaySpriteAction_Implementation(FName Action)
+{
+	if (!Action.IsNone() && !FMRSpriteLibrary::Get().Actions.Contains(Action))
+	{
+		return;
+	}
+	SpriteAction.Action = Action;
+	SpriteAction.Seq++;
+	SpriteAction.ServerTime = GetWorld()->GetTimeSeconds();
+	if (Action == TEXT("fist_attack") || Action == TEXT("weapon_attack"))
+	{
+		// placeholder until combat: the nearest monster in front, within reach, takes the hit
+		AMRMonster* Best = nullptr;
+		float BestDist = 260.f;
+		for (TActorIterator<AMRMonster> It(GetWorld()); It; ++It)
+		{
+			const FVector To = It->GetActorLocation() - GetActorLocation();
+			const float Dist = To.Size2D() - It->GetCapsuleComponent()->GetScaledCapsuleRadius();
+			if (!It->IsDead() && !It->IsNpc() && Dist < BestDist
+				&& (To.GetSafeNormal2D() | GetActorForwardVector().GetSafeNormal2D()) > 0.4f)
+			{
+				Best = *It;
+				BestDist = Dist;
+			}
+		}
+		if (Best)
+		{
+			Best->TakePlaceholderHit(this);
+		}
+	}
+	if (!IsLocallyControlled())
+	{
+		OnRep_SpriteAction();  // a listen server draws the others too
+	}
+}
+
+void AMRCharacter::OnRep_SpriteAction()
+{
+	if (IsLocallyControlled() || !SpriteBody)
+	{
+		return;  // the owner played it already
+	}
+	if (SpriteAction.Action.IsNone())
+	{
+		SpriteBody->StopAction();
+		return;
+	}
+	// a late joiner skips one-shots that ended long ago (loops like the dance still show)
+	const FMRSpriteAction* Def = FMRSpriteLibrary::Get().Actions.Find(SpriteAction.Action);
+	const AGameStateBase* GS = GetWorld()->GetGameState();
+	const float Age = GS ? GS->GetServerWorldTimeSeconds() - SpriteAction.ServerTime : 0.f;
+	if (Def && Def->OnceLengthMs() > 0 && Age > Def->OnceLengthMs() / 1000.f + 1.f)
+	{
+		return;
+	}
+	SpriteBody->PlayAction(SpriteAction.Action);
+}
+
+void AMRCharacter::ApplySpriteHeight(float Scale)
+{
+	if (SpriteBody)
+	{
+		SpriteBody->SetHeightScale(Scale);
+		Scale = SpriteBody->GetHeightScale();
+	}
+	// the eyes move with the drawing: 1.65 m above the floor at scale 1 (the capsule centre is 90 cm up)
+	FirstPersonEye = FVector(12.f, 0.f, BaseEyeHeight + 165.f * (Scale - 1.f));
+	ApplyViewMode();
+}
+
+void AMRCharacter::ApplySpriteBody(FName Look)
+{
+	ClearAppearance();
+	CurrentAppearance = nullptr;
+	bUseSpriteBody = true;
+	GetMesh()->SetSkeletalMesh(nullptr);
+	GetMesh()->SetVisibility(false);
+	PlaceholderBody->SetVisibility(false);
+	AppearanceDescription = FString::Printf(TEXT("sprite:%s"), *Look.ToString());
+	UpdateEyePosition();
+	if (IsNetMode(NM_DedicatedServer) || !FApp::CanEverRender())
+	{
+		return;  // nothing is drawn on a server (or a -nullrhi test client)
+	}
+	if (!SpriteBody)
+	{
+		SpriteBody = NewObject<UMRSpriteBodyComponent>(this, TEXT("SpriteBody"));
+		SpriteBody->SetupAttachment(GetCapsuleComponent());
+		SpriteBody->RegisterComponent();
+	}
+	SpriteBody->SetLook(Look);
+	if (Look == SpriteAppearance.Look)
+	{
+		ApplySpriteAppearance();
+	}
+	ApplyFirstPersonVisibility();
+	UE_LOG(LogMeridian, Log, TEXT("%s appearance: %s"), *GetName(), *AppearanceDescription);
 }
 
 // ------------------------------------------------------------------------------ appearance
@@ -351,7 +600,12 @@ void AMRCharacter::UpdateEyePosition()
 void AMRCharacter::ApplyFirstPersonVisibility()
 {
 	// Only the player's own view changes: everyone else always sees the whole character.
+	const bool bFirstPerson = IsFirstPerson();
 	const bool bHideOwnHead = bFirstPerson && IsLocallyControlled();
+	if (SpriteBody)
+	{
+		SpriteBody->SetOwnerNoSee(bFirstPerson);  // the shadow card still casts
+	}
 
 	auto SetHeadBone = [bHideOwnHead](USkinnedMeshComponent* Comp, FName Bone)
 	{
@@ -389,7 +643,9 @@ void AMRCharacter::ApplyFirstPersonVisibility()
 void AMRCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AMRCharacter, bFirstPerson);
+	DOREPLIFETIME(AMRCharacter, ViewMode);
+	DOREPLIFETIME(AMRCharacter, SpriteAppearance);
+	DOREPLIFETIME(AMRCharacter, SpriteAction);
 }
 
 // ------------------------------------------------------------------------- abilities
@@ -420,6 +676,10 @@ void AMRCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (IsLocallyControlled() && !IsFirstPerson())
+	{
+		ClampThirdPersonPitch();
+	}
 	if (HasAuthority())
 	{
 		ServerTickVigor(DeltaSeconds);
@@ -462,45 +722,77 @@ void AMRCharacter::ServerTickZone(float DeltaSeconds)
 
 void AMRCharacter::SetFirstPerson(bool bNewFirstPerson)
 {
-	if (bFirstPerson == bNewFirstPerson)
+	SetViewMode(bNewFirstPerson ? EMRViewMode::FirstPerson : EMRViewMode::Chase);
+}
+
+void AMRCharacter::SetViewMode(EMRViewMode NewMode)
+{
+	if (ViewMode == NewMode)
 	{
 		return;
 	}
-	bFirstPerson = bNewFirstPerson;
+	const bool bWasFixed = ViewMode == EMRViewMode::Behind || ViewMode == EMRViewMode::Front;
+	if (!bWasFixed && (NewMode == EMRViewMode::Behind || NewMode == EMRViewMode::Front) && Controller)
+	{
+		// the fixed views steer with the controller's yaw: start from where the body faces
+		FRotator Rot = Controller->GetControlRotation();
+		Rot.Yaw = GetActorRotation().Yaw;
+		Controller->SetControlRotation(Rot);
+		FixedViewPitch = FixedPitch;
+		FixedViewArm = FixedArmLength;
+	}
+	ViewMode = NewMode;
+	if (NewMode != EMRViewMode::FirstPerson && Controller)
+	{
+		Controller->SetControlRotation(FRotator(0.f, Controller->GetControlRotation().Yaw, 0.f));  // eye level
+	}
 	ApplyViewMode(); // predict locally
 	if (!HasAuthority())
 	{
-		ServerSetFirstPerson(bNewFirstPerson);
+		ServerSetViewMode(NewMode);
 	}
 }
 
-void AMRCharacter::ServerSetFirstPerson_Implementation(bool bNewFirstPerson)
+void AMRCharacter::ServerSetViewMode_Implementation(EMRViewMode NewMode)
 {
-	bFirstPerson = bNewFirstPerson;
+	ViewMode = NewMode;
 	ApplyViewMode();
 }
 
-void AMRCharacter::OnRep_FirstPerson()
+void AMRCharacter::OnRep_ViewMode()
 {
 	ApplyViewMode();
 }
 
 void AMRCharacter::ApplyViewMode()
 {
+	const bool bFirstPerson = IsFirstPerson();
+	const bool bFixed = ViewMode == EMRViewMode::Behind || ViewMode == EMRViewMode::Front;
 	// Rotation rules must match on client and server or movement will be corrected.
-	bUseControllerRotationYaw = bFirstPerson;
+	bUseControllerRotationYaw = bFirstPerson || bFixed;
 	if (UCharacterMovementComponent* Move = GetCharacterMovement())
 	{
-		Move->bOrientRotationToMovement = !bFirstPerson;
+		Move->bOrientRotationToMovement = ViewMode == EMRViewMode::Chase;
 		Move->RotationRate = FRotator(0.f, 540.f, 0.f);
 	}
 	if (CameraBoom)
 	{
-		// The boom pivots at eye height in both views; first person puts the camera at the eyes,
-		// third person swings it back from there.
+		// The boom pivots at eye height in every view; first person puts the camera at the eyes,
+		// the others swing it out from there. The fixed views hang it off the body, not the mouse.
 		CameraBoom->SetRelativeLocation(FVector(0.f, 0.f, FirstPersonEye.Z));
-		CameraBoom->TargetArmLength = bFirstPerson ? 0.f : ThirdPersonArmLength;
-		CameraBoom->SocketOffset = bFirstPerson ? FVector(FirstPersonEye.X, FirstPersonEye.Y, 0.f) : FVector(0.f, 45.f, 25.f);
+		CameraBoom->bUsePawnControlRotation = !bFixed;
+		CameraBoom->bInheritPitch = true;  // third person: limited to mr.Camera.ThirdPersonPitch (OnLook, Tick)
+		if (bFixed)
+		{
+			CameraBoom->SetRelativeRotation(FRotator(FixedViewPitch, ViewMode == EMRViewMode::Front ? 180.f : 0.f, 0.f));
+			CameraBoom->TargetArmLength = FixedViewArm;
+			CameraBoom->SocketOffset = FVector::ZeroVector;
+		}
+		else
+		{
+			CameraBoom->TargetArmLength = bFirstPerson ? 0.f : ThirdPersonArmLength;
+			CameraBoom->SocketOffset = bFirstPerson ? FVector(FirstPersonEye.X, FirstPersonEye.Y, 0.f) : FVector(0.f, 45.f, 25.f);
+		}
 	}
 	if (PlaceholderBody)
 	{
@@ -571,12 +863,28 @@ void AMRCharacter::BuildInput()
 	Ctx->MapKey(ViewAction, EKeys::Gamepad_RightThumbstick);
 	Ctx->MapKey(ZoomAction, EKeys::MouseWheelAxis);
 	Ctx->MapKey(CrouchAction, EKeys::C);
+
+	// sprite body tests (docs/sprites.md): attack, emotes, next look
+	AttackAction = MakeAction(TEXT("IA_Attack"), EInputActionValueType::Boolean);
+	NextLookAction = MakeAction(TEXT("IA_NextLook"), EInputActionValueType::Boolean);
+	PhotoAction = MakeAction(TEXT("IA_Photo"), EInputActionValueType::Boolean);
+	Ctx->MapKey(AttackAction, EKeys::LeftMouseButton);
+	Ctx->MapKey(NextLookAction, EKeys::L);
+	Ctx->MapKey(PhotoAction, EKeys::P);
+	const FKey EmoteKeyBindings[] = {EKeys::One, EKeys::Two, EKeys::Three, EKeys::Four};
+	for (int32 i = 0; i < UE_ARRAY_COUNT(EmoteKeys); ++i)
+	{
+		UInputAction* A = MakeAction(*FString::Printf(TEXT("IA_Emote_%s"), *EmoteKeys[i].ToString()), EInputActionValueType::Boolean);
+		Ctx->MapKey(A, EmoteKeyBindings[i]);
+		EmoteActions.Add(A);
+	}
 }
 
 void AMRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	BuildInput();
+	ApplyCommandLineAppearance();  // this machine's own character
 
 	if (const APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
@@ -598,6 +906,13 @@ void AMRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	Input->BindAction(ViewAction, ETriggerEvent::Started, this, &AMRCharacter::OnToggleView);
 	Input->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &AMRCharacter::OnZoom);
 	Input->BindAction(CrouchAction, ETriggerEvent::Started, this, &AMRCharacter::OnCrouchToggle);
+	Input->BindAction(AttackAction, ETriggerEvent::Started, this, &AMRCharacter::OnAttack);
+	Input->BindAction(NextLookAction, ETriggerEvent::Started, this, &AMRCharacter::OnNextLook);
+	Input->BindAction(PhotoAction, ETriggerEvent::Started, this, &AMRCharacter::OnPhoto);
+	for (int32 i = 0; i < EmoteActions.Num(); ++i)
+	{
+		Input->BindAction(EmoteActions[i], ETriggerEvent::Started, this, &AMRCharacter::OnEmote, EmoteKeys[i]);
+	}
 }
 
 void AMRCharacter::OnMove(const FInputActionValue& Value)
@@ -616,7 +931,38 @@ void AMRCharacter::OnLook(const FInputActionValue& Value)
 {
 	const FVector2D Axis = Value.Get<FVector2D>();
 	AddControllerYawInput(Axis.X);
+	if (!IsFirstPerson())
+	{
+		// the third-person cameras stay near eye level: a limited tilt (mr.Camera.ThirdPersonPitch)
+		const float Limit = ThirdPersonPitchLimit();
+		if (ViewMode == EMRViewMode::Behind || ViewMode == EMRViewMode::Front)
+		{
+			// the fixed views tilt their own camera (in front, mouse up looks down at the character)
+			FixedViewPitch = FMath::Clamp(FixedViewPitch + Axis.Y * (ViewMode == EMRViewMode::Front ? -1.f : 1.f), -Limit, Limit);
+			ApplyViewMode();
+			return;
+		}
+		AddControllerPitchInput(Axis.Y);
+		ClampThirdPersonPitch();
+		return;
+	}
 	AddControllerPitchInput(Axis.Y);
+}
+
+void AMRCharacter::ClampThirdPersonPitch()
+{
+	if (!Controller)
+	{
+		return;
+	}
+	FRotator Rot = Controller->GetControlRotation();
+	const float Limit = ThirdPersonPitchLimit();
+	const float Pitch = FMath::Clamp(FRotator::NormalizeAxis(Rot.Pitch), -Limit, Limit);
+	if (!FMath::IsNearlyEqual(Pitch, FRotator::NormalizeAxis(Rot.Pitch)))
+	{
+		Rot.Pitch = Pitch;
+		Controller->SetControlRotation(Rot);
+	}
 }
 
 void AMRCharacter::OnSprintStarted()
@@ -646,7 +992,7 @@ void AMRCharacter::OnToggleWalk()
 
 void AMRCharacter::OnToggleView()
 {
-	SetFirstPerson(!bFirstPerson);
+	SetViewMode(static_cast<EMRViewMode>((static_cast<uint8>(ViewMode) + 1) % 4));
 }
 
 void AMRCharacter::OnZoom(const FInputActionValue& Value)
@@ -656,12 +1002,18 @@ void AMRCharacter::OnZoom(const FInputActionValue& Value)
 	{
 		return;
 	}
-	if (bFirstPerson)
+	if (IsFirstPerson())
 	{
 		if (Wheel < 0.f) // scroll out of first person
 		{
 			SetFirstPerson(false);
 		}
+		return;
+	}
+	if (ViewMode != EMRViewMode::Chase)
+	{
+		FixedViewArm = FMath::Clamp(FixedViewArm - Wheel * 40.f, 100.f, MaxArmLength);
+		ApplyViewMode();
 		return;
 	}
 	const float NewLength = CameraBoom->TargetArmLength - Wheel * 40.f;
@@ -683,4 +1035,66 @@ void AMRCharacter::OnCrouchToggle()
 	{
 		Crouch();
 	}
+}
+
+// ---------------------------------------------------------------- sprite body tests
+
+void AMRCharacter::OnAttack()
+{
+	const FMRSpriteLook* Look = FMRSpriteLibrary::Get().Looks.Find(SpriteAppearance.Look);
+	PlaySpriteAction(Look && Look->Find(TEXT("weapon")) ? TEXT("weapon_attack") : TEXT("fist_attack"));
+}
+
+void AMRCharacter::OnEmote(FName Action)
+{
+	const FName Current = SpriteBody ? SpriteBody->GetAction() : SpriteAction.Action;
+	PlaySpriteAction(Current == Action ? NAME_None : Action);  // the same key again stops (the dance)
+}
+
+void AMRCharacter::OnNextLook()
+{
+	TArray<FName> Names;
+	FMRSpriteLibrary::Get().Looks.GetKeys(Names);
+	Names.Sort(FNameLexicalLess());
+	if (Names.Num() > 0)
+	{
+		FMRSpriteAppearance A = SpriteAppearance;
+		A.Look = Names[(Names.IndexOfByKey(A.Look) + 1) % Names.Num()];
+		A.Skin = A.Hair = A.Shirt = A.Pants = -1;  // the look's own colours
+		SetSpriteAppearance(A);
+	}
+}
+
+void AMRCharacter::OnPhoto()
+{
+	TakePhoto();
+}
+
+void AMRCharacter::TakePhoto()
+{
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!PC || !IsLocallyControlled())
+	{
+		return;
+	}
+	const FString Dir = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("Photos"));
+	IFileManager::Get().MakeDirectory(*Dir, true);
+	const FString File = FPaths::Combine(Dir, FString::Printf(TEXT("photo_%s.png"), *FDateTime::Now().ToString(TEXT("%Y%m%d_%H%M%S"))));
+	// no HUD (first-person hands) in the picture; it comes back a moment later
+	AHUD* Hud = PC->GetHUD();
+	if (Hud)
+	{
+		Hud->bShowHUD = false;
+	}
+	GetHighResScreenshotConfig().FilenameOverride = File;
+	PC->ConsoleCommand(TEXT("HighResShot 2"));
+	UE_LOG(LogMeridian, Display, TEXT("Photo: %s"), *File);
+	FTimerHandle Handle;
+	GetWorldTimerManager().SetTimer(Handle, FTimerDelegate::CreateWeakLambda(this, [PC]()
+	{
+		if (IsValid(PC) && PC->GetHUD())
+		{
+			PC->GetHUD()->bShowHUD = true;
+		}
+	}), 0.3f, false);
 }

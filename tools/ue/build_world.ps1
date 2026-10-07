@@ -46,7 +46,7 @@ if ($Clean -and $Script -eq "build_world.py") {
 $p = Start-Process -FilePath $Engine -PassThru -Wait -NoNewWindow -RedirectStandardOutput "NUL" -ArgumentList `
     "`"$proj`" /Engine/Maps/Entry -ExecutePythonScript=`"$py`" -unattended -nosplash -RenderOffscreen"
 
-$lines = Select-String -Path $log -Pattern "\[build_world\]|\[zone_mood\]|\[environment_materials\]|LogPython: Error|GPU Crashed" |
+$lines = Select-String -Path $log -Pattern "\[build_world\]|\[zone_mood\]|\[environment_materials\]|\[import_sprites\]|LogPython: Error|GPU Crashed" |
     ForEach-Object { $_.Line -replace '^\[[^\]]*\]\[[^\]]*\]', '' }
 $lines | Select-Object -Last 25
 if ($lines -match "LogPython: Error|GPU Crashed") { Write-Host "FAIL (log: $log)"; exit 1 }

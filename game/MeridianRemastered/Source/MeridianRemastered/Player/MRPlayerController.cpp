@@ -7,6 +7,9 @@
 #include "Tests/MRLookDevTour.h"
 #include "Tests/MRProfileTour.h"
 #include "Tests/MRScreenshotTour.h"
+#include "Tests/MRSpriteClipTour.h"
+#include "Tests/MRSpriteNetTest.h"
+#include "Tests/MRMonsterTour.h"
 #include "Zones/MRZoneSubsystem.h"
 
 namespace
@@ -38,6 +41,21 @@ void AMRPlayerController::BeginPlay()
 		{
 			ProfileTour = NewObject<UMRProfileTour>(this);
 			ProfileTour->Start(this);
+		}
+		else if (UMRMonsterTour::IsRequested())
+		{
+			MonsterTour = NewObject<UMRMonsterTour>(this);
+			MonsterTour->Start(this);
+		}
+		else if (UMRSpriteNetTest::IsRequested())
+		{
+			SpriteNetTest = NewObject<UMRSpriteNetTest>(this);
+			SpriteNetTest->Start(this);
+		}
+		else if (UMRSpriteClipTour::IsRequested())
+		{
+			SpriteClipTour = NewObject<UMRSpriteClipTour>(this);
+			SpriteClipTour->Start(this);
 		}
 		else if (UMRLookDevTour::IsRequested())
 		{

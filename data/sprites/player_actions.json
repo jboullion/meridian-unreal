@@ -1,0 +1,50 @@
+{
+  "_comment": "Player animations from kod/object/active/holder/nomoveon/battler/player.kod (SendAnimation :11259, SendMoveAnimation :11316, SendMoveOverlays :11356, SendOverlays :11509). Groups are Kod's (1-based); period = ms per group; 'once' plays low..high then holds 'final' (clientd3d/animate.c AnimateSingle). Parts without an entry stay on group 1; eyes and mouth use the look's expression (piAction).",
+  "stand": {},
+  "walk": {
+    "left_arm":  {"mode": "cycle", "period": 200, "low": 2, "high": 3},
+    "right_arm": {"mode": "cycle", "period": 200, "low": 2, "high": 3},
+    "legs":      {"mode": "cycle", "period": 100, "low": 2, "high": 5}
+  },
+  "weapon_attack": {
+    "body":      {"mode": "once", "period": 300, "low": 2, "high": 4, "final": 1},
+    "left_arm":  {"mode": "once", "period": 300, "low": 4, "high": 6, "final": 1},
+    "right_arm": {"mode": "once", "period": 300, "low": 4, "high": 6, "final": 17},
+    "legs":      {"mode": "once", "period": 900, "low": 6, "high": 6, "final": 1},
+    "weapon":    {"mode": "once", "period": 300, "low": 1, "high": 3, "final": 4}
+  },
+  "fist_attack": {
+    "body":      {"mode": "once", "period": 600, "low": 3, "high": 4, "final": 1},
+    "left_arm":  {"mode": "once", "period": 600, "low": 5, "high": 6, "final": 1},
+    "right_arm": {"mode": "once", "period": 600, "low": 13, "high": 14, "final": 1},
+    "legs":      {"mode": "once", "period": 1200, "low": 6, "high": 6, "final": 1}
+  },
+  "bow_fire": {
+    "body":      {"mode": "once", "period": 1200, "low": 5, "high": 5, "final": 1},
+    "left_arm":  {"mode": "once", "period": 1200, "low": 9, "high": 9, "final": 7},
+    "right_arm": {"mode": "once", "period": 600, "low": 15, "high": 16, "final": 1},
+    "legs":      {"mode": "once", "period": 1200, "low": 7, "high": 7, "final": 1}
+  },
+  "cast": {
+    "left_arm":  {"mode": "once", "period": 300, "low": 8, "high": 8, "final": 1},
+    "right_arm": {"mode": "once", "period": 300, "low": 11, "high": 11, "final": 1}
+  },
+  "wave": {
+    "right_arm": {"mode": "once", "period": 100, "low": 7, "high": 10, "final": 1}
+  },
+  "point": {
+    "right_arm": {"mode": "once", "period": 700, "low": 12, "high": 12, "final": 1}
+  },
+  "dance": {
+    "body":      {"mode": "cycle", "period": 150, "low": 6, "high": 22},
+    "left_arm":  {"mode": "cycle", "period": 150, "low": 10, "high": 26},
+    "right_arm": {"mode": "cycle", "period": 150, "low": 18, "high": 34},
+    "legs":      {"mode": "cycle", "period": 150, "low": 8, "high": 24}
+  },
+  "_first_person": {
+    "_comment": "First-person hand / weapon window overlays (player.kod DoWindowOverlayFistAttack, weapon.kod SendWindowOverlayAnimation), keyed by the third-person weapon overlay ('fist' = none). Drawn at the bottom right (HS_SE), scaled by viewport width / 452 * 0.5 (clientd3d/overlay.c ComputePlayerOverlayArea). Group 0 = nothing shown.",
+    "fist":    {"bgf": "povhand",  "hold": 0, "attack": {"mode": "once", "period": 175, "low": 1, "high": 3, "final": 0}},
+    "swordov": {"bgf": "povsword", "hold": 5, "attack": {"mode": "once", "period": 150, "low": 1, "high": 4, "final": 5}}
+  },
+  "_weapon": "With a weapon (weapon.kod SendOverlayAnimation; SendOverlays iRight_group): the right arm holds group 17 unless the action animates it, and the weapon overlay rests on group 4."
+}

@@ -39,11 +39,23 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def find_server104() -> Path:
+    """Server-104/ is git-ignored, so a worktree (.claude/worktrees/<name>) has none: use the
+    nearest one up the tree (the main checkout's)."""
+    for d in (ROOT, *ROOT.parents):
+        if (d / "Server-104").is_dir():
+            return d / "Server-104"
+    return ROOT / "Server-104"
+
+
+SERVER104 = find_server104()
 # Searched in order: the Server 104 client (matches the ruleset), the Steam classic client,
 # then the source tree's resource/ folder (see find_file).
 CLIENT_RES = [Path(r"C:\Users\jboul\AppData\Local\Meridian-104\resource"),
               Path(r"H:\Steam\steamapps\common\Meridian 59\resource")]
-PALETTE_FILE = ROOT / "Server-104" / "blakston.pal"
+PALETTE_FILE = SERVER104 / "blakston.pal"
 TRANSPARENT = 254
 
 
@@ -113,7 +125,7 @@ class BGF:
         }
 
 
-FALLBACK_RES = ROOT / "Server-104" / "resource"   # Server 104 additions not in the Steam client
+FALLBACK_RES = SERVER104 / "resource"   # Server 104 additions not in the Steam client
 _fallback_index: dict[str, Path] | None = None
 
 
@@ -173,10 +185,10 @@ def export_texture(bgf: BGF, out_png: Path, pal) -> dict:
 
 
 def zone_texture_ids() -> set[int]:
-    sys.path.insert(0, str(ROOT / "Server-104" / "roomedit" / "roogen"))
+    sys.path.insert(0, str(SERVER104 / "roomedit" / "roogen"))
     from roofile import Room
     zones = json.loads((ROOT / "data" / "zones.json").read_text(encoding="utf-8"))
-    rooms = ROOT / "Server-104" / "resource" / "rooms"
+    rooms = SERVER104 / "resource" / "rooms"
     ids: set[int] = set()
     for z in zones:
         roo = next((p for p in rooms.iterdir() if p.name.lower() == z["roo"].lower()), None)

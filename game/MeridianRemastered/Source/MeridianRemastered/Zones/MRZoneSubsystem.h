@@ -130,6 +130,13 @@ public:
 	/** World position of a grid square's centre; Z comes from a floor trace when geometry is loaded. */
 	FVector GridToWorld(int32 Rid, int32 Row, int32 Col, bool bTraceFloor = true) const;
 
+	/**
+	 * Put InOut.Z on the floor under (X, Y): the highest surface with standing room above it. False if none.
+	 * bLowest: the lowest such surface instead. The original rooms are 2.5D (floors never overlap), so
+	 * anything with a floor below it is something we added on top: a roof, a canopy (monster spawns).
+	 */
+	bool TraceFloor(FVector& InOut, bool bLowest = false) const;
+
 	/** World -> (row, col) in the given zone's grid. */
 	FIntPoint WorldToGrid(int32 Rid, const FVector& World) const;
 

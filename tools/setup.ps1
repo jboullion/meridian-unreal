@@ -46,6 +46,13 @@ try {
         & (Join-Path $EngineRoot "Engine\Binaries\Win64\UnrealEditor-Cmd.exe") $proj `
             "-ExecutePythonScript=$(Join-Path $repo 'tools\ue\build_world.py')" -unattended -nosplash -RenderOffscreen | Out-Null
     }
+    # sprite players (docs/sprites.md): upscaled part atlases + in-betweens, then their UE import;
+    # needs the AI venv (tools/textures/setup_ai.ps1), skipped without it
+    $aiPython = Join-Path $repo "build\texai\.venv\Scripts\python.exe"
+    if (Test-Path $aiPython) {
+        Step "build sprite atlases" { & $aiPython tools/sprites/build_player_sprites.py }
+        Step "import sprite atlases" { powershell -NoProfile -File tools/ue/import_sprites.ps1 -Headless }
+    }
     Write-Host "== done. Run tools/ue/run_zone_test.ps1 to verify."
     Write-Host "   Characters (MPFB_Male/Female) and animations (Quaternius) are committed; to rebuild them see docs/characters.md."
 }

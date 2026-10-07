@@ -6,6 +6,7 @@
 #include "GameFramework/Controller.h"
 #include "MeridianRemastered.h"
 #include "Misc/CommandLine.h"
+#include "Player/MRHUD.h"
 #include "Player/MRPlayerController.h"
 #include "Player/MRPlayerState.h"
 #include "Tests/MRZoneSmokeTest.h"
@@ -18,6 +19,7 @@ AMRGameMode::AMRGameMode()
 	PlayerStateClass = AMRPlayerState::StaticClass();
 	PlayerControllerClass = AMRPlayerController::StaticClass();
 	GameStateClass = AMRGameState::StaticClass();
+	HUDClass = AMRHUD::StaticClass();
 }
 
 void AMRGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
