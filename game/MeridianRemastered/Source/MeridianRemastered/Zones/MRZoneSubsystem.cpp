@@ -368,32 +368,51 @@ FVector UMRZoneSubsystem::GridToWorld(int32 Rid, int32 Row, int32 Col, bool bTra
 	FVector P = Z->Origin + MRUnits::GridToLocal(Row, Col);
 	if (bTraceFloor)
 	{
-		if (const UWorld* World = GetWorld())
-		{
-			// Walk down from high above: the first surface with standing room above it is the floor.
-			// Ceilings, roofs and rafters (hit from above) have another surface right over them.
-			constexpr double HeadroomCm = 190.0;
-			FCollisionQueryParams Params(SCENE_QUERY_STAT(MRGridToWorld), true);
-			FVector Start = P + FVector(0, 0, 5000.0);
-			const FVector End = P - FVector(0, 0, 5000.0);
-			FHitResult Hit, Above;
-			for (int32 i = 0; i < 8 && World->LineTraceSingleByChannel(Hit, Start, End, ECC_WorldStatic, Params); ++i)
-			{
-				const FVector Floor = Hit.ImpactPoint;
-				const bool bRoom = !World->LineTraceSingleByChannel(Above, Floor + FVector(0, 0, 5.0), Floor + FVector(0, 0, HeadroomCm),
-					ECC_WorldStatic, Params);
-				UE_LOG(LogMeridian, Verbose, TEXT("GridToWorld zone %d (%d,%d): hit z=%.0f on %s / %s%s"), Rid, Row, Col, Floor.Z,
-					*GetNameSafe(Hit.GetActor()), *GetNameSafe(Hit.GetComponent()), bRoom ? TEXT("") : TEXT(" (no headroom, looking lower)"));
-				P.Z = Floor.Z;
-				if (bRoom)
-				{
-					break;
-				}
-				Start = Floor - FVector(0, 0, 1.0);
-			}
-		}
+		TraceFloor(P);
 	}
 	return P;
+}
+
+bool UMRZoneSubsystem::TraceFloor(FVector& P, bool bLowest) const
+{
+	const UWorld* World = GetWorld();
+	if (!World)
+	{
+		return false;
+	}
+	// Walk down from high above: the first surface with standing room above it is the floor.
+	// Ceilings, roofs and rafters (hit from above) have another surface right over them.
+	constexpr double HeadroomCm = 190.0;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(MRGridToWorld), true);
+	FVector Start = P + FVector(0, 0, 5000.0);
+	const FVector End = P - FVector(0, 0, 5000.0);
+	FHitResult Hit, Above;
+	double Lowest = 0.0;
+	bool bFound = false;
+	for (int32 i = 0; i < (bLowest ? 16 : 8) && World->LineTraceSingleByChannel(Hit, Start, End, ECC_WorldStatic, Params); ++i)
+	{
+		const FVector Floor = Hit.ImpactPoint;
+		const bool bRoom = !World->LineTraceSingleByChannel(Above, Floor + FVector(0, 0, 5.0), Floor + FVector(0, 0, HeadroomCm),
+			ECC_WorldStatic, Params);
+		UE_LOG(LogMeridian, Verbose, TEXT("TraceFloor (%.0f, %.0f): hit z=%.0f on %s / %s%s"), P.X, P.Y, Floor.Z,
+			*GetNameSafe(Hit.GetActor()), *GetNameSafe(Hit.GetComponent()), bRoom ? TEXT("") : TEXT(" (no headroom, looking lower)"));
+		P.Z = Floor.Z;
+		if (bRoom && !bLowest)
+		{
+			return Hit.ImpactNormal.Z > 0.6;  // a floor, not a steep slope or a wall's top edge
+		}
+		if (bRoom && Hit.ImpactNormal.Z > 0.6)
+		{
+			Lowest = Floor.Z;
+			bFound = true;
+		}
+		Start = Floor - FVector(0, 0, 1.0);
+	}
+	if (bFound)
+	{
+		P.Z = Lowest;
+	}
+	return bFound;  // false: no floor with standing room (P.Z: the last surface hit, if any)
 }
 
 FIntPoint UMRZoneSubsystem::WorldToGrid(int32 Rid, const FVector& World) const

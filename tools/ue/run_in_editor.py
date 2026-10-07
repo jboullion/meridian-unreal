@@ -22,7 +22,7 @@ PROJECT_DIR = os.path.join(REPO, "game", "MeridianRemastered")
 DEFAULT_ENGINE = r"G:\Unreal Engine\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
 PASS_ENV = ("MR_MOOD", "MR_DISPLACEMENT_RANGE_CM")
 # lines worth echoing from the editor's output (everything goes to its log as usual)
-ECHO = ("[build_world]", "[build_cache]", "[environment_materials]", "[zone_mood]", "Error", "Traceback")
+ECHO = ("[build_world]", "[build_cache]", "[environment_materials]", "[zone_mood]", "[import_sprites]", "Error", "Traceback")
 NO_EDITOR = 3
 
 

@@ -59,4 +59,13 @@ private:
 	/** -MRLookDev environment captures. */
 	UPROPERTY()
 	TObjectPtr<class UMRLookDevTour> LookDevTour;
+
+	UPROPERTY()
+	TObjectPtr<class UMRSpriteClipTour> SpriteClipTour;
+
+	UPROPERTY()
+	TObjectPtr<class UMRSpriteNetTest> SpriteNetTest;
+
+	UPROPERTY()
+	TObjectPtr<class UMRMonsterTour> MonsterTour;
 };

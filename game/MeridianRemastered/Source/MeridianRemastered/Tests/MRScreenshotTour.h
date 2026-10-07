@@ -11,6 +11,8 @@ class APlayerController;
  * once the local character exists, takes a few screenshots from fixed viewpoints
  * (third person, first person ahead, first person looking down at the body, mid-swing attack
  * montages) into Saved/Screenshots/MRTour/, then quits. Combine with -MRStartZone=300 for daylight in Raza.
+ * With -MRSpriteBody the attacks are the sprite's (docs/sprites.md) and eight more shots orbit the
+ * character every 45 degrees (sprite_angle_<deg>). view_behind / view_front use the fixed cameras.
  */
 UCLASS()
 class MERIDIANREMASTERED_API UMRScreenshotTour : public UObject
@@ -30,6 +32,7 @@ private:
 		float YawOffset = 0.f;
 		FString Montage;          // played just before the capture, if set
 		float CaptureDelay = 1.5f; // seconds after positioning (or starting the montage)
+		int32 View = -1;           // an EMRViewMode to use instead of bFirstPerson (fixed cameras)
 	};
 
 	void Next();
@@ -37,5 +40,6 @@ private:
 	TWeakObjectPtr<APlayerController> Controller;
 	TArray<FShot> Shots;
 	int32 Index = -1;
+	bool bSpriteShotsAdded = false;
 	FTimerHandle Timer;
 };

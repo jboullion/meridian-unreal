@@ -9,7 +9,8 @@ class APlayerController;
 
 /**
  * Character cost measurement for the base-character spike (docs/adr/0002), run with -MRProfile
- * (add -MRRandomFaces to give every spawned character random head sliders)
+ * (add -MRRandomFaces to give every spawned character random head sliders; with -MRSpriteBody the
+ * crowd cycles through the sprite looks, turns 45 degrees per column and every third one dances)
  * on a rendering standalone game (usually with -MRStartZone=300 and -MRAppearance=<candidate>).
  *
  * For each crowd size (0, 1, 20, 50 extra characters wearing the current appearance) it spawns
