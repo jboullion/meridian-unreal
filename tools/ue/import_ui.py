@@ -89,7 +89,7 @@ def main():
         log("%s icons not built; using nearest" % icons)
         icons = "nearest"
     # tiled pieces: backgrounds and every frame's repeaters
-    tiles = ("bkgnd", "_top", "_bottom", "_left", "_right", "bar_top", "bar_bottom")
+    tiles = ("bkgnd", "_top", "_bottom", "_left", "_right", "bar_top", "bar_bottom", "tab_mid")
     n, k = import_folder(os.path.join(REPO, "build", "ui", "art", art), "/Game/Generated/UI/Art", "T_UI_", cache, art, tiles)
     log("art (%s): %d pieces, %d imported" % (art, n, k))
     n, k = import_folder(os.path.join(REPO, "build", "ui", "icons", icons), "/Game/Generated/UI/Icons", "T_Icon_", cache, icons)

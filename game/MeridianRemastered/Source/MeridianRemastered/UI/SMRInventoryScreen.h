@@ -82,6 +82,7 @@ public:
 	virtual FReply OnKeyDown(const FGeometry& Geo, const FKeyEvent& Event) override;
 	virtual FReply OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event) override;
 	virtual FReply OnMouseWheel(const FGeometry& Geo, const FPointerEvent& Event) override;
+	virtual FReply OnMouseMove(const FGeometry& Geo, const FPointerEvent& Event) override;
 	virtual void Tick(const FGeometry& Geo, const double Time, const float Dt) override;
 	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
 		int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const override;
@@ -107,4 +108,5 @@ private:
 	void RebuildSpells();
 	void RebuildSkills();
 	FText TabTitle() const;
+	static FText TitleOf(EMRInventoryTab InTab);
 };

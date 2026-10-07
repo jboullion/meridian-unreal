@@ -30,6 +30,9 @@ public:
 	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
 		int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const override;
 
+	/** Width of the transparent band around a cornered panel. */
+	static float CornerBand(class UMRUIStyle* Style);
+
 private:
 	TWeakObjectPtr<UMRUISubsystem> UI;
 	FName Background;

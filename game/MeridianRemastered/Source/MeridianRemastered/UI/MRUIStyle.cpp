@@ -47,6 +47,7 @@ void UMRUIStyle::Reload()
 		Json = MakeShared<FJsonObject>();
 	}
 	UIScale = Number(TEXT("ui_scale"), 2.f);
+	TextScale = Number(TEXT("text_scale"), 1.f);
 	Brushes.Reset();
 	Frames.Reset();
 	OnReloaded.Broadcast();
@@ -65,9 +66,9 @@ UTexture2D* UMRUIStyle::LoadTexture(const FString& Folder, const FString& Name)
 	return Tex;
 }
 
-const FSlateBrush* UMRUIStyle::Brush(FName Piece, bool bTile)
+const FSlateBrush* UMRUIStyle::Brush(FName Piece, bool bTile, float Scale)
 {
-	const FName Key(*FString::Printf(TEXT("%s%s"), *Piece.ToString(), bTile ? TEXT("#tile") : TEXT("")));
+	const FName Key(*FString::Printf(TEXT("%s%s@%.3f"), *Piece.ToString(), bTile ? TEXT("#tile") : TEXT(""), Scale));
 	if (const TSharedPtr<FSlateBrush>* Found = Brushes.Find(Key))
 	{
 		return Found->Get();
@@ -77,7 +78,7 @@ const FSlateBrush* UMRUIStyle::Brush(FName Piece, bool bTile)
 	if (Tex)
 	{
 		B = MakeShared<FSlateBrush>();
-		const FVector2f Size(Tex->GetSizeX() / float(ArtScale) * UIScale, Tex->GetSizeY() / float(ArtScale) * UIScale);
+		const FVector2f Size(Tex->GetSizeX() / float(ArtScale) * UIScale * Scale, Tex->GetSizeY() / float(ArtScale) * UIScale * Scale);
 		SetImage(*B, Tex, Size);
 		B->Tiling = bTile ? ESlateBrushTileType::Both : ESlateBrushTileType::NoTile;
 		UE_LOG(LogMeridian, Verbose, TEXT("UI brush %s: texture %dx%d, %.1f x %.1f units%s"), *Piece.ToString(), Tex->GetSizeX(), Tex->GetSizeY(),
@@ -143,10 +144,11 @@ const FMRFrameBrushes& UMRUIStyle::Frame(FName Name)
 		return *Found;
 	}
 	FMRFrameBrushes F;
+	const float Scale = FrameScale(Name);
 	for (int32 i = 0; i < FMRFrameBrushes::Num; ++i)
 	{
 		const FName Piece(*FString::Printf(TEXT("%s_%s"), *Name.ToString(), FrameSlots[i]));
-		F.Piece[i] = Brush(Piece, i >= FMRFrameBrushes::Top);
+		F.Piece[i] = Brush(Piece, i >= FMRFrameBrushes::Top, Scale);
 		F.Size[i] = F.Piece[i] ? FVector2f(F.Piece[i]->ImageSize) : FVector2f::ZeroVector;
 		F.bValid |= F.Piece[i] != nullptr;
 	}
@@ -183,7 +185,18 @@ float UMRUIStyle::Number(const TCHAR* Key, float Default) const
 
 FSlateFontInfo UMRUIStyle::Font(float Size, bool bBold) const
 {
-	return FCoreStyle::GetDefaultFontStyle(bBold ? TEXT("Bold") : TEXT("Regular"), Size * UIScale * 0.5f);
+	return FCoreStyle::GetDefaultFontStyle(bBold ? TEXT("Bold") : TEXT("Regular"), Size * UIScale * 0.5f * TextScale);
+}
+
+float UMRUIStyle::FrameScale(FName Name) const
+{
+	const TSharedPtr<FJsonObject>* Scales = nullptr;
+	double V = 1.0;
+	if (Json && Json->TryGetObjectField(TEXT("frame_scale"), Scales))
+	{
+		(*Scales)->TryGetNumberField(Name.ToString(), V);
+	}
+	return static_cast<float>(V);
 }
 
 // ------------------------------------------------------------------------------ painting
@@ -214,14 +227,19 @@ namespace MRPaint
 		Tile(Out, Layer, Geo, Brush, Pos, Size, Tint);
 	}
 
-	void Frame(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, const FMRFrameBrushes& F, FVector2f Pos, FVector2f Size, const FLinearColor& Tint)
+	void Frame(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, const FMRFrameBrushes& F, FVector2f Pos, FVector2f Size, const FLinearColor& Tint,
+		bool bCornerStrips, bool bRepeaters)
 	{
 		if (!F.bValid)
 		{
 			return;
 		}
 		using P = FMRFrameBrushes;
-		const FVector2f* S = F.Size;
+		FVector2f S[P::Num];
+		for (int32 i = 0; i < P::Num; ++i)
+		{
+			S[i] = bCornerStrips || i >= P::Top ? F.Size[i] : FVector2f::ZeroVector;
+		}
 		const float X0 = Pos.X, Y0 = Pos.Y, X1 = Pos.X + Size.X, Y1 = Pos.Y + Size.Y;
 		auto Draw = [&](int32 i, float X, float Y, float W, float H)
 		{
@@ -232,11 +250,18 @@ namespace MRPaint
 		const float BotX0 = X0 + FMath::Max(S[P::LL_H].X, S[P::LL_V].X), BotX1 = X1 - FMath::Max(S[P::LR_H].X, S[P::LR_V].X);
 		const float LefY0 = Y0 + S[P::UL_H].Y + S[P::UL_V].Y, LefY1 = Y1 - S[P::LL_H].Y - S[P::LL_V].Y;
 		const float RigY0 = Y0 + S[P::UR_H].Y + S[P::UR_V].Y, RigY1 = Y1 - S[P::LR_H].Y - S[P::LR_V].Y;
-		Draw(P::Top, TopX0, Y0, TopX1 - TopX0, S[P::Top].Y);
-		Draw(P::Bottom, BotX0, Y1 - S[P::Bottom].Y, BotX1 - BotX0, S[P::Bottom].Y);
-		Draw(P::Left, X0, LefY0, S[P::Left].X, LefY1 - LefY0);
-		Draw(P::Right, X1 - S[P::Right].X, RigY0, S[P::Right].X, RigY1 - RigY0);
+		if (bRepeaters)
+		{
+			Draw(P::Top, TopX0, Y0, TopX1 - TopX0, S[P::Top].Y);
+			Draw(P::Bottom, BotX0, Y1 - S[P::Bottom].Y, BotX1 - BotX0, S[P::Bottom].Y);
+			Draw(P::Left, X0, LefY0, S[P::Left].X, LefY1 - LefY0);
+			Draw(P::Right, X1 - S[P::Right].X, RigY0, S[P::Right].X, RigY1 - RigY0);
+		}
 		// corner strips: along the edge from the corner, and down the side below / above it
+		if (!bCornerStrips)
+		{
+			return;
+		}
 		auto Corner = [&](int32 i, float X, float Y)
 		{
 			Tile(Out, Layer + 1, Geo, F.Piece[i], FVector2f(X, Y), S[i], Tint);

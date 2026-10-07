@@ -34,7 +34,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, ImageOps
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
@@ -56,10 +56,11 @@ FRAMES = {
         "ul_h": "edgetreat_ultop", "ul_v": "edgetreat_ulleft", "ur_h": "edgetreat_urtop", "ur_v": "edgetreat_urright",
         "ll_h": "edgetreat_llbottom", "ll_v": "edgetreat_llleft", "lr_h": "edgetreat_lrbottom", "lr_v": "edgetreat_lrright",
         "top": "edgetreat_urepeat", "bottom": "edgetreat_brepeat", "left": "edgetreat_lrepeat", "right": "edgetreat_rrepeat"}),
-    # the wooden frame of the classic main view
-    "wood": (MERINTR, {
-        "ul_h": "ultop", "ul_v": "ulleft", "ur_h": "urtop", "ur_v": "urright",
-        "ll_h": "llbottom", "ll_v": "llleft", "lr_h": "lrbottom", "lr_v": "lrright",
+    # the 3D view's frame (merintr.rc IDB_ULTOP... are the viewtreat_* strips; ultop.bmp and its set
+    # are unused): an 8 px band outside the view, the gold-ball corners (view_ul...) inside it
+    "view": (MERINTR, {
+        "ul_h": "viewtreat_ul_top", "ul_v": "viewtreat_ul_left", "ur_h": "viewtreat_ur_top", "ur_v": "viewtreat_ur_right",
+        "ll_h": "viewtreat_ll_bottom", "ll_v": "viewtreat_ll_left", "lr_h": "viewtreat_lr_bottom", "lr_v": "viewtreat_lr_right",
         "top": "top", "bottom": "bottom", "left": "left", "right": "right"}),
     # the inventory pane's thin bevel
     "inv": (MERINTR, {
@@ -103,8 +104,14 @@ for _tab, _file in (("invent", "statbtn_left_invent"), ("spell", "statbtn_left_s
                     ("stats", "statbtn_left_stats"), ("quest", "statbtn_left_quest")):
     PIECES["tab_%s_up" % _tab] = (MERINTR, _file, False, (0, 0, 26, 20))
     PIECES["tab_%s_down" % _tab] = (MERINTR, _file, False, (26, 0, 52, 20))
-PIECES["tab_mid_up"] = (MERINTR, "statbtn_mid", False, (0, 0, 2, 20))
-PIECES["tab_mid_down"] = (MERINTR, "statbtn_mid", False, (2, 0, 4, 20))
+    # wide tabs: the button's left edge, then the icon without it (its top and bottom bevel match
+    # the middle filler's, so it sits anywhere along a stretched button)
+    PIECES["tab_%s_icon_up" % _tab] = (MERINTR, _file, False, (4, 0, 26, 20))
+    PIECES["tab_%s_icon_down" % _tab] = (MERINTR, _file, False, (30, 0, 52, 20))
+PIECES["tab_left_up"] = (MERINTR, "statbtn_left_invent", False, (0, 0, 4, 20))
+PIECES["tab_left_down"] = (MERINTR, "statbtn_left_invent", False, (26, 0, 30, 20))
+PIECES["tab_mid_up"] = (MERINTR, "statbtn_mid", True, (0, 0, 2, 20))
+PIECES["tab_mid_down"] = (MERINTR, "statbtn_mid", True, (2, 0, 4, 20))
 PIECES["tab_right_up"] = (MERINTR, "statbtn_right", False, (0, 0, 4, 20))
 PIECES["tab_right_down"] = (MERINTR, "statbtn_right", False, (4, 0, 8, 20))
 for _btn in ("cast", "map", "stand", "rest"):          # 72x36: two 36x36
@@ -252,6 +259,14 @@ def build(variant: str, cfg: dict) -> None:
             name = "%s_%s" % (frame, slot)
             pieces[name] = (load_rgba(folder, stem), slot in ("top", "bottom", "left", "right"))
             manifest["frames"][frame][slot] = name
+    # "inset": the inventory pane's bevel in the stone's grey instead of its brown (child windows)
+    manifest["frames"]["inset"] = {}
+    for slot, name in list(manifest["frames"]["inv"].items()):
+        im, tile = pieces[name]
+        grey = ImageOps.grayscale(im).point(lambda v: min(255, int(v * 1.15))).convert("RGBA")
+        grey.putalpha(im.getchannel("A"))
+        pieces["inset_" + slot] = (grey, tile)
+        manifest["frames"]["inset"][slot] = "inset_" + slot
     plain = {n: im for n, (im, _) in pieces.items()}
     derived(plain)
     for n in ("slot", "slot_selected"):

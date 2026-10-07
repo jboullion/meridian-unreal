@@ -49,8 +49,15 @@ The client drew no UI apart from the first-person hands (`AMRHUD`). We want a mo
 - **Minimap pictures** (see "Minimap captures" below).
 
 ### Choices made from images
-- **Art upscale**: `ai_ultrasharp` (4x-UltraSharpV2) for frames and icons. It keeps the stone grain without the nearest-neighbour blockiness. `nearest` and `ai_gtav` stay one switch away (`art_variant`, `icon_variant`). Sheets: `build/ui/review/ui_art_variants.png`, `ui_art_variants_zoom.png`.
-- **Minimap style**: `walls`, the picture with the original map's wall lines over it. `photo` and `parchment` stay one switch away (`minimap.json` `style`). Sheet: `build/minimap/review.png`.
+- **Art upscale** (chosen by the maintainer, 2026-10-07): `ai_gtav` (4xTextures_GTAV_rgt-s_dither) for frames and icons. It's closest to the original. `ai_ultrasharp` and `nearest` stay one switch away (`art_variant`, `icon_variant`). Sheets: `build/ui/review/ui_art_variants.png`, `ui_art_variants_zoom.png`.
+- **Minimap style** (chosen by the maintainer, 2026-10-07): `walls`, the picture with the original map's wall lines over it. `photo` and `parchment` stay one switch away (`minimap.json` `style`). Sheet: `build/minimap/review.png`.
+- **Sizes** (after the first play test, 2026-10-07):
+  - `ui_scale` 2.3, everything 15% bigger than the first pass.
+  - The dialog's iron frame at `frame_scale.edge` 0.7. At full size it was too heavy.
+  - The dialog is drawn like the original's 3D view (`SMRPanel` with corners). The view's frame (`merintr.rc` IDB_ULTOP...) is the `viewtreat_*` strips, drawn in an 8 px band outside the view; the 52×52 gold-ball corners (`clientd3d viewtreat_*`) sit inside it at the view's corners. Together they make one ornament that reaches outward. So the stone window sits inside a transparent band the corners reach into, and nothing is cut. The iron frame keeps its edges but not its own corners (one corner image). Both are sized by `frame_scale.view` (0.7). `ultop.bmp` and its set are unused by the original.
+  - Text grows by `text_scale` 1.41 (25% more after the second play test). The spell list's icons are 10% bigger (`list_slot_px` 20), and its whole row shows the spell's tooltip. The tooltip has more padding (`tooltip_padding_px`).
+- **Child windows** (bag, hotbar, tab pages, avatar) use the grey "inset" frame and the dark stone. "inset" is the inventory pane's bevel in grey; `build_ui_art.py` makes it from the brown original. The tab pages fill the dialog's height.
+- **Tooltips** use the dialog's dark stone and iron frame.
 
 ## Minimap captures
 An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `tools/ue/run_map_capture.ps1`). A headless editor can't open `L_World`.

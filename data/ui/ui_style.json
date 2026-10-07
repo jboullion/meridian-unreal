@@ -1,17 +1,26 @@
 {
-  "_doc": "The in-game UI's look (docs/adr/0009-user-interface.md). Read by tools/ui/*.py, tools/ue/import_ui.py and the game (UMRUIStyle); MRUIReload in the console re-reads it (sizes and colours; a new art variant needs tools/ue/import_ui.ps1). Sizes are in original-client pixels; ui_scale turns them into Slate units at 1080p (the engine's DPI curve scales from there).",
-  "art_variant": "ai_ultrasharp",
-  "icon_variant": "ai_ultrasharp",
+  "_doc": "The in-game UI's look (docs/adr/0009-user-interface.md). Read by tools/ui/*.py, tools/ue/import_ui.py and the game (UMRUIStyle); MRUIReload in the console re-reads it (sizes and colours; a new art variant needs tools/ue/import_ui.ps1). Sizes are in original-client pixels; ui_scale turns them into Slate units at 1080p (the engine's DPI curve scales from there). text_scale multiplies every font on top of ui_scale. frame_scale sizes a frame's pieces (edge: the dialog's iron border; view: the gold-ball corners and the transparent band they reach into, as around the original's 3D view).",
+  "art_variant": "ai_gtav",
+  "icon_variant": "ai_gtav",
   "art_variants": {
     "nearest": {},
-    "ai_ultrasharp": {"model": "4x-UltraSharpV2"},
-    "ai_gtav": {"model": "4xTextures_GTAV_rgt-s_dither"}
+    "ai_ultrasharp": {
+      "model": "4x-UltraSharpV2"
+    },
+    "ai_gtav": {
+      "model": "4xTextures_GTAV_rgt-s_dither"
+    }
   },
-  "ui_scale": 2.0,
+  "ui_scale": 2.3,
+  "text_scale": 1.41,
+  "frame_scale": {
+    "edge": 0.7,
+    "view": 0.7
+  },
   "numbers": {
     "slot_px": 22,
     "spell_slot_px": 20,
-    "list_slot_px": 18,
+    "list_slot_px": 20,
     "bar_px": 9,
     "vigor_bar_px": 5,
     "hotbar_bottom": 6,
@@ -24,7 +33,9 @@
     "minimap_arrow_scale": 1.0,
     "item_name_seconds": 2.0,
     "slot_hint_opacity": 0.35,
-    "scrollbar_px": 6
+    "scrollbar_px": 6,
+    "tooltip_padding_px": 7,
+    "tooltip_width_px": 170
   },
   "colors": {
     "text": "FFEDB2",

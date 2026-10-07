@@ -32,37 +32,54 @@ void SMRPanel::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 		const FMargin Inset = Style->Frame(Frame).Inset;
 		Pad = Pad + Inset;
 	}
+	if (Style && bCorners)
+	{
+		Pad = Pad + FMargin(CornerBand(Style));
+	}
 	ChildSlot.Padding(Pad)[InArgs._Content.Widget];
+}
+
+float SMRPanel::CornerBand(UMRUIStyle* Style)
+{
+	// the 3D view treatment's outer strips (viewtreat_ul_top...) are its frame's thickness
+	return Style->Frame(TEXT("view")).Size[FMRFrameBrushes::UL_V].X;
 }
 
 int32 SMRPanel::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
 	int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const
 {
 	UMRUIStyle* Style = UI.IsValid() ? UI->GetStyle() : nullptr;
-	const FVector2f Size(Geo.GetLocalSize());
+	const FVector2f Outer(Geo.GetLocalSize());
 	const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
+	// a cornered panel is drawn like the original 3D view: the window inside a transparent band
+	// that the gold-ball corners reach into (drawint.c ELEMENT_ULTOP..., draw3d.c the corners)
+	const float Band = Style && bCorners ? CornerBand(Style) : 0.f;
+	const FVector2f Pos(Band, Band);
+	const FVector2f Size = Outer - 2.f * Pos;
 	if (Style)
 	{
 		if (!Background.IsNone())
 		{
-			MRPaint::Tile(Out, Layer, Geo, Style->Brush(Background, true), FVector2f::ZeroVector, Size, Tint * BackgroundTint);
+			MRPaint::Tile(Out, Layer, Geo, Style->Brush(Background, true), Pos, Size, Tint * BackgroundTint);
 		}
 		if (!Frame.IsNone())
 		{
-			MRPaint::Frame(Out, Layer + 1, Geo, Style->Frame(Frame), FVector2f::ZeroVector, Size, Tint);
+			// with the gold corners, the frame's own corner strips are left out (one corner image)
+			MRPaint::Frame(Out, Layer + 1, Geo, Style->Frame(Frame), Pos, Size, Tint, !bCorners);
 		}
 	}
 	int32 MaxLayer = SCompoundWidget::OnPaint(Args, Geo, Culling, Out, Layer + 3, WStyle, bParentEnabled);
 	if (Style && bCorners)
 	{
-		// the gargoyle corners of the original 3D view, over the frame
+		// the gold-ball corners at the window's corners, and their outer strips in the band
 		const int32 L = MaxLayer + 1;
-		const FVector2f C = Style->PieceSize(TEXT("view_ul"));
-		MRPaint::Box(Out, L, Geo, Style->Brush(TEXT("view_ul")), FVector2f::ZeroVector, C, Tint);
-		MRPaint::Box(Out, L, Geo, Style->Brush(TEXT("view_ur")), FVector2f(Size.X - C.X, 0.f), C, Tint);
-		MRPaint::Box(Out, L, Geo, Style->Brush(TEXT("view_ll")), FVector2f(0.f, Size.Y - C.Y), C, Tint);
-		MRPaint::Box(Out, L, Geo, Style->Brush(TEXT("view_lr")), Size - C, C, Tint);
-		MaxLayer = L;
+		const FVector2f C = Style->PieceSize(TEXT("view_ul")) * Style->FrameScale(TEXT("view"));
+		MRPaint::Box(Out, L, Geo, Style->Brush(TEXT("view_ul")), Pos, C, Tint);
+		MRPaint::Box(Out, L, Geo, Style->Brush(TEXT("view_ur")), Pos + FVector2f(Size.X - C.X, 0.f), C, Tint);
+		MRPaint::Box(Out, L, Geo, Style->Brush(TEXT("view_ll")), Pos + FVector2f(0.f, Size.Y - C.Y), C, Tint);
+		MRPaint::Box(Out, L, Geo, Style->Brush(TEXT("view_lr")), Pos + Size - C, C, Tint);
+		MRPaint::Frame(Out, L, Geo, Style->Frame(TEXT("view")), FVector2f::ZeroVector, Outer, Tint, true, false);
+		MaxLayer = L + 1;
 	}
 	return MaxLayer;
 }
@@ -169,7 +186,16 @@ int32 SMRCursorStack::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, cons
 	{
 		return Layer;
 	}
-	const FVector2f Mouse = FVector2f(Geo.AbsoluteToLocal(FSlateApplication::Get().GetCursorPos()));
+	// the position from the UI's own mouse events (the same space hit testing uses): the platform
+	// cursor position doesn't match the game viewport's in every setup (an editor PIE window)
+	FVector2D Screen;
+	if (!Ui->GetMouse(Screen))
+	{
+		Screen = FSlateApplication::Get().GetCursorPos();
+	}
+	// events are in tick space; converting with the paint geometry (Geo) is off wherever the two
+	// differ (an editor viewport): local coordinates are the same in both
+	const FVector2f Mouse = FVector2f(GetTickSpaceGeometry().AbsoluteToLocal(Screen));
 	const float S = Style->Px(22.f) * 0.9f;
 	const FVector2f Pos = Mouse - FVector2f(S, S) * 0.5f;
 	MRPaint::Box(Out, Layer, Geo, Ui->IconFor(C), Pos, FVector2f(S, S));
@@ -339,7 +365,7 @@ TSharedRef<SWidget> SMRHUDRoot::MakeHotbarArea()
 		]
 		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 		[
-			SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inv")).Padding(1.f)
+			SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(1.f)
 			[
 				Slots
 			]
@@ -363,7 +389,7 @@ TSharedRef<SWidget> SMRHUDRoot::MakeSpellBar()
 			SNew(SMRSlot, Ui, FMRSlotRef(EMRSlotArea::SpellBar, i)).Size(SlotPx).KeyLabel(FString::FromInt(i + 1))
 		];
 	}
-	return SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inv")).Padding(1.f)
+	return SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(1.f)
 	[
 		Grid
 	];

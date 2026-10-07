@@ -33,6 +33,7 @@ public:
 	virtual FReply OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event) override;
 	virtual FReply OnMouseButtonUp(const FGeometry& Geo, const FPointerEvent& Event) override;
 	virtual FReply OnMouseButtonDoubleClick(const FGeometry& Geo, const FPointerEvent& Event) override;
+	virtual FReply OnMouseMove(const FGeometry& Geo, const FPointerEvent& Event) override;
 	virtual void OnMouseEnter(const FGeometry& Geo, const FPointerEvent& Event) override;
 	virtual void OnMouseLeave(const FPointerEvent& Event) override;
 	virtual TSharedPtr<IToolTip> GetToolTip() override;

@@ -90,7 +90,7 @@ int32 SMRAvatar::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSl
 		Brush.SetUVRegion(FBox2f(FVector2f(U0, 0.f), FVector2f(1.f - U0, 1.f)));
 		MRPaint::Box(Out, Layer + 1, Geo, &Brush, FVector2f::ZeroVector, S, Tint);
 	}
-	MRPaint::Frame(Out, Layer + 2, Geo, Style->Frame(TEXT("inv")), FVector2f::ZeroVector, S, Tint);
+	MRPaint::Frame(Out, Layer + 2, Geo, Style->Frame(TEXT("inset")), FVector2f::ZeroVector, S, Tint);
 	return Layer + 4;
 }
 
@@ -141,7 +141,7 @@ FVector2D SMRTab::ComputeDesiredSize(float) const
 {
 	UMRUIStyle* Style = UI.IsValid() ? UI->GetStyle() : nullptr;
 	const FVector2f S = Style ? Style->PieceSize(FName(*FString::Printf(TEXT("tab_%s_up"), *Art.ToString()))) : FVector2f::ZeroVector;
-	return S.IsNearlyZero() ? FVector2D(52.f, 40.f) : FVector2D(S);
+	return S.IsNearlyZero() ? FVector2D(52.f, 40.f) : FVector2D(S.X + 8.f * Style->Px(), S.Y);  // stretched wider by the row
 }
 
 int32 SMRTab::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
@@ -152,10 +152,22 @@ int32 SMRTab::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlate
 	{
 		return Layer;
 	}
+	// the original's stat button stretched: its left edge, the middle filler tiled, the right cap,
+	// and the icon (with the button's top and bottom bevel) in the middle
 	const bool bDown = bActive.Get();
-	const FName Piece(*FString::Printf(TEXT("tab_%s_%s"), *Art.ToString(), bDown ? TEXT("down") : TEXT("up")));
+	const TCHAR* State = bDown ? TEXT("down") : TEXT("up");
 	const FVector2f S(Geo.GetLocalSize());
-	MRPaint::Box(Out, Layer, Geo, Style->Brush(Piece), FVector2f::ZeroVector, S, WStyle.GetColorAndOpacityTint());
+	const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
+	const FName LeftName(*FString::Printf(TEXT("tab_left_%s"), State)), MidName(*FString::Printf(TEXT("tab_mid_%s"), State));
+	const FName RightName(*FString::Printf(TEXT("tab_right_%s"), State));
+	const FName IconName(*FString::Printf(TEXT("tab_%s_icon_%s"), *Art.ToString(), State));
+	// everything scaled to the row's height
+	const float K = S.Y / FMath::Max(1.f, Style->PieceSize(MidName).Y);
+	const FVector2f L = Style->PieceSize(LeftName) * K, R = Style->PieceSize(RightName) * K, I = Style->PieceSize(IconName) * K;
+	MRPaint::Box(Out, Layer, Geo, Style->Brush(LeftName), FVector2f::ZeroVector, L, Tint);
+	MRPaint::Tile(Out, Layer, Geo, Style->Brush(MidName, true, K), FVector2f(L.X, 0.f), FVector2f(S.X - L.X - R.X, S.Y), Tint);
+	MRPaint::Box(Out, Layer, Geo, Style->Brush(RightName), FVector2f(S.X - R.X, 0.f), R, Tint);
+	MRPaint::Box(Out, Layer + 1, Geo, Style->Brush(IconName), FVector2f((S.X - I.X) * 0.5f, 0.f), I, Tint);
 	if (IsHovered() && !bDown)
 	{
 		MRPaint::Box(Out, Layer + 1, Geo, Style->White(), FVector2f::ZeroVector, S, FLinearColor(1.f, 1.f, 1.f, 0.12f));
@@ -185,17 +197,14 @@ void SMRInventoryScreen::Construct(const FArguments& InArgs, UMRUISubsystem* InU
 	for (int32 i = 0; i < static_cast<int32>(EMRInventoryTab::Count); ++i)
 	{
 		const EMRInventoryTab T = static_cast<EMRInventoryTab>(i);
-		Tabs->AddSlot().AutoWidth().Padding(0.f, 0.f, 2.f * Px, 0.f)
+		// the five buttons share the row, icons centred (the page's name is the tooltip)
+		Tabs->AddSlot().FillWidth(1.f).Padding(i > 0 ? 2.f * Px : 0.f, 0.f, 0.f, 0.f)
 		[
-			SNew(SMRTab, InUI).Art(TabArt[i])
+			SNew(SMRTab, InUI).Art(TabArt[i]).ToolTipText(TitleOf(T))
 				.bActive_Lambda([this, T]() { return Tab == T; })
 				.OnClicked_Lambda([this, T]() { SetTab(T); })
 		];
 	}
-	Tabs->AddSlot().FillWidth(1.f).HAlign(HAlign_Right).VAlign(VAlign_Center).Padding(4.f * Px, 0.f, 2.f * Px, 0.f)
-	[
-		Label(S, TAttribute<FText>::CreateSP(this, &SMRInventoryScreen::TabTitle), 13.f, true)
-	];
 
 	// every page stacked (the hidden ones still take space), so the window keeps one size across tabs
 	TSharedRef<SOverlay> Stack = SNew(SOverlay);
@@ -203,7 +212,8 @@ void SMRInventoryScreen::Construct(const FArguments& InArgs, UMRUISubsystem* InU
 	for (int32 i = 0; i < UE_ARRAY_COUNT(PageWidgets); ++i)
 	{
 		const EMRInventoryTab T = static_cast<EMRInventoryTab>(i);
-		Stack->AddSlot().HAlign(HAlign_Center).VAlign(VAlign_Top)
+		// the other pages fill the space the inventory page takes (their windows span the dialog)
+		Stack->AddSlot().HAlign(HAlign_Fill).VAlign(VAlign_Fill)
 		[
 			SNew(SBox).Visibility_Lambda([this, T]() { return Tab == T ? EVisibility::Visible : EVisibility::Hidden; })
 			[
@@ -237,7 +247,12 @@ void SMRInventoryScreen::Construct(const FArguments& InArgs, UMRUISubsystem* InU
 
 FText SMRInventoryScreen::TabTitle() const
 {
-	switch (Tab)
+	return TitleOf(Tab);
+}
+
+FText SMRInventoryScreen::TitleOf(EMRInventoryTab InTab)
+{
+	switch (InTab)
 	{
 	case EMRInventoryTab::Inventory: return LOCTEXT("Inventory", "Inventory");
 	case EMRInventoryTab::Spells: return LOCTEXT("Spells", "Spells");
@@ -332,7 +347,7 @@ TSharedRef<SWidget> SMRInventoryScreen::MakeInventoryPage()
 		]
 		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 4.f * Px, 0.f, 0.f)
 		[
-			SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inv")).Padding(0.f)
+			SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(0.f)
 			[
 				SNew(SBox).HeightOverride(SlotPx * BagRowsVisible * Px).WidthOverride(SlotPx * Columns * Px + Scroll)
 				[
@@ -346,7 +361,7 @@ TSharedRef<SWidget> SMRInventoryScreen::MakeInventoryPage()
 		]
 		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 4.f * Px, 0.f, 0.f)
 		[
-			SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inv")).Padding(0.f)
+			SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(0.f)
 			[
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot().AutoWidth()[HotbarRow]
@@ -385,9 +400,9 @@ TSharedRef<SWidget> SMRInventoryScreen::MakeSpellsPage()
 	const float Px = S->Px();
 	const float SlotPx = S->Number(TEXT("slot_px"), 22.f);
 	SpellList = SNew(SVerticalBox);
-	return SNew(SMRPanel, UI.Get()).Background(TEXT("invbkgnd")).Frame(TEXT("inv")).Padding(2.f)
+	return SNew(SMRPanel, UI.Get()).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(2.f)
 	[
-		SNew(SBox).HeightOverride(SlotPx * 8.f * Px).WidthOverride(SlotPx * Columns * Px)
+		SNew(SBox).MaxDesiredHeight(SlotPx * 2.f * Px).MaxDesiredWidth(SlotPx * 2.f * Px)
 		[
 			SNew(SScrollBox).ScrollBarThickness(FVector2D(6.f * Px, 6.f * Px))
 			+ SScrollBox::Slot()[SpellList.ToSharedRef()]
@@ -453,20 +468,23 @@ void SMRInventoryScreen::RebuildSpells()
 		}
 		const FText Info = FText::Format(LOCTEXT("SpellInfo", "Level {0}  ·  {1} mana{2}"), FText::AsNumber(Def->Level), FText::AsNumber(Def->Mana),
 			Reagents.IsEmpty() ? FText::GetEmpty() : FText::FromString(TEXT("  ·  ") + Reagents));
+		// the whole row shows the spell's tooltip, not only its icon
+		TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
+		Row->SetToolTip(Ui->MakeToolTip(FMRSlotContent::Spell(Known[i])));
 		SpellList->AddSlot().AutoHeight().Padding(2.f * Px, 1.f * Px)
 		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot().AutoWidth()
+			Row
+		];
+		Row->AddSlot().AutoWidth()
 			[
 				SNew(SMRSlot, Ui, FMRSlotRef(EMRSlotArea::SpellBook, i)).Size(SlotPx)
-			]
-			+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(4.f * Px, 0.f, 0.f, 0.f)
+			];
+		Row->AddSlot().FillWidth(1.f).VAlign(VAlign_Center).Padding(4.f * Px, 0.f, 0.f, 0.f)
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().AutoHeight()[Label(S, Def->Name, 10.f, true)]
 				+ SVerticalBox::Slot().AutoHeight()[Label(S, Info, 7.5f, false, FLinearColor(0.78f, 0.76f, 0.7f))]
-			]
-		];
+			];
 	}
 	SpellList->AddSlot().AutoHeight().Padding(2.f * Px, 6.f * Px, 2.f * Px, 2.f * Px)
 	[
@@ -481,9 +499,9 @@ TSharedRef<SWidget> SMRInventoryScreen::MakeSkillsPage()
 	const float Px = S->Px();
 	const float SlotPx = S->Number(TEXT("slot_px"), 22.f);
 	SkillList = SNew(SVerticalBox);
-	return SNew(SMRPanel, UI.Get()).Background(TEXT("invbkgnd")).Frame(TEXT("inv")).Padding(2.f)
+	return SNew(SMRPanel, UI.Get()).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(2.f)
 	[
-		SNew(SBox).HeightOverride(SlotPx * 8.f * Px).WidthOverride(SlotPx * Columns * Px)
+		SNew(SBox).MaxDesiredHeight(SlotPx * 2.f * Px).MaxDesiredWidth(SlotPx * 2.f * Px)
 		[
 			SNew(SScrollBox).ScrollBarThickness(FVector2D(6.f * Px, 6.f * Px))
 			+ SScrollBox::Slot()[SkillList.ToSharedRef()]
@@ -626,10 +644,9 @@ TSharedRef<SWidget> SMRInventoryScreen::MakeStatsPage()
 			SNew(SMRBar, Ui).Width(SlotPx * Columns - 20.f).Height(9.f).Value(Get(P.Value)).Max(Get(P.Max)).Color(S->Color(P.Color, P.Default))
 		];
 	}
-	return SNew(SMRPanel, Ui).Background(TEXT("statbgnd")).Frame(TEXT("stat")).Padding(2.f)
-		.BackgroundTint(S->Color(TEXT("stats_tint"), FLinearColor(0.55f, 0.5f, 0.45f)))
+	return SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(2.f)
 	[
-		SNew(SBox).HeightOverride(SlotPx * 8.f * Px).WidthOverride(SlotPx * Columns * Px)
+		SNew(SBox).MaxDesiredHeight(SlotPx * 2.f * Px).MaxDesiredWidth(SlotPx * 2.f * Px)
 		[
 			Box
 		]
@@ -641,16 +658,20 @@ TSharedRef<SWidget> SMRInventoryScreen::MakeQuestsPage()
 	UMRUIStyle* S = UI->GetStyle();
 	const float Px = S->Px();
 	const float SlotPx = S->Number(TEXT("slot_px"), 22.f);
-	return SNew(SMRPanel, UI.Get()).Background(TEXT("invbkgnd")).Frame(TEXT("inv")).Padding(2.f)
+	TSharedRef<STextBlock> Help = Label(S, LOCTEXT("QuestHelp", "Quests you take from the people of Meridian will be listed here."), 8.f, false,
+		FLinearColor(0.75f, 0.73f, 0.68f));
+	Help->SetAutoWrapText(true);
+	Help->SetJustification(ETextJustify::Center);
+	return SNew(SMRPanel, UI.Get()).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(2.f)
 	[
-		SNew(SBox).HeightOverride(SlotPx * 8.f * Px).WidthOverride(SlotPx * Columns * Px).HAlign(HAlign_Center).VAlign(VAlign_Center)
+		SNew(SBox).MaxDesiredHeight(SlotPx * 2.f * Px).MaxDesiredWidth(SlotPx * 2.f * Px).HAlign(HAlign_Fill).VAlign(VAlign_Center)
+		.Padding(12.f * Px, 0.f)
 		[
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[Label(S, LOCTEXT("NoQuests", "No quests yet"), 12.f, true)]
-			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 4.f * Px)
+			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Fill).Padding(0.f, 4.f * Px)
 			[
-				Label(S, LOCTEXT("QuestHelp", "Quests you take from the people of Meridian will be listed here."), 8.f, false,
-					FLinearColor(0.75f, 0.73f, 0.68f))
+				Help
 			]
 		]
 	];
@@ -719,11 +740,24 @@ FReply SMRInventoryScreen::OnKeyDown(const FGeometry& Geo, const FKeyEvent& Even
 FReply SMRInventoryScreen::OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event)
 {
 	UMRUISubsystem* Ui = UI.Get();
+	if (Ui)
+	{
+		Ui->NoteMouse(Event.GetScreenSpacePosition());
+	}
 	if (Ui && Window.IsValid() && !Window->GetTickSpaceGeometry().IsUnderLocation(Event.GetScreenSpacePosition()))
 	{
 		Ui->OnClickOutside(Event.GetEffectingButton() == EKeys::RightMouseButton);
 	}
 	return FReply::Handled();  // never through to the game (no attacks while the window is open)
+}
+
+FReply SMRInventoryScreen::OnMouseMove(const FGeometry& Geo, const FPointerEvent& Event)
+{
+	if (UI.IsValid())
+	{
+		UI->NoteMouse(Event.GetScreenSpacePosition());
+	}
+	return FReply::Unhandled();
 }
 
 FReply SMRInventoryScreen::OnMouseWheel(const FGeometry& Geo, const FPointerEvent& Event)

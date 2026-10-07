@@ -104,6 +104,7 @@ FReply SMRSlot::OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Eve
 	{
 		return FReply::Unhandled();
 	}
+	UI->NoteMouse(Event.GetScreenSpacePosition());
 	UI->OnSlotMouseDown(SlotRef, bRight, Event.IsShiftDown());
 	return FReply::Handled();
 }
@@ -122,6 +123,15 @@ FReply SMRSlot::OnMouseButtonUp(const FGeometry& Geo, const FPointerEvent& Event
 	}
 	UI->OnSlotMouseUp(SlotRef);
 	return FReply::Handled();
+}
+
+FReply SMRSlot::OnMouseMove(const FGeometry& Geo, const FPointerEvent& Event)
+{
+	if (UI.IsValid())
+	{
+		UI->NoteMouse(Event.GetScreenSpacePosition());  // for the carried stack (the spell bar is outside the dialog)
+	}
+	return FReply::Unhandled();
 }
 
 void SMRSlot::OnMouseEnter(const FGeometry& Geo, const FPointerEvent& Event)

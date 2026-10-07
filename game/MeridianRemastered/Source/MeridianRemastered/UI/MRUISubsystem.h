@@ -55,6 +55,9 @@ public:
 	void OnSlotMouseUp(const FMRSlotRef& Slot);
 	void SetHoveredSlot(const FMRSlotRef& Slot, bool bHovered);
 	const FMRSlotRef& GetHoveredSlot() const { return HoveredSlot; }
+	/** The mouse's last position as the UI's events saw it (absolute): the carried stack is drawn there. */
+	void NoteMouse(const FVector2D& ScreenSpace) { MouseScreen = ScreenSpace; bHasMouse = true; }
+	bool GetMouse(FVector2D& OutScreenSpace) const { OutScreenSpace = MouseScreen; return bHasMouse; }
 	/** Clicked outside the dialog window. */
 	void OnClickOutside(bool bRight);
 
@@ -66,7 +69,7 @@ public:
 	APlayerController* GetPlayerController() const;
 	const FSlateBrush* IconFor(const FMRSlotContent& Content) const;
 	FText NameFor(const FMRSlotContent& Content) const;
-	TSharedPtr<IToolTip> MakeToolTip(const FMRSlotContent& Content) const;
+	TSharedPtr<IToolTip> MakeToolTip(const FMRSlotContent& Content);
 	/** Spell bar cooldown left (0..1) after a cast. */
 	float SpellCooldown(int32 Index) const;
 	/** Seconds since the spell bar was last used (it shows fully for a moment). */
@@ -108,6 +111,8 @@ private:
 	float MapZoom = 1.f;
 
 	TMap<uint32, FVector2f> SlotCentres;
+	FVector2D MouseScreen = FVector2D::ZeroVector;
+	bool bHasMouse = false;
 	static uint32 SlotKey(const FMRSlotRef& Slot) { return (static_cast<uint32>(Slot.Area) << 16) | static_cast<uint32>(Slot.Index & 0xFFFF); }
 
 	void ApplyInputMode();

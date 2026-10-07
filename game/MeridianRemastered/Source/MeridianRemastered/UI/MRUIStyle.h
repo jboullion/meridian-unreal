@@ -47,7 +47,7 @@ public:
 	float Px(float OriginalPixels) const { return OriginalPixels * UIScale; }
 
 	/** A piece of the original interface art (T_UI_<piece>), or null if it isn't imported. */
-	const FSlateBrush* Brush(FName Piece, bool bTile = false);
+	const FSlateBrush* Brush(FName Piece, bool bTile = false, float Scale = 1.f);
 	/** An item / spell / skill icon (T_Icon_<bgf>), or null. */
 	const FSlateBrush* Icon(FName IconName);
 	/** Make sure a texture's real size is known (uncooked textures build asynchronously). */
@@ -61,6 +61,8 @@ public:
 	FLinearColor Color(const TCHAR* Key, const FLinearColor& Default = FLinearColor::White) const;
 	float Number(const TCHAR* Key, float Default) const;
 	FSlateFontInfo Font(float Size, bool bBold = false) const;
+	/** A per-frame size factor from ui_style.json "frame_scale" (1 if not given). */
+	float FrameScale(FName Name) const;
 	/** A plain white brush for tinted fills (bars, highlights). */
 	const FSlateBrush* White() const { return &WhiteBrush; }
 
@@ -69,6 +71,7 @@ public:
 private:
 	TSharedPtr<FJsonObject> Json;
 	float UIScale = 2.f;
+	float TextScale = 1.f;
 	int32 ArtScale = 4;  // art texels per original pixel (tools/ui/build_ui_art.py SCALE)
 
 	UPROPERTY(Transient)
@@ -89,9 +92,12 @@ namespace MRPaint
 	/** A brush stretched over a box. */
 	MERIDIANREMASTERED_API void Box(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, const FSlateBrush* Brush,
 		FVector2f Pos, FVector2f Size, const FLinearColor& Tint = FLinearColor::White);
-	/** A frame over a box: repeaters between the corner strips, corners on top. */
+	/**
+	 * A frame over a box: repeaters between the corner strips, corners on top. Without corner
+	 * strips (bCornerStrips false) the repeaters run the whole edges: another corner piece covers them.
+	 */
 	MERIDIANREMASTERED_API void Frame(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, const FMRFrameBrushes& Frame,
-		FVector2f Pos, FVector2f Size, const FLinearColor& Tint = FLinearColor::White);
+		FVector2f Pos, FVector2f Size, const FLinearColor& Tint = FLinearColor::White, bool bCornerStrips = true, bool bRepeaters = true);
 	/** Text with a one-pixel shadow (Minecraft-style legibility over the world). */
 	MERIDIANREMASTERED_API void Text(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, const FString& Text,
 		const FSlateFontInfo& Font, FVector2f Pos, const FLinearColor& Color, float Shadow = 1.f);

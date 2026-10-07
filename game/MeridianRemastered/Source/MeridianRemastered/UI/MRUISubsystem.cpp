@@ -1,6 +1,7 @@
 #include "UI/MRUISubsystem.h"
 
 #include "Abilities/MRAttributeSet.h"
+#include "Brushes/SlateNoResource.h"
 #include "Character/MRCharacter.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/LocalPlayer.h"
@@ -354,7 +355,7 @@ FText UMRUISubsystem::NameFor(const FMRSlotContent& C) const
 	return Item ? Item->Name : FText::FromName(C.Id);
 }
 
-TSharedPtr<IToolTip> UMRUISubsystem::MakeToolTip(const FMRSlotContent& C) const
+TSharedPtr<IToolTip> UMRUISubsystem::MakeToolTip(const FMRSlotContent& C)
 {
 	UMRUIStyle* S = GetStyle();
 	UMRGameDataSubsystem* Data = GetData();
@@ -396,16 +397,21 @@ TSharedPtr<IToolTip> UMRUISubsystem::MakeToolTip(const FMRSlotContent& C) const
 		return SNew(STextBlock).Text(T).Font(S->Font(Size, bBold)).ColorAndOpacity(Color).AutoWrapText(true)
 			.ShadowOffset(FVector2D(1.0, 1.0) * Px * 0.5).ShadowColorAndOpacity(FLinearColor(0.f, 0.f, 0.f, 0.85f));
 	};
+	// the dialog's look: dark stone in the iron-and-vine frame (the tooltip's own border is empty)
+	static const FSlateNoResource NoBorder;
 	return SNew(SToolTip)
-		.BorderImage(S->Brush(TEXT("invbkgnd"), true))
-		.TextMargin(FMargin(5.f * Px))
+		.BorderImage(&NoBorder)
+		.TextMargin(FMargin(0.f))
 		[
-			SNew(SBox).MaxDesiredWidth(150.f * Px)
+			SNew(SMRPanel, this).Background(TEXT("invbkgnd")).Frame(TEXT("edge")).Padding(S->Number(TEXT("tooltip_padding_px"), 7.f))
 			[
-				SNew(SVerticalBox)
-				+ SVerticalBox::Slot().AutoHeight()[Text(NameFor(C), 11.f, true, Title)]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 2.f * Px)[Text(Line, 8.f, false, Detail)]
-				+ SVerticalBox::Slot().AutoHeight()[Text(Desc, 8.5f, false, Body)]
+				SNew(SBox).MaxDesiredWidth(S->Number(TEXT("tooltip_width_px"), 170.f) * Px)
+				[
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight()[Text(NameFor(C), 11.f, true, Title)]
+					+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 2.f * Px)[Text(Line, 8.f, false, Detail)]
+					+ SVerticalBox::Slot().AutoHeight()[Text(Desc, 8.5f, false, Body)]
+				]
 			]
 		];
 }
