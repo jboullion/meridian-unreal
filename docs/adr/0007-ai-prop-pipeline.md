@@ -329,6 +329,19 @@ Implementation is paused here; the next session picks up from this list.
 3. Regenerate the rest of Raza with the new defaults (4000, original angles where they exist): about 45 credits a prop.
 4. The API backend (V3) when the wallet is topped up, so runs need no browser.
 
+## Interior fill and albedo (2026-10-07)
+The user found the Inn's round table "very bright, possibly glowing" next to the original's dark wood (`ReferenceImages/sprites/lighting-examples/`).
+
+What was going on:
+- `M_PropTextured` adds the interiors' ambient floor as emissive with `SectorLight` fixed at 1. The walls and floors take their sector's original light from the blockout's vertex colour: 0.20–0.25 in the Inn. So props got 4–5× the walls' fill.
+- But that wasn't what made the table read as glowing. At 1.5× and 2.5× the sector light, it looked the same. The table's Tripo texture is a light, saturated orange: its mean linear colour is about 1.7× the original sprite's.
+
+Decisions:
+- **Sector light per prop.** `build_world.py` reads the light of the floor under each placed AI prop (`blockout.floor_light`) into custom primitive data 0, which `SectorLight` reads. It must be set through the `custom_primitive_data` property: `set_custom_primitive_data_float` isn't saved with the level, and an unset index reads 0 (black props). props.json `ambient_scale` (2.5) scales it: the sector light alone (0.2) left props that no torch reaches black.
+- **`albedo` per class** (props.json) scales an AI prop's base colour. The `Table` is 0.55, from its sprite's mean colour against the texture's.
+
+Sheets: `build/lookdev/prop_ambient_sheet.png` (fixed 1 against 1.5× and 2.5× the sector light), `build/lookdev/compare_sprite_before_sprite_final.png`. Other props may want an `albedo` too; compare their sprites the same way when one stands out.
+
 ## Open
 - Trees: the Outskirts tree lines (ADR 0003 2g).
 - Emissive parts (lamp glass, embers) on AI meshes: a second material slot or a mask.

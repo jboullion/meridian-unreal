@@ -5,10 +5,12 @@
 #   powershell -File tools/sprites/run_sprite_clips.ps1 -Clip walk
 #   powershell -File tools/sprites/run_sprite_clips.ps1 -Clip dance -Look test_female
 #   powershell -File tools/sprites/run_sprite_clips.ps1 -Clip weapon_attack -Look test_sword -Variants original,tweens
+#   powershell -File tools/sprites/run_sprite_clips.ps1 -Clip fist_attack -View 0 -Variants old_attack,new_attack   (from behind)
 param(
     [string]$Clip = "walk",
     [string]$Look = "test_male",
     [int]$Frames = 60,
+    [int]$View = 90,        # camera around the character: 90 its side, 0 from behind, 180 the front
     [string[]]$Variants = @("original", "tweens", "tweens_motion", "crossfade"),
     [string]$Engine = "G:\Unreal Engine\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe"
 )
@@ -24,6 +26,9 @@ $cvars = @{
     "tweens_motion" = "mr.Sprite.Smooth.Tweens 1,mr.Sprite.Smooth.Crossfade 0,mr.Sprite.Smooth.Motion 1"
     "crossfade"     = "mr.Sprite.Smooth.Tweens 0,mr.Sprite.Smooth.Crossfade 0.5,mr.Sprite.Smooth.Motion 0"
     "all"           = "mr.Sprite.Smooth.Tweens 1,mr.Sprite.Smooth.Crossfade 0.4,mr.Sprite.Smooth.Motion 1"
+    # one-shots before 2026-10-07 (in-betweens across the whole pose, arms on the back from behind) and now
+    "old_attack"    = "mr.Sprite.Smooth.Tweens 1,mr.Sprite.Smooth.OnceWindow 1,mr.Sprite.BackArmsUnder 0"
+    "new_attack"    = "mr.Sprite.Smooth.Tweens 1,mr.Sprite.Smooth.OnceWindow 0.35,mr.Sprite.BackArmsUnder 1"
 }
 # every variant: the same afternoon (the game clock follows real time) and no motion blur
 $common = "mr.GameHour 14,mr.Season 1,r.MotionBlurQuality 0,"
@@ -33,7 +38,7 @@ foreach ($v in $Variants) {
         if (Test-Path $shots) { Remove-Item -Recurse -Force $shots }
         if (Test-Path $log) { Remove-Item $log -ErrorAction SilentlyContinue }
         $args = "`"$proj`" /Game/Generated/Maps/L_World -game -windowed -resx=1280 -resy=720 -MRStartZone=300 " +
-                "-MRSpriteLook=$Look -MRSpriteClip=$Clip -MRClipFrames=$Frames -UseFixedTimeStep -FPS=30 -ExecCmds=`"$common$($cvars[$v])`""
+                "-MRSpriteLook=$Look -MRSpriteClip=$Clip -MRClipFrames=$Frames -MRClipView=$View -UseFixedTimeStep -FPS=30 -ExecCmds=`"$common$($cvars[$v])`""
         $p = Start-Process -FilePath $Engine -ArgumentList $args -PassThru
         $crashed = $false
         while (-not $p.WaitForExit(5000)) {

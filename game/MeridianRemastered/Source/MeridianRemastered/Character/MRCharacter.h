@@ -89,6 +89,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Vigor")
 	float VigorRegenPerSecond = 6.f;
 
+	/**
+	 * Shortest time between two attacks: the original server's IsOkayAttackTime (player.kod, 1 s).
+	 * A swing lasts 0.9 s, so a new one never cuts the last one short.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	float AttackIntervalSeconds = 1.f;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float ThirdPersonArmLength = 320.f;
 
@@ -220,5 +227,8 @@ protected:
 	UPROPERTY(Transient) TArray<TObjectPtr<UInputAction>> EmoteActions;
 
 	bool bWalkToggled = false;
+	/** World time of the last attack: the owner's (input) and the server's (validation). */
+	double LastAttackTime = -1000.0;
+	double ServerLastAttackTime = -1000.0;
 	float ZoneCheckAccumulator = 0.f;
 };

@@ -1130,7 +1130,13 @@ def build_textured_prop_master(name, mpc, orm_default):
     master has: matte specular, wet and snowy weather, and the ambient floor of interiors
     (base * SectorLight * MPC_Environment.SectorAmbient * AmbientTint), without which props went
     near-black inside while the walls around them were lit (2026-10-06). SectorLight: the original
-    sector light level (0..1) where the prop stands, 1 by default. Two-sided, as Tripo exports."""
+    sector light level (0..1) of the floor the prop stands on, per placed prop in custom primitive
+    data 0 (build_world.py, blockout.floor_light), as the walls take theirs from their vertex
+    colour. At the old fixed 1 a prop got 4-5x the fill of the Inn's walls (sectors at 0.2-0.25)
+    and seemed to glow (2026-10-07); at the sector light alone, a prop no torch reaches went black.
+    AmbientScale (props.json "ambient_scale") scales the fill between. Albedo (a class's props.json
+    "albedo", 1 by default) scales the base colour, for a Tripo texture lighter than the original
+    sprite (the Inn's table, 2026-10-07). Two-sided, as Tripo exports."""
     mat = _new_material(name)
     base = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, -300, parameter_name="BaseColor",
                  sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR,
@@ -1141,26 +1147,35 @@ def build_textured_prop_master(name, mpc, orm_default):
     orm = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, 300, parameter_name="MetallicRoughness",
                 sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR,
                 texture=eal.load_asset(orm_default))
-    w_base, w_normal, w_rough, _, wet = _weather_surface(mat, (base, "RGB"), (nrm, "RGB"), (orm, "G"), -400, 700)
+    albedo = _expr(mat, unreal.MaterialExpressionScalarParameter, -1100, -150, parameter_name="Albedo", default_value=1.0)
+    base_rgb = _expr(mat, unreal.MaterialExpressionMultiply, -650, -300)
+    mel.connect_material_expressions(base, "RGB", base_rgb, "A")
+    mel.connect_material_expressions(albedo, "", base_rgb, "B")
+    w_base, w_normal, w_rough, _, wet = _weather_surface(mat, (base_rgb, ""), (nrm, "RGB"), (orm, "G"), -400, 700)
     mel.connect_material_property(w_base[0], w_base[1], unreal.MaterialProperty.MP_BASE_COLOR)
     mel.connect_material_property(w_normal[0], w_normal[1], unreal.MaterialProperty.MP_NORMAL)
     mel.connect_material_property(w_rough[0], w_rough[1], unreal.MaterialProperty.MP_ROUGHNESS)
     mel.connect_material_property(orm, "B", unreal.MaterialProperty.MP_METALLIC)
     mel.connect_material_property(_matte(mat, wet, -400, 500), "", unreal.MaterialProperty.MP_SPECULAR)
     collection = eal.load_asset(mpc)
-    sector = _expr(mat, unreal.MaterialExpressionScalarParameter, -900, 600, parameter_name="SectorLight", default_value=1.0)
+    sector = _expr(mat, unreal.MaterialExpressionScalarParameter, -900, 600, parameter_name="SectorLight", default_value=1.0,
+                   use_custom_primitive_data=True, primitive_data_index=0)
     amb = _expr(mat, unreal.MaterialExpressionCollectionParameter, -900, 700, collection=collection, parameter_name="SectorAmbient")
     tint = _expr(mat, unreal.MaterialExpressionCollectionParameter, -900, 800, collection=collection, parameter_name="AmbientTint")
     tint_rgb = _expr(mat, unreal.MaterialExpressionComponentMask, -700, 800, r=True, g=True, b=True)
     mel.connect_material_expressions(tint, "", tint_rgb, "")
+    scale = _expr(mat, unreal.MaterialExpressionScalarParameter, -900, 500, parameter_name="AmbientScale", default_value=1.0)
+    sector_scaled = _expr(mat, unreal.MaterialExpressionMultiply, -750, 550)
+    mel.connect_material_expressions(sector, "", sector_scaled, "A")
+    mel.connect_material_expressions(scale, "", sector_scaled, "B")
     level = _expr(mat, unreal.MaterialExpressionMultiply, -700, 650)
-    mel.connect_material_expressions(sector, "", level, "A")
+    mel.connect_material_expressions(sector_scaled, "", level, "A")
     mel.connect_material_expressions(amb, "", level, "B")
     lit = _expr(mat, unreal.MaterialExpressionMultiply, -550, 700)
     mel.connect_material_expressions(level, "", lit, "A")
     mel.connect_material_expressions(tint_rgb, "", lit, "B")
     ambient = _expr(mat, unreal.MaterialExpressionMultiply, -400, 650)
-    mel.connect_material_expressions(base, "RGB", ambient, "A")
+    mel.connect_material_expressions(base_rgb, "", ambient, "A")
     mel.connect_material_expressions(lit, "", ambient, "B")
     mel.connect_material_property(ambient, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     mat.set_editor_property("two_sided", True)
@@ -1173,9 +1188,11 @@ _AI_PROP_TEXTURES = {"BaseColor": ("BaseColor", "BaseColorTexture"), "Normal": (
                      "MetallicRoughness": ("MetallicRoughness", "MetallicRoughnessTexture")}
 
 
-def ai_prop_material(mesh_path, slot_material):
+def ai_prop_material(mesh_path, slot_material, ambient_scale=1.0, albedo=1.0):
     """-> path of MI_AIProp_<mesh> on M_PropTextured with the textures of the material the mesh came
-    with (Interchange's glTF instance, or ours on a later run), or None when it has none."""
+    with (Interchange's glTF instance, or ours on a later run), or None when it has none.
+    ambient_scale: props.json "ambient_scale", on the interiors' ambient floor; albedo: the class's
+    "albedo", on the base colour."""
     mi = eal.load_asset(slot_material) if isinstance(slot_material, str) else slot_material
     if not isinstance(mi, unreal.MaterialInstance):
         return None
@@ -1189,7 +1206,8 @@ def ai_prop_material(mesh_path, slot_material):
     if "BaseColor" not in found:
         return None
     master = _master("M_PropTextured", build_textured_prop_master, ensure_mpc(), default_orm())
-    return _instance("MI_AIProp_" + mesh_path.rsplit("/", 1)[-1], master, textures=found)
+    return _instance("MI_AIProp_" + mesh_path.rsplit("/", 1)[-1], master, textures=found,
+                     scalars={"AmbientScale": ambient_scale, "Albedo": albedo})
 
 
 TREE_WIND_HLSL = """

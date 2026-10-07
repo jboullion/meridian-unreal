@@ -149,8 +149,46 @@ int2 px = min(int2(UV * float2(w, h)), int2(w - 1, h - 1));
 // exact texels, no filtering: the part's translation (code R) and the texel's ramp (sprite alpha)
 float4 code = Code.Load(int3(px, 0));
 float xl = round(code.r * 255.0);
-float a0 = Sprite.Load(int3(px, 0)).a;
+float4 c0 = Sprite.Load(int3(px, 0));
+// A part's edge texels: the canvas filtered the atlas there, so their alpha (the ramp code) is a
+// blend with the empty space around the part. Just over the 0.5 clip it rounds to "no ramp" and
+// showed untranslated (a red line round the arms, the belt and the legs). Take the colour and ramp
+// of the nearest texel of the same part with an exact code.
+float ac = c0.a * 255.0;
+// (+-6: BC7 leaves small errors on the codes inside a part, which keep their own colour)
+bool exact = abs(ac - 153.0) < 6.0 || abs(ac - 187.0) < 6.0 || abs(ac - 221.0) < 6.0 || ac > 249.0;
+const int2 offs[8] = {int2(1, 0), int2(-1, 0), int2(0, 1), int2(0, -1), int2(2, 0), int2(-2, 0), int2(0, 2), int2(0, -2)};
+if (c0.a > 0.5 && !exact)
+{
+    [unroll] for (int j = 0; j < 8; j++)
+    {
+        int2 q = clamp(px + offs[j], int2(0, 0), int2(w - 1, h - 1));
+        float4 cq = Sprite.Load(int3(q, 0));
+        float aq = cq.a * 255.0;
+        bool eq = abs(aq - 153.0) < 6.0 || abs(aq - 187.0) < 6.0 || abs(aq - 221.0) < 6.0 || aq > 249.0;
+        if (eq && abs(Code.Load(int3(q, 0)).r * 255.0 - xl) < 0.5)
+        {
+            c0 = cq;
+            rgb = cq.rgb;
+            break;
+        }
+    }
+}
+float a0 = c0.a;
 float rid = a0 > 0.5 ? round((a0 - 0.6) / 0.13333) : 0.0;
+// Where the filter's 2x2 texels mix two parts (another translation) or two ramps, the blended
+// colour sits on neither ramp and can recolour to any shade of it: use the exact texel there. Empty texels don't count (the cover division handles them).
+int2 p0 = int2(floor(UV * float2(w, h) - 0.5));
+[unroll] for (int i = 0; i < 4; i++)
+{
+    int2 q = clamp(p0 + int2(i & 1, i >> 1), int2(0, 0), int2(w - 1, h - 1));
+    float qa = Sprite.Load(int3(q, 0)).a;
+    if (qa > 0.5 && (abs(qa - a0) > 0.05 || abs(Code.Load(int3(q, 0)).r * 255.0 - xl) > 0.5))
+    {
+        rgb = c0.rgb;
+        break;
+    }
+}
 if (xl > 0.5 && rid > 0.5)
 {
     // where the colour sits on its ramp (T_SprClass: 64^3 sRGB cells; R, G, B = red, blue, grey)

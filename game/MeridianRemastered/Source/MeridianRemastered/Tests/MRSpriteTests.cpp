@@ -130,6 +130,33 @@ bool FMRSpritePlacementTest::RunTest(const FString& Parameters)
 		{TEXT("head"), 3, 15.f, -26.f, 0.5714f}, {TEXT("hair"), 3, 14.429f, -27.714f, 0.2857f},
 		{TEXT("body"), 3, 0.f, 0.f, 1.f}, {TEXT("legs"), 3, 4.f, 52.f, 2.f}});
 
+	// a weapon attack seen from behind (torso group 2: bitmap 9 marks the right arm "over"): with
+	// bBackArmsUnder the arm and its sword go under the torso, without it they are drawn on its back
+	if (const FMRSpriteLook* Sword = Lib.Looks.Find(TEXT("test_sword")))
+	{
+		const TMap<FName, int32> Swing = {{TEXT("body"), 1}, {TEXT("right_arm"), 4}, {TEXT("left_arm"), 4}, {TEXT("weapon"), 1}};
+		for (const bool bUnder : {true, false})
+		{
+			TArray<FMRSpritePlaced> Placed;
+			FVector2f OutFeet;
+			int32 Shrink = 0;
+			TestTrue(TEXT("swing placed"), Lib.Place(*Sword, Swing, 2048, Placed, OutFeet, Shrink, nullptr, bUnder));
+			auto IndexOf = [&Placed](const TCHAR* Part) { return Placed.IndexOfByPredicate([Part](const FMRSpritePlaced& P) { return P.Part == FName(Part); }); };
+			const int32 Body = IndexOf(TEXT("body"));
+			const FString Ctx = bUnder ? TEXT("back arms under") : TEXT("original layering");
+			TestEqual(*(Ctx + TEXT(": right arm under the torso")), IndexOf(TEXT("right_arm")) < Body, bUnder);
+			TestEqual(*(Ctx + TEXT(": sword under the torso")), IndexOf(TEXT("weapon")) < Body, bUnder);
+		}
+		// from the side the arm stays over the torso either way
+		TArray<FMRSpritePlaced> Side;
+		FVector2f OutFeet;
+		int32 Shrink = 0;
+		Lib.Place(*Sword, Swing, 3072, Side, OutFeet, Shrink);
+		const int32 SideBody = Side.IndexOfByPredicate([](const FMRSpritePlaced& P) { return P.Part == TEXT("body"); });
+		TestTrue(TEXT("side view: right arm over the torso"),
+			Side.IndexOfByPredicate([](const FMRSpritePlaced& P) { return P.Part == TEXT("right_arm"); }) > SideBody);
+	}
+
 	// size: the original client's scale makes the male about 1.84 m
 	TestEqual(TEXT("cm per torso pixel"), Lib.CmPerBasePixel(4), 0.859375f, 0.0001f);
 	return true;

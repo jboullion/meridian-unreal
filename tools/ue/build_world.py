@@ -300,9 +300,10 @@ KIT_DIR = os.path.join(REPO, "build", "environment", "kit")
 _kit = {}
 
 
-def import_kit_mesh(name, materials, slot_materials=None):
+def import_kit_mesh(name, materials, slot_materials=None, albedo=1.0):
     """A kit mesh from build/environment/kit/<name>.glb. Scatter meshes get M_Grass; props get their
-    slots' materials from props.json (`slot_materials`)."""
+    slots' materials from props.json (`slot_materials`); an AI prop's base colour is scaled by its
+    class's props.json "albedo"."""
     if name in _kit:
         return _kit[name]
     path = os.path.join(KIT_DIR, name + ".glb")
@@ -314,7 +315,7 @@ def import_kit_mesh(name, materials, slot_materials=None):
         # AI props (tools/aigen): their textures on M_PropTextured, which adds the interiors' ambient
         # floor and the weather the imported glTF material lacks (docs/adr/0007)
         slots = eal.load_asset(mesh).get_editor_property("static_materials")
-        mi = ai_prop_material(mesh, slots[0].get_editor_property("material_interface")) if slots else None
+        mi = ai_prop_material(mesh, slots[0].get_editor_property("material_interface"), prop_ambient_scale(), albedo) if slots else None
         if mi:
             assign_materials(mesh, lambda slot: (mi, 1))
             _kit[name] = mesh
@@ -329,6 +330,14 @@ def import_kit_mesh(name, materials, slot_materials=None):
         assign_materials(mesh, lambda slot: (slot_materials[slot], 1) if slot_materials.get(slot) else (None, 2))
     _kit[name] = mesh
     return mesh
+
+
+def prop_ambient_scale():
+    """props.json "ambient_scale": a factor on the AI props' ambient floor indoors, over the sector
+    light of the floor they stand on (M_PropTextured AmbientScale)."""
+    if not os.path.exists(PROPS):
+        return 1.0
+    return float(json.load(open(PROPS, encoding="utf-8")).get("ambient_scale", 1.0))
 
 
 def light_scale():
@@ -440,11 +449,13 @@ def prop_mesh_choice(cfg, label, ordinal):
 
 
 def zone_props(zone, materials, prop_materials):
-    """-> [(label, mesh path or None, [x, y, z] cm, light config or None, fire or None, yaw deg, scale)] for the
+    """-> [(label, mesh path or None, [x, y, z] cm, light config or None, fire or None, yaw deg, scale,
+    sector light)] for the
     zone's Kod objects with an entry in data/environment/props.json ("classes", or "types" for
     OrnamentalObjects). Meshes are the AI kit meshes (tools/aigen, docs/adr/0007), placed only once
     their GLB exists. A light with "flicker" (true, or "sector" in the original's flickering sectors)
-    and an entry with a "fire" become AMRFireActors."""
+    and an entry with a "fire" become AMRFireActors. Sector light: the original light level of the floor
+    under the prop (blockout.floor_light), for M_PropTextured's ambient floor."""
     if not os.path.exists(PROPS):
         return []
     props = json.load(open(PROPS, encoding="utf-8"))
@@ -465,7 +476,7 @@ def zone_props(zone, materials, prop_materials):
             if cfg.get("fit_height_m"):
                 scale = float(cfg["fit_height_m"]) * 100.0 / max(1.0, 2.0 * eal.load_asset(mesh).get_bounds().box_extent.z)
         else:
-            mesh = import_kit_mesh(mesh_name, materials, prop_materials) if mesh_name else None
+            mesh = import_kit_mesh(mesh_name, materials, prop_materials, float(cfg.get("albedo", 1.0))) if mesh_name else None
         light = cfg.get("light")
         if light and "kod_intensity" in light:
             light = kod_light(light, obj.get("params"))
@@ -478,7 +489,8 @@ def zone_props(zone, materials, prop_materials):
             fire = fire_spec(materials, preset, (cfg["fire"].get("base_m", 0.0) + entry.get("flame_m", [0, 0])[1] / 2) * 100.0)
         if not (mesh or light or fire):
             continue
-        out.append((label, mesh, [x * 100.0, z * 100.0, y * 100.0], light, fire, prop_yaw(cfg, obj, label), scale))
+        sector = round(blockout.floor_light(os.path.join(REPO, zone["mesh"]), x, z, y), 3) if mesh else 1.0
+        out.append((label, mesh, [x * 100.0, z * 100.0, y * 100.0], light, fire, prop_yaw(cfg, obj, label), scale, sector))
     return out
 
 
@@ -704,6 +716,7 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
             a.set_actor_rotation(unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw), False)
             if rest and rest[0] != 1.0:
                 a.set_actor_scale3d(unreal.Vector(rest[0], rest[0], rest[0]))
+            sector = rest[1] if len(rest) > 1 else 1.0
             a.set_actor_label(label)
             comp = a.get_component_by_class(unreal.StaticMeshComponent)
             if comp:
@@ -711,6 +724,11 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
             else:  # a skeletal mesh (a PVE tree with Dynamic Wind bones)
                 comp = a.get_component_by_class(unreal.SkeletalMeshComponent)
             comp.set_collision_profile_name("NoCollision")
+            # M_PropTextured's SectorLight; the property, not set_custom_primitive_data_float, which
+            # isn't saved with the level (an unset index reads 0: black props)
+            cpd = comp.get_editor_property("custom_primitive_data")
+            cpd.set_editor_property("data", [float(sector)])
+            comp.set_editor_property("custom_primitive_data", cpd)
             a.tags = [unreal.Name("ZoneProp"), unreal.Name("Zone%d" % zone["rid"])]
         if light:
             pl = actors.spawn_actor_from_class(unreal.PointLight, loc + unreal.Vector(0, 0, light["offset_m"] * 100.0))

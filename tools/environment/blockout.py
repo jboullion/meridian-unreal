@@ -7,6 +7,7 @@ dependencies, so it runs in plain Python, Blender and the Unreal Editor alike.
 - building_triangles():     which blockout triangles belong to a rebuilt building
 - write_render_blockout():  a copy of the blockout without those triangles, so the art mesh doesn't
                             z-fight with them (the full blockout stays as hidden collision)
+- floor_light():            the original sector light of the floor under a point (props' ambient floor)
 
 Blender (tools/blender/build_zone_art.py) and the Unreal side (tools/ue/build_world.py) both call
 building_triangles(), so the faces rebuilt as art and the faces hidden always match.
@@ -83,6 +84,46 @@ def read_glb(path):
             [tuple(idx[i:i + 3]) for i in range(0, len(idx), 3)],
         )
     return out
+
+
+_FLOORS = {}
+
+
+def floor_light(path, x, z, y, default=1.0):
+    """-> the original sector light (0..1, roo2gltf's vertex colour R) of the floor under the
+    glTF point (x east, z south, y up; metres): the highest horizontal face at or below y + 0.3 m
+    that contains (x, z). `default` where there is none. The interiors' ambient floor scales by it,
+    so a prop gets the same fill as the floor it stands on (docs/adr/0007)."""
+    if path not in _FLOORS:
+        gltf, binary = _parse(path)
+        faces = []
+        for p in gltf["meshes"][0]["primitives"]:
+            attrs = p["attributes"]
+            if "COLOR_0" not in attrs:
+                continue
+            pos = _accessor(gltf, binary, attrs["POSITION"])
+            col = _accessor(gltf, binary, attrs["COLOR_0"])
+            scale = {5121: 255.0, 5123: 65535.0}.get(gltf["accessors"][attrs["COLOR_0"]]["componentType"], 1.0)
+            idx = _accessor(gltf, binary, p["indices"])
+            for i in range(0, len(idx), 3):
+                tri = [pos[j] for j in idx[i:i + 3]]
+                if _horizontal(tri):
+                    faces.append((tri, sum(col[j][0] for j in idx[i:i + 3]) / (3.0 * scale)))
+        _FLOORS[path] = faces
+    best = None
+    for tri, light in _FLOORS[path]:
+        h = tri[0][1]
+        if h > y + 0.3 or (best and h <= best[0]):
+            continue
+        (ax, _, az), (bx, _, bz), (cx, _, cz) = tri
+        d = (bz - cz) * (ax - cx) + (cx - bx) * (az - cz)
+        if abs(d) < 1e-12:
+            continue
+        l1 = ((bz - cz) * (x - cx) + (cx - bx) * (z - cz)) / d
+        l2 = ((cz - az) * (x - cx) + (ax - cx) * (z - cz)) / d
+        if l1 >= -1e-6 and l2 >= -1e-6 and 1 - l1 - l2 >= -1e-6:
+            best = (h, light)
+    return best[1] if best else default
 
 
 def write_render_blockout(src, dst, hidden):

@@ -289,12 +289,25 @@ class Placed:
     order: int      # position in the overlay list
 
 
+BACK_ARMS_UNDER = True   # set False for the original's layering (composite.py --original-layering)
+
+
 def place(body: Layer, overlays: list[Layer], angle: int) -> tuple[int, list[Placed]] | None:
     """Port of D3DRenderOverlaysDraw / DrawObject: returns the torso index and every drawable
-    bitmap in draw order (underlay passes, torso, overlay passes), positioned in base pixels."""
+    bitmap in draw order (underlay passes, torso, overlay passes), positioned in base pixels.
+    BACK_ARMS_UNDER (the remaster's change, as FMRSpriteLibrary::Place): seen from behind (view slots
+    3-5) the arms and what they hold go under the torso, where the original's attack and dance torsos
+    put the right arm over it, so a punch or a backswing came out of the player's back."""
     bi = bitmap_index(body.name, body.group, angle)
     if bi is None:
         return None
+    behind = BACK_ARMS_UNDER and 3 <= view_slot(angle, 8) <= 5
+
+    def torso_hotspot(hotspot):
+        kind, x, y = _find_hotspot(body.name, bi, hotspot)
+        if behind and kind == OVER and hotspot in (21, 31):
+            kind = UNDER
+        return kind, x, y
     s_base = load_bgf(body.name).shrink
     placed: list[Placed] = []
     for order, ov in enumerate(overlays):
@@ -303,7 +316,7 @@ def place(body: Layer, overlays: list[Layer], angle: int) -> tuple[int, list[Pla
             continue
         ob = load_bgf(ov.name)
         bm = ob.bitmaps[oi]
-        kind, hx, hy = _find_hotspot(body.name, bi, ov.hotspot)
+        kind, hx, hy = torso_hotspot(ov.hotspot)
         if kind != NONE:
             x, y = hx + bm.xoff, hy + bm.yoff
         else:   # an overlay on an overlay: find which overlay carries the hotspot
@@ -314,7 +327,7 @@ def place(body: Layer, overlays: list[Layer], angle: int) -> tuple[int, list[Pla
                 k2, h2x, h2y = _find_hotspot(base_ov.name, b2i, ov.hotspot)
                 if k2 == NONE:
                     continue
-                k1, h1x, h1y = _find_hotspot(body.name, bi, base_ov.hotspot)
+                k1, h1x, h1y = torso_hotspot(base_ov.hotspot)
                 if k1 == NONE:
                     continue
                 b2 = load_bgf(base_ov.name)

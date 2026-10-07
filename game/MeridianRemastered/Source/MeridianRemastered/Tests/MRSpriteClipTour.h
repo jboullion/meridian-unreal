@@ -8,9 +8,9 @@ class APlayerController;
 
 /**
  * Motion capture for the sprite smoothing tests (docs/sprites.md Phase 4), run with
- * -MRSpriteClip=<walk|action name> [-MRClipFrames=60] on a fixed time step
+ * -MRSpriteClip=<walk|action name> [-MRClipFrames=60] [-MRClipView=90] on a fixed time step
  * (-UseFixedTimeStep -FPS=30, so every run sees the same game time per frame):
- * the chase camera looks at the character from the side; "walk" walks it across the view, any
+ * the chase camera looks at the character from the side (MRClipView: 0 from behind, 180 the front); "walk" walks it across the view, any
  * other name plays that action (dance, wave, fist_attack, weapon_attack...). One screenshot per
  * frame into Saved/Screenshots/MRClip/, then quits. tools/sprites/clip_gif.py makes GIFs.
  */

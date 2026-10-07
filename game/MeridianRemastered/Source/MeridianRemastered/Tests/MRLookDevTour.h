@@ -49,6 +49,9 @@ private:
 		FVector Location = FVector::ZeroVector;
 		FRotator Rotation = FRotator::ZeroRotator;
 		float Fov = 90.f;
+		/** Optional: the player stands here (feet, world cm) facing PawnYaw, seen by the camera (sprite look-dev). */
+		TOptional<FVector> PawnFeet;
+		float PawnYaw = 0.f;
 	};
 
 	struct FVariant

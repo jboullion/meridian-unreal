@@ -228,10 +228,21 @@ void AMRCharacter::ServerPlaySpriteAction_Implementation(FName Action)
 	{
 		return;
 	}
+	const bool bAttack = Action == TEXT("fist_attack") || Action == TEXT("weapon_attack");
+	if (bAttack)
+	{
+		// the original's 1 s between attacks; a little slack for the owner's clock and the network
+		const double Now = GetWorld()->GetTimeSeconds();
+		if (Now - ServerLastAttackTime < AttackIntervalSeconds * 0.8)
+		{
+			return;
+		}
+		ServerLastAttackTime = Now;
+	}
 	SpriteAction.Action = Action;
 	SpriteAction.Seq++;
 	SpriteAction.ServerTime = GetWorld()->GetTimeSeconds();
-	if (Action == TEXT("fist_attack") || Action == TEXT("weapon_attack"))
+	if (bAttack)
 	{
 		// placeholder until combat: the nearest monster in front, within reach, takes the hit
 		AMRMonster* Best = nullptr;
@@ -721,6 +732,12 @@ void AMRCharacter::OnCrouchToggle()
 
 void AMRCharacter::OnAttack()
 {
+	const double Now = GetWorld()->GetTimeSeconds();
+	if (Now - LastAttackTime < AttackIntervalSeconds)
+	{
+		return;  // the original allowed one attack a second
+	}
+	LastAttackTime = Now;
 	const FMRSpriteLook* Look = FMRSpriteLibrary::Get().Looks.Find(SpriteAppearance.Look);
 	PlaySpriteAction(Look && Look->Find(TEXT("weapon")) ? TEXT("weapon_attack") : TEXT("fist_attack"));
 }

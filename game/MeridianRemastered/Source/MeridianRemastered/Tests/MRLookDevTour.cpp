@@ -3,6 +3,7 @@
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Character/MRCharacter.h"
 #include "Dom/JsonObject.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
@@ -137,6 +138,14 @@ bool UMRLookDevTour::LoadShots()
 		double Fov = 90.0;
 		O->TryGetNumberField(TEXT("fov"), Fov);
 		Shot.Fov = Fov;
+		const TArray<TSharedPtr<FJsonValue>>* P;
+		if (O->TryGetArrayField(TEXT("pawn_cm"), P) && P->Num() == 3)
+		{
+			Shot.PawnFeet = FVector((*P)[0]->AsNumber(), (*P)[1]->AsNumber(), (*P)[2]->AsNumber());
+			double PawnYaw = 0.0;
+			O->TryGetNumberField(TEXT("pawn_yaw"), PawnYaw);
+			Shot.PawnYaw = PawnYaw;
+		}
 		Shots.Add(Shot);
 	}
 	return Shots.Num() > 0;
@@ -231,7 +240,18 @@ void UMRLookDevTour::Next()
 	}
 	if (APawn* Pawn = PC->GetPawn(); Pawn && !bWithPawn)
 	{
-		Pawn->SetActorHiddenInGame(true);
+		const bool bPlaced = Shots.IsValidIndex(Index + 1) && Shots[Index + 1].PawnFeet.IsSet();
+		Pawn->SetActorHiddenInGame(!bPlaced);
+		if (bPlaced)
+		{
+			// the player in the scene, third person (sprite look-dev): feet on the given spot
+			const float Half = Pawn->GetSimpleCollisionHalfHeight();
+			Pawn->TeleportTo(*Shots[Index + 1].PawnFeet + FVector(0.f, 0.f, Half + 2.f), FRotator(0.f, Shots[Index + 1].PawnYaw, 0.f));
+			if (AMRCharacter* Character = Cast<AMRCharacter>(Pawn))
+			{
+				Character->SetFirstPerson(false);  // first person hides its own sprite
+			}
+		}
 	}
 	if (++Index >= Shots.Num())
 	{

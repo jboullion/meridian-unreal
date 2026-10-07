@@ -140,7 +140,10 @@ def main():
     ap.add_argument("--action", nargs="*")
     ap.add_argument("--scale", type=int, default=3)
     ap.add_argument("--catalog", nargs="*")
+    ap.add_argument("--original-layering", action="store_true",
+                    help="arms over the torso from behind where the original's bitmaps say so")
     a = ap.parse_args()
+    ms.BACK_ARMS_UNDER = not a.original_layering
     if a.catalog:
         catalog(a.catalog, a.scale)
     looks = ms.load_json("looks.json")

@@ -15,6 +15,8 @@ namespace
 	// FindHotspot results (clientd3d/object3d.h)
 	enum EHotspotKind : int32 { HS_None, HS_Over, HS_Under, HS_OverUnder, HS_OverOver, HS_UnderUnder, HS_UnderOver, HS_OverUnderOverUnder };
 	constexpr int32 HS_HELM = 2;
+	constexpr int32 HS_RIGHT_HAND = 21;
+	constexpr int32 HS_LEFT_HAND = 31;
 
 	// draw order: underlay passes, the body, overlay passes (D3DRenderObjects + D3DRenderOverlaysDraw)
 	int32 DepthRank(int32 Kind)
@@ -188,7 +190,8 @@ int32 FMRSpriteLibrary::RelativeAngle(float FacingYawDeg, float YawToViewerDeg)
 }
 
 bool FMRSpriteLibrary::Place(const FMRSpriteLook& Look, const TMap<FName, int32>& Groups, int32 Angle,
-	TArray<FMRSpritePlaced>& Out, FVector2f& OutFeet, int32& OutShrink, const TMap<FName, int32>* BitmapOverride) const
+	TArray<FMRSpritePlaced>& Out, FVector2f& OutFeet, int32& OutShrink, const TMap<FName, int32>* BitmapOverride,
+	bool bBackArmsUnder) const
 {
 	Out.Reset();
 	const FMRSpritePart* Body = Look.Find(BodyName);
@@ -218,6 +221,15 @@ bool FMRSpriteLibrary::Place(const FMRSpriteLook& Look, const TMap<FName, int32>
 	const float FinePerPx = 16.f / SBase;
 	OutFeet = FVector2f(Tb.W * 0.5f - Tb.XOff / FinePerPx, Tb.H - Tb.YOff * 4.f / FinePerPx);
 
+	// a hotspot on the torso; seen from behind, the arms go under it (see the header)
+	const int32 Slot = ViewSlot(Angle, 8);
+	const bool bFromBehind = bBackArmsUnder && Slot >= 3 && Slot <= 5;
+	auto TorsoHotspot = [&Tb, bFromBehind](int32 Hotspot, FIntPoint& OutPos)
+	{
+		const int32 Kind = FindHotspot(Tb, Hotspot, OutPos);
+		return bFromBehind && Kind == HS_Over && (Hotspot == HS_RIGHT_HAND || Hotspot == HS_LEFT_HAND) ? HS_Under : Kind;
+	};
+
 	struct FEntry { FMRSpritePlaced P; int32 Rank; int32 Order; };
 	TArray<FEntry> Entries;
 	Entries.Add({FMRSpritePlaced{BodyName, Body, Bi, FVector2f::ZeroVector, 1.f, -1}, DepthRank(-1), -1});
@@ -237,7 +249,7 @@ bool FMRSpriteLibrary::Place(const FMRSpriteLook& Look, const TMap<FName, int32>
 		}
 		const FMRSpriteBitmap& Bm = Ob->Bitmaps[Oi];
 		FIntPoint H;
-		int32 Kind = FindHotspot(Tb, Ov.Hotspot, H);
+		int32 Kind = TorsoHotspot(Ov.Hotspot, H);
 		FVector2f Pos = FVector2f::ZeroVector;
 		if (Kind != HS_None)
 		{
@@ -266,7 +278,7 @@ bool FMRSpriteLibrary::Place(const FMRSpriteLook& Look, const TMap<FName, int32>
 				{
 					continue;
 				}
-				const int32 K1 = FindHotspot(Tb, BaseOv.Hotspot, H1);
+				const int32 K1 = TorsoHotspot(BaseOv.Hotspot, H1);
 				if (K1 == HS_None)
 				{
 					continue;

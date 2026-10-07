@@ -39,8 +39,11 @@ void UMRSpriteClipTour::Setup()
 		return;
 	}
 	Character->SetFirstPerson(false);
-	// look at the character's left side; a walk goes to the right of the view
-	CameraYaw = Character->GetActorRotation().Yaw + 90.f;
+	// look at the character's left side (-MRClipView=<deg>: 0 from behind, 180 from the front);
+	// a walk goes to the right of the view
+	float View = 90.f;
+	FParse::Value(FCommandLine::Get(), TEXT("MRClipView="), View);
+	CameraYaw = Character->GetActorRotation().Yaw + View;
 	PC->SetControlRotation(FRotator(-6.f, CameraYaw, 0.f));
 	if (Clip != TEXT("walk") && Character->GetSpriteBody())
 	{

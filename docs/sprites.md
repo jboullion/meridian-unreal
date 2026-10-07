@@ -59,6 +59,8 @@ Everything here was ported from the Server-104 source and checked image by image
 
 Within a pass, parts go in Kod's order.
 
+**Our one change to the draw order (2026-10-07):** seen from behind (view slots 3–5), the arms and what they hold always go under the torso. The original's attack and dance torsos from behind (`bta`/`btb` bitmap 9: groups 2 and 3, which the weapon and fist attacks use, and dance groups 14, 16 and 18–21) mark the right arm "over", so a punch or a backswing was drawn on the player's back. At the original's size it hardly showed; upscaled, the arm came out of the back. `mr.Sprite.BackArmsUnder 0` restores the original's layering, and so does `composite.py --original-layering`.
+
 **Size:**
 - A bitmap is `w/shrink*16` by `h/shrink*16` Kod fine units (1024 per grid square = 2.2 m).
 - The torso's bottom sits `yoffset*4` fine units below the object position.
@@ -69,7 +71,9 @@ Within a pass, parts go in Kod's order.
 - Walk: legs 2–5 at 100 ms, arms 2–3 at 200 ms.
 - Weapon attack, fist, bow, cast, wave, point, and dance (17 poses at 150 ms).
 - First-person hand and weapon overlays (`_first_person`).
-- `clientd3d/animate.c` `AnimateSingle` runs them.
+- `clientd3d/animate.c` `AnimateSingle` runs them. Each group shows for its full period, then snaps to the next.
+- Attacks: a swing lasts 900 ms (3 groups at 300 ms; the fist is 2 groups at 600 ms on the arms). The server allows one attack a second (`player.kod` `IsOkayAttackTime`, 1000 ms), so a swing is never cut short. The remaster does the same: `AMRCharacter::AttackIntervalSeconds` (1 s) on the owner, checked again on the server.
+- One-shot actions hold each pose and play their in-betweens only in the last `mr.Sprite.Smooth.OnceWindow` (35 %) of it, closer to the original's snaps. Before 2026-10-07 the in-betweens ran across the whole pose, so an attack's strike pose showed for only ~75 ms before easing back. Cycles (walk, dance) keep in-betweens across the whole pose.
 
 **Colour** (`xlat.c`):
 - Faces are drawn in the dark-blue ramp and translated to 4 skins.
@@ -127,12 +131,16 @@ Within a pass, parts go in Kod's order.
 - Parts get their class by role (weapons are metal) or by bgf. List armour bgfs there to make them shiny.
 - Per-texel masks (an armour with cloth parts) would add a third atlas channel later.
 
+**Edge texels (fixed 2026-10-07):** the canvas samples the atlas with filtering, so a part's edge texels land in the render target with a blended alpha, not an exact ramp code. Just over the 0.5 clip, that rounds to "no ramp" and the texel showed untranslated: a thin red line round the arms, the torso and the belt (`ReferenceImages/sprites/lighting-examples/player-arm-seems.png`). `M_SpriteBody` now gives such a texel the colour and ramp of the nearest texel of the same part with an exact code (±6, to allow for BC7 noise inside parts). Where the colour filter's 2×2 footprint mixes two parts or two ramps, it uses the exact texel's colour. Sheet: `build/lookdev/seam_zoom.png`.
+
 ## Lighting
 
 Lit sprites (the default) take the world's lights, sun, moods, torches and future spell colours. Tuning (console variables, also material parameters):
-- **`mr.Sprite.Albedo` 0.75:** sunlit sprites read too bright at 1.
+- **`mr.Sprite.Albedo` 0.64:** sunlit sprites read too bright at 1. It was 0.75 until 2026-10-07, then 15 % less at the user's request (indoors and out).
 - **`mr.Sprite.SunFace` 0.6 and `mr.Sprite.NormalUp` 0.4:** the shading normal faces the sun's side and leans up, so brightness doesn't swing as the camera orbits. A sprite has no real 3D shape, and a camera-facing normal made it bright in some views and dull and blue against the sun.
-- **`mr.Sprite.Ambient` 0.6:** indoors, the share of the environment's ambient floor (`MPC_Environment.SectorAmbient × AmbientTint`, 0 outdoors) added as emissive, as the zone materials do. Without it, sprites in the Inn were nearly black.
+- **`mr.Sprite.Ambient` 0.51:** indoors, the share of the environment's ambient floor (`MPC_Environment.SectorAmbient × AmbientTint`, 0 outdoors) added as emissive, as the zone materials do. Without it, sprites in the Inn were nearly black. It was 0.6 until 2026-10-07, then 15 % less with the albedo.
+- Players, NPCs and monsters share these values, so an NPC is lit like a player standing in the same place.
+- Look-dev: cameras `sprite_inn_bar`, `sprite_inn_table`, `sprite_square` and `sprite_close` in `lookdev_cameras.json` stand the player in view (`pawn_cm`, `pawn_yaw`). Run `run_lookdev.ps1 -Label x -GameHour 14 -Only sprite_inn_bar,sprite_square,sprite_close`.
 
 ## Pipeline
 
@@ -144,7 +152,7 @@ Lit sprites (the default) take the world's lights, sun, moods, torches and futur
 | Upscale, in-betweens, atlases, lookups | `build/texai/.venv/Scripts/python tools/sprites/build_player_sprites.py` | `build/sprites/atlas/`, `build/sprites/lut/`, `data/sprites/player_parts.json` |
 | Import into UE | `powershell -File tools/ue/import_sprites.ps1` | `/Game/Generated/Sprites` (atlases, lookups, `M_SpriteBody`, `M_SpriteBodyUnlit`) |
 | Visual tour / crowd / monsters | `powershell -File tools/sprites/run_sprite_tour.ps1 -Label x [-Crowd \| -Monsters] [-Look l] [-Zone 301] [-Hour h] [-Cvars "..."]` | `build/sprites/tour/<label>/` |
-| Smoothing clips | `powershell -File tools/sprites/run_sprite_clips.ps1 -Clip walk\|dance\|wave\|weapon_attack [-Look l] [-Variants a,b]` | `build/sprites/clips/<clip>.gif` |
+| Smoothing clips | `powershell -File tools/sprites/run_sprite_clips.ps1 -Clip walk\|dance\|wave\|weapon_attack [-Look l] [-Variants a,b] [-View 0]` (`-View`: 90 the side, 0 from behind; variants `old_attack`, `new_attack` compare the one-shot changes) | `build/sprites/clips/<clip>.gif` |
 | Multiplayer check | `powershell -File tools/ue/run_sprite_net_test.ps1` | PASS / FAIL |
 
 Notes:
@@ -185,16 +193,18 @@ Notes:
 | `mr.Sprite.Billboard` | 1 | Share of the camera's pitch the quad follows (1 = always parallel to the screen) |
 | `mr.Sprite.Shadow` | 1 | The sun-facing shadow card |
 | `mr.Sprite.Unlit` | 0 | 1 = the unlit material |
-| `mr.Sprite.Albedo` | 0.75 | Lighting (see "Lighting") |
+| `mr.Sprite.Albedo` | 0.64 | Lighting (see "Lighting") |
 | `mr.Sprite.SunFace` | 0.6 | Lighting |
 | `mr.Sprite.NormalUp` | 0.4 | Lighting |
-| `mr.Sprite.Ambient` | 0.6 | Lighting |
+| `mr.Sprite.Ambient` | 0.51 | Lighting |
+| `mr.Sprite.BackArmsUnder` | 1 | Seen from behind, arms under the torso (0 = the original's layering) |
 | `mr.Sprite.TexelsPerPixel` | 4 | Render target texels per torso pixel |
 | `mr.Sprite.WalkRefSpeed` | 450 | Ground speed for the original walk rate; 0 = always the original rate |
 | `mr.Sprite.UV` | `1 0 1` | `SwapUV FlipU FlipV` for the engine plane |
 | `mr.Sprite.HandScale` | 1 | First-person hand size |
 | `mr.Sprite.HandBob` | 1 | First-person hand walk bob |
 | `mr.Sprite.Smooth.Tweens` | 1 | Show the in-betweens |
+| `mr.Sprite.Smooth.OnceWindow` | 0.35 | One-shot actions: in-betweens only in this last share of each pose |
 | `mr.Sprite.Smooth.Crossfade` | 0 | Per-part crossfade (built, off) |
 | `mr.Sprite.Smooth.AngleFade` | 0 | Fade between views (built, off) |
 | `mr.Sprite.Smooth.Motion` | 0 | Procedural motion (built, off) |
@@ -243,7 +253,7 @@ Monsters and NPCs are drawn by the same `UMRSpriteBodyComponent` as players. A m
 - **`UMRMonsterSubsystem`** (`Monsters/MRMonsterSubsystem.*`), server:
   - **NPCs:** placed from `zone_layout.json` objects, at their Kod spots and facings.
   - **Monster rooms:** spawned from `zones.json` `spawning`: weighted classes, `init_count_min..max` at start, then one more every `gen_time_ms` while under the maximum.
-  - **Placement:** at the room's generator points, or at random floor points in the grid. Random points use the lowest floor with headroom (`UMRZoneSubsystem::TraceFloor(P, true)`): the original rooms are 2.5D, so a surface with a floor under it is a roof we added.
+  - **Placement:** NPCs stand exactly at their Kod spots. Until 2026-10-07 every NPC was moved 40–80 cm, because its own new capsule failed the spawn's overlap test; that put Marcus on top of the Inn's bar. The capsule's collision is now off until it is placed. Monsters spawn at the room's generator points, or at random floor points in the grid. Random points use the lowest floor with headroom (`UMRZoneSubsystem::TraceFloor(P, true)`): the original rooms are 2.5D, so a surface with a floor under it is a roof we added.
   - In the demo zones: 7 Raza NPCs and about 22 monsters across the Mausoleum (306), the Outskirts (330) and the Forest edge (331).
   - `mr.Monster.Spawn 0` turns spawning off; `MRMonsterReset` respawns everything.
 

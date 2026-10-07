@@ -35,20 +35,27 @@ namespace
 		TEXT("original rate (100 ms a leg pose), as the original client did whatever the speed."));
 	TAutoConsoleVariable<int32> CVarSmoothTweens(TEXT("mr.Sprite.Smooth.Tweens"), 1,
 		TEXT("Show the in-between frames (tools/sprites/tweens.py) between the original poses."));
+	TAutoConsoleVariable<float> CVarSmoothOnceWindow(TEXT("mr.Sprite.Smooth.OnceWindow"), 0.35f,
+		TEXT("One-shot actions (attacks, wave, cast): the in-betweens play in this last fraction of each pose, which holds ")
+		TEXT("still before it, as the original's poses did (1 = in-betweens across the whole pose, as walking does)."));
+	TAutoConsoleVariable<int32> CVarBackArmsUnder(TEXT("mr.Sprite.BackArmsUnder"), 1,
+		TEXT("1: seen from behind, the arms (and what they hold) are drawn under the torso. 0: as the original's bitmaps ")
+		TEXT("say, which puts a punch or a backswing on top of the player's back."));
 	TAutoConsoleVariable<float> CVarSmoothCrossfade(TEXT("mr.Sprite.Smooth.Crossfade"), 0.f,
 		TEXT("Crossfade each part into its next frame over this last fraction of every frame (0 off, 1 the whole frame)."));
 	TAutoConsoleVariable<float> CVarSmoothAngleFade(TEXT("mr.Sprite.Smooth.AngleFade"), 0.f,
 		TEXT("Seconds to fade from one view to the next when the viewing angle changes (0 off)."));
 	TAutoConsoleVariable<float> CVarSmoothMotion(TEXT("mr.Sprite.Smooth.Motion"), 0.f,
 		TEXT("Procedural motion of the whole sprite: walk bob, idle breathing, leaning into turns, landing squash (0 off)."));
-	TAutoConsoleVariable<float> CVarSpriteAlbedo(TEXT("mr.Sprite.Albedo"), 0.75f,
-		TEXT("Lit sprites: colour multiplier (sunlit sprites read too bright at 1)."));
+	TAutoConsoleVariable<float> CVarSpriteAlbedo(TEXT("mr.Sprite.Albedo"), 0.64f,
+		TEXT("Lit sprites: colour multiplier (sunlit sprites read too bright at 1; 0.75 until 2026-10-07, then 15 % less)."));
 	TAutoConsoleVariable<float> CVarSpriteNormalUp(TEXT("mr.Sprite.NormalUp"), 0.4f,
 		TEXT("Lit sprites: how much the shading normal points up (1 = up: lit like the ground)."));
 	TAutoConsoleVariable<float> CVarSpriteSunFace(TEXT("mr.Sprite.SunFace"), 0.6f,
 		TEXT("Lit sprites: how much the shading normal faces the sun's side rather than the camera (1 = brightness never changes as the camera orbits)."));
-	TAutoConsoleVariable<float> CVarSpriteAmbient(TEXT("mr.Sprite.Ambient"), 0.6f,
-		TEXT("Lit sprites indoors: share of the zone's ambient floor (MPC_Environment.SectorAmbient) added, as the walls get it."));
+	TAutoConsoleVariable<float> CVarSpriteAmbient(TEXT("mr.Sprite.Ambient"), 0.51f,
+		TEXT("Lit sprites indoors: share of the zone's ambient floor (MPC_Environment.SectorAmbient) added, as the walls get it ")
+		TEXT("(0.6 until 2026-10-07, then 15 % less)."));
 	TAutoConsoleVariable<FString> CVarSpriteUV(TEXT("mr.Sprite.UV"), TEXT("1 0 1"),
 		TEXT("Quad UV mapping: 'SwapUV FlipU FlipV' (0/1 each)."));
 
@@ -500,7 +507,14 @@ void UMRSpriteBodyComponent::Compose(int32 Angle, float DeltaTime)
 		}
 		const TArray<int32>* Tw = bTweens ? Bgf->FindTweens(A, B) : nullptr;
 		const int32 N = Tw ? Tw->Num() : 0;
-		const float Sub = Tr->Phase() * (N + 1);
+		// a one-shot holds each pose, then moves on in its last OnceWindow (a cycle moves all the time)
+		float Phase = Tr->Phase();
+		if (Tr->Def.Mode == FMRSpriteTrackDef::EMode::Once)
+		{
+			const float W = FMath::Clamp(CVarSmoothOnceWindow.GetValueOnGameThread(), 0.01f, 1.f);
+			Phase = FMath::Clamp((Phase - (1.f - W)) / W, 0.f, 1.f);
+		}
+		const float Sub = Phase * (N + 1);
 		const int32 K = FMath::Clamp(FMath::FloorToInt(Sub), 0, N);
 		const int32 Cur = K == 0 ? A : (*Tw)[K - 1];
 		const int32 Nxt = K < N ? (*Tw)[K] : B;
@@ -522,7 +536,8 @@ void UMRSpriteBodyComponent::Compose(int32 Angle, float DeltaTime)
 	TArray<FMRSpritePlaced> Placed, PlacedNext;
 	FVector2f Feet = FVector2f::ZeroVector, FeetNext = FVector2f::ZeroVector;
 	int32 Shrink = 4;
-	if (!Lib.Place(*Look, Groups, Angle, Placed, Feet, Shrink, &Current))
+	const bool bBackArmsUnder = CVarBackArmsUnder.GetValueOnGameThread() != 0;
+	if (!Lib.Place(*Look, Groups, Angle, Placed, Feet, Shrink, &Current, bBackArmsUnder))
 	{
 		return;
 	}
@@ -531,7 +546,7 @@ void UMRSpriteBodyComponent::Compose(int32 Angle, float DeltaTime)
 	{
 		TMap<FName, int32> Both = Current;
 		Both.Append(Next);
-		Lib.Place(*Look, Groups, Angle, PlacedNext, FeetNext, Shrink, &Both);
+		Lib.Place(*Look, Groups, Angle, PlacedNext, FeetNext, Shrink, &Both, bBackArmsUnder);
 	}
 
 	// smoothing E: a new view fades in over the old one

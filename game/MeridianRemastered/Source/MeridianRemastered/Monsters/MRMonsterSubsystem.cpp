@@ -234,7 +234,8 @@ void UMRMonsterSubsystem::SpawnInRoom(FSpawnRoom& Room)
 bool UMRMonsterSubsystem::FindFloor(int32 Rid, const FVector& Near, float Jitter, float HalfHeight, float Radius, FVector& Out) const
 {
 	const UMRZoneSubsystem* Zones = GetWorld()->GetSubsystem<UMRZoneSubsystem>();
-	for (int32 Try = 0; Try < 24; ++Try)
+	// no jitter (an NPC): only Kod's spot
+	for (int32 Try = 0; Try < (Jitter > 0.f ? 24 : 1); ++Try)
 	{
 		FVector P = Near;
 		if (Try > 0 || Jitter > 0.f)
@@ -271,6 +272,8 @@ AMRMonster* UMRMonsterSubsystem::SpawnMonster(FName Class, int32 Zone, const FVe
 	}
 	M->InitMonster(Class, Zone);  // sizes the capsule from its look
 	const UCapsuleComponent* Capsule = M->GetCapsuleComponent();
+	// its own capsule (already registered, up at Initial) mustn't block its floor trace or overlap test
+	M->SetActorEnableCollision(false);
 	FVector At;
 	if (!FindFloor(Zone, Near, bRandomise ? 100.f : 0.f, Capsule->GetUnscaledCapsuleHalfHeight(), Capsule->GetUnscaledCapsuleRadius(), At))
 	{
@@ -285,6 +288,7 @@ AMRMonster* UMRMonsterSubsystem::SpawnMonster(FName Class, int32 Zone, const FVe
 		At.Z += Capsule->GetUnscaledCapsuleHalfHeight() + 2.f;
 	}
 	M->FinishSpawning(FTransform(FRotator(0.f, Yaw, 0.f), At));
+	M->SetActorEnableCollision(true);
 	return M;
 }
 

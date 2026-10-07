@@ -202,10 +202,14 @@ public:
 	 * Port of D3DRenderOverlaysDraw / FindHotspot: every bitmap of a look at an angle, in draw order
 	 * (underlay passes, the body, overlay passes), positioned in base pixels. Groups: part -> 0-based
 	 * group. Returns false if the body has no bitmap. OutFeet = where the object stands, base pixels.
+	 * bBackArmsUnder: seen from behind (view slots 3-5), the arms (and what they hold) go under the
+	 * torso even where the original's torso bitmap puts them over it. Its attack and dance torsos
+	 * from behind (bitmap 9 of bta / btb) mark the right arm "over", so a punch or a backswing came
+	 * out of the player's back; at the original's size it hardly showed, upscaled it does.
 	 */
 	bool Place(const FMRSpriteLook& Look, const TMap<FName, int32>& Groups, int32 Angle,
 		TArray<FMRSpritePlaced>& Out, FVector2f& OutFeet, int32& OutShrink,
-		const TMap<FName, int32>* BitmapOverride = nullptr) const;
+		const TMap<FName, int32>* BitmapOverride = nullptr, bool bBackArmsUnder = true) const;
 
 	/** UE yaws (degrees) -> the client's relative angle (0..4095, 0 = the object faces the viewer). */
 	static int32 RelativeAngle(float FacingYawDeg, float YawToViewerDeg);
