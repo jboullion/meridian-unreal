@@ -1,0 +1,117 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Object.h"
+#include "UI/MRUITypes.h"
+#include "MRInventorySource.generated.h"
+
+class UMRGameDataSubsystem;
+
+/**
+ * What the UI shows and changes: the bag, the 9 hotbar slots, the equipment, the spell bar, known
+ * spells and skills, and the stack carried by the mouse (docs/adr/0009-user-interface.md).
+ *
+ * This is the seam between the widgets and the game. The interactions (Minecraft's click rules,
+ * below) are implemented here on top of Get/Set, so UMRMockInventory only stores arrays. The
+ * server-owned inventory will override the interactions to send them to the server instead, and
+ * the widgets won't change.
+ *
+ * Minecraft's rules, with the cursor (the carried stack):
+ * - left click: pick a stack up; put it down; merge onto the same item; swap with a different one
+ * - right click: pick half up; put one down
+ * - shift click: move between the bag and the hotbar; equip from the bag; unequip to the bag
+ * - a number key over a slot: swap it with that hotbar slot
+ * - clicking outside the window drops the carried stack (right click: one)
+ * Spells: the spell book is read only (picking a spell up copies it); spells only go on the spell
+ * bar, and one dropped anywhere else is let go.
+ */
+UCLASS(Abstract)
+class MERIDIANREMASTERED_API UMRInventorySource : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	/** Number of slots to show in an area (the bag always has a free row). */
+	virtual int32 NumSlots(EMRSlotArea Area) const;
+	/** The content of a slot. The right hand is the selected hotbar slot. */
+	FMRSlotContent Get(const FMRSlotRef& Slot) const;
+	/** Whether this content may go in this slot. */
+	bool Accepts(const FMRSlotRef& Slot, const FMRSlotContent& Content) const;
+	/** Most of one thing a slot holds. */
+	int32 MaxStack(const FMRSlotRef& Slot, const FMRSlotContent& Content) const;
+
+	// --- interactions (virtual: a server-owned inventory sends them instead)
+	virtual void Click(const FMRSlotRef& Slot, bool bRight);
+	virtual void QuickMove(const FMRSlotRef& Slot);
+	virtual void SwapWithHotbar(const FMRSlotRef& Slot, int32 HotbarIndex);
+	virtual void DropCursor(bool bOne);
+	/** Put the carried stack back (closing the window): into its old slot or any free one. */
+	virtual void ReturnCursor();
+	virtual void SelectHotbar(int32 Index);
+	int32 GetSelectedHotbar() const { return SelectedHotbar; }
+
+	/** Known spells (spell book order) and skills with their percentages. */
+	virtual const TArray<FName>& GetKnownSpells() const PURE_VIRTUAL(UMRInventorySource::GetKnownSpells, static TArray<FName> None; return None;);
+	virtual const TMap<FName, int32>& GetSkills() const PURE_VIRTUAL(UMRInventorySource::GetSkills, static TMap<FName, int32> None; return None;);
+
+	/** Totals of everything carried (bag, hotbar, equipment): the original's weight and bulk. */
+	void GetTotals(int32& OutWeight, int32& OutBulk) const;
+
+	/** Broadcast after anything changed. */
+	FSimpleMulticastDelegate OnChanged;
+	/** Broadcast when the selected hotbar slot changes (the HUD shows the item's name). */
+	FSimpleMulticastDelegate OnSelectionChanged;
+
+	void SetData(UMRGameDataSubsystem* InData) { Data = InData; }
+	UMRGameDataSubsystem* GetData() const { return Data; }
+
+protected:
+	UPROPERTY(Transient)
+	TObjectPtr<UMRGameDataSubsystem> Data;
+
+	/** Storage. Slot refs given here are resolved (never the right hand). */
+	virtual FMRSlotContent GetRaw(const FMRSlotRef& Slot) const PURE_VIRTUAL(UMRInventorySource::GetRaw, return FMRSlotContent(););
+	virtual void SetRaw(const FMRSlotRef& Slot, const FMRSlotContent& Content) PURE_VIRTUAL(UMRInventorySource::SetRaw, );
+	/** Called when the carried stack is dropped in the world. */
+	virtual void OnDropped(const FMRSlotContent& Content);
+
+	/** The right hand -> the selected hotbar slot. */
+	FMRSlotRef Resolve(const FMRSlotRef& Slot) const;
+	/** Put content into the first slots of an area that take it (merging first); returns what didn't fit. */
+	FMRSlotContent Insert(EMRSlotArea Area, FMRSlotContent Content);
+	void Changed() { OnChanged.Broadcast(); }
+
+	int32 SelectedHotbar = 0;
+	/** Where the carried stack was picked up (ReturnCursor). */
+	FMRSlotRef CursorOrigin;
+};
+
+/**
+ * The UI's mock inventory: local, not replicated, seeded from data/ui/mock_inventory.json. Until
+ * the server owns inventory (docs/adr/0009-user-interface.md, "the seam").
+ */
+UCLASS()
+class MERIDIANREMASTERED_API UMRMockInventory : public UMRInventorySource
+{
+	GENERATED_BODY()
+
+public:
+	void LoadFromJson();
+
+	virtual const TArray<FName>& GetKnownSpells() const override { return KnownSpells; }
+	virtual const TMap<FName, int32>& GetSkills() const override { return Skills; }
+
+protected:
+	virtual FMRSlotContent GetRaw(const FMRSlotRef& Slot) const override;
+	virtual void SetRaw(const FMRSlotRef& Slot, const FMRSlotContent& Content) override;
+	virtual void OnDropped(const FMRSlotContent& Content) override;
+
+private:
+	TArray<FMRSlotContent> Bag;
+	FMRSlotContent Hotbar[9];
+	FMRSlotContent Equipment[static_cast<int32>(EMREquipSlot::Count)];
+	FMRSlotContent SpellBar[9];
+	FMRSlotContent Cursor;
+	TArray<FName> KnownSpells;
+	TMap<FName, int32> Skills;
+};

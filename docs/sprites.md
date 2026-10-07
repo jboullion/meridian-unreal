@@ -211,7 +211,7 @@ Notes:
 
 **Test keys** (sprite mode):
 - LMB attack
-- 1 wave, 2 point, 3 dance (again to stop), 4 cast
+- F5 wave, F6 point, F7 dance (again to stop), F9 cast (1-9 select the hotbar: docs/adr/0009-user-interface.md)
 - L next look
 - V view, P photo
 

@@ -1,5 +1,42 @@
 [
  {
+  "class": "AcidRing",
+  "parents": [
+   "ResistRing",
+   "Ring",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/ring/resring/acidring.kod",
+  "vrName": "magical ring",
+  "vrDesc": "The ring pulses with magical energy.",
+  "vrIcon": "ring3.bgf",
+  "viValue_average": 280,
+  "viWeight": 10,
+  "viBulk": 5,
+  "viItem_type": 128,
+  "viUse_type": 128,
+  "viHits_init_min": 24,
+  "viHits_init_max": 30,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrRealName": "ring of acid resistance",
+   "vrRealDesc": "This ring is odd to the touch.  Magical runes are etched on its inner surface.",
+   "vrUseMessage": "You feel the ring working.  Your skin feels dry and chalky.",
+   "vrDeadMessage": "The ring begins to sizzle then quickly melts off your finger!",
+   "viRevealedColor": 151,
+   "piResistanceType": -64,
+   "piResistanceChange": 20,
+   "viUnrevealedColor": 155,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
+ },
+ {
   "class": "AntMask",
   "parents": [
    "FaceMask",
@@ -365,6 +402,36 @@
    "piAttack_type": 130
   },
   "kind": "Weapon"
+ },
+ {
+  "class": "BerserkerRing",
+  "parents": [
+   "Ring",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/ring/besring.kod",
+  "vrName": "magical ring",
+  "vrDesc": "The ring pulses with magical energy.",
+  "vrIcon": "ring2.bgf",
+  "viValue_average": 200,
+  "viWeight": 10,
+  "viBulk": 5,
+  "viItem_type": 128,
+  "viUse_type": 128,
+  "viHits_init_min": 80,
+  "viHits_init_max": 120,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrRealName": "berserker ring",
+   "vrRealDesc": "This ring seems to glow a warm red.  It bears a simple inscription, \"Lustful blows are strong but not always true.\"",
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
  },
  {
   "class": "BlackDagger",
@@ -886,6 +953,43 @@
    "vrCondition_broken": " is useless, having been cleft in two by a forceful blow."
   },
   "kind": "DefenseModifier"
+ },
+ {
+  "class": "ColdRing",
+  "parents": [
+   "ResistRing",
+   "Ring",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/ring/resring/coldring.kod",
+  "vrName": "magical ring",
+  "vrDesc": "The ring pulses with magical energy.",
+  "vrIcon": "ring3.bgf",
+  "viValue_average": 280,
+  "viWeight": 10,
+  "viBulk": 5,
+  "viItem_type": 128,
+  "viUse_type": 128,
+  "viHits_init_min": 24,
+  "viHits_init_max": 30,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrRealName": "ring of cold resistance",
+   "vrRealDesc": "This ring is warm to the touch.  Magical runes are inscribed on its inner surface.",
+   "vrUseMessage": "You feel the ring working.  You feel pleasantly warm all over.",
+   "vrDeadMessage": "The ring cracks into pieces!",
+   "viRevealedColor": 152,
+   "piResistanceType": -8,
+   "piResistanceChange": 20,
+   "viUnrevealedColor": 155,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
  },
  {
   "class": "CowMask",
@@ -1550,6 +1654,40 @@
   "kind": "Item"
  },
  {
+  "class": "FarenCharm",
+  "parents": [
+   "Necklace",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/necklace/frcharm.kod",
+  "vrName": "brass medallion",
+  "vrDesc": "This necklace is a long string of brass medallions carefully crafted together.  In the largest of the medallions, the image of a storm has been delicately engraved.\n\nBonus Stats:\n+10 Stamina\n+4  Aim\n\n",
+  "vrIcon": "frcharm.bgf",
+  "viValue_average": 500,
+  "viWeight": 25,
+  "viBulk": 20,
+  "viItem_type": 2048,
+  "viUse_type": 64,
+  "viHits_init_min": 1,
+  "viHits_init_max": 1,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 2,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "viMax_Disp_hits": 5,
+   "pbIn_use": 0,
+   "piStamina_change": 10,
+   "piAim_change": 4,
+   "piDisp_hits": 0,
+   "piSchool": 4,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
+ },
+ {
   "class": "FeyMask",
   "parents": [
    "FaceMask",
@@ -1636,6 +1774,43 @@
    "vrCondition_broken": " is useless, having been cleft in two by a forceful blow."
   },
   "kind": "DefenseModifier"
+ },
+ {
+  "class": "FireRing",
+  "parents": [
+   "ResistRing",
+   "Ring",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/ring/resring/firering.kod",
+  "vrName": "magical ring",
+  "vrDesc": "The ring pulses with magical energy.",
+  "vrIcon": "ring3.bgf",
+  "viValue_average": 280,
+  "viWeight": 10,
+  "viBulk": 5,
+  "viItem_type": 128,
+  "viUse_type": 128,
+  "viHits_init_min": 24,
+  "viHits_init_max": 30,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrRealName": "ring of fire resistance",
+   "vrRealDesc": "This ring is cold to the touch.  Magical runes are inscribed on its inner surface.",
+   "vrUseMessage": "You feel the ring working.  Even the sun's heat seems diminished.",
+   "vrDeadMessage": "The ring begins to hiss and smoke and then evaporates into the air!",
+   "viRevealedColor": 157,
+   "piResistanceType": -2,
+   "piResistanceChange": 20,
+   "viUnrevealedColor": 155,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
  },
  {
   "class": "FireSand",
@@ -2491,6 +2666,40 @@
    "piBlockBonus": 0
   },
   "kind": "DefenseModifier"
+ },
+ {
+  "class": "KraananCharm",
+  "parents": [
+   "Necklace",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/necklace/krcharm.kod",
+  "vrName": "steel torc",
+  "vrDesc": "Made not for ornamentation but for protection, this torc looks more than suitable for stopping any blow headed towards the throat.\n\nBonus Stats:\n+10 Might\n+4  Agility\n\n",
+  "vrIcon": "krcharm.bgf",
+  "viValue_average": 500,
+  "viWeight": 25,
+  "viBulk": 20,
+  "viItem_type": 2048,
+  "viUse_type": 64,
+  "viHits_init_min": 1,
+  "viHits_init_max": 1,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 2,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "viMax_Disp_hits": 5,
+   "pbIn_use": 0,
+   "piMight_change": 10,
+   "piAgility_change": 4,
+   "piDisp_hits": 0,
+   "piSchool": 3,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
  },
  {
   "class": "KriipaClaw",
@@ -4425,6 +4634,40 @@
   "kind": "Weapon"
  },
  {
+  "class": "QorCharm",
+  "parents": [
+   "Necklace",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/necklace/qrcharm.kod",
+  "vrName": "monocle",
+  "vrDesc": "In your hand rests a copper-edged lens.  The glass feels surreally cool in your hand.\n\nBonus Stats:\n+10 Aim\n+4  Might\n\n",
+  "vrIcon": "qrcharm.bgf",
+  "viValue_average": 500,
+  "viWeight": 25,
+  "viBulk": 20,
+  "viItem_type": 2048,
+  "viUse_type": 64,
+  "viHits_init_min": 1,
+  "viHits_init_max": 1,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 2,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "viMax_Disp_hits": 5,
+   "pbIn_use": 0,
+   "piMight_change": 4,
+   "piAim_change": 10,
+   "piDisp_hits": 0,
+   "piSchool": 2,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
+ },
+ {
   "class": "QormasHelm",
   "parents": [
    "Helmet",
@@ -4575,6 +4818,39 @@
   "kind": "DefenseModifier"
  },
  {
+  "class": "ReagentRing",
+  "parents": [
+   "Ring",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/ring/ringreag.kod",
+  "vrName": "ring of Far'nohl",
+  "vrDesc": "A replica of the powerful ring once worn by the powerful King Far'nohl, this ring will let the bearer cast spells even while lacking the necessary reagents.  Sadly, since it is a mere copy of the original, it will only gift you with limited usage.",
+  "vrIcon": "ring01.bgf",
+  "viValue_average": 100,
+  "viWeight": 10,
+  "viBulk": 5,
+  "viItem_type": 128,
+  "viUse_type": 128,
+  "viHits_init_min": 5,
+  "viHits_init_max": 5,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrRealName": "ring of Far'nohl",
+   "vrRealDesc": "A replica of the powerful ring once worn by the powerful King Far'nohl, this ring will let the bearer cast spells even while lacking the necessary reagents.  Sadly, since it is a mere copy of the original, it will only gift you with limited usage.",
+   "piItem_flags": 44,
+   "piCharges": 5,
+   "pbIn_use": 0,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
+ },
+ {
   "class": "RebelShield",
   "parents": [
    "SoldierShield",
@@ -4716,6 +4992,41 @@
   "kind": "DefenseModifier"
  },
  {
+  "class": "ResistRing",
+  "parents": [
+   "Ring",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/ring/resring.kod",
+  "vrName": "magical ring",
+  "vrDesc": "The ring pulses with magical energy.",
+  "vrIcon": "ring3.bgf",
+  "viValue_average": 280,
+  "viWeight": 10,
+  "viBulk": 5,
+  "viItem_type": 128,
+  "viUse_type": 128,
+  "viHits_init_min": 24,
+  "viHits_init_max": 30,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrUseMessage": "You put the ring on.",
+   "vrDeadMessage": "The ring crumbles!",
+   "viUnrevealedColor": 155,
+   "piResistanceType": 0,
+   "piResistanceChange": 20,
+   "viUse_Amount": 1,
+   "vrRealName": "generic magical ring",
+   "vrRealDesc": "generic magical ring"
+  },
+  "kind": "Item"
+ },
+ {
   "class": "RiceMask",
   "parents": [
    "FaceMask",
@@ -4758,6 +5069,40 @@
   "kind": "DefenseModifier"
  },
  {
+  "class": "RiijaCharm",
+  "parents": [
+   "Necklace",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/necklace/rjcharm.kod",
+  "vrName": "feathered choker",
+  "vrDesc": "Unorthodox and ornate, this choker is wondrous to look at, but it doesn't look like much fun to wear.\n\nBonus Stats:\n+10 Agility\n+4  Intellect\n\n",
+  "vrIcon": "rjcharm.bgf",
+  "viValue_average": 500,
+  "viWeight": 25,
+  "viBulk": 20,
+  "viItem_type": 2048,
+  "viUse_type": 64,
+  "viHits_init_min": 1,
+  "viHits_init_max": 1,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 2,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "viMax_Disp_hits": 5,
+   "pbIn_use": 0,
+   "piIntellect_change": 4,
+   "piAgility_change": 10,
+   "piDisp_hits": 0,
+   "piSchool": 5,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
+ },
+ {
   "class": "RiijaSword",
   "parents": [
    "Weapon",
@@ -4794,6 +5139,167 @@
    "poQuester": null
   },
   "kind": "Weapon"
+ },
+ {
+  "class": "RingDefense",
+  "parents": [
+   "Ring",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/ring/ringdefense.kod",
+  "vrName": "ring of defense",
+  "vrDesc": "This is an elegant gold band imbued with protective magics.",
+  "vrIcon": "ring1.bgf",
+  "viValue_average": 550,
+  "viWeight": 3,
+  "viBulk": 2,
+  "viItem_type": 128,
+  "viUse_type": 128,
+  "viHits_init_min": 3,
+  "viHits_init_max": 7,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrRealName": "ring of defense",
+   "vrRealDesc": "This is an elegant gold band imbued with protective magics.",
+   "viDefense_bonus": 100,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
+ },
+ {
+  "class": "RingInvisibility",
+  "parents": [
+   "Ring",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/ring/ringinv.kod",
+  "vrName": "magical ring",
+  "vrDesc": "The ring pulses with magical energy.",
+  "vrIcon": "ring1.bgf",
+  "viValue_average": 470,
+  "viWeight": 10,
+  "viBulk": 5,
+  "viItem_type": 128,
+  "viUse_type": 128,
+  "viHits_init_min": 4,
+  "viHits_init_max": 7,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrRealName": "ring of invisibility",
+   "vrRealDesc": "This ring bears strange markings and seems to shimmer, making it difficult to see clearly.",
+   "pbIn_use": 0,
+   "ptCharge": null,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
+ },
+ {
+  "class": "RingMining",
+  "parents": [
+   "Ring",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/ring/ringmining.kod",
+  "vrName": "ring of mining",
+  "vrDesc": "This ring is fitted with a special crystal capable of detecting precious gems.",
+  "vrIcon": "ring02.bgf",
+  "viValue_average": 550,
+  "viWeight": 3,
+  "viBulk": 2,
+  "viItem_type": 128,
+  "viUse_type": 128,
+  "viHits_init_min": 3,
+  "viHits_init_max": 7,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrRealName": "ring of mining",
+   "vrRealDesc": "This ring is fitted with a special crystal capable of detecting precious gems.",
+   "viMiningBonus": 5,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
+ },
+ {
+  "class": "RingWedding",
+  "parents": [
+   "Ring",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/ring/ringwedd.kod",
+  "vrName": "wedding ring",
+  "vrDesc": "This is an elegant gold band demonstrating the bond between two people.",
+  "vrIcon": "ring1.bgf",
+  "viValue_average": 100,
+  "viWeight": 3,
+  "viBulk": 2,
+  "viItem_type": 128,
+  "viUse_type": 128,
+  "viHits_init_min": 3,
+  "viHits_init_max": 7,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrRealName": "wedding ring",
+   "vrRealDesc": "This is an elegant gold band demonstrating the bond between two people.",
+   "poFirstHeld": null,
+   "poSecondHeld": null,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
+ },
+ {
+  "class": "RingofLethargy",
+  "parents": [
+   "Ring",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/ring/lethring.kod",
+  "vrName": "magical ring",
+  "vrDesc": "The ring pulses with magical energy.",
+  "vrIcon": "ring3.bgf",
+  "viValue_average": 70,
+  "viWeight": 10,
+  "viBulk": 5,
+  "viItem_type": 128,
+  "viUse_type": 128,
+  "viHits_init_min": 1,
+  "viHits_init_max": 1,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrRealName": "ring of lethargy",
+   "vrRealDesc": "The ring looks dangerous even from here.  Perhaps you should not wear it.",
+   "viVigorDrop": 400000,
+   "viRevealedColor": 159,
+   "viUnrevealedColor": 155,
+   "pbIn_use": 0,
+   "piVigorRestThresholdChange": 20,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
  },
  {
   "class": "Robe",
@@ -5084,6 +5590,74 @@
   "kind": "Weapon"
  },
  {
+  "class": "ShadowAmulet",
+  "parents": [
+   "Necklace",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/necklace/shadowam.kod",
+  "vrName": "Amulet of Shadows",
+  "vrDesc": "You cannot get a good look at the amulet.  Shadows seem to cling to it even in direct sunlight.",
+  "vrIcon": "amulet.bgf",
+  "viValue_average": 100,
+  "viWeight": 25,
+  "viBulk": 25,
+  "viItem_type": 2048,
+  "viUse_type": 64,
+  "viHits_init_min": 1,
+  "viHits_init_max": 1,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "viIndefinite": 3,
+   "viDamage_min": 1,
+   "viDamage_max": 5,
+   "viDefense_change": -150,
+   "viLight_change": 50,
+   "pbIn_use": 0,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
+ },
+ {
+  "class": "ShalilleCharm",
+  "parents": [
+   "Necklace",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/necklace/shcharm.kod",
+  "vrName": "diamond pendant",
+  "vrDesc": "Made of carefully cut diamonds set in finely worked copper, this pendant would be anyone's best friend.\n\nBonus Stats:\n+10 Intellect\n+4  Stamina\n\n",
+  "vrIcon": "shcharm.bgf",
+  "viValue_average": 500,
+  "viWeight": 25,
+  "viBulk": 20,
+  "viItem_type": 2048,
+  "viUse_type": 64,
+  "viHits_init_min": 1,
+  "viHits_init_max": 1,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 2,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "viMax_Disp_hits": 5,
+   "pbIn_use": 0,
+   "piIntellect_change": 10,
+   "piStamina_change": 4,
+   "piDisp_hits": 0,
+   "piSchool": 1,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
+ },
+ {
   "class": "ShamanBlood",
   "parents": [
    "Reagent",
@@ -5234,6 +5808,43 @@
    "vbShow_Condition": 0
   },
   "kind": "DefenseModifier"
+ },
+ {
+  "class": "ShockRing",
+  "parents": [
+   "ResistRing",
+   "Ring",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/ring/resring/shokring.kod",
+  "vrName": "magical ring",
+  "vrDesc": "The ring pulses with magical energy.",
+  "vrIcon": "ring3.bgf",
+  "viValue_average": 280,
+  "viWeight": 10,
+  "viBulk": 5,
+  "viItem_type": 128,
+  "viUse_type": 128,
+  "viHits_init_min": 24,
+  "viHits_init_max": 30,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrRealName": "ring of shock resistance",
+   "vrRealDesc": "This ring is smooth to the touch.  Magical runes are inscribed on its inner surface.",
+   "vrUseMessage": "You feel the ring working.  You feel well grounded.",
+   "vrDeadMessage": "The ring shatters in a small explosion of pieces!",
+   "viRevealedColor": 156,
+   "piResistanceType": -4,
+   "piResistanceChange": 20,
+   "viUnrevealedColor": 155,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
  },
  {
   "class": "ShortSkirt",
@@ -5394,6 +6005,38 @@
    "piSkillPercent": null
   },
   "kind": "Weapon"
+ },
+ {
+  "class": "SignetRing",
+  "parents": [
+   "Ring",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/ring/ringsgnt.kod",
+  "vrName": "signet ring",
+  "vrDesc": "This ring is worn and dirty, but you make out the family crest of %s.  Surely, its return would be appreciated.",
+  "vrIcon": "signet.bgf",
+  "viValue_average": 1000,
+  "viWeight": 2,
+  "viBulk": 2,
+  "viItem_type": 128,
+  "viUse_type": 128,
+  "viHits_init_min": 80,
+  "viHits_init_max": 100,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrRealName": "signet ring",
+   "vrRealDesc": "This ring is worn and dirty, but you make out the family crest of %s.  Surely, its return would be appreciated.",
+   "poRingOwner": null,
+   "ptLazyTimer": null,
+   "viUse_Amount": 1
+  },
+  "kind": "Item"
  },
  {
   "class": "SilkThread",

@@ -41,16 +41,8 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def find_server104() -> Path:
-    """Server-104/ is git-ignored, so a worktree (.claude/worktrees/<name>) has none: use the
-    nearest one up the tree (the main checkout's)."""
-    for d in (ROOT, *ROOT.parents):
-        if (d / "Server-104").is_dir():
-            return d / "Server-104"
-    return ROOT / "Server-104"
-
-
-SERVER104 = find_server104()
+sys.path.insert(0, str(ROOT / "tools"))
+from server104 import SERVER104  # noqa: E402  (ReferenceServers/Server-104)
 # Searched in order: the Server 104 client (matches the ruleset), the Steam classic client,
 # then the source tree's resource/ folder (see find_file).
 CLIENT_RES = [Path(r"C:\Users\jboul\AppData\Local\Meridian-104\resource"),

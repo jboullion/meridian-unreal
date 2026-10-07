@@ -49,6 +49,8 @@ struct FMRZoneInfo
 	UPROPERTY(BlueprintReadOnly) FVector Origin = FVector::ZeroVector;
 	/** Kod grid rectangle size in ROO units: [0, X] x [0, Y] in zone coordinates. */
 	UPROPERTY(BlueprintReadOnly) FVector2D GridSizeRoo = FVector2D::ZeroVector;
+	/** The geometry's footprint in world XY (UE cm), from zone_layout.json "bounds_m" (the minimap's capture). */
+	UPROPERTY(BlueprintReadOnly) FBox2D BoundsWorld = FBox2D(ForceInit);
 	UPROPERTY(BlueprintReadOnly) TArray<FString> Flags;
 	UPROPERTY(BlueprintReadOnly) bool bNoCombat = false;
 	UPROPERTY(BlueprintReadOnly) bool bSanctuary = false;

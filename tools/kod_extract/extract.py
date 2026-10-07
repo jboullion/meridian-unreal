@@ -1,7 +1,7 @@
 """
 Extract game data from the Server-104 Kod sources into data/*.json.
 
-    python tools/kod_extract/extract.py [--kod Server-104/kod] [--out data]
+    python tools/kod_extract/extract.py [--kod ReferenceServers/Server-104/kod] [--out data]
 
 Outputs:
     zones.json     demo zones (rooms): exits, edge exits, placed objects, spawns, generators
@@ -20,7 +20,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from kodparse import KodIndex  # noqa: E402
+from server104 import SERVER104  # noqa: E402  (ReferenceServers/Server-104)
 
 # Raza demo: town, interiors, mausoleum, outskirts, western Farol.
 DEMO_RIDS = [300, 301, 302, 303, 304, 305, 306, 307, 308, 330, 331, 332, 333]
@@ -389,6 +391,8 @@ class Extractor:
 
     def items(self) -> list[dict]:
         names = set(self.idx.subclasses("Weapon")) | set(self.idx.subclasses("DefenseModifier"))
+        # worn jewellery (the UI's ring and amulet slots)
+        names |= set(self.idx.subclasses("Ring")) | set(self.idx.subclasses("Necklace"))
         names |= {n for n in self.referenced_classes if n in self.idx.classes and self.idx.is_a(n, "Item")}
         out = []
         for cls in sorted(names):
@@ -411,7 +415,7 @@ class Extractor:
 def main() -> None:
     ap = argparse.ArgumentParser()
     root = Path(__file__).resolve().parents[2]
-    ap.add_argument("--kod", type=Path, default=root / "Server-104" / "kod")
+    ap.add_argument("--kod", type=Path, default=SERVER104 / "kod")
     ap.add_argument("--out", type=Path, default=root / "data")
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)

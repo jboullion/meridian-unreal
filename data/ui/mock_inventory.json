@@ -1,0 +1,52 @@
+{
+  "_doc": "The UI's mock inventory (docs/adr/0009-user-interface.md): what UMRMockInventory starts with until the server owns inventory. Classes are data/items.json, spells.json and skills.json classes; counts only matter for stackable items (NumberItem).",
+  "hotbar": [
+    {"item": "LongSword"},
+    {"item": "Bow"},
+    {"item": "Mace"},
+    {"item": "Apple", "count": 12},
+    {"item": "Bread", "count": 4},
+    null,
+    {"item": "Torch"},
+    null,
+    {"item": "ApprenticeWand"}
+  ],
+  "equipment": {
+    "Head": {"item": "SimpleHelm"},
+    "Torso": {"item": "LeatherArmor"},
+    "Legs": {"item": "PantsA"},
+    "Ring1": {"item": "RingDefense"},
+    "LeftHand": {"item": "MetalShield"}
+  },
+  "bag": [
+    {"item": "Scimitar"},
+    {"item": "ShortSword"},
+    {"item": "ChainArmor"},
+    {"item": "KnightsHelm"},
+    {"item": "Robe"},
+    {"item": "GoldShield"},
+    {"item": "ShalilleCharm"},
+    {"item": "SignetRing"},
+    {"item": "BrawlGloves"},
+    {"item": "Herbs", "count": 31},
+    {"item": "RedMushroom", "count": 18},
+    {"item": "BlueMushroom", "count": 9},
+    {"item": "PurpleMushroom", "count": 22},
+    {"item": "Emerald", "count": 5},
+    {"item": "Sapphire", "count": 2},
+    {"item": "Ruby", "count": 3},
+    {"item": "Diamond", "count": 1},
+    {"item": "OrcTooth", "count": 7},
+    {"item": "FairyWing", "count": 4},
+    {"item": "ElderBerry", "count": 15},
+    {"item": "Meatpie", "count": 2},
+    {"item": "WolfMask"},
+    {"item": "IronIngot", "count": 3},
+    {"item": "Lumber", "count": 10}
+  ],
+  "spells": ["MinorHeal", "Bless", "Zap", "Light", "Blink", "Phase", "Meditate", "Conveyance", "Loadout", "Set", "Transference",
+             "Haste", "CurePoison", "HolyTouch", "Darkness", "Cloak", "SummonFog", "IcyFingers", "TouchOfFlame", "Invigorate"],
+  "spell_bar": ["MinorHeal", "Zap", "Blink", "Bless", "Phase", "Light", null, null, "Meditate"],
+  "skills": {"Assess": 14, "Dodge": 32, "Parry": 21, "Block": 18, "SecondWind": 6, "SwordProficiency": 45, "Slash": 38,
+             "Thrust": 27, "Punch": 12, "Archery": 9, "Gathering": 22, "Mining": 3}
+}

@@ -562,7 +562,8 @@ void AMRCharacter::BuildInput()
 	Ctx->MapKey(AttackAction, EKeys::LeftMouseButton);
 	Ctx->MapKey(NextLookAction, EKeys::L);
 	Ctx->MapKey(PhotoAction, EKeys::P);
-	const FKey EmoteKeyBindings[] = {EKeys::One, EKeys::Two, EKeys::Three, EKeys::Four};
+	// test emotes on function keys (1-9 select the hotbar; F8 is the editor's eject key in PIE)
+	const FKey EmoteKeyBindings[] = {EKeys::F5, EKeys::F6, EKeys::F7, EKeys::F9};
 	for (int32 i = 0; i < UE_ARRAY_COUNT(EmoteKeys); ++i)
 	{
 		UInputAction* A = MakeAction(*FString::Printf(TEXT("IA_Emote_%s"), *EmoteKeys[i].ToString()), EInputActionValueType::Boolean);
@@ -690,6 +691,12 @@ void AMRCharacter::OnZoom(const FInputActionValue& Value)
 {
 	const float Wheel = Value.Get<float>();
 	if (FMath::IsNearlyZero(Wheel) || !CameraBoom)
+	{
+		return;
+	}
+	// the wheel alone selects the hotbar slot (AMRPlayerController); Ctrl + wheel zooms
+	const APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!PC || !(PC->IsInputKeyDown(EKeys::LeftControl) || PC->IsInputKeyDown(EKeys::RightControl)))
 	{
 		return;
 	}

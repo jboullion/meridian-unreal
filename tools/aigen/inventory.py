@@ -14,10 +14,14 @@ Kinds: "prop" (a mesh to make), "npc" / "monster" (other pipelines), "logic" (no
 import collections
 import json
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-KOD = ROOT / "Server-104" / "kod"
+sys.path.insert(0, str(ROOT / "tools"))
+from server104 import SERVER104  # noqa: E402
+
+KOD = SERVER104 / "kod"
 LAYOUT = ROOT / "data" / "zone_layout.json"
 OUT = ROOT / "data" / "aigen" / "inventory.json"
 

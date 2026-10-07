@@ -8,10 +8,10 @@ Guidance for AI coding agents (and humans who like the detail) working in this r
 
 ## Hard rules
 
-- **Name.** The product is "Meridian Remastered" (UE module `MeridianRemastered`). The Server 104 team approved "Meridian" but **"104" must never appear in the product name or branding**. Referring to the `Server-104/` reference checkout or the Server 104 ruleset in code and docs is fine.
+- **Name.** The product is "Meridian Remastered" (UE module `MeridianRemastered`). The Server 104 team approved "Meridian" but **"104" must never appear in the product name or branding**. Referring to the `ReferenceServers/Server-104/` reference checkout or the Server 104 ruleset in code and docs is fine.
 - **Original art and audio stay out of git.** We have permission from the Server 103 and 104 teams to use all original assets (different name, own server; both met), so upscaled or reworked originals may ship. Raw extracted files still go to `build/` (git-ignored) and are regenerated from the installed client by `tools/setup.ps1`.
 - **No redistributable-restricted content in git.** Engine template content, anything from Fab (`Content/Fab/`), MetaHumans, and downloads in `UnrealAssets/` are git-ignored. This repo will be public.
-- **`Server-104/` is reference only.** It's a separate GPLv2 git repo. Never link, copy or ship its code; read it, extract data with `tools/`, and re-implement.
+- **`ReferenceServers/Server-104/` is reference only.** It's a separate GPLv2 git repo. Never link, copy or ship its code; read it, extract data with `tools/`, and re-implement.
 - **Secrets.** Supabase credentials live in the repo-root `.env`. Never print, log or commit its values.
 - **Commits.** The maintainer makes the commits. Don't `git commit` or push unless explicitly asked (asking for a PR counts); finish by listing the changed files.
 - **Downloads.** Ask before downloading anything (models, packs, tools), stating file, source and size. AI models go in `build/texai/models/`.
@@ -32,6 +32,7 @@ Load these before working in their area. Skills are the current *how-to*; ADRs a
 | Hosting, Supabase, costs | [ADR 0004](docs/adr/0004-hosting-and-operations.md) |
 | Time of day, weather, fire, atmosphere | [ADR 0005](docs/adr/0005-time-weather-and-atmosphere.md) |
 | Audio | [ADR 0006](docs/adr/0006-audio.md) |
+| In-game UI: HUD, hotbars, inventory dialog, minimap, `Source/.../UI/`, `tools/ui/`, `data/ui/*.json` | [ADR 0009](docs/adr/0009-user-interface.md) |
 | The original data (scale, coordinates, zone layout, missing assets) | [docs/findings.md](docs/findings.md) |
 | Monster, prop and character pipeline research | [docs/research/](docs/research/) |
 
@@ -50,7 +51,7 @@ When a decision changes a default, update both the skill and its ADR. New pipeli
 
 | Path | What it holds |
 |---|---|
-| `Server-104/` | Reference checkout of the original server. Separate git repo, git-ignored. |
+| `ReferenceServers/Server-104/` | Reference checkout of the original server and client. Separate git repo, git-ignored. Tools find it through `tools/server104.py`. |
 | `tools/` | Python and PowerShell tools: read the original data, build art, drive Unreal |
 | `data/` | Generated JSON (game data, zone layouts, environment/audio config). Committed. |
 | `build/` | Generated meshes, previews, extracted reference art, AI model caches. Git-ignored; regenerate any time. |
@@ -66,7 +67,7 @@ Defaults are the maintainer's machine; pass overrides where the scripts accept t
 
 - UE 5.8 at `G:\Unreal Engine\UE_5.8`; Visual Studio 2022 or 2026 with the C++ game workload
 - Python 3.11+ with Pillow; Blender 5.x (`H:\Steam\steamapps\common\Blender`)
-- Original art is found in this order: the Server 104 client (`%LOCALAPPDATA%\Meridian-104\resource`), the Steam classic client, then `Server-104/resource`. Room geometry comes from `Server-104/resource/rooms`.
+- Original art is found in this order: the Server 104 client (`%LOCALAPPDATA%\Meridian-104\resource`), the Steam classic client, then `ReferenceServers/Server-104/resource`. Room geometry comes from `ReferenceServers/Server-104/resource/rooms`; the original interface bitmaps from its `module/merintr/bitmap` and `clientd3d/bitmap`.
 - Shells: commands below are PowerShell or bash-compatible as written; the `.ps1` scripts need `powershell -NoProfile -ExecutionPolicy Bypass -File`.
 
 ## Build and run
@@ -117,7 +118,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/build_world.ps1   #
 - **In the open editor** when one is running (Python remote execution, `tools/ue/run_in_editor.py`). Stop Play-In-Editor first. Unsaved edits to generated maps are discarded.
 - **Otherwise headless**, starting on the engine's empty Entry map. Never open `L_World` in a headless editor: it has crashed the GPU driver.
 
-To play: open the project, press Play with Net Mode "Play As Client" (2+ players). WASD + mouse, Shift sprints (drains Vigor), Caps Lock walks, C crouches, Space jumps, V or mouse wheel toggles first/third person.
+To play: open the project, press Play with Net Mode "Play As Client" (2+ players). WASD + mouse, Shift sprints (drains Vigor), Caps Lock walks, C crouches, Space jumps, V cycles the view, Ctrl + wheel zooms. 1–9 or the wheel select the hotbar slot, numpad 1–9 cast from the spell bar, E or I opens the inventory dialog, - and = zoom the minimap. Test emotes: F5, F6, F7, F9.
 
 ## Testing and verification
 
@@ -135,7 +136,14 @@ To play: open the project, press Play with Net Mode "Play As Client" (2+ players
   ```
 
   Add `-Profile -ResX 1920 -ResY 1080` for GPU timings, then `python tools/lookdev/profile_report.py mytest`. Other switches: `-GameHour`, `-Mood`, `-Weather storm`, `-Season`, `-Audio 12`, `-StartZone`. Compare only labels captured the same way.
-- **In-game test modes** (command-line flags on the game): `-MRZoneTest`, `-MRScreenshots`, `-MRProfile`, `-MRLookDev`. Console: `MRBookmark <name>`, `MREnvReload`, `mr.GameHour <h>`.
+- **UI** (~1 min): screenshots of the HUD and every dialog tab *with* the UI, into `build/ui/shots/<label>/sheet.png`. Run it after touching `Source/.../UI/` or `data/ui/`:
+
+  ```bash
+  powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_ui_shots.ps1 -Label mytest     # -StartZone 301: indoors
+  ```
+
+- **Minimap pictures** (~2 min, a game window): `tools/ue/run_map_capture.ps1` captures every zone top-down and styles them (`build/minimap/review.png`); then `tools/ue/import_ui.ps1`. Recapture after changing a zone's art.
+- **In-game test modes** (command-line flags on the game): `-MRZoneTest`, `-MRScreenshots`, `-MRProfile`, `-MRLookDev`, `-MRUIShots`, `-MRMapCapture`. Console: `MRBookmark <name>`, `MREnvReload`, `MRUIReload`, `mr.GameHour <h>`.
 - **Visual work is decided by the user from images.** Show before/after sheets, recommend one option, keep the others reversible behind a data switch.
 
 ## C++ source map (`game/MeridianRemastered/Source/MeridianRemastered/`)
@@ -145,7 +153,8 @@ To play: open the project, press Play with Net Mode "Play As Client" (2+ players
 | `Core/MRUnits.h` | Original grid and angle conversions to UE (must match `roo2gltf`) |
 | `Abilities/MRAttributeSet` | GAS attributes: the six stats plus Health, Mana, Vigor |
 | `Character/` | Player character (FP/TP camera, input in code), predicted walk/run/sprint; the sprite body (`MRSpriteBodyComponent`, `MRSpriteData`) shared with monsters |
-| `Player/` | Player state (owns the ASC and zone ID) and controller (drives client zone streaming) |
+| `Player/` | Player state (owns the ASC and zone ID), controller (client zone streaming, the UI keys' `IMC_UI`), `AMRHUD` (shows the UI, draws the first-person hands) |
+| `UI/` | The Slate UI (ADR 0009): `UMRUISubsystem` (per local player), `UMRUIStyle` (`ui_style.json`, brushes, `MRPaint` frames), `UMRGameDataSubsystem` (items, spells, skills JSON), `UMRInventorySource` / `UMRMockInventory` (the seam; Minecraft's click rules), widgets `SMRHUDRoot`, `SMRSlot`, `SMRInventoryScreen`, `SMRMinimap`, `AMRAvatarPreview` |
 | `Zones/MRZoneSubsystem` | Zone data, tile and edge exits, shared-geometry zones, teleports, level streaming |
 | `Game/MRGameMode`, `Game/MRGameState` | Spawns at the Raza Inn; replicated weather state |
 | `Environment/MRGameTimeSubsystem` | Meridian time from UTC (2-hour days), day phases, seasons |
@@ -155,7 +164,7 @@ To play: open the project, press Play with Net Mode "Play As Client" (2+ players
 | `Environment/MRScatterActor` | Instanced grass placed by the world build |
 | `Audio/MRAudioSubsystem` | The original's music, room loops and ambient sounds per zone |
 | `Monsters/` | `AMRMonster` (sprite body, stand-in AI) and `UMRMonsterSubsystem` (spawns from the zone data) |
-| `Tests/` | `MRZoneSmokeTest`, `MRScreenshotTour`, `MRProfileTour`, `MRLookDevTour`, `MRSpriteNetTest`, `MRSpriteClipTour`, `MRMonsterTour` |
+| `Tests/` | `MRZoneSmokeTest`, `MRScreenshotTour`, `MRProfileTour`, `MRLookDevTour`, `MRSpriteNetTest`, `MRSpriteClipTour`, `MRMonsterTour`, `MRUIShots`, `MRMapCapture` |
 
 ## Zones and streaming
 
@@ -169,16 +178,18 @@ To play: open the project, press Play with Net Mode "Play As Client" (2+ players
 ## Tools reference
 
 - `tools/kod_extract/` — `kodparse.py` (case-insensitive Kod reader with inheritance) and `extract.py` (zones, monsters, NPCs and shops, spells, skills, items, constants). Demo zones are `DEMO_RIDS`.
-- `tools/roo2gltf/roo2gltf.py` — `.roo` to glTF blockouts (BSP floors/ceilings, Doom-style walls, slopes, the original client's UV rules) plus world positions of exits, objects and spawns.
+- `tools/roo2gltf/roo2gltf.py` — `.roo` to glTF blockouts (BSP floors/ceilings, Doom-style walls, slopes, the original client's UV rules) plus world positions of exits, objects and spawns. `--walls-only` writes just the minimap's wall lines (`build/zones/<rid>_<class>_walls.json`).
 - `tools/bgf2png/bgf2png.py` — BGF v10 decoder: sprite contact sheets, un-rotated textures, size catalog.
 - `tools/blender/` — `render_glb.py` (previews), `prop_glb.py` (AI prop previews and normalising), `build_zone_art.py` + `zone_detail.py` + `zone_grime.py` (rebuilt buildings; `art_src/environment/zones/<rid>/<Building>.blend` overrides, `--seed-override`), `build_grass_kit.py`, `build_tree_kit.py` (procedural trees, ADR 0007 "Trees"), `build_prop_kit.py` (rain and smoke quads), `check_overlaps.py`.
 - `tools/environment/` — pure-Python helpers: `blockout.py`, `facades.py` (opening review sheet), `scatter.py`, `shelter.py`, `fires.py`, `chimneys.py`.
 - `tools/textures/` — `make_placeholders.py` (upscale with `4xTextures_GTAV_rgt-s_dither`, Real-ESRGAN fallback; Marigold or rule-based normals; incremental), `make_tree_textures.py` (leaf atlas and bark from a tree sprite), `ai_maps.py` (runs in `build/texai/.venv`), `upscale.py`, `setup_ai.ps1`.
-- `tools/ue/` — `build_world.ps1/.py`, `build_cache.py`, `run_in_editor.py`, `environment_materials.py`, `zone_mood.py`, `build_audio.py`, `run_lookdev.ps1`, `run_zone_test.ps1`, `import_sprites.ps1`, `run_sprite_net_test.ps1`.
+- `tools/ue/` — `build_world.ps1/.py`, `build_cache.py`, `run_in_editor.py`, `environment_materials.py`, `zone_mood.py`, `build_audio.py`, `run_lookdev.ps1`, `run_zone_test.ps1`, `import_sprites.ps1`, `run_sprite_net_test.ps1`, `import_ui.ps1`, `run_ui_shots.ps1`, `run_map_capture.ps1`.
 - `tools/aigen/` — sprite → 3D assets, one manifest per asset (`data/aigen/<kind>/<name>.json`). `inventory.py` maps a zone's placed objects to sprites. `aigen.py` runs the steps over one asset, `a,b,c` or `all`: sprite, restyle, `batch-submit` / `batch-collect` (OpenAI Batch API), tripo-prepare, `bridge-collect`, choose, normalize, overview. It re-runs itself in `build/texai/.venv`. Also `sprite.py`, `restyle.py` (OpenAI, Vertex, Gemini, fal), `tripo.py`, `blender_link.py` (the open Blender via its MCP add-on socket, plus the Tripo DCC Bridge log), `review.py`, `style/style.md`. Blender side: `tools/blender/prop_glb.py` (preview, normalize).
 - `tools/sprites/` — player and monster sprites (docs/sprites.md): `build_player_sprites.py` (upscaled part atlases, in-betweens, palette lookups), `monsters.py`, `run_sprite_tour.ps1`, `run_sprite_clips.ps1`; imported by `tools/ue/import_sprites.ps1`.
 - `tools/lookdev/` — `compare.py`, `profile_report.py`, `suggest_cameras.py`, `cycle_test.ps1`, `mood_test.ps1`, `upscaler_test.ps1`, `ai_maps_test.ps1`.
 - `tools/audio/` — `extract_audio.py` (sound data from Kod), `audio_report.py`.
+- `tools/ui/` — the in-game UI's art (ADR 0009): `build_ui_art.py` (the original interface bitmaps as frame pieces, per upscale variant), `build_icons.py` (item, spell and skill icons), `review_ui_art.py` (variant sheet), `minimap.py` (minimap styles from the captures), `shots_sheet.py`. Unreal side: `tools/ue/import_ui.ps1/.py`, `run_ui_shots.ps1`, `run_map_capture.ps1`.
+- `tools/server104.py` — where the Server-104 checkout is (`ReferenceServers/Server-104`, or an older `Server-104/`).
 
 Full commands, flags and caches for the environment tools: [zone-environment/reference/tools.md](.claude/skills/zone-environment/reference/tools.md).
 

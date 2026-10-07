@@ -241,6 +241,18 @@ bool UMRZoneSubsystem::LoadData()
 		Info.Origin = FVector(O[0]->AsNumber(), O[1]->AsNumber(), O[2]->AsNumber());
 		const TArray<TSharedPtr<FJsonValue>>& G = L->GetArrayField(TEXT("grid_size_roo"));
 		Info.GridSizeRoo = FVector2D(G[0]->AsNumber(), G[1]->AsNumber());
+		const TSharedPtr<FJsonObject>* Bounds = nullptr;
+		if (L->TryGetObjectField(TEXT("bounds_m"), Bounds))
+		{
+			const TArray<TSharedPtr<FJsonValue>>& Min = (*Bounds)->GetArrayField(TEXT("min"));
+			const TArray<TSharedPtr<FJsonValue>>& Max = (*Bounds)->GetArrayField(TEXT("max"));
+			if (Min.Num() == 3 && Max.Num() == 3)
+			{
+				const FVector A = Info.Origin + MRUnits::LayoutToLocal(Min[0]->AsNumber(), Min[1]->AsNumber(), Min[2]->AsNumber());
+				const FVector B = Info.Origin + MRUnits::LayoutToLocal(Max[0]->AsNumber(), Max[1]->AsNumber(), Max[2]->AsNumber());
+				Info.BoundsWorld = FBox2D(FVector2D(FMath::Min(A.X, B.X), FMath::Min(A.Y, B.Y)), FVector2D(FMath::Max(A.X, B.X), FMath::Max(A.Y, B.Y)));
+			}
+		}
 
 		// roo2gltf's arrival point already sits on the floor (sector height at that spot)
 		const TSharedPtr<FJsonObject>* LayoutTeleport = nullptr;

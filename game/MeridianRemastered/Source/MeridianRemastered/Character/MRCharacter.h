@@ -28,7 +28,7 @@ enum class EMRViewMode : uint8
 /**
  * The player character.
  *
- * - Views (V cycles, the mouse wheel zooms): first person (default, like the original), chase
+ * - Views (V cycles, Ctrl + mouse wheel zooms): first person (default, like the original), chase
  *   (third person; the body turns toward movement), and fixed cameras behind and in front of the
  *   character (the mouse turns the character). Third-person cameras stay near eye level: they
  *   orbit freely but tilt only mr.Camera.ThirdPersonPitch (20) degrees up or down; first person
@@ -41,8 +41,8 @@ enum class EMRViewMode : uint8
  * - The Ability System Component lives on AMRPlayerState.
  * - Drawn like the original game: composited directional sprites (UMRSpriteBodyComponent,
  *   docs/sprites.md). The look, creator colours and height replicate (FMRSpriteAppearance); a
- *   test client picks its own with -MRSpriteLook=<name>. Test keys: LMB attack, 1 wave, 2 point,
- *   3 dance, 4 cast, L next look. The ACharacter skeletal mesh is unused and hidden.
+ *   test client picks its own with -MRSpriteLook=<name>. Test keys: LMB attack, F5 wave, F6 point,
+ *   F7 dance, F9 cast, L next look (1-9 and the wheel are the hotbar's: AMRPlayerController). The ACharacter skeletal mesh is unused and hidden.
  */
 UCLASS(Config = Game)
 class MERIDIANREMASTERED_API AMRCharacter : public ACharacter, public IAbilitySystemInterface

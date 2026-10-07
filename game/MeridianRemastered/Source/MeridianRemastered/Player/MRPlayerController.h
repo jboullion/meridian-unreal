@@ -4,7 +4,15 @@
 #include "GameFramework/PlayerController.h"
 #include "MRPlayerController.generated.h"
 
+class UInputAction;
+class UInputMappingContext;
+struct FInputActionValue;
+
 /**
+ * Feeds the UI keys to UMRUISubsystem (docs/adr/0009-user-interface.md) through its own mapping
+ * context, IMC_UI, built in code like the character's: 1-9 and the mouse wheel select the hotbar
+ * slot, numpad 1-9 cast from the spell bar, E or I opens the inventory dialog, - and = zoom the map.
+ *
  * Also drives client-side zone streaming: on a network client, keeps the player's current zone
  * and every zone one exit away loaded and visible (UMRZoneSubsystem::SetClientStreamingTarget),
  * plus any zone the server asks for with ClientPrepareZone (e.g. a teleport to a far zone).
@@ -29,9 +37,26 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 
 private:
 	void UpdateZoneStreaming();
+
+	// --- UI input (IMC_UI)
+	void BuildUIInput();
+	void OnHotbarKey(int32 Index);
+	void OnHotbarScroll(const FInputActionValue& Value);
+	void OnSpellKey(int32 Index);
+	void OnInventoryKey();
+	void OnMapZoom(const FInputActionValue& Value);
+	class UMRUISubsystem* GetUI() const;
+
+	UPROPERTY(Transient) TObjectPtr<UInputMappingContext> UIContext;
+	UPROPERTY(Transient) TArray<TObjectPtr<UInputAction>> HotbarActions;
+	UPROPERTY(Transient) TArray<TObjectPtr<UInputAction>> SpellActions;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> HotbarScrollAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> InventoryAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> MapZoomAction;
 
 	/** Zones requested by the server, with the time the request expires. */
 	TMap<int32, double> PreparedZones;
@@ -68,4 +93,12 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<class UMRMonsterTour> MonsterTour;
+
+	/** -MRMapCapture minimap pictures. */
+	UPROPERTY()
+	TObjectPtr<class UMRMapCapture> MapCapture;
+
+	/** -MRUIShots UI screenshots. */
+	UPROPERTY()
+	TObjectPtr<class UMRUIShots> UIShots;
 };

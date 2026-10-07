@@ -5,7 +5,10 @@
 #include "Character/MRSpriteBodyComponent.h"
 #include "Engine/Canvas.h"
 #include "Engine/Texture2D.h"
+#include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
+#include "GameFramework/PlayerController.h"
+#include "UI/MRUISubsystem.h"
 
 namespace
 {
@@ -14,6 +17,32 @@ namespace
 	TAutoConsoleVariable<float> CVarHandBob(TEXT("mr.Sprite.HandBob"), 1.f,
 		TEXT("First-person hand bob while walking (0 off, as the original)."));
 	constexpr float ClassicWidth = 452.f;  // clientd3d/drawdefs.h CLASSIC_WIDTH
+}
+
+void AMRHUD::BeginPlay()
+{
+	Super::BeginPlay();
+	APlayerController* PC = GetOwningPlayerController();
+	if (PC && PC->IsLocalController() && PC->GetLocalPlayer())
+	{
+		if (UMRUISubsystem* UI = PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>())
+		{
+			UI->ShowHUD(PC);
+		}
+	}
+}
+
+void AMRHUD::EndPlay(const EEndPlayReason::Type Reason)
+{
+	APlayerController* PC = GetOwningPlayerController();
+	if (PC && PC->GetLocalPlayer())
+	{
+		if (UMRUISubsystem* UI = PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>())
+		{
+			UI->RemoveHUD();
+		}
+	}
+	Super::EndPlay(Reason);
 }
 
 void AMRHUD::DrawHUD()

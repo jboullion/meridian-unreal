@@ -1,0 +1,416 @@
+#include "UI/SMRHUD.h"
+
+#include "Abilities/MRAttributeSet.h"
+#include "Framework/Application/SlateApplication.h"
+#include "GameFramework/HUD.h"
+#include "GameFramework/PlayerController.h"
+#include "Rendering/DrawElements.h"
+#include "UI/MRInventorySource.h"
+#include "UI/MRUIStyle.h"
+#include "UI/MRUISubsystem.h"
+#include "UI/SMRInventoryScreen.h"
+#include "UI/SMRMinimap.h"
+#include "UI/SMRSlot.h"
+#include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SUniformGridPanel.h"
+#include "Widgets/SBoxPanel.h"
+#include "Widgets/SOverlay.h"
+
+// ------------------------------------------------------------------------------ SMRPanel
+
+void SMRPanel::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+{
+	UI = InUI;
+	Background = InArgs._Background;
+	Frame = InArgs._Frame;
+	bCorners = InArgs._bCorners;
+	BackgroundTint = InArgs._BackgroundTint;
+	UMRUIStyle* Style = InUI ? InUI->GetStyle() : nullptr;
+	FMargin Pad(InArgs._Padding * (Style ? Style->Px() : 2.f));
+	if (Style && !Frame.IsNone())
+	{
+		const FMargin Inset = Style->Frame(Frame).Inset;
+		Pad = Pad + Inset;
+	}
+	ChildSlot.Padding(Pad)[InArgs._Content.Widget];
+}
+
+int32 SMRPanel::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
+	int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const
+{
+	UMRUIStyle* Style = UI.IsValid() ? UI->GetStyle() : nullptr;
+	const FVector2f Size(Geo.GetLocalSize());
+	const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
+	if (Style)
+	{
+		if (!Background.IsNone())
+		{
+			MRPaint::Tile(Out, Layer, Geo, Style->Brush(Background, true), FVector2f::ZeroVector, Size, Tint * BackgroundTint);
+		}
+		if (!Frame.IsNone())
+		{
+			MRPaint::Frame(Out, Layer + 1, Geo, Style->Frame(Frame), FVector2f::ZeroVector, Size, Tint);
+		}
+	}
+	int32 MaxLayer = SCompoundWidget::OnPaint(Args, Geo, Culling, Out, Layer + 3, WStyle, bParentEnabled);
+	if (Style && bCorners)
+	{
+		// the gargoyle corners of the original 3D view, over the frame
+		const int32 L = MaxLayer + 1;
+		const FVector2f C = Style->PieceSize(TEXT("view_ul"));
+		MRPaint::Box(Out, L, Geo, Style->Brush(TEXT("view_ul")), FVector2f::ZeroVector, C, Tint);
+		MRPaint::Box(Out, L, Geo, Style->Brush(TEXT("view_ur")), FVector2f(Size.X - C.X, 0.f), C, Tint);
+		MRPaint::Box(Out, L, Geo, Style->Brush(TEXT("view_ll")), FVector2f(0.f, Size.Y - C.Y), C, Tint);
+		MRPaint::Box(Out, L, Geo, Style->Brush(TEXT("view_lr")), Size - C, C, Tint);
+		MaxLayer = L;
+	}
+	return MaxLayer;
+}
+
+// ------------------------------------------------------------------------------ SMRBar
+
+void SMRBar::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+{
+	UI = InUI;
+	Value = InArgs._Value;
+	Max = InArgs._Max;
+	Color = InArgs._Color;
+	Width = InArgs._Width;
+	Height = InArgs._Height;
+	bShowText = InArgs._bShowText;
+}
+
+FVector2D SMRBar::ComputeDesiredSize(float) const
+{
+	const float Px = UI.IsValid() && UI->GetStyle() ? UI->GetStyle()->Px() : 2.f;
+	return FVector2D(Width * Px, Height * Px);
+}
+
+void SMRBar::Tick(const FGeometry& Geo, const double Time, const float Dt)
+{
+	const float M = FMath::Max(1.f, Max.Get());
+	const float Target = FMath::Clamp(Value.Get() / M, 0.f, 1.f);
+	if (Shown < 0.f)
+	{
+		Shown = Trail = Target;
+	}
+	if (Target < Shown - 0.001f)
+	{
+		FlashTime = 0.35f;  // took a loss
+	}
+	Shown = FMath::FInterpTo(Shown, Target, Dt, 14.f);
+	Trail = Target > Trail ? Target : FMath::FInterpConstantTo(Trail, Target, Dt, 0.35f);
+	FlashTime = FMath::Max(0.f, FlashTime - Dt);
+}
+
+int32 SMRBar::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
+	int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const
+{
+	UMRUIStyle* Style = UI.IsValid() ? UI->GetStyle() : nullptr;
+	if (!Style)
+	{
+		return Layer;
+	}
+	const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
+	const FVector2f Size(Geo.GetLocalSize());
+	const FSlateBrush* W = Style->White();
+	// the empty bar, the loss trail, the fill (lighter while flashing)
+	MRPaint::Box(Out, Layer, Geo, W, FVector2f::ZeroVector, Size, Tint * Style->Color(TEXT("bar_empty"), FLinearColor(0.02f, 0.02f, 0.02f, 0.85f)));
+	MRPaint::Box(Out, Layer + 1, Geo, W, FVector2f::ZeroVector, FVector2f(Size.X * FMath::Max(0.f, Trail), Size.Y),
+		Tint * FLinearColor::LerpUsingHSV(Color, FLinearColor::White, 0.45f) * FLinearColor(1.f, 1.f, 1.f, 0.7f));
+	const FLinearColor Fill = FLinearColor::LerpUsingHSV(Color, FLinearColor::White, FlashTime / 0.35f * 0.5f);
+	MRPaint::Box(Out, Layer + 2, Geo, W, FVector2f::ZeroVector, FVector2f(Size.X * FMath::Max(0.f, Shown), Size.Y), Tint * Fill);
+	// a highlight along the top third, so the fill isn't flat
+	MRPaint::Box(Out, Layer + 3, Geo, W, FVector2f::ZeroVector, FVector2f(Size.X * FMath::Max(0.f, Shown), Size.Y * 0.3f),
+		Tint * FLinearColor(1.f, 1.f, 1.f, 0.18f));
+
+	// the original's gold bar frame: caps scaled to the bar's height, top and bottom repeaters
+	const FVector2f CapL = Style->PieceSize(TEXT("bar_left")), CapR = Style->PieceSize(TEXT("bar_right"));
+	if (CapL.Y > 0.f && CapR.Y > 0.f)
+	{
+		const float K = Size.Y / CapL.Y * 1.25f;
+		const FVector2f L(CapL.X * K, Size.Y * 1.25f), R(CapR.X * K, Size.Y * 1.25f);
+		const float Y = -Size.Y * 0.125f;
+		const float Edge = Style->PieceSize(TEXT("bar_top")).Y;
+		MRPaint::Tile(Out, Layer + 4, Geo, Style->Brush(TEXT("bar_top"), true), FVector2f(0.f, Y), FVector2f(Size.X, Edge), Tint);
+		MRPaint::Tile(Out, Layer + 4, Geo, Style->Brush(TEXT("bar_bottom"), true), FVector2f(0.f, Size.Y - Y - Edge), FVector2f(Size.X, Edge), Tint);
+		MRPaint::Box(Out, Layer + 5, Geo, Style->Brush(TEXT("bar_left")), FVector2f(-L.X * 0.6f, Y), L, Tint);
+		MRPaint::Box(Out, Layer + 5, Geo, Style->Brush(TEXT("bar_right")), FVector2f(Size.X - R.X * 0.4f, Y), R, Tint);
+	}
+	if (bShowText)
+	{
+		const FString Text = FString::Printf(TEXT("%d / %d"), FMath::RoundToInt(Value.Get()), FMath::RoundToInt(Max.Get()));
+		const FSlateFontInfo Font = Style->Font(FMath::Max(6.f, Height * 0.75f), true);
+		const FVector2f M = MRPaint::MeasureText(Text, Font);
+		MRPaint::Text(Out, Layer + 6, Geo, Text, Font, (Size - M) * 0.5f, FLinearColor::White * Tint, Style->Px() * 0.5f);
+	}
+	return Layer + 8;
+}
+
+// ------------------------------------------------------------------------------ SMRCursorStack
+
+void SMRCursorStack::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+{
+	UI = InUI;
+	SetVisibility(EVisibility::HitTestInvisible);
+}
+
+int32 SMRCursorStack::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
+	int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const
+{
+	UMRUISubsystem* Ui = UI.Get();
+	UMRUIStyle* Style = Ui ? Ui->GetStyle() : nullptr;
+	if (!Style || !Ui->GetSource() || !Ui->IsInventoryOpen() || !FSlateApplication::IsInitialized())
+	{
+		return Layer;
+	}
+	const FMRSlotContent C = Ui->GetSource()->Get(FMRSlotRef(EMRSlotArea::Cursor, 0));
+	if (C.IsEmpty())
+	{
+		return Layer;
+	}
+	const FVector2f Mouse = FVector2f(Geo.AbsoluteToLocal(FSlateApplication::Get().GetCursorPos()));
+	const float S = Style->Px(22.f) * 0.9f;
+	const FVector2f Pos = Mouse - FVector2f(S, S) * 0.5f;
+	MRPaint::Box(Out, Layer, Geo, Ui->IconFor(C), Pos, FVector2f(S, S));
+	if (C.Count > 1)
+	{
+		const FString Count = FString::FromInt(C.Count);
+		const FSlateFontInfo Font = Style->Font(9.f, true);
+		const FVector2f M = MRPaint::MeasureText(Count, Font);
+		MRPaint::Text(Out, Layer + 1, Geo, Count, Font, Pos + FVector2f(S, S) - M, FLinearColor::White, Style->Px() * 0.5f);
+	}
+	return Layer + 3;
+}
+
+// ------------------------------------------------------------------------------ SMRItemName
+
+void SMRItemName::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+{
+	UI = InUI;
+	SetVisibility(EVisibility::HitTestInvisible);
+}
+
+FVector2D SMRItemName::ComputeDesiredSize(float) const
+{
+	const float Px = UI.IsValid() && UI->GetStyle() ? UI->GetStyle()->Px() : 2.f;
+	return FVector2D(200.f * Px, 12.f * Px);
+}
+
+int32 SMRItemName::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
+	int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const
+{
+	UMRUISubsystem* Ui = UI.Get();
+	UMRUIStyle* Style = Ui ? Ui->GetStyle() : nullptr;
+	if (!Style || !Ui->GetSource())
+	{
+		return Layer;
+	}
+	const double Age = Ui->Now() - Ui->LastSelectionTime();
+	const float Hold = Style->Number(TEXT("item_name_seconds"), 2.f);
+	const float Alpha = FMath::Clamp(1.f - static_cast<float>(Age - Hold) / 0.5f, 0.f, 1.f);
+	const FMRSlotContent C = Ui->GetSource()->Get(FMRSlotRef(EMRSlotArea::Hotbar, Ui->GetSource()->GetSelectedHotbar()));
+	if (Alpha <= 0.f || C.IsEmpty())
+	{
+		return Layer;
+	}
+	const FString Name = Ui->NameFor(C).ToString();
+	const FSlateFontInfo Font = Style->Font(11.f, true);
+	const FVector2f M = MRPaint::MeasureText(Name, Font);
+	const FVector2f Size(Geo.GetLocalSize());
+	MRPaint::Text(Out, Layer, Geo, Name, Font, FVector2f((Size.X - M.X) * 0.5f, Size.Y - M.Y),
+		Style->Color(TEXT("text"), FLinearColor(1.f, 0.93f, 0.7f)) * FLinearColor(1.f, 1.f, 1.f, Alpha) * WStyle.GetColorAndOpacityTint(), Style->Px() * 0.6f);
+	return Layer + 2;
+}
+
+// ------------------------------------------------------------------------------ SMRHUDRoot
+
+void SMRHUDRoot::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+{
+	UI = InUI;
+	SetVisibility(TAttribute<EVisibility>::CreateSP(this, &SMRHUDRoot::GetHUDVisibility));
+	Rebuild();
+}
+
+EVisibility SMRHUDRoot::GetHUDVisibility() const
+{
+	// hidden for photos (AMRCharacter::TakePhoto turns the HUD off for a moment)
+	const APlayerController* PC = UI.IsValid() ? UI->GetPlayerController() : nullptr;
+	const AHUD* Hud = PC ? PC->GetHUD() : nullptr;
+	return Hud && !Hud->bShowHUD ? EVisibility::Collapsed : EVisibility::SelfHitTestInvisible;
+}
+
+void SMRHUDRoot::Rebuild()
+{
+	UMRUISubsystem* Ui = UI.Get();
+	UMRUIStyle* Style = Ui ? Ui->GetStyle() : nullptr;
+	if (!Style)
+	{
+		return;
+	}
+	const float Px = Style->Px();
+	HotbarArea = MakeHotbarArea();
+	SpellBar = MakeSpellBar();
+	Inventory = SNew(SMRInventoryScreen, Ui);
+	Inventory->SetVisibility(Ui->IsInventoryOpen() ? EVisibility::Visible : EVisibility::Collapsed);
+
+	ChildSlot
+	[
+		SNew(SOverlay)
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0.f, 0.f, 0.f, Style->Number(TEXT("hotbar_bottom"), 6.f) * Px)
+		[
+			HotbarArea.ToSharedRef()
+		]
+		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0.f, Style->Number(TEXT("minimap_margin"), 8.f) * Px,
+			Style->Number(TEXT("minimap_margin"), 8.f) * Px, 0.f)
+		[
+			SNew(SMRMinimap, Ui)
+		]
+		+ SOverlay::Slot()
+		[
+			Inventory.ToSharedRef()
+		]
+		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(0.f, 0.f, Style->Number(TEXT("spellbar_margin"), 8.f) * Px,
+			Style->Number(TEXT("spellbar_margin"), 8.f) * Px)
+		[
+			SpellBar.ToSharedRef()
+		]
+		+ SOverlay::Slot()
+		[
+			SNew(SMRCursorStack, Ui)
+		]
+	];
+}
+
+TSharedRef<SWidget> SMRHUDRoot::MakeHotbarArea()
+{
+	UMRUISubsystem* Ui = UI.Get();
+	UMRUIStyle* Style = Ui->GetStyle();
+	const float Px = Style->Px();
+	const float SlotPx = Style->Number(TEXT("slot_px"), 22.f);
+	const float RowW = SlotPx * 9.f;
+	const float Gap = 4.f;
+
+	TSharedRef<SHorizontalBox> Slots = SNew(SHorizontalBox);
+	for (int32 i = 0; i < 9; ++i)
+	{
+		Slots->AddSlot().AutoWidth()
+		[
+			SNew(SMRSlot, Ui, FMRSlotRef(EMRSlotArea::Hotbar, i)).Size(SlotPx).KeyLabel(FString::FromInt(i + 1)).bSelectable(true)
+		];
+	}
+	auto Attr = [Ui](float (UMRAttributeSet::*Get)() const)
+	{
+		return TAttribute<float>::CreateLambda([Ui, Get]()
+		{
+			const UMRAttributeSet* A = Ui ? Ui->GetAttributes() : nullptr;
+			return A ? (A->*Get)() : 0.f;
+		});
+	};
+	const float BarW = (RowW - Gap) * 0.5f;
+	return SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 0.f, 0.f, 2.f * Px)
+		[
+			SNew(SMRItemName, Ui)
+		]
+		// health (left) and mana (right) above the hotbar, where Minecraft has hearts and food
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 0.f, 0.f, 3.f * Px)
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().Padding(0.f, 0.f, Gap * Px, 0.f)
+			[
+				SNew(SMRBar, Ui).Width(BarW).Height(Style->Number(TEXT("bar_px"), 9.f))
+					.Color(Style->Color(TEXT("health"), FLinearColor(0.75f, 0.06f, 0.06f)))
+					.Value(Attr(&UMRAttributeSet::GetHealth)).Max(Attr(&UMRAttributeSet::GetMaxHealth))
+			]
+			+ SHorizontalBox::Slot().AutoWidth()
+			[
+				SNew(SMRBar, Ui).Width(BarW).Height(Style->Number(TEXT("bar_px"), 9.f))
+					.Color(Style->Color(TEXT("mana"), FLinearColor(0.08f, 0.2f, 0.85f)))
+					.Value(Attr(&UMRAttributeSet::GetMana)).Max(Attr(&UMRAttributeSet::GetMaxMana))
+			]
+		]
+		// vigor: a thin bar across the hotbar's width, where Minecraft has experience
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 0.f, 0.f, 3.f * Px)
+		[
+			SNew(SMRBar, Ui).Width(RowW).Height(Style->Number(TEXT("vigor_bar_px"), 5.f)).bShowText(false)
+				.Color(Style->Color(TEXT("vigor"), FLinearColor(0.85f, 0.6f, 0.05f)))
+				.Value(Attr(&UMRAttributeSet::GetVigor)).Max(Attr(&UMRAttributeSet::GetMaxVigor))
+		]
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+		[
+			SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inv")).Padding(1.f)
+			[
+				Slots
+			]
+		];
+}
+
+TSharedRef<SWidget> SMRHUDRoot::MakeSpellBar()
+{
+	UMRUISubsystem* Ui = UI.Get();
+	UMRUIStyle* Style = Ui->GetStyle();
+	const float SlotPx = Style->Number(TEXT("spell_slot_px"), 20.f);
+	const bool bRow = Style->Number(TEXT("spellbar_row"), 0.f) > 0.f;
+	TSharedRef<SUniformGridPanel> Grid = SNew(SUniformGridPanel);
+	for (int32 i = 0; i < 9; ++i)
+	{
+		// the numpad's layout: 7 8 9 on top, 1 2 3 at the bottom
+		const int32 Col = bRow ? i : i % 3;
+		const int32 Row = bRow ? 0 : 2 - i / 3;
+		Grid->AddSlot(Col, Row)
+		[
+			SNew(SMRSlot, Ui, FMRSlotRef(EMRSlotArea::SpellBar, i)).Size(SlotPx).KeyLabel(FString::FromInt(i + 1))
+		];
+	}
+	return SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inv")).Padding(1.f)
+	[
+		Grid
+	];
+}
+
+bool SMRHUDRoot::IsSpellBarHovered() const
+{
+	return SpellBar.IsValid() && SpellBar->IsHovered();
+}
+
+void SMRHUDRoot::Tick(const FGeometry& Geo, const double Time, const float Dt)
+{
+	SCompoundWidget::Tick(Geo, Time, Dt);
+	UMRUISubsystem* Ui = UI.Get();
+	UMRUIStyle* Style = Ui ? Ui->GetStyle() : nullptr;
+	if (!Style || !SpellBar.IsValid())
+	{
+		return;
+	}
+	// the spell bar is faint until wanted: hovered, the dialog open, or just used
+	const bool bWanted = Ui->IsInventoryOpen() || IsSpellBarHovered() || Ui->Now() - Ui->SpellBarLastUsed() < 1.5;
+	const float Target = bWanted ? 1.f : Style->Number(TEXT("spellbar_idle_opacity"), 0.45f);
+	SpellBarOpacity = FMath::FInterpTo(SpellBarOpacity, Target, Dt, 10.f);
+	SpellBar->SetRenderOpacity(SpellBarOpacity);
+}
+
+void SMRHUDRoot::SetInventoryTab(int32 Tab)
+{
+	if (Inventory.IsValid())
+	{
+		Inventory->SetTab(static_cast<EMRInventoryTab>(FMath::Clamp(Tab, 0, static_cast<int32>(EMRInventoryTab::Count) - 1)));
+	}
+}
+
+void SMRHUDRoot::SetInventoryOpen(bool bOpen)
+{
+	if (Inventory.IsValid())
+	{
+		Inventory->SetVisibility(bOpen ? EVisibility::Visible : EVisibility::Collapsed);
+		if (bOpen)
+		{
+			Inventory->OnOpened();
+		}
+	}
+	if (HotbarArea.IsValid())
+	{
+		// the dialog has its own copy of the hotbar (as Minecraft)
+		HotbarArea->SetVisibility(bOpen ? EVisibility::Hidden : EVisibility::SelfHitTestInvisible);
+	}
+}

@@ -43,6 +43,19 @@ try {
         Step "build sprite atlases" { & $aiPython tools/sprites/build_player_sprites.py }
         Step "import sprite atlases" { powershell -NoProfile -File tools/ue/import_sprites.ps1 -Headless }
     }
+    # in-game UI (docs/adr/0009): the original interface art and icons (AI-upscaled variants need the
+    # venv; without it only "nearest", which import_ui.py falls back to), the minimap pictures
+    # (captured in a game window) and their import
+    if (Test-Path $aiPython) {
+        Step "build UI art" { python tools/ui/build_ui_art.py }
+        Step "build UI icons" { python tools/ui/build_icons.py }
+    } else {
+        Step "build UI art" { python tools/ui/build_ui_art.py --variant nearest }
+        Step "build UI icons" { python tools/ui/build_icons.py --variant nearest }
+    }
+    Step "minimap walls" { python tools/roo2gltf/roo2gltf.py --walls-only }
+    Step "capture minimaps" { powershell -NoProfile -File tools/ue/run_map_capture.ps1 }
+    Step "import UI art" { powershell -NoProfile -File tools/ue/import_ui.ps1 -Headless }
     Write-Host "== done. Run tools/ue/run_zone_test.ps1 to verify."
 }
 finally {

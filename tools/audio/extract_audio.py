@@ -33,10 +33,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools" / "kod_extract"))
 sys.path.insert(0, str(ROOT / "tools" / "environment"))
+sys.path.insert(0, str(ROOT / "tools"))
 from kodparse import KodIndex  # noqa: E402
 from extract import parse_list_literal, matching  # noqa: E402
+from server104 import SERVER104  # noqa: E402
 
-KOD = ROOT / "Server-104" / "kod"
+KOD = SERVER104 / "kod"
 # the original client's resources (as tools/ue/build_audio.py looks for them)
 CLIENT_RES = [Path(os.environ.get("LOCALAPPDATA", "")) / "Meridian-104" / "resource",
               Path("H:/Steam/steamapps/common/Meridian 59/resource")]

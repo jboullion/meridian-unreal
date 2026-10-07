@@ -1,0 +1,17 @@
+{
+  "_doc": "The minimap (docs/adr/0009-user-interface.md): one top-down picture per geometry zone, captured in the game by tools/ue/run_map_capture.ps1 (-MRMapCapture), styled by tools/ui/minimap.py and imported by tools/ue/import_ui.ps1. margin: border around the zone's footprint (fraction of its larger side). cut_height_cm: interiors; the camera sits this far above the arrival point's floor, below the ceiling (0 = from high above, outdoors). source: lit (the picture as the game draws it) or basecolor (the albedo: interiors, where Lumen and the zone ambient don't light an ortho view). hide_props: leave out placed props, fires and smoke (interiors read as a floor plan). shadows: draw shadows (off: a map reads better without them). style: which styled picture the game uses (photo, walls, parchment).",
+  "style": "walls",
+  "defaults": {"margin": 0.04, "resolution": 2048, "cut_height_cm": 0, "shadows": false},
+  "zones": {
+    "301": {"cut_height_cm": 200, "source": "basecolor", "hide_props": true},
+    "302": {"cut_height_cm": 200, "source": "basecolor", "hide_props": true},
+    "303": {"cut_height_cm": 200, "source": "basecolor", "hide_props": true},
+    "304": {"cut_height_cm": 200, "source": "basecolor", "hide_props": true},
+    "305": {"cut_height_cm": 190, "source": "basecolor", "hide_props": true},
+    "306": {"cut_height_cm": 200, "source": "basecolor", "hide_props": true},
+    "307": {"cut_height_cm": 200, "source": "basecolor", "hide_props": true},
+    "308": {"cut_height_cm": 200, "source": "basecolor", "hide_props": true},
+    "332": {"cut_height_cm": 200, "source": "basecolor", "hide_props": true},
+    "333": {"cut_height_cm": 200, "source": "basecolor", "hide_props": true}
+  }
+}

@@ -52,6 +52,15 @@ public:
 	/** Sprite height in cm (standing, at this height scale). */
 	float GetStandingHeightCm() const;
 
+	/**
+	 * Draw for this viewer instead of the player's camera (the inventory avatar's scene capture):
+	 * it picks the angle and the quad faces it. Null: the player's camera.
+	 */
+	void SetViewer(USceneComponent* InViewer) { Viewer = InViewer; }
+
+	/** Always use the unlit material (the inventory avatar), whatever mr.Sprite.Unlit says. */
+	void SetForceUnlit(bool bInForceUnlit);
+
 	/** The first-person hand / weapon to draw now (AMRHUD): false if none. Offset and size in original pixels. */
 	bool GetFirstPersonFrame(UTexture2D*& OutTexture, FBox2f& OutUV, FIntPoint& OutSize, FIntPoint& OutOffset);
 
@@ -90,6 +99,9 @@ private:
 	uint32 LastDrawKey = 0;
 	int32 LastAngle = 0;
 	bool bUnlit = false;
+	bool bForceUnlit = false;
+	TWeakObjectPtr<USceneComponent> Viewer;
+	bool WantsUnlit() const;
 	float SunYaw = 0.f;
 	FVector SunDir = FVector(0.f, 0.f, -1.f);
 	float ShadowFeetOffset = 0.f;  // shadow card centre above the feet

@@ -32,7 +32,9 @@ import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "Server-104" / "roomedit" / "roogen"))
+sys.path.insert(0, str(ROOT / "tools"))
+from server104 import SERVER104  # noqa: E402  (ReferenceServers/Server-104)
+sys.path.insert(0, str(SERVER104 / "roomedit" / "roogen"))
 from roofile import Room, BSP_LEAF  # noqa: E402
 
 ROO_PER_SQUARE = 1024.0
@@ -546,11 +548,22 @@ def write_preview(room: Room, layout: dict, path: Path, size: int = 1400):
     img.save(path)
 
 
+def write_walls(room: Room, path: Path) -> int:
+    """The solid walls (one side open, the other none), as the original map draws them (map.c),
+    in zone metres [x0, z0, x1, z1] like the blockout: the minimap's wall overlay (tools/ui/minimap.py)."""
+    walls = [[round(w.x0 * M_PER_ROO, 3), round(w.y0 * M_PER_ROO, 3), round(w.x1 * M_PER_ROO, 3), round(w.y1 * M_PER_ROO, 3)]
+             for w in room.client_walls if not w.pos_sector or not w.neg_sector]
+    path.write_text(json.dumps({"walls": walls}))
+    return len(walls)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rid", type=int, nargs="*")
     ap.add_argument("--preview", action="store_true")
-    ap.add_argument("--rooms", type=Path, default=ROOT / "Server-104" / "resource" / "rooms")
+    ap.add_argument("--walls-only", action="store_true",
+                    help="only write build/zones/<rid>_<class>_walls.json (the minimap's walls); no meshes, no layout")
+    ap.add_argument("--rooms", type=Path, default=SERVER104 / "resource" / "rooms")
     ap.add_argument("--out", type=Path, default=ROOT / "build" / "zones")
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
@@ -566,6 +579,10 @@ def main():
             continue
         room = Room.load(str(roo))
         stem = f"{z['rid']}_{z['class']}"
+        n_walls = write_walls(room, a.out / f"{stem}_walls.json")
+        if a.walls_only:
+            print(f"{stem:28s} {n_walls:5d} walls")
+            continue
         stats = write_glb(build_room_mesh(room), a.out / f"{stem}.glb", stem)
         lay = zone_layout(z, room)
         lay["mesh"] = f"build/zones/{stem}.glb"
@@ -576,6 +593,9 @@ def main():
         b = lay["bounds_m"]
         print(f"{stem:28s} {stats['triangles']:6d} tris {stats['materials']:3d} mats  "
               f"{b['max'][0] - b['min'][0]:6.1f} x {b['max'][2] - b['min'][2]:6.1f} m")
+
+    if a.walls_only:
+        return
 
     # Zones drawn from the same physical map with a shifted grid origin (e.g. Raza town and
     # the Outskirts) share geometry; record the offset so the level builder can overlay them

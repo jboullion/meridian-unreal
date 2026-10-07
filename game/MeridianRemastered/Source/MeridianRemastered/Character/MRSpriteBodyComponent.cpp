@@ -240,6 +240,20 @@ void UMRSpriteBodyComponent::ApplyLightingParams()
 	}
 }
 
+bool UMRSpriteBodyComponent::WantsUnlit() const
+{
+	return bForceUnlit || CVarSpriteUnlit.GetValueOnGameThread() != 0;
+}
+
+void UMRSpriteBodyComponent::SetForceUnlit(bool bInForceUnlit)
+{
+	bForceUnlit = bInForceUnlit;
+	if (Material && bUnlit != WantsUnlit())
+	{
+		ApplyMaterial();
+	}
+}
+
 void UMRSpriteBodyComponent::SetHeightScale(float InScale)
 {
 	HeightScale = FMath::Clamp(InScale, 0.5f, 1.5f);
@@ -290,7 +304,7 @@ void UMRSpriteBodyComponent::EnsureTarget()
 
 void UMRSpriteBodyComponent::ApplyMaterial()
 {
-	bUnlit = CVarSpriteUnlit.GetValueOnGameThread() != 0;
+	bUnlit = WantsUnlit();
 	const FString Dir = FMRSpriteLibrary::Get().TextureDir;
 	const FString Name = bUnlit ? TEXT("M_SpriteBodyUnlit") : TEXT("M_SpriteBody");
 	UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, *FString::Printf(TEXT("%s/%s.%s"), *Dir, *Name, *Name));
@@ -807,7 +821,7 @@ void UMRSpriteBodyComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	{
 		return;
 	}
-	if (bUnlit != (CVarSpriteUnlit.GetValueOnGameThread() != 0))
+	if (bUnlit != WantsUnlit())
 	{
 		ApplyMaterial();
 	}
@@ -844,10 +858,15 @@ void UMRSpriteBodyComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	}
 	FirstPersonTrack.Step(DtMs);
 
-	// the viewer: this machine's camera
+	// the viewer: this machine's camera (or SetViewer's)
 	FVector ViewLoc = Owner->GetActorLocation() + Owner->GetActorForwardVector() * 300.f;
 	FRotator ViewRot = (Owner->GetActorLocation() - ViewLoc).Rotation();
-	if (const APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	if (const USceneComponent* V = Viewer.Get())
+	{
+		ViewLoc = V->GetComponentLocation();
+		ViewRot = V->GetComponentRotation();
+	}
+	else if (const APlayerController* PC = GetWorld()->GetFirstPlayerController())
 	{
 		if (PC->PlayerCameraManager)
 		{

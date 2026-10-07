@@ -1,0 +1,42 @@
+{
+  "_doc": "The in-game UI's look (docs/adr/0009-user-interface.md). Read by tools/ui/*.py, tools/ue/import_ui.py and the game (UMRUIStyle); MRUIReload in the console re-reads it (sizes and colours; a new art variant needs tools/ue/import_ui.ps1). Sizes are in original-client pixels; ui_scale turns them into Slate units at 1080p (the engine's DPI curve scales from there).",
+  "art_variant": "ai_ultrasharp",
+  "icon_variant": "ai_ultrasharp",
+  "art_variants": {
+    "nearest": {},
+    "ai_ultrasharp": {"model": "4x-UltraSharpV2"},
+    "ai_gtav": {"model": "4xTextures_GTAV_rgt-s_dither"}
+  },
+  "ui_scale": 2.0,
+  "numbers": {
+    "slot_px": 22,
+    "spell_slot_px": 20,
+    "list_slot_px": 18,
+    "bar_px": 9,
+    "vigor_bar_px": 5,
+    "hotbar_bottom": 6,
+    "spellbar_margin": 8,
+    "spellbar_row": 0,
+    "spellbar_idle_opacity": 0.45,
+    "minimap_px": 96,
+    "minimap_margin": 8,
+    "minimap_span_m": 50,
+    "minimap_arrow_scale": 1.0,
+    "item_name_seconds": 2.0,
+    "slot_hint_opacity": 0.35,
+    "scrollbar_px": 6
+  },
+  "colors": {
+    "text": "FFEDB2",
+    "heading": "FFC04D",
+    "health": "C81E1E",
+    "mana": "2850E0",
+    "vigor": "E0A81E",
+    "skill": "D8A030",
+    "stat": "A08C64",
+    "bar_empty": "080808D8",
+    "avatar_bg": "030304",
+    "stats_tint": "9A8E80",
+    "dim": "00000059"
+  }
+}
