@@ -299,6 +299,11 @@ bool UMRZoneSubsystem::LoadData()
 		if (const TSharedPtr<FJsonObject>* KodPtr = KodZones.Find(Info.Rid))
 		{
 			const TSharedPtr<FJsonObject>& K = *KodPtr;
+			FString Roo;
+			if (K->TryGetStringField(TEXT("roo"), Roo) && !Roo.IsEmpty())
+			{
+				RoomFiles.Add(Roo.ToLower(), Info.Rid);
+			}
 			const TArray<TSharedPtr<FJsonValue>>* FlagArr = nullptr;
 			if (K->TryGetArrayField(TEXT("flags"), FlagArr))
 			{
@@ -549,7 +554,7 @@ void UMRZoneSubsystem::SetPawnZone(APawn* Pawn, int32 Rid) const
 
 void UMRZoneSubsystem::UpdatePawnZone(APawn* Pawn)
 {
-	if (!Pawn || !Pawn->HasAuthority() || Zones.Num() == 0)
+	if (!Pawn || !Pawn->HasAuthority() || Zones.Num() == 0 || bServerDriven)
 	{
 		return;
 	}
@@ -683,6 +688,43 @@ bool UMRZoneSubsystem::TeleportPawn(APawn* Pawn, int32 DestRid, int32 Row, int32
 		UE_LOG(LogMeridian, Warning, TEXT("Teleport to zone %d (%d,%d) blocked"), DestRid, Row, Col);
 	}
 	return bOk;
+}
+
+int32 UMRZoneSubsystem::RidForRoom(const FString& RooFile) const
+{
+	const int32* Rid = RoomFiles.Find(FPaths::GetCleanFilename(RooFile).ToLower());
+	return Rid ? *Rid : 0;
+}
+
+FVector UMRZoneSubsystem::KodToWorld(int32 Rid, int32 KodRow, int32 KodCol, bool bTraceFloor) const
+{
+	const FMRZoneInfo* Z = Zones.Find(Rid);
+	if (!Z)
+	{
+		return FVector::ZeroVector;
+	}
+	// Kod fine (64 per square, the room starting at 64) -> ROO (1024 per square, starting at 0)
+	const double Scale = MRUnits::RooPerSquare / MRUnits::KodPerSquare;
+	const FVector2D Roo((KodCol - MRUnits::KodPerSquare) * Scale, (KodRow - MRUnits::KodPerSquare) * Scale);
+	FVector P = Z->Origin + MRUnits::RooToLocal(Roo);
+	if (bTraceFloor)
+	{
+		TraceFloor(P);
+	}
+	return P;
+}
+
+FIntPoint UMRZoneSubsystem::WorldToKod(int32 Rid, const FVector& World) const
+{
+	const FMRZoneInfo* Z = Zones.Find(Rid);
+	if (!Z)
+	{
+		return FIntPoint::ZeroValue;
+	}
+	const FVector2D Roo = MRUnits::LocalToRoo(World - Z->Origin);
+	const double Scale = MRUnits::KodPerSquare / MRUnits::RooPerSquare;
+	return FIntPoint(FMath::FloorToInt(Roo.Y * Scale) + static_cast<int32>(MRUnits::KodPerSquare),
+	                 FMath::FloorToInt(Roo.X * Scale) + static_cast<int32>(MRUnits::KodPerSquare));
 }
 
 FTransform UMRZoneSubsystem::GetStartTransform(int32 Rid) const

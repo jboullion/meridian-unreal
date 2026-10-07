@@ -39,6 +39,17 @@ public:
 	void RemoveHUD();
 	bool HasHUD() const { return HUD.IsValid(); }
 
+	/** The login screen (playing on a Meridian server; UMRNetWorldSubsystem decides when). */
+	void ShowLogin(APlayerController* PC);
+	void HideLogin();
+	bool IsLoginShown() const { return Login.IsValid(); }
+
+	/** Start typing a chat line (Enter, online). */
+	void OpenChat();
+	/** The chat line was said or cancelled. */
+	void OnChatClosed();
+	bool IsChatOpen() const { return bChatOpen; }
+
 	// --- keys (from AMRPlayerController)
 	void OnHotbarKey(int32 Index);
 	void OnHotbarScroll(float Delta);
@@ -100,7 +111,9 @@ private:
 
 	TWeakObjectPtr<APlayerController> OwnerPC;
 	TSharedPtr<SMRHUDRoot> HUD;
+	TSharedPtr<class SMRLoginScreen> Login;
 	bool bInventoryOpen = false;
+	bool bChatOpen = false;
 	FMRSlotRef HoveredSlot;
 	/** Where the mouse went down with an empty cursor: releasing over another slot places (drag and drop). */
 	FMRSlotRef PressSlot;

@@ -16,24 +16,7 @@
 - The health and stamina bars show their values, let's also show the stamina values
 
 ### Props
-- Sign posts, and other props, might need a property for "rotation" in order to get them pointing the the ideal direction since they are not just sprites that always face the player now.
-  - Most sprites are meant to be viewed the same from all angles so not a problem.
-  - The sign needs to turn 90 degress counter clockwise by default. But some signs might need other adjustments. Would it make sense to have two properties: Direction and rotation. So we could set signs as "South" or "Down" direction by default and then just offset that rotation for specific signs? Or do we just have rotation and give signs a default of -90?
-- Lamps are looking GREAT!
-  - Is it possible to remove the emmisive effects from the glass and potentially just make it transparent during the day instead of a solid gray? It should look the same at night.
-- Side View Props:
-  - Some props don't have a side view, but could benefit from one. In these instances we would just use the same image as the front and side view
-  - List:
-    - Dung
-    - Rocks, large and small. Otherwise they appear fairly flat
-- Users should be able to walk through the wheat and other tall grasses with a movement reduction. 
-  - 
 
-- Add blockers:
- - Chests
- - Signs? (This one might need a lot of testing as some signs might block paths otherwise)
- - Trees (Ideally just the trunks)
- - 
 
 
 ### Movement

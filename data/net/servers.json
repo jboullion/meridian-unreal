@@ -1,0 +1,18 @@
+{
+  "_doc": "Meridian servers the login screen offers (docs/adr/0010-meridian-servers.md). ws: the gateway's WebSocket (bytes pass through to blakserv). assets: where the server serves its game files (manifest.json, rsc0000.rsb), which the client needs from that very server. secret_key: blakserv's [Login] SecretKey; not a secret, every client of the server ships it. origin: sent with the WebSocket upgrade, for the gateway's GATEWAY_ORIGINS allowlist.",
+  "origin": "app://meridian-remastered",
+  "servers": [
+    {
+      "name": "Shards (online)",
+      "ws": "wss://35-206-75-121.sslip.io/ws",
+      "assets": "https://35-206-75-121.sslip.io/assets",
+      "secret_key": "6tGcjhaYftSBmSHQ"
+    },
+    {
+      "name": "Local (dev)",
+      "ws": "ws://localhost:8059",
+      "assets": "http://localhost:5173/assets",
+      "secret_key": "6tGcjhaYftSBmSHQ"
+    }
+  ]
+}

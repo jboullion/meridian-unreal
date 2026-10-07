@@ -17,6 +17,7 @@
 #include "UI/MRInventorySource.h"
 #include "UI/MRUIStyle.h"
 #include "UI/SMRHUD.h"
+#include "UI/SMRLoginScreen.h"
 #include "UI/SMRMinimap.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SBoxPanel.h"
@@ -49,6 +50,7 @@ void UMRUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UMRUISubsystem::Deinitialize()
 {
+	HideLogin();
 	RemoveHUD();
 	if (UMRUIStyle* Style = GetStyle())
 	{
@@ -89,6 +91,72 @@ UMRAttributeSet* UMRUISubsystem::GetAttributes() const
 double UMRUISubsystem::Now() const
 {
 	return FPlatformTime::Seconds();
+}
+
+// ------------------------------------------------------------------------------ login
+
+void UMRUISubsystem::ShowLogin(APlayerController* PC)
+{
+	if (!PC || !PC->IsLocalController() || !FSlateApplication::IsInitialized() || !FApp::CanEverRender())
+	{
+		return;
+	}
+	UGameViewportClient* Viewport = PC->GetWorld() ? PC->GetWorld()->GetGameViewport() : nullptr;
+	if (!Viewport)
+	{
+		return;
+	}
+	OwnerPC = PC;
+	if (!Login.IsValid())
+	{
+		Login = SNew(SMRLoginScreen, this);
+		Viewport->AddViewportWidgetForPlayer(GetLocalPlayer(), Login.ToSharedRef(), 20);
+		UE_LOG(LogMeridian, Log, TEXT("UI: login screen shown"));
+	}
+	FInputModeUIOnly Mode;
+	Mode.SetWidgetToFocus(Login);
+	Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	PC->SetInputMode(Mode);
+	PC->bShowMouseCursor = true;
+	Login->OnShown();
+}
+
+void UMRUISubsystem::HideLogin()
+{
+	if (!Login.IsValid())
+	{
+		return;
+	}
+	APlayerController* PC = GetPlayerController();
+	if (UGameViewportClient* Viewport = PC && PC->GetWorld() ? PC->GetWorld()->GetGameViewport() : nullptr)
+	{
+		Viewport->RemoveViewportWidgetForPlayer(GetLocalPlayer(), Login.ToSharedRef());
+	}
+	Login.Reset();
+	ApplyInputMode();
+}
+
+// ------------------------------------------------------------------------------ chat
+
+void UMRUISubsystem::OpenChat()
+{
+	if (!HUD.IsValid() || bChatOpen)
+	{
+		return;
+	}
+	if (bInventoryOpen)
+	{
+		SetInventoryOpen(false);
+	}
+	bChatOpen = true;
+	ApplyInputMode();
+	HUD->OpenChat();
+}
+
+void UMRUISubsystem::OnChatClosed()
+{
+	bChatOpen = false;
+	ApplyInputMode();
 }
 
 // ------------------------------------------------------------------------------ HUD
@@ -133,6 +201,7 @@ void UMRUISubsystem::RemoveHUD()
 	}
 	HUD.Reset();
 	bInventoryOpen = false;
+	bChatOpen = false;
 	if (Avatar)
 	{
 		Avatar->Destroy();
@@ -251,7 +320,18 @@ void UMRUISubsystem::ApplyInputMode()
 	{
 		return;
 	}
-	if (bInventoryOpen)
+	if (Login.IsValid())
+	{
+		return;  // the login screen owns the input (ShowLogin)
+	}
+	if (bChatOpen)
+	{
+		// typing: every key goes to the chat line (no walking off while you write)
+		PC->SetInputMode(FInputModeUIOnly());
+		PC->bShowMouseCursor = false;
+		PC->SetIgnoreLookInput(true);
+	}
+	else if (bInventoryOpen)
 	{
 		// the cursor for the window; WASD still walks (an online game doesn't pause), the mouse doesn't look
 		FInputModeGameAndUI Mode;

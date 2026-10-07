@@ -25,17 +25,7 @@ namespace
 	constexpr int32 Columns = 9;
 	constexpr int32 BagRowsVisible = 4;
 
-	/** Label text in the UI's font, with the one-pixel shadow. */
-	TSharedRef<STextBlock> Label(UMRUIStyle* S, const TAttribute<FText>& Text, float Size, bool bBold = false,
-		const FLinearColor& Color = FLinearColor(1.f, 0.93f, 0.7f))
-	{
-		return SNew(STextBlock)
-			.Text(Text)
-			.Font(S->Font(Size, bBold))
-			.ColorAndOpacity(Color)
-			.ShadowOffset(FVector2D(1.0, 1.0) * S->Px() * 0.5)
-			.ShadowColorAndOpacity(FLinearColor(0.f, 0.f, 0.f, 0.85f));
-	}
+	using MRUI::Label;
 
 	/** Icon hints for empty equipment slots (data/ui/ui_style.json "slot_hints" can override). */
 	FName HintFor(EMREquipSlot Slot)

@@ -1,6 +1,6 @@
 # ADR 0004: Hosting and operations
 
-- Status: Proposed
+- Status: Superseded by [ADR 0010](0010-meridian-servers.md) (2026-10-07). The remaster plays on Meridian servers (blakserv), hosted with Meridian Shards' VM; no UE game server or Supabase for now.
 - Date: 2026-10-05
 
 ## Context

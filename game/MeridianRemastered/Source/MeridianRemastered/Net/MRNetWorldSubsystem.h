@@ -1,0 +1,78 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Subsystems/WorldSubsystem.h"
+#include "MRNetWorldSubsystem.generated.h"
+
+class AMRNetObject;
+class APlayerController;
+class UMRNetSubsystem;
+struct FMRNetObject;
+
+/**
+ * Puts a Meridian server's view of the world into this UE world (docs/adr/0010-meridian-servers.md).
+ * Active in a standalone game that plays online (UMRNetSubsystem::WantsOnline).
+ *
+ * - Before a character is in the game: no pawn; the camera looks over Raza behind the login screen.
+ * - A room from the server (BP_PLAYER + BP_ROOM_CONTENTS): its zone by room file, the player's pawn
+ *   spawned or moved to the server's position, a sprite (AMRNetObject) for every creature in it.
+ * - The pawn moves locally (the original's movement is client-side too); its position goes up as
+ *   BP_REQ_MOVE every 250 ms while it changes, its facing as BP_REQ_TURN. Standing on an exit square
+ *   sends BP_REQ_GO; walking off the room's edge keeps asking to move off it (once a second), and
+ *   the server answers with the next room. The server snapping the player back moves the pawn.
+ */
+UCLASS()
+class MERIDIANREMASTERED_API UMRNetWorldSubsystem : public UTickableWorldSubsystem
+{
+	GENERATED_BODY()
+
+public:
+	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+	virtual void Deinitialize() override;
+	virtual void Tick(float DeltaTime) override;
+	virtual TStatId GetStatId() const override;
+	virtual bool IsTickable() const override { return bActive; }
+
+	/** Playing on a server in this world. */
+	bool IsActive() const { return bActive; }
+	/** The zone of the server's current room (0 until one arrives or if we don't have it). */
+	int32 GetRid() const { return Rid; }
+	/** The creature actor for a server object, if any. */
+	AMRNetObject* FindActor(uint32 Id) const;
+	/** The look a server object is drawn with (None: not drawn). */
+	FName LookFor(const FMRNetObject& Object) const;
+
+	/** Show the login screen or the HUD for the current phase. */
+	void UpdateScreens();
+
+private:
+	UMRNetSubsystem* GetNet() const;
+	APlayerController* GetPC() const;
+
+	void OnPhaseChanged();
+	void OnRoomEntered();
+	void OnObjectAdded(uint32 Id);
+	void OnObjectChanged(uint32 Id);
+	void OnObjectMoved(uint32 Id);
+	void OnObjectRemoved(uint32 Id);
+
+	void SpawnObject(const FMRNetObject& Object);
+	void ClearObjects();
+	void PlacePlayer();
+	void ShowBackdrop();
+	void SendMovement(double Now);
+
+	bool bActive = false;
+	int32 Rid = 0;
+	TMap<uint32, TWeakObjectPtr<AMRNetObject>> Actors;
+
+	FIntPoint LastSentKod = FIntPoint(-1, -1);
+	double LastMoveTime = 0.0;
+	double LastOffRoomTime = 0.0;
+	int32 LastSentAngle = -1;
+	double LastTurnTime = 0.0;
+	FIntPoint ExitSquare = FIntPoint::ZeroValue;
+	/** bgf name (no extension, lower case) -> monster look, built on first use. */
+	mutable TMap<FString, FName> LookByBgf;
+};

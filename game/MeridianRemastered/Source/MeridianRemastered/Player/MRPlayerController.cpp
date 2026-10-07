@@ -10,6 +10,7 @@
 #include "InputModifiers.h"
 #include "UI/MRUISubsystem.h"
 #include "MeridianRemastered.h"
+#include "Net/MRNetWorldSubsystem.h"
 #include "Player/MRPlayerState.h"
 #include "Tests/MRLookDevTour.h"
 #include "Tests/MRProfileTour.h"
@@ -18,6 +19,7 @@
 #include "Tests/MRSpriteNetTest.h"
 #include "Tests/MRMonsterTour.h"
 #include "Tests/MRMapCapture.h"
+#include "Tests/MRNetTest.h"
 #include "Tests/MRUIShots.h"
 #include "Zones/MRZoneSubsystem.h"
 
@@ -86,6 +88,11 @@ void AMRPlayerController::BeginPlay()
 			LookDevTour = NewObject<UMRLookDevTour>(this);
 			LookDevTour->Start(this);
 		}
+		else if (UMRNetTest::IsRequested())
+		{
+			NetTest = NewObject<UMRNetTest>(this);
+			NetTest->Start(this);
+		}
 	}
 }
 
@@ -121,6 +128,8 @@ void AMRPlayerController::BuildUIInput()
 	InventoryAction = MakeAction(TEXT("IA_Inventory"), EInputActionValueType::Boolean);
 	UIContext->MapKey(InventoryAction, EKeys::E);
 	UIContext->MapKey(InventoryAction, EKeys::I);
+	ChatAction = MakeAction(TEXT("IA_Chat"), EInputActionValueType::Boolean);
+	UIContext->MapKey(ChatAction, EKeys::Enter);
 	MapZoomAction = MakeAction(TEXT("IA_MapZoom"), EInputActionValueType::Axis1D);
 	UIContext->MapKey(MapZoomAction, EKeys::Equals);
 	UIContext->MapKey(MapZoomAction, EKeys::Add);
@@ -144,6 +153,7 @@ void AMRPlayerController::SetupInputComponent()
 	}
 	Input->BindAction(HotbarScrollAction, ETriggerEvent::Triggered, this, &AMRPlayerController::OnHotbarScroll);
 	Input->BindAction(InventoryAction, ETriggerEvent::Started, this, &AMRPlayerController::OnInventoryKey);
+	Input->BindAction(ChatAction, ETriggerEvent::Started, this, &AMRPlayerController::OnChatKey);
 	Input->BindAction(MapZoomAction, ETriggerEvent::Started, this, &AMRPlayerController::OnMapZoom);
 }
 
@@ -186,6 +196,16 @@ void AMRPlayerController::OnInventoryKey()
 	if (UMRUISubsystem* UI = GetUI())
 	{
 		UI->ToggleInventory();
+	}
+}
+
+void AMRPlayerController::OnChatKey()
+{
+	const UMRNetWorldSubsystem* Net = GetWorld()->GetSubsystem<UMRNetWorldSubsystem>();
+	UMRUISubsystem* UI = GetUI();
+	if (Net && Net->IsActive() && UI)
+	{
+		UI->OpenChat();
 	}
 }
 

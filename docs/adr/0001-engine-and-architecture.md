@@ -1,6 +1,6 @@
 # ADR 0001: Engine, server architecture and data pipeline
 
-- Status: Accepted
+- Status: Accepted; decisions 2, 4, 6 and 7 (our own server, Supabase accounts, server-side zone changes, action combat) superseded by [ADR 0010](0010-meridian-servers.md) on 2026-10-07: the remaster now plays on Meridian servers (blakserv)
 - Date: 2026-10-04
 
 ## Context
@@ -53,4 +53,4 @@ The target is 100–200 concurrent players. The original code is GPLv2. The orig
 ## Alternatives considered
 - **Unity 6:** a good fit for text-based assets, but we'd have to assemble the networking, action combat and character stack ourselves.
 - **Godot 4.7:** MIT-licensed and fully text-based, but its multiplayer, animation and rendering are the weakest of the three for this target.
-- **Keeping blakserv as the server with a new client:** the most faithful option, but its 2D grid model can't support action combat or seamless zones.
+- **Keeping blakserv as the server with a new client:** the most faithful option, but its 2D grid model can't support action combat or seamless zones. (Chosen after all on 2026-10-07, [ADR 0010](0010-meridian-servers.md): one world shared with the browser client and original clients, the original's rules as they are.)

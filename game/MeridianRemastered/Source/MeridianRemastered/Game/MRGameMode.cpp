@@ -6,6 +6,7 @@
 #include "GameFramework/Controller.h"
 #include "MeridianRemastered.h"
 #include "Misc/CommandLine.h"
+#include "Net/MRNetSubsystem.h"
 #include "Player/MRHUD.h"
 #include "Player/MRPlayerController.h"
 #include "Player/MRPlayerState.h"
@@ -33,8 +34,20 @@ void AMRGameMode::InitGame(const FString& MapName, const FString& Options, FStri
 	}
 }
 
+void AMRGameMode::SpawnOnlinePlayer(AController* Player, const FTransform& At)
+{
+	if (Player && !Player->GetPawn())
+	{
+		RestartPlayerAtTransform(Player, At);
+	}
+}
+
 void AMRGameMode::RestartPlayer(AController* NewPlayer)
 {
+	if (UMRNetSubsystem::WantsOnline(GetWorld()))
+	{
+		return;  // no pawn before the server has the character in a room (SpawnOnlinePlayer)
+	}
 	UMRZoneSubsystem* Zones = GetWorld()->GetSubsystem<UMRZoneSubsystem>();
 	if (!NewPlayer || !Zones || !Zones->FindZone(StartZone))
 	{

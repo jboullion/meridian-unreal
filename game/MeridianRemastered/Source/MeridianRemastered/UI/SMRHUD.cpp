@@ -8,13 +8,173 @@
 #include "UI/MRInventorySource.h"
 #include "UI/MRUIStyle.h"
 #include "UI/MRUISubsystem.h"
+#include "UI/SMRChatLog.h"
 #include "UI/SMRInventoryScreen.h"
 #include "UI/SMRMinimap.h"
 #include "UI/SMRSlot.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SUniformGridPanel.h"
 #include "Widgets/SBoxPanel.h"
+#include "Widgets/Input/SEditableText.h"
 #include "Widgets/SOverlay.h"
+#include "Widgets/Text/STextBlock.h"
+
+// ------------------------------------------------------------------------------ MRUI
+
+TSharedRef<STextBlock> MRUI::Label(UMRUIStyle* S, const TAttribute<FText>& Text, float Size, bool bBold, const FLinearColor& Color)
+{
+	return SNew(STextBlock)
+		.Text(Text)
+		.Font(S->Font(Size, bBold))
+		.ColorAndOpacity(Color)
+		.ShadowOffset(FVector2D(1.0, 1.0) * S->Px() * 0.5)
+		.ShadowColorAndOpacity(FLinearColor(0.f, 0.f, 0.f, 0.85f));
+}
+
+// ------------------------------------------------------------------------------ SMRTextButton
+
+void SMRTextButton::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+{
+	UI = InUI;
+	Text = InArgs._Text;
+	bActive = InArgs._bActive;
+	TextSize = InArgs._TextSize;
+	MinWidth = InArgs._MinWidth;
+	OnClicked = InArgs._OnClicked;
+}
+
+FVector2D SMRTextButton::ComputeDesiredSize(float) const
+{
+	UMRUIStyle* Style = UI.IsValid() ? UI->GetStyle() : nullptr;
+	if (!Style)
+	{
+		return FVector2D(80.f, 30.f);
+	}
+	const float H = Style->PieceSize(TEXT("tab_mid_up")).Y;
+	const FVector2f T = MRPaint::MeasureText(Text.Get().ToString(), Style->Font(TextSize, true));
+	return FVector2D(FMath::Max(MinWidth * Style->Px(), T.X + 16.f * Style->Px()), H > 0.f ? H : T.Y + 8.f * Style->Px());
+}
+
+int32 SMRTextButton::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
+	int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const
+{
+	UMRUIStyle* Style = UI.IsValid() ? UI->GetStyle() : nullptr;
+	if (!Style)
+	{
+		return Layer;
+	}
+	// the stat button stretched as SMRTab draws it, with a label instead of an icon
+	const bool bEnabled = bParentEnabled && IsEnabled();
+	const bool bDown = bActive.Get(false);
+	const TCHAR* State = bDown ? TEXT("down") : TEXT("up");
+	const FVector2f S(Geo.GetLocalSize());
+	const FLinearColor Tint = WStyle.GetColorAndOpacityTint() * (bEnabled ? FLinearColor::White : FLinearColor(0.55f, 0.55f, 0.55f, 1.f));
+	const FName LeftName(*FString::Printf(TEXT("tab_left_%s"), State)), MidName(*FString::Printf(TEXT("tab_mid_%s"), State));
+	const FName RightName(*FString::Printf(TEXT("tab_right_%s"), State));
+	const float K = S.Y / FMath::Max(1.f, Style->PieceSize(MidName).Y);
+	const FVector2f L = Style->PieceSize(LeftName) * K, R = Style->PieceSize(RightName) * K;
+	MRPaint::Box(Out, Layer, Geo, Style->Brush(LeftName), FVector2f::ZeroVector, L, Tint);
+	MRPaint::Tile(Out, Layer, Geo, Style->Brush(MidName, true, K), FVector2f(L.X, 0.f), FVector2f(S.X - L.X - R.X, S.Y), Tint);
+	MRPaint::Box(Out, Layer, Geo, Style->Brush(RightName), FVector2f(S.X - R.X, 0.f), R, Tint);
+	const FString Label = Text.Get().ToString();
+	const FSlateFontInfo Font = Style->Font(TextSize, true);
+	const FVector2f T = MRPaint::MeasureText(Label, Font);
+	const FLinearColor TextColor = bEnabled ? (bDown ? Style->Color(TEXT("heading"), FLinearColor(1.f, 0.75f, 0.3f))
+		: Style->Color(TEXT("text"), FLinearColor(1.f, 0.93f, 0.7f))) : FLinearColor(0.6f, 0.58f, 0.52f);
+	MRPaint::Text(Out, Layer + 1, Geo, Label, Font, (S - T) * 0.5f + FVector2f(0.f, bDown ? Style->Px() * 0.5f : 0.f), TextColor);
+	if (IsHovered() && bEnabled && !bDown)
+	{
+		MRPaint::Box(Out, Layer + 1, Geo, Style->White(), FVector2f::ZeroVector, S, FLinearColor(1.f, 1.f, 1.f, 0.12f));
+	}
+	return Layer + 2;
+}
+
+FReply SMRTextButton::OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event)
+{
+	if (Event.GetEffectingButton() == EKeys::LeftMouseButton && IsEnabled())
+	{
+		OnClicked.ExecuteIfBound();
+		return FReply::Handled();
+	}
+	return FReply::Unhandled();
+}
+
+FCursorReply SMRTextButton::OnCursorQuery(const FGeometry& Geo, const FPointerEvent& Event) const
+{
+	return IsEnabled() ? FCursorReply::Cursor(EMouseCursor::Hand) : FCursorReply::Unhandled();
+}
+
+// ------------------------------------------------------------------------------ SMRTextField
+
+void SMRTextField::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+{
+	MaxLength = InArgs._MaxLength;
+	OnSubmit = InArgs._OnSubmit;
+	OnCancel = InArgs._OnCancel;
+	UMRUIStyle* S = InUI->GetStyle();
+	const float Px = S->Px();
+	ChildSlot
+	[
+		SNew(SMRPanel, InUI).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(2.f)
+		[
+			SNew(SBox).WidthOverride(InArgs._Width * Px).Padding(2.f * Px, 1.f * Px)
+			[
+				SAssignNew(Edit, SEditableText)
+				.Text(InArgs._InitialText)
+				.HintText(InArgs._HintText)
+				.IsPassword(InArgs._bPassword)
+				.Font(S->Font(10.f))
+				.ColorAndOpacity(S->Color(TEXT("text"), FLinearColor(1.f, 0.93f, 0.7f)))
+				.SelectAllTextWhenFocused(true)
+				.ClearKeyboardFocusOnCommit(false)
+				.OnTextChanged_Lambda([this](const FText& T)
+				{
+					if (T.ToString().Len() > MaxLength)
+					{
+						Edit->SetText(FText::FromString(T.ToString().Left(MaxLength)));
+					}
+				})
+				.OnTextCommitted_Lambda([this](const FText&, ETextCommit::Type How)
+				{
+					if (How == ETextCommit::OnEnter)
+					{
+						OnSubmit.ExecuteIfBound();
+					}
+					else if (How == ETextCommit::OnCleared)
+					{
+						OnCancel.ExecuteIfBound();  // Escape
+					}
+				})
+			]
+		]
+	];
+}
+
+FString SMRTextField::GetText() const
+{
+	return Edit.IsValid() ? Edit->GetText().ToString() : FString();
+}
+
+void SMRTextField::SetText(const FString& InText)
+{
+	if (Edit.IsValid())
+	{
+		Edit->SetText(FText::FromString(InText));
+	}
+}
+
+void SMRTextField::Focus()
+{
+	if (Edit.IsValid() && FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get().SetAllUserFocus(Edit, EFocusCause::SetDirectly);
+	}
+}
+
+bool SMRTextField::HasFocus() const
+{
+	return Edit.IsValid() && Edit->HasKeyboardFocus();
+}
 
 // ------------------------------------------------------------------------------ SMRPanel
 
@@ -279,6 +439,7 @@ void SMRHUDRoot::Rebuild()
 	SpellBar = MakeSpellBar();
 	Inventory = SNew(SMRInventoryScreen, Ui);
 	Inventory->SetVisibility(Ui->IsInventoryOpen() ? EVisibility::Visible : EVisibility::Collapsed);
+	ChatLog = SNew(SMRChatLog, Ui);
 
 	ChildSlot
 	[
@@ -291,6 +452,10 @@ void SMRHUDRoot::Rebuild()
 			Style->Number(TEXT("minimap_margin"), 8.f) * Px, 0.f)
 		[
 			SNew(SMRMinimap, Ui)
+		]
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(Style->Number(TEXT("chat_margin"), 8.f) * Px)
+		[
+			ChatLog.ToSharedRef()
 		]
 		+ SOverlay::Slot()
 		[
@@ -421,6 +586,14 @@ void SMRHUDRoot::SetInventoryTab(int32 Tab)
 	if (Inventory.IsValid())
 	{
 		Inventory->SetTab(static_cast<EMRInventoryTab>(FMath::Clamp(Tab, 0, static_cast<int32>(EMRInventoryTab::Count) - 1)));
+	}
+}
+
+void SMRHUDRoot::OpenChat()
+{
+	if (ChatLog.IsValid())
+	{
+		ChatLog->OpenInput();
 	}
 }
 

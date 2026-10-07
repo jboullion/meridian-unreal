@@ -11,7 +11,8 @@ struct FInputActionValue;
 /**
  * Feeds the UI keys to UMRUISubsystem (docs/adr/0009-user-interface.md) through its own mapping
  * context, IMC_UI, built in code like the character's: 1-9 and the mouse wheel select the hotbar
- * slot, numpad 1-9 cast from the spell bar, E or I opens the inventory dialog, - and = zoom the map.
+ * slot, numpad 1-9 cast from the spell bar, E or I opens the inventory dialog, - and = zoom the map,
+ * Enter starts a chat line (playing on a Meridian server).
  *
  * Also drives client-side zone streaming: on a network client, keeps the player's current zone
  * and every zone one exit away loaded and visible (UMRZoneSubsystem::SetClientStreamingTarget),
@@ -48,6 +49,7 @@ private:
 	void OnHotbarScroll(const FInputActionValue& Value);
 	void OnSpellKey(int32 Index);
 	void OnInventoryKey();
+	void OnChatKey();
 	void OnMapZoom(const FInputActionValue& Value);
 	class UMRUISubsystem* GetUI() const;
 
@@ -56,6 +58,7 @@ private:
 	UPROPERTY(Transient) TArray<TObjectPtr<UInputAction>> SpellActions;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> HotbarScrollAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> InventoryAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> ChatAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> MapZoomAction;
 
 	/** Zones requested by the server, with the time the request expires. */
@@ -101,4 +104,8 @@ private:
 	/** -MRUIShots UI screenshots. */
 	UPROPERTY()
 	TObjectPtr<class UMRUIShots> UIShots;
+
+	/** -MRNetTest: plays on a Meridian server. */
+	UPROPERTY()
+	TObjectPtr<class UMRNetTest> NetTest;
 };

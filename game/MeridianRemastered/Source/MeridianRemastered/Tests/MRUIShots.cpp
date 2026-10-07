@@ -10,6 +10,7 @@
 #include "MeridianRemastered.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Paths.h"
+#include "Net/MRNetSubsystem.h"
 #include "Player/MRPlayerState.h"
 #include "TimerManager.h"
 #include "UI/MRInventorySource.h"
@@ -22,6 +23,33 @@ namespace
 	UMRUISubsystem* UIOf(APlayerController* PC)
 	{
 		return PC && PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+	}
+
+	UMRNetSubsystem* NetOf(APlayerController* PC)
+	{
+		const UGameInstance* GI = PC ? PC->GetGameInstance() : nullptr;
+		return GI ? GI->GetSubsystem<UMRNetSubsystem>() : nullptr;
+	}
+
+	/** The login screen's pages without a server (UMRNetSubsystem::SetPreview). */
+	void PreviewLogin(APlayerController* PC, EMRNetPhase Phase, bool bCharacters = false, const FString& Error = FString())
+	{
+		UMRNetSubsystem* Net = NetOf(PC);
+		UMRUISubsystem* UI = UIOf(PC);
+		if (!Net || !UI)
+		{
+			return;
+		}
+		TArray<FMRCharacterSlot> Slots;
+		if (bCharacters)
+		{
+			Slots.Add({1, TEXT("Tomas d'Raza"), false});
+			Slots.Add({2, TEXT("Aldera"), false});
+			Slots.Add({3, FString(), true});
+			Slots.Add({4, FString(), true});
+		}
+		Net->SetPreview(Phase, Slots, Error);
+		UI->ShowLogin(PC);
 	}
 
 	void SetHealth(APlayerController* PC, float Value)
@@ -92,6 +120,22 @@ void UMRUIShots::Start(APlayerController* InController)
 					UI->SetInventoryOpen(false);
 				}
 			}, 1.f},
+		// the login screen (docs/adr/0010-meridian-servers.md), over the HUD here; online it has the town to itself
+		{TEXT("login"), [](APlayerController* PC) { PreviewLogin(PC, EMRNetPhase::Offline); }, 1.f},
+		{TEXT("login_error"), [](APlayerController* PC) { PreviewLogin(PC, EMRNetPhase::Offline, false, TEXT("Login failed. Check your password.")); }, 0.6f},
+		{TEXT("login_connecting"), [](APlayerController* PC) { PreviewLogin(PC, EMRNetPhase::Connecting); }, 0.6f},
+		{TEXT("login_characters"), [](APlayerController* PC) { PreviewLogin(PC, EMRNetPhase::Characters, true); }, 0.6f},
+		{TEXT(""), [](APlayerController* PC)
+			{
+				if (UMRUISubsystem* UI = UIOf(PC))
+				{
+					UI->HideLogin();
+				}
+				if (UMRNetSubsystem* Net = NetOf(PC))
+				{
+					Net->SetPreview(EMRNetPhase::Offline, {});
+				}
+			}, 0.3f},
 	};
 	Index = -1;
 	// streaming, lighting and the HUD settle first

@@ -9,6 +9,7 @@
 #include "MeridianRemastered.h"
 #include "Misc/FileHelper.h"
 #include "Monsters/MRMonster.h"
+#include "Net/MRNetSubsystem.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Zones/MRZoneSubsystem.h"
@@ -60,7 +61,8 @@ bool UMRMonsterSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 void UMRMonsterSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	bStarted = InWorld.GetNetMode() == NM_Client || CVarSpawn.GetValueOnGameThread() == 0;  // clients get them replicated
+	// clients get them replicated; on a Meridian server, the server has its own (UMRNetWorldSubsystem draws them)
+	bStarted = InWorld.GetNetMode() == NM_Client || CVarSpawn.GetValueOnGameThread() == 0 || UMRNetSubsystem::WantsOnline(&InWorld);
 }
 
 void UMRMonsterSubsystem::Tick(float DeltaTime)

@@ -4,9 +4,20 @@
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/SLeafWidget.h"
 
+class SEditableText;
+class SMRChatLog;
 class SMRInventoryScreen;
 class SMRMinimap;
+class STextBlock;
+class UMRUIStyle;
 class UMRUISubsystem;
+
+namespace MRUI
+{
+	/** Label text in the UI's font, with the one-pixel shadow. */
+	MERIDIANREMASTERED_API TSharedRef<STextBlock> Label(UMRUIStyle* S, const TAttribute<FText>& Text, float Size, bool bBold = false,
+		const FLinearColor& Color = FLinearColor(1.f, 0.93f, 0.7f));
+}
 
 /**
  * A stone panel (docs/adr/0009-user-interface.md): a tiled background piece, a frame of the
@@ -39,6 +50,70 @@ private:
 	FName Frame;
 	bool bCorners = false;
 	FLinearColor BackgroundTint;
+};
+
+/**
+ * A text button: the original's stretched stat button (the inventory dialog's tabs, SMRTab) with a
+ * label in the middle. bActive draws it pressed (a choice that is selected); disabled, it dims.
+ */
+class MERIDIANREMASTERED_API SMRTextButton : public SLeafWidget
+{
+public:
+	SLATE_BEGIN_ARGS(SMRTextButton) : _TextSize(10.f), _MinWidth(40.f) {}
+		SLATE_ATTRIBUTE(FText, Text)
+		SLATE_ATTRIBUTE(bool, bActive)
+		/** Font size, as MRUI::Label. */
+		SLATE_ARGUMENT(float, TextSize)
+		/** In original pixels. */
+		SLATE_ARGUMENT(float, MinWidth)
+		SLATE_EVENT(FSimpleDelegate, OnClicked)
+	SLATE_END_ARGS()
+
+	void Construct(const FArguments& InArgs, UMRUISubsystem* InUI);
+	virtual FVector2D ComputeDesiredSize(float) const override;
+	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
+		int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const override;
+	virtual FReply OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event) override;
+	virtual FCursorReply OnCursorQuery(const FGeometry& Geo, const FPointerEvent& Event) const override;
+
+private:
+	TWeakObjectPtr<UMRUISubsystem> UI;
+	TAttribute<FText> Text;
+	TAttribute<bool> bActive;
+	float TextSize = 10.f;
+	float MinWidth = 40.f;
+	FSimpleDelegate OnClicked;
+};
+
+/** A text box: editable text in the UI's font inside an inset panel (the inventory's bag frame). */
+class MERIDIANREMASTERED_API SMRTextField : public SCompoundWidget
+{
+public:
+	SLATE_BEGIN_ARGS(SMRTextField) : _bPassword(false), _Width(120.f), _MaxLength(60) {}
+		SLATE_ARGUMENT(FText, InitialText)
+		SLATE_ARGUMENT(FText, HintText)
+		SLATE_ARGUMENT(bool, bPassword)
+		/** In original pixels. */
+		SLATE_ARGUMENT(float, Width)
+		SLATE_ARGUMENT(int32, MaxLength)
+		/** Enter pressed. */
+		SLATE_EVENT(FSimpleDelegate, OnSubmit)
+		/** Escape pressed. */
+		SLATE_EVENT(FSimpleDelegate, OnCancel)
+	SLATE_END_ARGS()
+
+	void Construct(const FArguments& InArgs, UMRUISubsystem* InUI);
+	FString GetText() const;
+	void SetText(const FString& InText);
+	/** Give it the keyboard. */
+	void Focus();
+	bool HasFocus() const;
+
+private:
+	TSharedPtr<SEditableText> Edit;
+	int32 MaxLength = 60;
+	FSimpleDelegate OnSubmit;
+	FSimpleDelegate OnCancel;
 };
 
 /** A stat bar like the original's (graphctl.c: a coloured fill, the gold caps), with its value. */
@@ -123,10 +198,13 @@ public:
 	void Rebuild();
 	void SetInventoryOpen(bool bOpen);
 	void SetInventoryTab(int32 Tab);
+	/** Start typing a chat line (online). */
+	void OpenChat();
 
 private:
 	TWeakObjectPtr<UMRUISubsystem> UI;
 	TSharedPtr<SMRInventoryScreen> Inventory;
+	TSharedPtr<SMRChatLog> ChatLog;
 	TSharedPtr<SWidget> SpellBar;
 	TSharedPtr<SWidget> HotbarArea;
 	float SpellBarOpacity = 1.f;

@@ -8,7 +8,7 @@ The goal is simple: walk back into Meridian and have it feel like home, only bet
 
 ## Where it stands
 
-We're early. Today the project is essentially a port: the original's data, maps, textures and sounds brought into Unreal, running on a new game server. The first playable demo covers the town of **Raza** and the zones around it.
+We're early. Today the project is essentially a port: the original's data, maps, textures and sounds brought into Unreal, playing online on a real Meridian server (the same one as our browser client, Meridian Shards). The first playable demo covers the town of **Raza** and the zones around it.
 
 What works now:
 
@@ -16,9 +16,9 @@ What works now:
 - Upscaled original textures and rebuilt roofs, parapets, fences and signs
 - The original's day/night cycle, seasons and storms, with lit windows, torches and chimney smoke
 - The original's music and ambient sound
-- Multiplayer on a dedicated server, with first- and third-person movement
+- Online play: log in (a new name makes an account), create a character, walk Raza with other players (browser, desktop and original clients too) and chat, in first or third person
 
-What's next: combat, creatures, spells and skills, the character creator, accounts, and the rest of the world.
+What's next: combat, inventory, spells and skills from the server, the full character creator, player looks, and the rest of the world.
 
 Once the remaster is in a working state, we'll open-source as much of it as we're allowed.
 
@@ -72,19 +72,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/setup.ps1
 
 This extracts the original data and art, builds the maps, compiles the game and generates the world. Pass `-EngineRoot "<path to UE_5.8>"` if Unreal is installed somewhere else.
 
-To play, open `game/MeridianRemastered/MeridianRemastered.uproject`, set Net Mode to "Play As Client" and press Play. Move with WASD and the mouse, Shift to sprint, Space to jump, and V to switch between first and third person.
+To play, open `game/MeridianRemastered/MeridianRemastered.uproject` and press Play (Net Mode "Play Standalone"). The login screen connects to a Meridian server: "Shards (online)", or "Local (dev)" when the Shards dev stack runs on your machine (`npm run dev` in the meridian-browser repo). Any new name and password make an account. Move with WASD and the mouse, Shift to sprint, Space to jump, V to switch between first and third person, and Enter to chat.
 
 More detail on building, testing and the tools is in [AGENTS.md](AGENTS.md).
 
 ## Learn more
 
 - [How the remaster is built](docs/adr/0001-engine-and-architecture.md): engine, server and data
+- [Playing on Meridian servers](docs/adr/0010-meridian-servers.md): the login, the protocol and the servers
 - [What we learned from the original data](docs/findings.md)
 - [Environment art](docs/adr/0003-environment-art-pipeline.md): how the towns get their look
 - [Time, weather and atmosphere](docs/adr/0005-time-weather-and-atmosphere.md)
 - [Audio](docs/adr/0006-audio.md)
 - [Characters](docs/adr/0008-sprite-characters.md): players and monsters drawn as sprites, like the original
-- [Hosting](docs/adr/0004-hosting-and-operations.md)
 
 ## Thanks
 

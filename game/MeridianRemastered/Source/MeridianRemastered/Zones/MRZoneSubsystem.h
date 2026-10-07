@@ -174,6 +174,24 @@ public:
 	/** Server: spawn point for new characters (the Raza Inn, settings.kod piInitialHomeRoomID). */
 	FTransform GetStartTransform(int32 Rid = 301) const;
 
+	// --- playing on a Meridian server (docs/adr/0010-meridian-servers.md)
+
+	/** The zone built from a room file (zones.json "roo", e.g. "razainn.roo"; any case), or 0. */
+	int32 RidForRoom(const FString& RooFile) const;
+
+	/**
+	 * A server position (Kod fine units: square * 64 + fine, 1-based, so 64 is the room's top-left
+	 * edge) -> world, on the floor when bTraceFloor and the geometry is loaded.
+	 */
+	FVector KodToWorld(int32 Rid, int32 KodRow, int32 KodCol, bool bTraceFloor = true) const;
+
+	/** World -> server position in a zone: X = Kod row, Y = Kod column (may fall outside the room). */
+	FIntPoint WorldToKod(int32 Rid, const FVector& World) const;
+
+	/** The server owns exits and zone changes: UpdatePawnZone leaves the pawn alone. */
+	void SetServerDriven(bool bInServerDriven) { bServerDriven = bInServerDriven; }
+	bool IsServerDriven() const { return bServerDriven; }
+
 	/** Directory holding zones.json / zone_layout.json. */
 	static FString GetDataDir();
 
@@ -183,6 +201,11 @@ private:
 	void SetPawnZone(APawn* Pawn, int32 Rid) const;
 
 	TMap<int32, FMRZoneInfo> Zones;
+
+	/** Room file (lower case) -> zone, from zones.json "roo". */
+	TMap<FString, int32> RoomFiles;
+
+	bool bServerDriven = false;
 
 	/** Every zone geometry's wading areas, world space (DepthAt). */
 	TArray<FMRDepthArea> DepthAreas;

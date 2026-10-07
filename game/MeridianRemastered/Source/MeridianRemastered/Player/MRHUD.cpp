@@ -8,6 +8,7 @@
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "Net/MRNetWorldSubsystem.h"
 #include "UI/MRUISubsystem.h"
 
 namespace
@@ -25,7 +26,12 @@ void AMRHUD::BeginPlay()
 	APlayerController* PC = GetOwningPlayerController();
 	if (PC && PC->IsLocalController() && PC->GetLocalPlayer())
 	{
-		if (UMRUISubsystem* UI = PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>())
+		// online, the login screen comes first (UMRNetWorldSubsystem shows the HUD once in the game)
+		if (UMRNetWorldSubsystem* Net = GetWorld()->GetSubsystem<UMRNetWorldSubsystem>(); Net && Net->IsActive())
+		{
+			Net->UpdateScreens();
+		}
+		else if (UMRUISubsystem* UI = PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>())
 		{
 			UI->ShowHUD(PC);
 		}
