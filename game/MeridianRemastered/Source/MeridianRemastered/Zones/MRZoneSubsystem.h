@@ -87,6 +87,8 @@ struct FMRZoneInfo
 struct FMRDepthArea
 {
 	int32 Depth = 0;
+	/** The runtime zone it belongs to (UMRRuntimeRooms), 0 for the built zones. */
+	int32 RuntimeRid = 0;
 	FBox2D Bounds = FBox2D(ForceInit);
 	TArray<FVector2D> Points;
 };
@@ -190,6 +192,13 @@ public:
 
 	/** The zone built from a room file (zones.json "roo", e.g. "razainn.roo"; any case), or 0. */
 	int32 RidForRoom(const FString& RooFile) const;
+
+	/**
+	 * A zone built at runtime from the server's .roo (UMRRuntimeRooms, docs/adr/0012): no streaming
+	 * level, its geometry an AMRRuntimeRoom at Info.Origin. Depth areas are zone-local (UE cm, XY).
+	 */
+	void AddRuntimeZone(const FMRZoneInfo& Info, const TArray<FMRDepthArea>& LocalDepthAreas);
+	void RemoveRuntimeZone(int32 Rid);
 
 	/**
 	 * A server position (Kod fine units: square * 64 + fine, 1-based, so 64 is the room's top-left

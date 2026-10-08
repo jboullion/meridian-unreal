@@ -11,6 +11,9 @@ Outputs:
     items.json     weapons, armour and every item class referenced by shops/zones
     constants.json the constant tables the game code needs (SS_*, SKS_*, AI_*, ATCK_*, ...)
     charinfo.json  what the character creator offers (face parts, colours, spells, skills, costs)
+    net/rooms.json every room: RID, class, .roo file, name and the rooms its exits lead to (the
+                   online client builds rooms we haven't converted at runtime and preloads their
+                   neighbours: docs/adr/0012-client-parity-and-world-coverage.md)
 """
 from __future__ import annotations
 
@@ -314,6 +317,37 @@ class Extractor:
             })
         return out
 
+    def rooms(self) -> list[dict]:
+        """Every room class with its own RID (the most derived class per RID), for the online client."""
+        by_rid: dict[int, str] = {}
+        for name, c in self.idx.classes.items():
+            expr = KodIndex._ci_get(c.properties, "piRoom_num")
+            if expr is None:
+                continue
+            rid = self.idx.eval_in(name, expr)
+            if not isinstance(rid, int) or rid <= 0:
+                continue
+            if rid not in by_rid or len(self.idx.chain(name)) > len(self.idx.chain(by_rid[rid])):
+                by_rid[rid] = name
+        out = []
+        for rid in sorted(by_rid):
+            cls = by_rid[rid]
+            r = self.idx.resolved_vars(cls)
+            roo = r.get("prRoom")
+            if not isinstance(roo, str) or not roo.lower().endswith(".roo"):
+                continue
+            try:
+                exits, edges = self.parse_exits(cls)
+            except Exception as e:  # a room whose exits we can't read still gets its entry
+                print(f"warning: exits of {cls}: {e}", file=sys.stderr)
+                exits, edges = [], []
+            links = sorted({e["dest_rid"] for e in exits + edges
+                            if isinstance(e.get("dest_rid"), int) and e["dest_rid"] != rid})
+            name = r.get("vrName")
+            out.append({"rid": rid, "class": cls, "roo": roo, "name": name if isinstance(name, str) else None,
+                        "links": links})
+        return out
+
     # monsters / npcs -----------------------------------------------------------
     MONSTER_KEYS = ["vrName", "vrDesc", "vrIcon", "vrDead_icon", "viLevel", "viDifficulty", "viKarma",
                     "viSpeed", "viAttack_type", "viDefault_behavior", "viTreasure_type", "viCashmin",
@@ -508,6 +542,11 @@ def main() -> None:
     dump("items.json", items)
     dump("constants.json", ex.constants())
     dump("charinfo.json", ex.charinfo(spells, skills))
+    (a.out / "net").mkdir(exist_ok=True)
+    dump("net/rooms.json", {"_doc": "Every Kod room (tools/kod_extract): rid, class, roo file, name, and the rooms its "
+                                    "exits lead to. The online client uses it for rooms it builds at runtime "
+                                    "(docs/adr/0012-client-parity-and-world-coverage.md).",
+                            "rooms": ex.rooms()})
 
 
 if __name__ == "__main__":

@@ -5,7 +5,10 @@
 #include "GameFramework/Character.h"
 #include "MRNetObject.generated.h"
 
+class UMRBgfSpriteComponent;
 class UMRSpriteBodyComponent;
+struct FMRBgf;
+struct FMRNetAnimation;
 
 /**
  * Another player, a monster or an NPC in the player's room, as a Meridian server reports it
@@ -28,6 +31,15 @@ public:
 	void Init(uint32 InId, FName InLook, const FString& InName);
 	/** A player's face parts and colours (MRNetLook::AppearanceFromObject). */
 	void SetAppearance(const FMRSpriteAppearance& A);
+	/**
+	 * No sprite of ours: draw the server's own bitmap (UMRBgfSpriteComponent), with its animation
+	 * standing and moving (docs/adr/0012). BgfName is the object's icon ("rat.bgf").
+	 */
+	void SetBgfSprite(const FString& InBgfName, TSharedPtr<const FMRBgf> Bgf);
+	void SetServerAnimation(const FMRNetAnimation& Standing, const FMRNetAnimation& Moving);
+	/** The bitmap drawn for an object without a sprite of ours (lower case), else empty. */
+	const FString& GetBgfName() const { return BgfName; }
+	UMRBgfSpriteComponent* GetBgfSprite() const { return BgfSprite; }
 
 	/** A new target position (world) and the server's speed for it (0: standing). */
 	void MoveTo(const FVector& World, uint8 Speed);
@@ -46,10 +58,14 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<UMRSpriteBodyComponent> SpriteBody;
 
+	UPROPERTY(Transient)
+	TObjectPtr<UMRBgfSpriteComponent> BgfSprite;
+
 private:
 	uint32 ServerId = 0;
 	FName Look;
 	FString ObjectName;
+	FString BgfName;
 	FVector Target = FVector::ZeroVector;
 	float StandYaw = 0.f;
 	bool bHasTarget = false;

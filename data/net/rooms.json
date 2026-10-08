@@ -1,0 +1,4352 @@
+{
+ "_doc": "Every Kod room (tools/kod_extract): rid, class, roo file, name, and the rooms its exits lead to. The online client uses it for rooms it builds at runtime (docs/adr/0012-client-parity-and-world-coverage.md).",
+ "rooms": [
+  {
+   "rid": 1,
+   "class": "Underworld",
+   "roo": "uworld.roo",
+   "name": "The Underworld",
+   "links": []
+  },
+  {
+   "rid": 2,
+   "class": "Castle1c",
+   "roo": "castle1c.roo",
+   "name": "Outside Castle Victoria",
+   "links": [
+    38,
+    599
+   ]
+  },
+  {
+   "rid": 3,
+   "class": "Field1",
+   "roo": "field1.roo",
+   "name": "The Fields",
+   "links": []
+  },
+  {
+   "rid": 4,
+   "class": "Forest4",
+   "roo": "forest4.roo",
+   "name": "The Deep Dark Woods of Tos",
+   "links": []
+  },
+  {
+   "rid": 5,
+   "class": "Cave3",
+   "roo": "cave3.roo",
+   "name": "The Underground Lake",
+   "links": [
+    27
+   ]
+  },
+  {
+   "rid": 6,
+   "class": "Forest5",
+   "roo": "forest5.roo",
+   "name": "The Deep Dark Woods of Marion",
+   "links": []
+  },
+  {
+   "rid": 15,
+   "class": "ProfileRoom",
+   "roo": "tos.roo",
+   "name": "Room",
+   "links": []
+  },
+  {
+   "rid": 24,
+   "class": "Forest1",
+   "roo": "forest1.roo",
+   "name": "The Forests of Meridian",
+   "links": []
+  },
+  {
+   "rid": 26,
+   "class": "Forest2",
+   "roo": "forest2.roo",
+   "name": "The Forests of Meridian",
+   "links": []
+  },
+  {
+   "rid": 27,
+   "class": "Cave2",
+   "roo": "cave2.roo",
+   "name": "A Deep, Dark, Spooky, Icky Cave",
+   "links": [
+    5,
+    587,
+    2500
+   ]
+  },
+  {
+   "rid": 28,
+   "class": "Forest3",
+   "roo": "forest3.roo",
+   "name": "The Forests of Meridian",
+   "links": [
+    36
+   ]
+  },
+  {
+   "rid": 32,
+   "class": "Canyon1",
+   "roo": "canyons.roo",
+   "name": "The Berdonne Canyons",
+   "links": [
+    28,
+    47
+   ]
+  },
+  {
+   "rid": 35,
+   "class": "SpiderNest1",
+   "roo": "nest1.roo",
+   "name": "The Spider Nest",
+   "links": []
+  },
+  {
+   "rid": 36,
+   "class": "HermitHut",
+   "roo": "hermhut.roo",
+   "name": "The Hermit's Hut",
+   "links": [
+    597
+   ]
+  },
+  {
+   "rid": 37,
+   "class": "Castle1D",
+   "roo": "castle1d.roo",
+   "name": "Far'Nohl's Chambers",
+   "links": [
+    38
+   ]
+  },
+  {
+   "rid": 38,
+   "class": "CASTLE1",
+   "roo": "castle1.roo",
+   "name": "Castle Victoria",
+   "links": [
+    2,
+    37,
+    39,
+    40,
+    42
+   ]
+  },
+  {
+   "rid": 39,
+   "class": "Castle1B",
+   "roo": "castle1b.roo",
+   "name": "Upstairs in Castle Victoria",
+   "links": [
+    38
+   ]
+  },
+  {
+   "rid": 40,
+   "class": "Throne1",
+   "roo": "throne1.roo",
+   "name": "The Antechamber of  Castle Victoria",
+   "links": [
+    38,
+    41
+   ]
+  },
+  {
+   "rid": 41,
+   "class": "Throne2",
+   "roo": "throne2.roo",
+   "name": "The Throne Room of Castle Victoria ",
+   "links": [
+    40
+   ]
+  },
+  {
+   "rid": 42,
+   "class": "DungeonVictoria",
+   "roo": "greeny.roo",
+   "name": "Underbasement of Victoria",
+   "links": [
+    38
+   ]
+  },
+  {
+   "rid": 43,
+   "class": "OutOfGrace",
+   "roo": "outgrace.roo",
+   "name": "Out of Grace with the Higher Powers",
+   "links": []
+  },
+  {
+   "rid": 45,
+   "class": "Badland1",
+   "roo": "badland1.roo",
+   "name": "The Badlands",
+   "links": [
+    49,
+    615
+   ]
+  },
+  {
+   "rid": 47,
+   "class": "Canyon2",
+   "roo": "canyons2.roo",
+   "name": "Martyr's Battleground",
+   "links": []
+  },
+  {
+   "rid": 48,
+   "class": "Temple",
+   "roo": "temple.roo",
+   "name": "The Temple of Shal'ille",
+   "links": [
+    534
+   ]
+  },
+  {
+   "rid": 49,
+   "class": "Badland2",
+   "roo": "badland2.roo",
+   "name": "Kardde's Canyon",
+   "links": [
+    45,
+    593,
+    1500
+   ]
+  },
+  {
+   "rid": 50,
+   "class": "Tos",
+   "roo": "tos.roo",
+   "name": "The Streets of Tos",
+   "links": [
+    51,
+    52,
+    53,
+    56,
+    57,
+    58,
+    61,
+    70,
+    77,
+    586,
+    950
+   ]
+  },
+  {
+   "rid": 51,
+   "class": "TosSmithy",
+   "roo": "tossmith.roo",
+   "name": "The Freelance Merchant and Menders Shop",
+   "links": [
+    50
+   ]
+  },
+  {
+   "rid": 52,
+   "class": "TosInn",
+   "roo": "tosinn.roo",
+   "name": "Familiars",
+   "links": [
+    50,
+    74
+   ]
+  },
+  {
+   "rid": 53,
+   "class": "TosApoth",
+   "roo": "tosapoth.roo",
+   "name": "Frisconar's Mysticals",
+   "links": [
+    50
+   ]
+  },
+  {
+   "rid": 54,
+   "class": "TosBank",
+   "roo": "tosbank.roo",
+   "name": "First Royal Bank of Tos",
+   "links": [
+    61
+   ]
+  },
+  {
+   "rid": 56,
+   "class": "TosTan",
+   "roo": "tostan.roo",
+   "name": "Abandoned Building",
+   "links": [
+    50
+   ]
+  },
+  {
+   "rid": 57,
+   "class": "TosGrey",
+   "roo": "tosgrey.roo",
+   "name": "Abandoned Building",
+   "links": [
+    50
+   ]
+  },
+  {
+   "rid": 58,
+   "class": "TosForgottenLovers",
+   "roo": "tosforgt.roo",
+   "name": "Forgotten Lover's Tryst",
+   "links": [
+    50
+   ]
+  },
+  {
+   "rid": 59,
+   "class": "TosForgotten",
+   "roo": "kochoh.roo",
+   "name": "Hall of the Forgotten Heroes",
+   "links": [
+    2000,
+    2014,
+    2015
+   ]
+  },
+  {
+   "rid": 60,
+   "class": "TosArena",
+   "roo": "tosarena.roo",
+   "name": "The Arena of Kraanan",
+   "links": [
+    73
+   ]
+  },
+  {
+   "rid": 61,
+   "class": "EastTos",
+   "roo": "toseast.roo",
+   "name": "East Ende",
+   "links": [
+    50,
+    54,
+    72,
+    73,
+    79,
+    596,
+    707,
+    2950
+   ]
+  },
+  {
+   "rid": 70,
+   "class": "TosGraveyard",
+   "roo": "tosgrave.roo",
+   "name": "The Graveyard of Tos",
+   "links": [
+    50,
+    71
+   ]
+  },
+  {
+   "rid": 71,
+   "class": "TosCrypt",
+   "roo": "toscrypt.roo",
+   "name": "The Crypt",
+   "links": [
+    70
+   ]
+  },
+  {
+   "rid": 72,
+   "class": "TosHall",
+   "roo": "toshall.roo",
+   "name": "The Adventurer's Hall of Tos",
+   "links": [
+    61
+   ]
+  },
+  {
+   "rid": 73,
+   "class": "TosArena2",
+   "roo": "tosaren2.roo",
+   "name": "The Arena foyer",
+   "links": [
+    60,
+    61
+   ]
+  },
+  {
+   "rid": 74,
+   "class": "TosInnCellar",
+   "roo": "toscellar.roo",
+   "name": "The Cellar",
+   "links": [
+    52,
+    75
+   ]
+  },
+  {
+   "rid": 75,
+   "class": "TosSecretPassage",
+   "roo": "toshidden.roo",
+   "name": "Secret Passage",
+   "links": [
+    74,
+    76,
+    858
+   ]
+  },
+  {
+   "rid": 76,
+   "class": "TosTavern",
+   "roo": "tostavern.roo",
+   "name": "Abandoned Fountain Tavern",
+   "links": [
+    50,
+    75
+   ]
+  },
+  {
+   "rid": 77,
+   "class": "TosStorage",
+   "roo": "tosstorage.roo",
+   "name": "Abandoned Storage Room",
+   "links": [
+    50,
+    78
+   ]
+  },
+  {
+   "rid": 78,
+   "class": "TosSecret",
+   "roo": "tossecret.roo",
+   "name": "The Smuggler's Way",
+   "links": [
+    77
+   ]
+  },
+  {
+   "rid": 79,
+   "class": "TosDeathArena",
+   "roo": "tosarena_death.roo",
+   "name": "The Arena of Death",
+   "links": [
+    61
+   ]
+  },
+  {
+   "rid": 101,
+   "class": "BarloqueNorth",
+   "roo": "barln.roo",
+   "name": "North Barloque",
+   "links": [
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    115,
+    116,
+    714
+   ]
+  },
+  {
+   "rid": 102,
+   "class": "BarloqueSouth",
+   "roo": "barls.roo",
+   "name": "South Barloque",
+   "links": [
+    101,
+    109,
+    113,
+    593,
+    700,
+    702,
+    716
+   ]
+  },
+  {
+   "rid": 103,
+   "class": "BarlBar1",
+   "roo": "barlbar1.roo",
+   "name": "The Bhrama & Falcon",
+   "links": [
+    101
+   ]
+  },
+  {
+   "rid": 104,
+   "class": "BarApoth",
+   "roo": "barapoth.roo",
+   "name": "Joguer's Herbs and Roots",
+   "links": [
+    101
+   ]
+  },
+  {
+   "rid": 105,
+   "class": "BarHall",
+   "roo": "barhall.roo",
+   "name": "Adventurer's Hall of Barloque",
+   "links": [
+    101
+   ]
+  },
+  {
+   "rid": 106,
+   "class": "BarInn",
+   "roo": "barinn.roo",
+   "name": "Brownestone Inn",
+   "links": [
+    101
+   ]
+  },
+  {
+   "rid": 107,
+   "class": "BarloquePort",
+   "roo": "barlport.roo",
+   "name": "The Ports of Barloque",
+   "links": [
+    101,
+    114,
+    117,
+    709
+   ]
+  },
+  {
+   "rid": 108,
+   "class": "BarlSewer",
+   "roo": "barlsew.roo",
+   "name": "The Sewers of Barloque",
+   "links": [
+    101,
+    110,
+    111,
+    562,
+    708
+   ]
+  },
+  {
+   "rid": 109,
+   "class": "BarMerchant",
+   "roo": "barmerch.roo",
+   "name": "The Sparkling Stone Shop",
+   "links": [
+    102
+   ]
+  },
+  {
+   "rid": 110,
+   "class": "AssassinHeadQuarters",
+   "roo": "asshq.roo",
+   "name": "A shadowy corner",
+   "links": [
+    108
+   ]
+  },
+  {
+   "rid": 111,
+   "class": "BarlSewer2",
+   "roo": "barlsew2.roo",
+   "name": "The Sewers of Barloque",
+   "links": [
+    108,
+    112
+   ]
+  },
+  {
+   "rid": 112,
+   "class": "BarlSewer3",
+   "roo": "barlsew3.roo",
+   "name": "The Sewers of Barloque",
+   "links": [
+    111,
+    380
+   ]
+  },
+  {
+   "rid": 113,
+   "class": "BarloqueSmithy",
+   "roo": "barsmith.roo",
+   "name": "The Royal Blacksmith of Barloque",
+   "links": [
+    102
+   ]
+  },
+  {
+   "rid": 114,
+   "class": "BarVault",
+   "roo": "barvault.roo",
+   "name": "Office of the Barloque Vaultman",
+   "links": [
+    107
+   ]
+  },
+  {
+   "rid": 115,
+   "class": "BarloqueCourt",
+   "roo": "barcourt.roo",
+   "name": "Office of the Justicar",
+   "links": [
+    101
+   ]
+  },
+  {
+   "rid": 116,
+   "class": "BarloqueJail",
+   "roo": "barjail.roo",
+   "name": "Old Jailhouse",
+   "links": [
+    101
+   ]
+  },
+  {
+   "rid": 117,
+   "class": "BarloqueMarket",
+   "roo": "barlmarket.roo",
+   "name": "The citizen's market of Barloque",
+   "links": [
+    107
+   ]
+  },
+  {
+   "rid": 150,
+   "class": "CorNoth",
+   "roo": "cornoth.roo",
+   "name": "Cor Noth",
+   "links": [
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    574,
+    575,
+    701,
+    711
+   ]
+  },
+  {
+   "rid": 151,
+   "class": "CorGrocer",
+   "roo": "corgroc.roo",
+   "name": "Solomon's Edibles",
+   "links": [
+    150
+   ]
+  },
+  {
+   "rid": 152,
+   "class": "CorHall",
+   "roo": "corhall.roo",
+   "name": "The Adventurer's Hall of Cor Noth",
+   "links": [
+    150
+   ]
+  },
+  {
+   "rid": 153,
+   "class": "CorInn",
+   "roo": "corinn.roo",
+   "name": "Cibilo Creek Inn",
+   "links": [
+    150
+   ]
+  },
+  {
+   "rid": 154,
+   "class": "CorWeaponsMaster",
+   "roo": "weaponsm.roo",
+   "name": "The Weapon Master's Abode",
+   "links": [
+    150
+   ]
+  },
+  {
+   "rid": 155,
+   "class": "CorTailor",
+   "roo": "cortail.roo",
+   "name": "The Spindle and the Spinster",
+   "links": [
+    150
+   ]
+  },
+  {
+   "rid": 156,
+   "class": "CorNothGenHall",
+   "roo": "corgenhall.roo",
+   "name": "The Hall of Genealogy",
+   "links": [
+    150
+   ]
+  },
+  {
+   "rid": 157,
+   "class": "CorNothUniversity",
+   "roo": "coruniv.roo",
+   "name": "The University of Cor Noth",
+   "links": [
+    150
+   ]
+  },
+  {
+   "rid": 158,
+   "class": "CorNothMuseum",
+   "roo": "cormuseum.roo",
+   "name": "The Meridian 59 Museum",
+   "links": [
+    150
+   ]
+  },
+  {
+   "rid": 200,
+   "class": "Marion",
+   "roo": "marion.roo",
+   "name": "Marion",
+   "links": [
+    201,
+    202,
+    204,
+    205,
+    206,
+    2600
+   ]
+  },
+  {
+   "rid": 201,
+   "class": "MarionSmithy",
+   "roo": "marsmith.roo",
+   "name": "Ye Olde Slasher Salesman",
+   "links": [
+    200
+   ]
+  },
+  {
+   "rid": 202,
+   "class": "MarionInn",
+   "roo": "marinn.roo",
+   "name": "The Limping Toad Inn and Tavern",
+   "links": [
+    200
+   ]
+  },
+  {
+   "rid": 203,
+   "class": "MarionElderHut",
+   "roo": "marelder.roo",
+   "name": "The home of the elder",
+   "links": [
+    200
+   ]
+  },
+  {
+   "rid": 204,
+   "class": "MarHall",
+   "roo": "marhall.roo",
+   "name": "The Adventurer's Hall of Marion",
+   "links": [
+    200
+   ]
+  },
+  {
+   "rid": 205,
+   "class": "MarionHealerShop",
+   "roo": "marheal.roo",
+   "name": "Lady Aftyn's Sanctuary",
+   "links": [
+    200
+   ]
+  },
+  {
+   "rid": 206,
+   "class": "MarionPlantation",
+   "roo": "GreenPlantation.roo",
+   "name": "Green Acres Plantation",
+   "links": [
+    200,
+    207,
+    208,
+    516,
+    717
+   ]
+  },
+  {
+   "rid": 207,
+   "class": "PlantationHouse",
+   "roo": "plantationhouse.roo",
+   "name": "The Green's Home",
+   "links": [
+    206
+   ]
+  },
+  {
+   "rid": 208,
+   "class": "MarionPlantationWorker1",
+   "roo": "workerhome1.roo",
+   "name": "Workers quarters",
+   "links": [
+    206
+   ]
+  },
+  {
+   "rid": 300,
+   "class": "Raza",
+   "roo": "raza.roo",
+   "name": "Raza",
+   "links": [
+    301,
+    302,
+    303,
+    304,
+    305,
+    306,
+    307,
+    308,
+    330,
+    332,
+    333
+   ]
+  },
+  {
+   "rid": 301,
+   "class": "RazaInn",
+   "roo": "razainn.roo",
+   "name": "The Inn of Raza",
+   "links": [
+    300
+   ]
+  },
+  {
+   "rid": 302,
+   "class": "RazaHall",
+   "roo": "razahall.roo",
+   "name": "The Adventurer's Hall of Raza",
+   "links": [
+    300
+   ]
+  },
+  {
+   "rid": 303,
+   "class": "RazaSmith",
+   "roo": "razasmith.roo",
+   "name": "The Blacksmith of Raza",
+   "links": [
+    300
+   ]
+  },
+  {
+   "rid": 304,
+   "class": "RazaApoth",
+   "roo": "razaapoth.roo",
+   "name": "Ravi's Magicks of Raza",
+   "links": [
+    300
+   ]
+  },
+  {
+   "rid": 305,
+   "class": "RazaHut",
+   "roo": "razahut.roo",
+   "name": "The Home of Roderic D'Stane",
+   "links": [
+    300
+   ]
+  },
+  {
+   "rid": 306,
+   "class": "RazaCrypt",
+   "roo": "razacrypt.roo",
+   "name": "Mausoleum",
+   "links": [
+    300
+   ]
+  },
+  {
+   "rid": 307,
+   "class": "RazaBar",
+   "roo": "razabar.roo",
+   "name": "Eric's Stout Spirits",
+   "links": [
+    300
+   ]
+  },
+  {
+   "rid": 308,
+   "class": "RazaMuseum",
+   "roo": "razamuseum.roo",
+   "name": "The Grand Museum of Raza",
+   "links": [
+    300
+   ]
+  },
+  {
+   "rid": 330,
+   "class": "RazaForest",
+   "roo": "razaforest.roo",
+   "name": "Outskirts of Raza",
+   "links": [
+    300,
+    331
+   ]
+  },
+  {
+   "rid": 331,
+   "class": "FarolWest",
+   "roo": "farolwest.roo",
+   "name": "Western Edge of the Forest of Farol",
+   "links": [
+    330,
+    526,
+    536
+   ]
+  },
+  {
+   "rid": 332,
+   "class": "RazaVault",
+   "roo": "RazaVault.roo",
+   "name": "Raza Vaults",
+   "links": [
+    300
+   ]
+  },
+  {
+   "rid": 333,
+   "class": "RazaBank",
+   "roo": "RazaBank.roo",
+   "name": "Royal Bank of Raza",
+   "links": [
+    300
+   ]
+  },
+  {
+   "rid": 350,
+   "class": "Jasper",
+   "roo": "jaseast.roo",
+   "name": "East Jasper",
+   "links": [
+    372,
+    373,
+    374,
+    382,
+    568,
+    704,
+    710
+   ]
+  },
+  {
+   "rid": 351,
+   "class": "JasperAB1",
+   "roo": "jasab1.roo",
+   "name": "Old Granary ",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 352,
+   "class": "JasperAB2",
+   "roo": "jasab2.roo",
+   "name": "Icehouse",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 353,
+   "class": "JasperAB3",
+   "roo": "jasab3.roo",
+   "name": "Old Schoolhouse",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 354,
+   "class": "JasperAB4",
+   "roo": "jasab4.roo",
+   "name": "Deserted Eating House",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 355,
+   "class": "JasperAB5",
+   "roo": "jasab5.roo",
+   "name": "Abandoned Building",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 356,
+   "class": "JasperAB6",
+   "roo": "jasab6.roo",
+   "name": "Abandoned Building",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 357,
+   "class": "JasperAB7",
+   "roo": "jasab7.roo",
+   "name": "Abandoned Building",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 358,
+   "class": "JasperAB8",
+   "roo": "jasab8.roo",
+   "name": "Abandoned Building",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 359,
+   "class": "JasperAB9",
+   "roo": "jasab9.roo",
+   "name": "Abandoned Building",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 360,
+   "class": "JasperAB10",
+   "roo": "jasab10.roo",
+   "name": "Disused Shop",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 361,
+   "class": "JasperAB11",
+   "roo": "jasab11.roo",
+   "name": "Abandoned Counting Room",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 362,
+   "class": "JasperAB12",
+   "roo": "jasab12.roo",
+   "name": "Old Barracks",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 363,
+   "class": "JasperAB13",
+   "roo": "jasab13.roo",
+   "name": "Dusty Chamber",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 364,
+   "class": "JasperAB14",
+   "roo": "jasab14.roo",
+   "name": "Warm Haven ",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 370,
+   "class": "JasperInn",
+   "roo": "jasinn.roo",
+   "name": "Yonder Inn of Jasper",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 371,
+   "class": "JasperTavern",
+   "roo": "jastavrn.roo",
+   "name": "Pietro's Wicked Brews",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 372,
+   "class": "JasperHall",
+   "roo": "jashall.roo",
+   "name": "Adventurer's Hall of Jasper",
+   "links": [
+    350
+   ]
+  },
+  {
+   "rid": 373,
+   "class": "JasperStore",
+   "roo": "jasstore.roo",
+   "name": "General Store of Jasper",
+   "links": [
+    350
+   ]
+  },
+  {
+   "rid": 374,
+   "class": "JasperSmithy",
+   "roo": "jassmith.roo",
+   "name": "Quintor's Smithy",
+   "links": [
+    350
+   ]
+  },
+  {
+   "rid": 375,
+   "class": "JasperElderHut",
+   "roo": "jaselder.roo",
+   "name": "The Home of the Wise Man",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 376,
+   "class": "JasBank",
+   "roo": "jasbank.roo",
+   "name": "The Royal Bank of Jasper",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 377,
+   "class": "JasSewer1",
+   "roo": "jassew1.roo",
+   "name": "The Sewers of Jasper",
+   "links": [
+    378,
+    382
+   ]
+  },
+  {
+   "rid": 378,
+   "class": "JasSewer2",
+   "roo": "jassew2.roo",
+   "name": "The Sewers of Jasper",
+   "links": [
+    377,
+    379
+   ]
+  },
+  {
+   "rid": 379,
+   "class": "JasSewer3",
+   "roo": "jassew3.roo",
+   "name": "The Sewers of Jasper",
+   "links": [
+    378,
+    380
+   ]
+  },
+  {
+   "rid": 380,
+   "class": "SewerKingLair",
+   "roo": "sewking.roo",
+   "name": "The Ancient Smuggler's Crossing",
+   "links": [
+    112,
+    379
+   ]
+  },
+  {
+   "rid": 382,
+   "class": "JasperWest",
+   "roo": "jaswest.roo",
+   "name": "West Jasper",
+   "links": [
+    350,
+    353,
+    370,
+    371,
+    375,
+    376,
+    377,
+    384,
+    547,
+    557
+   ]
+  },
+  {
+   "rid": 384,
+   "class": "JasperVault",
+   "roo": "jasvault.roo",
+   "name": "The Vault of Jasper",
+   "links": [
+    382
+   ]
+  },
+  {
+   "rid": 511,
+   "class": "OutdoorsA1",
+   "roo": "a1.roo",
+   "name": "North Quilicia Wood",
+   "links": [
+    531,
+    717
+   ]
+  },
+  {
+   "rid": 515,
+   "class": "OutdoorsA5",
+   "roo": "a5.roo",
+   "name": "Seafarer's Peak",
+   "links": [
+    516
+   ]
+  },
+  {
+   "rid": 516,
+   "class": "OutdoorsA6",
+   "roo": "a6.roo",
+   "name": "The Hills",
+   "links": [
+    526
+   ]
+  },
+  {
+   "rid": 521,
+   "class": "OutdoorsB1",
+   "roo": "b1.roo",
+   "name": "Elhadrim",
+   "links": [
+    522,
+    531
+   ]
+  },
+  {
+   "rid": 522,
+   "class": "OutdoorsB2",
+   "roo": "b2.roo",
+   "name": "Lower Elhadrim",
+   "links": [
+    521,
+    533
+   ]
+  },
+  {
+   "rid": 526,
+   "class": "OutdoorsB6",
+   "roo": "b6.roo",
+   "name": "Druid Hills",
+   "links": [
+    331,
+    516,
+    750
+   ]
+  },
+  {
+   "rid": 531,
+   "class": "OutdoorsC1",
+   "roo": "c1.roo",
+   "name": "The Fey's Crossing",
+   "links": [
+    511,
+    521,
+    532,
+    541
+   ]
+  },
+  {
+   "rid": 532,
+   "class": "OutdoorsC2",
+   "roo": "c2.roo",
+   "name": "The Vale of Sorrows",
+   "links": [
+    531
+   ]
+  },
+  {
+   "rid": 533,
+   "class": "OutdoorsC3",
+   "roo": "c3.roo",
+   "name": "Quilicia Wood",
+   "links": [
+    522,
+    534,
+    542
+   ]
+  },
+  {
+   "rid": 534,
+   "class": "OutdoorsC4",
+   "roo": "c4.roo",
+   "name": "Deep Woods of Ileria",
+   "links": [
+    533,
+    544
+   ]
+  },
+  {
+   "rid": 535,
+   "class": "OutdoorsC5",
+   "roo": "c5.roo",
+   "name": "West Merchant Way through Ilerian Woods",
+   "links": [
+    200,
+    536,
+    545,
+    706
+   ]
+  },
+  {
+   "rid": 536,
+   "class": "OutdoorsC6",
+   "roo": "c6.roo",
+   "name": "Forest of Farol",
+   "links": [
+    331,
+    535,
+    537,
+    550,
+    706
+   ]
+  },
+  {
+   "rid": 537,
+   "class": "OutdoorsC7",
+   "roo": "c7.roo",
+   "name": "Faronath, home of the TreeFolk",
+   "links": [
+    536,
+    547,
+    706
+   ]
+  },
+  {
+   "rid": 541,
+   "class": "OutdoorsD1",
+   "roo": "d1.roo",
+   "name": "Dirhadrim",
+   "links": [
+    531,
+    542
+   ]
+  },
+  {
+   "rid": 542,
+   "class": "OutdoorsD2",
+   "roo": "d2.roo",
+   "name": "Lower Dirhadrim",
+   "links": [
+    533,
+    541
+   ]
+  },
+  {
+   "rid": 544,
+   "class": "OutdoorsD4",
+   "roo": "d4.roo",
+   "name": "Valley of Ileria",
+   "links": [
+    534,
+    545,
+    552,
+    554
+   ]
+  },
+  {
+   "rid": 545,
+   "class": "OutdoorsD5",
+   "roo": "d5.roo",
+   "name": "West Merchant Way",
+   "links": [
+    535,
+    544,
+    550,
+    554
+   ]
+  },
+  {
+   "rid": 546,
+   "class": "OutdoorsD6",
+   "roo": "d6.roo",
+   "name": "Deep in the Forest of Farol",
+   "links": [
+    536,
+    545,
+    547
+   ]
+  },
+  {
+   "rid": 547,
+   "class": "OutdoorsD7",
+   "roo": "d7.roo",
+   "name": "Deep in the Forest of Farol",
+   "links": [
+    382,
+    537,
+    550,
+    557
+   ]
+  },
+  {
+   "rid": 550,
+   "class": "OutdoorsD6E6",
+   "roo": "d6e6.roo",
+   "name": "Deep in the Forest of Farol",
+   "links": [
+    536,
+    545,
+    547,
+    551,
+    555,
+    557
+   ]
+  },
+  {
+   "rid": 551,
+   "class": "UlakeD6E6",
+   "roo": "d6e6ulake.roo",
+   "name": "Underground Lake - Home of the Mollusk",
+   "links": [
+    550
+   ]
+  },
+  {
+   "rid": 552,
+   "class": "OutdoorsE2",
+   "roo": "e2.roo",
+   "name": "The Great Ocean",
+   "links": [
+    544,
+    562
+   ]
+  },
+  {
+   "rid": 554,
+   "class": "OutdoorsE4",
+   "roo": "e4.roo",
+   "name": "East Merchant Way through Ilerian Woods",
+   "links": [
+    544,
+    545,
+    564
+   ]
+  },
+  {
+   "rid": 555,
+   "class": "OutdoorsE5",
+   "roo": "e5.roo",
+   "name": "The Forest Shrine",
+   "links": [
+    550
+   ]
+  },
+  {
+   "rid": 556,
+   "class": "OutdoorsE6",
+   "roo": "e6.roo",
+   "name": "Deep Forest of Farol",
+   "links": [
+    545,
+    555,
+    557
+   ]
+  },
+  {
+   "rid": 557,
+   "class": "OutdoorsE7",
+   "roo": "e7.roo",
+   "name": "The Sweet Grass Prairies",
+   "links": [
+    382,
+    547,
+    550
+   ]
+  },
+  {
+   "rid": 562,
+   "class": "OutdoorsF2",
+   "roo": "f2.roo",
+   "name": "The sandy shores of the Great Ocean",
+   "links": [
+    108,
+    552
+   ]
+  },
+  {
+   "rid": 563,
+   "class": "OutdoorsF3",
+   "roo": "f3.roo",
+   "name": "Source of the River Ille",
+   "links": [
+    564,
+    583,
+    712
+   ]
+  },
+  {
+   "rid": 564,
+   "class": "OutdoorsF4",
+   "roo": "f4.roo",
+   "name": "East Merchant Way",
+   "links": [
+    554,
+    563,
+    574
+   ]
+  },
+  {
+   "rid": 566,
+   "class": "OutdoorsF6",
+   "roo": "f6.roo",
+   "name": "Off the beaten path",
+   "links": [
+    567,
+    576
+   ]
+  },
+  {
+   "rid": 567,
+   "class": "OutdoorsF7",
+   "roo": "f7.roo",
+   "name": "Off the beaten path",
+   "links": [
+    566,
+    568
+   ]
+  },
+  {
+   "rid": 568,
+   "class": "OutdoorsF8",
+   "roo": "f8.roo",
+   "name": "Lake of Jala's Song",
+   "links": [
+    350,
+    567,
+    578,
+    703
+   ]
+  },
+  {
+   "rid": 574,
+   "class": "OutdoorsG4",
+   "roo": "g4.roo",
+   "name": "Main gate to Cor Noth",
+   "links": [
+    150,
+    563,
+    564,
+    584
+   ]
+  },
+  {
+   "rid": 575,
+   "class": "OutdoorsG5",
+   "roo": "g5.roo",
+   "name": "Outskirts of Cor Noth",
+   "links": [
+    150,
+    576
+   ]
+  },
+  {
+   "rid": 576,
+   "class": "OutdoorsG6",
+   "roo": "g6.roo",
+   "name": "The King's Way",
+   "links": [
+    566,
+    575,
+    578,
+    587
+   ]
+  },
+  {
+   "rid": 578,
+   "class": "OutdoorsG8",
+   "roo": "g8.roo",
+   "name": "The Cragged Mountains",
+   "links": [
+    568,
+    576,
+    579,
+    826
+   ]
+  },
+  {
+   "rid": 579,
+   "class": "OutdoorsG9",
+   "roo": "g9.roo",
+   "name": "An ancient place, its origin forgotten",
+   "links": [
+    578,
+    589,
+    801
+   ]
+  },
+  {
+   "rid": 583,
+   "class": "OutdoorsH3",
+   "roo": "h3.roo",
+   "name": "Outskirts of Barloque",
+   "links": [
+    563,
+    584,
+    593
+   ]
+  },
+  {
+   "rid": 584,
+   "class": "OutdoorsH4",
+   "roo": "h4.roo",
+   "name": "The Flatlands",
+   "links": [
+    574,
+    583,
+    585
+   ]
+  },
+  {
+   "rid": 585,
+   "class": "OutdoorsH5",
+   "roo": "h5.roo",
+   "name": "The border of the Badlands",
+   "links": [
+    584,
+    586
+   ]
+  },
+  {
+   "rid": 586,
+   "class": "OutdoorsH6",
+   "roo": "h6.roo",
+   "name": "Main gate to the city of Tos",
+   "links": [
+    50,
+    585,
+    587,
+    596
+   ]
+  },
+  {
+   "rid": 587,
+   "class": "OutdoorsH7",
+   "roo": "h7.roo",
+   "name": "Western border of the Twisted Wood",
+   "links": [
+    576,
+    586,
+    597
+   ]
+  },
+  {
+   "rid": 589,
+   "class": "OutdoorsH9",
+   "roo": "h9.roo",
+   "name": "Under the shadow of the Sentinel",
+   "links": [
+    579,
+    599
+   ]
+  },
+  {
+   "rid": 593,
+   "class": "OutdoorsI3",
+   "roo": "i3.roo",
+   "name": "Main gate of Barloque-- Royal City of Meridian",
+   "links": [
+    49,
+    102,
+    583,
+    603
+   ]
+  },
+  {
+   "rid": 596,
+   "class": "OutdoorsI6",
+   "roo": "i6.roo",
+   "name": "Outskirts of Tos",
+   "links": [
+    61,
+    586,
+    597,
+    2950
+   ]
+  },
+  {
+   "rid": 597,
+   "class": "OutdoorsI7",
+   "roo": "i7.roo",
+   "name": "The Twisted Wood",
+   "links": [
+    36,
+    587,
+    596,
+    598
+   ]
+  },
+  {
+   "rid": 598,
+   "class": "OutdoorsI8",
+   "roo": "i8.roo",
+   "name": "The Cragged Mountains",
+   "links": [
+    597,
+    599
+   ]
+  },
+  {
+   "rid": 599,
+   "class": "OutdoorsI9",
+   "roo": "i9.roo",
+   "name": "Ukgoth, Holy Land of Trolls",
+   "links": [
+    2,
+    589,
+    598
+   ]
+  },
+  {
+   "rid": 603,
+   "class": "OutdoorsJ3",
+   "roo": "j3.roo",
+   "name": "The Queen's Way",
+   "links": [
+    593,
+    851,
+    860
+   ]
+  },
+  {
+   "rid": 615,
+   "class": "OutdoorsK5",
+   "roo": "k5.roo",
+   "name": "The Badlands",
+   "links": [
+    2820
+   ]
+  },
+  {
+   "rid": 700,
+   "class": "GMHall",
+   "roo": "gmhall.roo",
+   "name": "The Guildmaster's Hall",
+   "links": [
+    102
+   ]
+  },
+  {
+   "rid": 701,
+   "class": "GuildHall1",
+   "roo": "guildh1.roo",
+   "name": "Mercenary Alley",
+   "links": [
+    150
+   ]
+  },
+  {
+   "rid": 702,
+   "class": "GuildHall2",
+   "roo": "guildh2.roo",
+   "name": "The Hall of Explorers",
+   "links": [
+    102
+   ]
+  },
+  {
+   "rid": 703,
+   "class": "GuildHall3",
+   "roo": "guildh3.roo",
+   "name": "The Den of Shadows",
+   "links": [
+    568
+   ]
+  },
+  {
+   "rid": 704,
+   "class": "GuildHall4",
+   "roo": "guildh4.roo",
+   "name": "The Wryn's Keep",
+   "links": [
+    350
+   ]
+  },
+  {
+   "rid": 705,
+   "class": "GuildHall12",
+   "roo": "guildh12.roo",
+   "name": "West Tower Guild Hall in Ko'catan",
+   "links": [
+    2000
+   ]
+  },
+  {
+   "rid": 706,
+   "class": "GuildHall7",
+   "roo": "guildh7.roo",
+   "name": "The Old Dwarven Hall",
+   "links": [
+    535,
+    536,
+    537
+   ]
+  },
+  {
+   "rid": 707,
+   "class": "GuildHall5",
+   "roo": "guildh5.roo",
+   "name": "Konima's Abandoned Dwelling",
+   "links": [
+    61
+   ]
+  },
+  {
+   "rid": 708,
+   "class": "GuildHall8",
+   "roo": "guildh8.roo",
+   "name": "The Sewer Hideout",
+   "links": [
+    108
+   ]
+  },
+  {
+   "rid": 709,
+   "class": "GuildHall9",
+   "roo": "guildh9.roo",
+   "name": "The Abandoned Warehouse",
+   "links": [
+    107
+   ]
+  },
+  {
+   "rid": 710,
+   "class": "GuildHall10",
+   "roo": "guildh10.roo",
+   "name": "Jaarba's Abode",
+   "links": [
+    350
+   ]
+  },
+  {
+   "rid": 711,
+   "class": "GuildHall6",
+   "roo": "guildh6.roo",
+   "name": "The Ivory Chapel",
+   "links": [
+    150
+   ]
+  },
+  {
+   "rid": 712,
+   "class": "GuildHall11",
+   "roo": "guildh11.roo",
+   "name": "The home of the Friends of the Forest",
+   "links": [
+    563
+   ]
+  },
+  {
+   "rid": 713,
+   "class": "GuildHall13",
+   "roo": "guildh13.roo",
+   "name": "The Hall of the Slaughtered Command",
+   "links": [
+    2009
+   ]
+  },
+  {
+   "rid": 714,
+   "class": "GuildHall14",
+   "roo": "guildh14.roo",
+   "name": "The Bookmaker's Guild House",
+   "links": [
+    101
+   ]
+  },
+  {
+   "rid": 715,
+   "class": "GuildHall15",
+   "roo": "GuildH15.roo",
+   "name": "Room",
+   "links": []
+  },
+  {
+   "rid": 716,
+   "class": "GuildHall16",
+   "roo": "GuildH16.roo",
+   "name": "The Symbol of Dawn",
+   "links": [
+    102
+   ]
+  },
+  {
+   "rid": 717,
+   "class": "GuildHall17",
+   "roo": "guildh17.roo",
+   "name": "Green's workshop",
+   "links": [
+    206,
+    511
+   ]
+  },
+  {
+   "rid": 719,
+   "class": "GuildHall19",
+   "roo": "guildh19.roo",
+   "name": "The Wetland Fortress",
+   "links": [
+    2953
+   ]
+  },
+  {
+   "rid": 720,
+   "class": "GuildHall20",
+   "roo": "guildh20.roo",
+   "name": "Muskgate Post",
+   "links": [
+    2809
+   ]
+  },
+  {
+   "rid": 749,
+   "class": "InnerSanctum",
+   "roo": "guildh15.roo",
+   "name": "Inner Sanctum of Queen Venya'cyr",
+   "links": [
+    825
+   ]
+  },
+  {
+   "rid": 750,
+   "class": "IceCave1",
+   "roo": "icecave1.roo",
+   "name": "The Dreaded Caves of Ice",
+   "links": [
+    526
+   ]
+  },
+  {
+   "rid": 801,
+   "class": "TempleKraanan",
+   "roo": "tempkra.roo",
+   "name": "The Temple of Kraanan",
+   "links": [
+    579
+   ]
+  },
+  {
+   "rid": 802,
+   "class": "TempleQor",
+   "roo": "tempqor.roo",
+   "name": "The Temple of Qor",
+   "links": []
+  },
+  {
+   "rid": 825,
+   "class": "LichMaze",
+   "roo": "lichmaze.roo",
+   "name": "The Dungeon of Castle Brax",
+   "links": [
+    749,
+    830
+   ]
+  },
+  {
+   "rid": 826,
+   "class": "Necropolis1",
+   "roo": "necarea1.roo",
+   "name": "Winding Caverns",
+   "links": [
+    578,
+    827
+   ]
+  },
+  {
+   "rid": 827,
+   "class": "Necropolis2",
+   "roo": "necarea2.roo",
+   "name": "Ancient Graveyard of Brax",
+   "links": [
+    826,
+    828
+   ]
+  },
+  {
+   "rid": 828,
+   "class": "Necropolis3",
+   "roo": "necarea3.roo",
+   "name": "Decaying City of Brax",
+   "links": [
+    827,
+    829,
+    831,
+    832,
+    833,
+    834
+   ]
+  },
+  {
+   "rid": 829,
+   "class": "Necropolis4",
+   "roo": "necarea4.roo",
+   "name": "Within the Walls of Castle Brax",
+   "links": [
+    828,
+    830
+   ]
+  },
+  {
+   "rid": 830,
+   "class": "Necropolis5",
+   "roo": "necarea5.roo",
+   "name": "Ruins of Castle Brax",
+   "links": [
+    825,
+    829
+   ]
+  },
+  {
+   "rid": 831,
+   "class": "Necropolis3a",
+   "roo": "nec3a.roo",
+   "name": "Ancient Building",
+   "links": [
+    828
+   ]
+  },
+  {
+   "rid": 832,
+   "class": "Necropolis3b",
+   "roo": "nec3b.roo",
+   "name": "Ancient Building",
+   "links": [
+    828
+   ]
+  },
+  {
+   "rid": 833,
+   "class": "NecArena",
+   "roo": "necarena.roo",
+   "name": "Goad's Grinder",
+   "links": [
+    828
+   ]
+  },
+  {
+   "rid": 834,
+   "class": "Necropolis6",
+   "roo": "necarea6.roo",
+   "name": "Maze of The Mimic",
+   "links": [
+    828
+   ]
+  },
+  {
+   "rid": 850,
+   "class": "Castle2a",
+   "roo": "castle2a.roo",
+   "name": "Banquet Hall of the Bourgeois Castle",
+   "links": [
+    851,
+    853,
+    855,
+    856
+   ]
+  },
+  {
+   "rid": 851,
+   "class": "Castle2b",
+   "roo": "castle2b.roo",
+   "name": "Bourgeois Castle",
+   "links": [
+    603,
+    850,
+    852,
+    853,
+    2819
+   ]
+  },
+  {
+   "rid": 852,
+   "class": "Castle2c",
+   "roo": "castle2c.roo",
+   "name": "The Assembly Chamber",
+   "links": [
+    851,
+    853
+   ]
+  },
+  {
+   "rid": 853,
+   "class": "Castle2d",
+   "roo": "castle2d.roo",
+   "name": "Royal Library of the Bourgeois Castle",
+   "links": [
+    850,
+    851,
+    852,
+    854
+   ]
+  },
+  {
+   "rid": 854,
+   "class": "MockersRoom",
+   "roo": "mockers.roo",
+   "name": "Chamber of the Mocker",
+   "links": [
+    853
+   ]
+  },
+  {
+   "rid": 855,
+   "class": "BazmansRoom",
+   "roo": "bizmans.roo",
+   "name": "The Councilors' Chamber",
+   "links": [
+    850
+   ]
+  },
+  {
+   "rid": 856,
+   "class": "Castle2E",
+   "roo": "castle2e.roo",
+   "name": "Madelia's Fine Peacockeries",
+   "links": [
+    850
+   ]
+  },
+  {
+   "rid": 857,
+   "class": "ForgottenToo",
+   "roo": "bizmans.roo",
+   "name": "Chamber of the Forgotten Heroes",
+   "links": [
+    850
+   ]
+  },
+  {
+   "rid": 858,
+   "class": "RatCave1",
+   "roo": "ratcave1.roo",
+   "name": "Dark Caves",
+   "links": [
+    75,
+    859
+   ]
+  },
+  {
+   "rid": 859,
+   "class": "RatCave2",
+   "roo": "ratcave2.roo",
+   "name": "Abandoned Outpost",
+   "links": [
+    858,
+    860
+   ]
+  },
+  {
+   "rid": 860,
+   "class": "RatCave3",
+   "roo": "ratcave3.roo",
+   "name": "Rumbling Cavern",
+   "links": [
+    603,
+    859
+   ]
+  },
+  {
+   "rid": 901,
+   "class": "GodRoom",
+   "roo": "zndramas.roo",
+   "name": "The meeting place of the Gods",
+   "links": []
+  },
+  {
+   "rid": 902,
+   "class": "University",
+   "roo": "univ.roo",
+   "name": "Meridian University",
+   "links": []
+  },
+  {
+   "rid": 903,
+   "class": "Gallery",
+   "roo": "univ.roo",
+   "name": "object gallery",
+   "links": []
+  },
+  {
+   "rid": 904,
+   "class": "NewRoom",
+   "roo": "tos.roo",
+   "name": "New room",
+   "links": []
+  },
+  {
+   "rid": 950,
+   "class": "Duke1",
+   "roo": "duke1.roo",
+   "name": "The Courtyard of Blackstone Keep",
+   "links": [
+    50,
+    951,
+    2900
+   ]
+  },
+  {
+   "rid": 951,
+   "class": "Duke2",
+   "roo": "duke2.roo",
+   "name": "Blackstone Keep",
+   "links": [
+    950,
+    952,
+    953
+   ]
+  },
+  {
+   "rid": 952,
+   "class": "Duke3",
+   "roo": "duke3.roo",
+   "name": "The Chambers of Duke Akardius",
+   "links": [
+    951
+   ]
+  },
+  {
+   "rid": 953,
+   "class": "Duke4",
+   "roo": "duke4.roo",
+   "name": "The Duke's Feast Hall",
+   "links": [
+    951,
+    954
+   ]
+  },
+  {
+   "rid": 954,
+   "class": "Duke5",
+   "roo": "duke5.roo",
+   "name": "The Duke's Grand Ballroom",
+   "links": [
+    953
+   ]
+  },
+  {
+   "rid": 1500,
+   "class": "WaylayOasis",
+   "roo": "waylayoasis.roo",
+   "name": "Waylay Oasis",
+   "links": [
+    49,
+    1501,
+    1512
+   ]
+  },
+  {
+   "rid": 1501,
+   "class": "DesertPath1",
+   "roo": "desertpath1.roo",
+   "name": "A harrowing cleft",
+   "links": [
+    1500,
+    1502
+   ]
+  },
+  {
+   "rid": 1502,
+   "class": "DesertCliffAccess",
+   "roo": "desertcliffaccess.roo",
+   "name": "Sandbreak Cliffs",
+   "links": [
+    1501,
+    1503,
+    1505,
+    1522
+   ]
+  },
+  {
+   "rid": 1503,
+   "class": "DesertCliffNoAccess1",
+   "roo": "desertcliffnoaccess1.roo",
+   "name": "Sandbreak Cliffs",
+   "links": [
+    1502,
+    1504,
+    1521
+   ]
+  },
+  {
+   "rid": 1504,
+   "class": "DesertCliffNoAccess2",
+   "roo": "desertcliffnoaccess2.roo",
+   "name": "Sandbreak Cliffs",
+   "links": [
+    1503,
+    1505,
+    1520
+   ]
+  },
+  {
+   "rid": 1505,
+   "class": "DesertCliffNoAccess3",
+   "roo": "desertcliffnoaccess3.roo",
+   "name": "Sandbreak Cliffs",
+   "links": [
+    1502,
+    1504,
+    1523
+   ]
+  },
+  {
+   "rid": 1506,
+   "class": "DesertDunes1",
+   "roo": "desertdunes.roo",
+   "name": "The Black Desert",
+   "links": [
+    1513,
+    1515,
+    1516,
+    1524
+   ]
+  },
+  {
+   "rid": 1507,
+   "class": "DesertShore1",
+   "roo": "desertshore1.roo",
+   "name": "Solitary Shoreline",
+   "links": [
+    1508,
+    1509,
+    1514
+   ]
+  },
+  {
+   "rid": 1508,
+   "class": "DesertShore2",
+   "roo": "desertshore2.roo",
+   "name": "Solitary Shoreline",
+   "links": [
+    1507,
+    1513,
+    1524
+   ]
+  },
+  {
+   "rid": 1509,
+   "class": "DesertShore3",
+   "roo": "desertshore3.roo",
+   "name": "Solitary Shoreline",
+   "links": [
+    1507,
+    1515,
+    1524
+   ]
+  },
+  {
+   "rid": 1510,
+   "class": "DesertRiver1",
+   "roo": "desertriver1.roo",
+   "name": "Cliffbound River",
+   "links": []
+  },
+  {
+   "rid": 1511,
+   "class": "DesertRiver2",
+   "roo": "desertriver2.roo",
+   "name": "Abyssal Bore",
+   "links": []
+  },
+  {
+   "rid": 1512,
+   "class": "DesertBridge",
+   "roo": "desertbridge.roo",
+   "name": "Collapsed Causeway",
+   "links": [
+    1500
+   ]
+  },
+  {
+   "rid": 1513,
+   "class": "DesertDunes2",
+   "roo": "desertdunes.roo",
+   "name": "The Black Desert",
+   "links": [
+    1506,
+    1508,
+    1514,
+    1517
+   ]
+  },
+  {
+   "rid": 1514,
+   "class": "DesertDunes3",
+   "roo": "desertdunes.roo",
+   "name": "The Black Desert",
+   "links": [
+    1507,
+    1513,
+    1515,
+    1518
+   ]
+  },
+  {
+   "rid": 1515,
+   "class": "DesertDunes4",
+   "roo": "desertdunes.roo",
+   "name": "The Black Desert",
+   "links": [
+    1506,
+    1509,
+    1514,
+    1519
+   ]
+  },
+  {
+   "rid": 1516,
+   "class": "DesertDunes5",
+   "roo": "desertdunes.roo",
+   "name": "The Black Desert",
+   "links": [
+    1506,
+    1517,
+    1520,
+    1526
+   ]
+  },
+  {
+   "rid": 1517,
+   "class": "DesertDunes6",
+   "roo": "desertdunes.roo",
+   "name": "The Black Desert",
+   "links": [
+    1513,
+    1516,
+    1521,
+    1525
+   ]
+  },
+  {
+   "rid": 1518,
+   "class": "DesertDunes7",
+   "roo": "desertdunes.roo",
+   "name": "The Black Desert",
+   "links": [
+    1514,
+    1519,
+    1522,
+    1525
+   ]
+  },
+  {
+   "rid": 1519,
+   "class": "DesertDunes8",
+   "roo": "desertdunes.roo",
+   "name": "The Black Desert",
+   "links": [
+    1515,
+    1518,
+    1523,
+    1526
+   ]
+  },
+  {
+   "rid": 1520,
+   "class": "DesertDunes9",
+   "roo": "desertdunes.roo",
+   "name": "The Black Desert",
+   "links": [
+    1504,
+    1516,
+    1521,
+    1523
+   ]
+  },
+  {
+   "rid": 1521,
+   "class": "DesertDunes10",
+   "roo": "desertdunes.roo",
+   "name": "The Black Desert",
+   "links": [
+    1503,
+    1517,
+    1520,
+    1522
+   ]
+  },
+  {
+   "rid": 1522,
+   "class": "DesertDunes11",
+   "roo": "desertdunes.roo",
+   "name": "The Black Desert",
+   "links": [
+    1502,
+    1518,
+    1521,
+    1523
+   ]
+  },
+  {
+   "rid": 1523,
+   "class": "DesertDunes12",
+   "roo": "desertdunes.roo",
+   "name": "The Black Desert",
+   "links": [
+    1505,
+    1519,
+    1520,
+    1522
+   ]
+  },
+  {
+   "rid": 1524,
+   "class": "DesertShore4",
+   "roo": "desertshore4.roo",
+   "name": "Solitary Shoreline",
+   "links": [
+    1506,
+    1508,
+    1509
+   ]
+  },
+  {
+   "rid": 1525,
+   "class": "DesertOasis",
+   "roo": "desertoasis.roo",
+   "name": "Desert Oasis",
+   "links": [
+    1513,
+    1517,
+    1518,
+    1522
+   ]
+  },
+  {
+   "rid": 1526,
+   "class": "DesertMazeEntrance",
+   "roo": "DesertMazeEntrance.roo",
+   "name": "A labyrinth lost in the sands",
+   "links": [
+    1515,
+    1516,
+    1519,
+    1520,
+    1601
+   ]
+  },
+  {
+   "rid": 1601,
+   "class": "MazeFoyer",
+   "roo": "MazeFoyer.roo",
+   "name": "A labyrinth lost in the sands",
+   "links": [
+    1526,
+    1602
+   ]
+  },
+  {
+   "rid": 1602,
+   "class": "MazeFoyer2",
+   "roo": "MazeFoyer2.roo",
+   "name": "A labyrinth lost in the sands",
+   "links": [
+    1601
+   ]
+  },
+  {
+   "rid": 2000,
+   "class": "Kocatan",
+   "roo": "settle1.roo",
+   "name": "Ko'catan, the Island Settlement",
+   "links": [
+    705,
+    2001,
+    2002,
+    2004,
+    2005,
+    2007,
+    2008,
+    2009,
+    2013,
+    2505
+   ]
+  },
+  {
+   "rid": 2001,
+   "class": "KocatanInn",
+   "roo": "kocinn.roo",
+   "name": "The Aerie Guest House",
+   "links": [
+    2000,
+    2008
+   ]
+  },
+  {
+   "rid": 2002,
+   "class": "KocatanApoth",
+   "roo": "kocapoth.roo",
+   "name": "Two Lizards Magic Shop",
+   "links": [
+    2000
+   ]
+  },
+  {
+   "rid": 2003,
+   "class": "KocatanSmithy",
+   "roo": "kocblack.roo",
+   "name": "The Chimney House",
+   "links": [
+    2009
+   ]
+  },
+  {
+   "rid": 2004,
+   "class": "KocatanStore",
+   "roo": "kocstore.roo",
+   "name": "The Neglected Arsenal",
+   "links": [
+    2000,
+    2010
+   ]
+  },
+  {
+   "rid": 2005,
+   "class": "KocatanBank",
+   "roo": "kocbank.roo",
+   "name": "The Hungry Vaults",
+   "links": [
+    2000
+   ]
+  },
+  {
+   "rid": 2006,
+   "class": "KocatanTailorShop",
+   "roo": "koctail.roo",
+   "name": "The Crooked Hem Garment Shop",
+   "links": [
+    2009,
+    2012
+   ]
+  },
+  {
+   "rid": 2007,
+   "class": "KocatanHall",
+   "roo": "kochoh.roo",
+   "name": "The Hall of Heroes",
+   "links": [
+    2000,
+    2014,
+    2015
+   ]
+  },
+  {
+   "rid": 2008,
+   "class": "KocatanTavern",
+   "roo": "koctav.roo",
+   "name": "The Barking Monster",
+   "links": [
+    2000,
+    2001
+   ]
+  },
+  {
+   "rid": 2009,
+   "class": "KocatanSouth",
+   "roo": "settle2.roo",
+   "name": "Ko'catan, the Island Settlement",
+   "links": [
+    713,
+    2000,
+    2003,
+    2006
+   ]
+  },
+  {
+   "rid": 2010,
+   "class": "KocatanSewer1",
+   "roo": "kocsew1.roo",
+   "name": "A foul place to wander",
+   "links": [
+    2004,
+    2012
+   ]
+  },
+  {
+   "rid": 2012,
+   "class": "KocatanSewer2",
+   "roo": "kocsew2.roo",
+   "name": "Up Chuk Creek without a paddle",
+   "links": [
+    2006,
+    2010
+   ]
+  },
+  {
+   "rid": 2013,
+   "class": "KocatanGuardtowerEast",
+   "roo": "koctower.roo",
+   "name": "The East Tower",
+   "links": [
+    2000,
+    2115
+   ]
+  },
+  {
+   "rid": 2014,
+   "class": "KocatanHallA",
+   "roo": "kochoha.roo",
+   "name": "The Hall of Heroes West",
+   "links": [
+    2007
+   ]
+  },
+  {
+   "rid": 2015,
+   "class": "KocatanHallB",
+   "roo": "kochohb.roo",
+   "name": "The Hall of Heroes East",
+   "links": [
+    2007
+   ]
+  },
+  {
+   "rid": 2100,
+   "class": "BowmakerHut",
+   "roo": "bowmaker.roo",
+   "name": "The Bowmaker's Hut",
+   "links": [
+    2113
+   ]
+  },
+  {
+   "rid": 2101,
+   "class": "TradingPost",
+   "roo": "tpost1.roo",
+   "name": "The Remote Trading Post of Wulfgang zax'Ak",
+   "links": [
+    2144
+   ]
+  },
+  {
+   "rid": 2102,
+   "class": "TradingPostCellar",
+   "roo": "tpost2.roo",
+   "name": "The Cellar Rooms",
+   "links": [
+    2144
+   ]
+  },
+  {
+   "rid": 2110,
+   "class": "OutdoorsKA0",
+   "roo": "ka0.roo",
+   "name": "A dark, humid cavern",
+   "links": [
+    2111
+   ]
+  },
+  {
+   "rid": 2111,
+   "class": "OutdoorsKA1",
+   "roo": "ka1.roo",
+   "name": "Cliff Hive",
+   "links": [
+    2112,
+    2121
+   ]
+  },
+  {
+   "rid": 2112,
+   "class": "OutdoorsKA2",
+   "roo": "ka2.roo",
+   "name": "The Jungle Cliffs",
+   "links": [
+    2111,
+    2113,
+    2121
+   ]
+  },
+  {
+   "rid": 2113,
+   "class": "OutdoorsKA3",
+   "roo": "ka3.roo",
+   "name": "A notch in the jungle",
+   "links": [
+    2100,
+    2112,
+    2114
+   ]
+  },
+  {
+   "rid": 2114,
+   "class": "OutdoorsKA4",
+   "roo": "ka4.roo",
+   "name": "Into the Jungle",
+   "links": [
+    2113,
+    2115
+   ]
+  },
+  {
+   "rid": 2115,
+   "class": "OutdoorsKA5",
+   "roo": "ka5.roo",
+   "name": "Outside the Guard Tower",
+   "links": [
+    2013,
+    2114,
+    2124,
+    2125
+   ]
+  },
+  {
+   "rid": 2121,
+   "class": "OutdoorsKB1",
+   "roo": "kb1.roo",
+   "name": "The Cliffs",
+   "links": [
+    2111,
+    2112,
+    2122,
+    2131
+   ]
+  },
+  {
+   "rid": 2122,
+   "class": "OutdoorsKB2",
+   "roo": "kb2.roo",
+   "name": "Headquarters for the Avar Warriors",
+   "links": [
+    2121,
+    2123,
+    2132
+   ]
+  },
+  {
+   "rid": 2123,
+   "class": "OutdoorsKB3",
+   "roo": "kb3.roo",
+   "name": "Camp of the Warrior Avars",
+   "links": [
+    2122,
+    2124,
+    2132,
+    2133
+   ]
+  },
+  {
+   "rid": 2124,
+   "class": "OutdoorsKB4",
+   "roo": "kb4.roo",
+   "name": "Path to the Ruins",
+   "links": [
+    2115,
+    2123,
+    2133
+   ]
+  },
+  {
+   "rid": 2125,
+   "class": "OutdoorsKB5",
+   "roo": "kb5.roo",
+   "name": "Into the Jungle",
+   "links": [
+    2115,
+    2135
+   ]
+  },
+  {
+   "rid": 2131,
+   "class": "OutdoorsKC1",
+   "roo": "kc1.roo",
+   "name": "The Chasm",
+   "links": [
+    2121,
+    2141
+   ]
+  },
+  {
+   "rid": 2132,
+   "class": "OutdoorsKC2",
+   "roo": "kc2.roo",
+   "name": "Turf of the Warrior Avars",
+   "links": [
+    2122,
+    2123,
+    2133
+   ]
+  },
+  {
+   "rid": 2133,
+   "class": "OutdoorsKC3",
+   "roo": "kc3.roo",
+   "name": "Ruins of the Riija Temple",
+   "links": [
+    2123,
+    2124,
+    2132,
+    2134,
+    2142,
+    2143
+   ]
+  },
+  {
+   "rid": 2134,
+   "class": "OutdoorsKC4",
+   "roo": "kc4.roo",
+   "name": "Origin of the Kriipa",
+   "links": [
+    2133,
+    2135
+   ]
+  },
+  {
+   "rid": 2135,
+   "class": "OutdoorsKC5",
+   "roo": "kc5.roo",
+   "name": "Outside the Mad Scientist's Hut",
+   "links": [
+    2125,
+    2134,
+    2136
+   ]
+  },
+  {
+   "rid": 2136,
+   "class": "MadScientistHut",
+   "roo": "kc5a.roo",
+   "name": "Hut of the Mad Scientist",
+   "links": [
+    2135
+   ]
+  },
+  {
+   "rid": 2141,
+   "class": "OutdoorsKD1",
+   "roo": "kd1.roo",
+   "name": "Lair of the Bone Priestess",
+   "links": [
+    2131
+   ]
+  },
+  {
+   "rid": 2142,
+   "class": "OutdoorsKD2",
+   "roo": "kd2.roo",
+   "name": "Territory of the Noble Avars",
+   "links": [
+    2133,
+    2143,
+    2151,
+    2152
+   ]
+  },
+  {
+   "rid": 2143,
+   "class": "OutdoorsKD3",
+   "roo": "kd3.roo",
+   "name": "Deep in the Jungle",
+   "links": [
+    2133,
+    2142,
+    2144
+   ]
+  },
+  {
+   "rid": 2144,
+   "class": "OutdoorsKD4",
+   "roo": "kd4.roo",
+   "name": "The Clearing of the Trading Post",
+   "links": [
+    2101,
+    2102,
+    2143,
+    2154
+   ]
+  },
+  {
+   "rid": 2151,
+   "class": "TempleRiija",
+   "roo": "ke1.roo",
+   "name": "The Temple of Riija",
+   "links": [
+    2142,
+    2152
+   ]
+  },
+  {
+   "rid": 2152,
+   "class": "OutdoorsKE2",
+   "roo": "ke2.roo",
+   "name": "Headquarters of the Noble Avars",
+   "links": [
+    2142,
+    2151
+   ]
+  },
+  {
+   "rid": 2154,
+   "class": "OutdoorsKE4",
+   "roo": "ke4.roo",
+   "name": "Avar Village",
+   "links": [
+    2144
+   ]
+  },
+  {
+   "rid": 2500,
+   "class": "Orccave1",
+   "roo": "oc01.roo",
+   "name": "Ugol's Warren Entrance",
+   "links": [
+    27,
+    2501,
+    2509
+   ]
+  },
+  {
+   "rid": 2501,
+   "class": "OrcCave2",
+   "roo": "oc02.roo",
+   "name": "An Enigmatic Chamber",
+   "links": [
+    2500,
+    2502,
+    2508
+   ]
+  },
+  {
+   "rid": 2502,
+   "class": "OrcCave3",
+   "roo": "oc03.roo",
+   "name": "The Archaic Hollows",
+   "links": [
+    2501,
+    2503,
+    2507
+   ]
+  },
+  {
+   "rid": 2503,
+   "class": "OrcCave4",
+   "roo": "oc04.roo",
+   "name": "Aqueducts of Merb",
+   "links": [
+    2502,
+    2504
+   ]
+  },
+  {
+   "rid": 2504,
+   "class": "OrcCave5",
+   "roo": "oc05.roo",
+   "name": "Obfal's Sepulchre",
+   "links": [
+    2503,
+    2505,
+    2510
+   ]
+  },
+  {
+   "rid": 2505,
+   "class": "OrcCave6",
+   "roo": "oc06.roo",
+   "name": "Konima's Ascension",
+   "links": [
+    2000,
+    2504
+   ]
+  },
+  {
+   "rid": 2506,
+   "class": "Orcpit1",
+   "roo": "ocp1.roo",
+   "name": "Lair of the Orc Pit Boss",
+   "links": [
+    2507,
+    2508,
+    2509,
+    2510
+   ]
+  },
+  {
+   "rid": 2507,
+   "class": "OrcPitA",
+   "roo": "ocpa.roo",
+   "name": "Grog's Antechamber",
+   "links": [
+    2502,
+    2506
+   ]
+  },
+  {
+   "rid": 2508,
+   "class": "OrcPitB",
+   "roo": "ocpb.roo",
+   "name": "Brog's Antechamber",
+   "links": [
+    2501,
+    2506
+   ]
+  },
+  {
+   "rid": 2509,
+   "class": "OrcCave1Extension",
+   "roo": "oc1a.roo",
+   "name": "A Tranquil Place",
+   "links": [
+    2500,
+    2506
+   ]
+  },
+  {
+   "rid": 2510,
+   "class": "OrcCave5Extension",
+   "roo": "oc5b.roo",
+   "name": "A spring of vitality",
+   "links": [
+    2504,
+    2506
+   ]
+  },
+  {
+   "rid": 2600,
+   "class": "MarionCrypt1",
+   "roo": "mardun01.roo",
+   "name": "The crypt in Marion",
+   "links": [
+    200,
+    2601
+   ]
+  },
+  {
+   "rid": 2601,
+   "class": "MarionCrypt2",
+   "roo": "mardun02.roo",
+   "name": "Resting place of Marion's ancestors",
+   "links": [
+    2600,
+    2602
+   ]
+  },
+  {
+   "rid": 2602,
+   "class": "MarionCrypt3a",
+   "roo": "mardun03.roo",
+   "name": "Affirmation of the Forsaken",
+   "links": [
+    2601,
+    2603
+   ]
+  },
+  {
+   "rid": 2603,
+   "class": "MarionCrypt4",
+   "roo": "marcrypt4.roo",
+   "name": "The Laboratory of the Mad Brothers",
+   "links": [
+    2602
+   ]
+  },
+  {
+   "rid": 2800,
+   "class": "BergCity",
+   "roo": "bergcity.roo",
+   "name": "Berg",
+   "links": [
+    2801,
+    2802,
+    2803,
+    2804,
+    2805,
+    2806,
+    2807,
+    2808,
+    2960
+   ]
+  },
+  {
+   "rid": 2801,
+   "class": "BergVault",
+   "roo": "bergvault.roo",
+   "name": "Golden Crocodile Vault",
+   "links": [
+    2800
+   ]
+  },
+  {
+   "rid": 2802,
+   "class": "BergSmith",
+   "roo": "bergsmith.roo",
+   "name": "The Smoldering Forge",
+   "links": [
+    2800
+   ]
+  },
+  {
+   "rid": 2803,
+   "class": "BergHall",
+   "roo": "berghall.roo",
+   "name": "The Adventurer's Hall of Berg",
+   "links": [
+    2800
+   ]
+  },
+  {
+   "rid": 2804,
+   "class": "BergStore",
+   "roo": "bergstore.roo",
+   "name": "Runes and Relics",
+   "links": [
+    2800
+   ]
+  },
+  {
+   "rid": 2805,
+   "class": "BergInn",
+   "roo": "berginn.roo",
+   "name": "Murky Fork Bar",
+   "links": [
+    2800
+   ]
+  },
+  {
+   "rid": 2806,
+   "class": "BergBank",
+   "roo": "bergbank.roo",
+   "name": "Berg Treasury",
+   "links": [
+    2800
+   ]
+  },
+  {
+   "rid": 2807,
+   "class": "BergAuc",
+   "roo": "bergauc.roo",
+   "name": "The Gilded Gavel",
+   "links": [
+    2800
+   ]
+  },
+  {
+   "rid": 2808,
+   "class": "BergMG",
+   "roo": "bergmg.roo",
+   "name": "The Main Gate to the City of Berg",
+   "links": [
+    2800,
+    2809,
+    2813
+   ]
+  },
+  {
+   "rid": 2809,
+   "class": "Berg1",
+   "roo": "berg1.roo",
+   "name": "Trader's Route",
+   "links": [
+    720,
+    2808,
+    2810
+   ]
+  },
+  {
+   "rid": 2810,
+   "class": "Berg2",
+   "roo": "berg2.roo",
+   "name": "A Flowing River",
+   "links": [
+    2809,
+    2811,
+    2960
+   ]
+  },
+  {
+   "rid": 2811,
+   "class": "Berg3",
+   "roo": "berg3.roo",
+   "name": "The Jagged Hills",
+   "links": [
+    2810,
+    2812,
+    2815
+   ]
+  },
+  {
+   "rid": 2812,
+   "class": "Berg3Cave",
+   "roo": "berg3_cave.roo",
+   "name": "A Dark Place",
+   "links": [
+    2811,
+    2813,
+    2816
+   ]
+  },
+  {
+   "rid": 2813,
+   "class": "Berg4",
+   "roo": "berg4.roo",
+   "name": "Outskirts of Berg",
+   "links": [
+    2808,
+    2812,
+    2814
+   ]
+  },
+  {
+   "rid": 2814,
+   "class": "BergJala",
+   "roo": "berg_jala.roo",
+   "name": "The Temple of Jala",
+   "links": [
+    2813
+   ]
+  },
+  {
+   "rid": 2815,
+   "class": "Berg5",
+   "roo": "berg5.roo",
+   "name": "Kardde's Path",
+   "links": [
+    2811,
+    2816,
+    2818,
+    2904
+   ]
+  },
+  {
+   "rid": 2816,
+   "class": "Berg6",
+   "roo": "berg6.roo",
+   "name": "Southern Kardde's Pass",
+   "links": [
+    2812,
+    2815,
+    2817
+   ]
+  },
+  {
+   "rid": 2817,
+   "class": "Berg7",
+   "roo": "berg7.roo",
+   "name": "Valley Crossing",
+   "links": [
+    2816,
+    2850,
+    2954
+   ]
+  },
+  {
+   "rid": 2818,
+   "class": "Berg8",
+   "roo": "berg8.roo",
+   "name": "Northern Kardde's Pass",
+   "links": [
+    2815,
+    2820,
+    2821,
+    2822,
+    2961
+   ]
+  },
+  {
+   "rid": 2819,
+   "class": "OutdoorsJ3_1",
+   "roo": "j3_1.roo",
+   "name": "Crown Point",
+   "links": [
+    851,
+    2820
+   ]
+  },
+  {
+   "rid": 2820,
+   "class": "OutdoorsJ3_2",
+   "roo": "j3_2.roo",
+   "name": "The Queen's Path",
+   "links": [
+    615,
+    2818,
+    2819,
+    2821
+   ]
+  },
+  {
+   "rid": 2821,
+   "class": "SurvivalArena",
+   "roo": "survival_ex.roo",
+   "name": "The Hallowed Training Grounds",
+   "links": [
+    2818,
+    2820
+   ]
+  },
+  {
+   "rid": 2822,
+   "class": "GolemDungeon",
+   "roo": "golem_dungeon.roo",
+   "name": "Caverns of Ancient Rock",
+   "links": [
+    2818
+   ]
+  },
+  {
+   "rid": 2823,
+   "class": "BergLeader",
+   "roo": "bergleader.roo",
+   "name": "Outside the Palace of the Mountain King",
+   "links": [
+    2800,
+    2824,
+    2826
+   ]
+  },
+  {
+   "rid": 2824,
+   "class": "BergLeaderHall",
+   "roo": "bergleader_hall.roo",
+   "name": "The Royal Palace of Berg",
+   "links": [
+    2823,
+    2825
+   ]
+  },
+  {
+   "rid": 2825,
+   "class": "BergGrave",
+   "roo": "berg_grave.roo",
+   "name": "Clandestine Tombs",
+   "links": [
+    2824
+   ]
+  },
+  {
+   "rid": 2826,
+   "class": "BergJail",
+   "roo": "berg_jail.roo",
+   "name": "Bouldergate Prison",
+   "links": [
+    2823
+   ]
+  },
+  {
+   "rid": 2827,
+   "class": "BergDevRoom",
+   "roo": "berg_devroom.roo",
+   "name": "The Hall of Developers",
+   "links": [
+    2823
+   ]
+  },
+  {
+   "rid": 2850,
+   "class": "DValley1",
+   "roo": "dvalley1.roo",
+   "name": "Into the Valley of Death",
+   "links": [
+    2817,
+    2851
+   ]
+  },
+  {
+   "rid": 2851,
+   "class": "DValley2",
+   "roo": "dvalley2.roo",
+   "name": "A Bone Dry Wasteland",
+   "links": [
+    2850,
+    2852
+   ]
+  },
+  {
+   "rid": 2852,
+   "class": "DValley3",
+   "roo": "dvalley3.roo",
+   "name": "Hopeless Slopes",
+   "links": [
+    2851,
+    2853
+   ]
+  },
+  {
+   "rid": 2853,
+   "class": "DValley4",
+   "roo": "dvalley4.roo",
+   "name": "A Parched and Barren Stretch of Land",
+   "links": [
+    2852,
+    2854
+   ]
+  },
+  {
+   "rid": 2854,
+   "class": "DValley5",
+   "roo": "dvalley5.roo",
+   "name": "Crumbling Ruins",
+   "links": [
+    2853,
+    2855
+   ]
+  },
+  {
+   "rid": 2855,
+   "class": "DValley5B",
+   "roo": "dvalley5b.roo",
+   "name": "Chamber of the Crying Serpent",
+   "links": [
+    2854,
+    2856
+   ]
+  },
+  {
+   "rid": 2856,
+   "class": "DValleyTemple",
+   "roo": "dvalley_temple.roo",
+   "name": "Pantheon of the Arcane Arts",
+   "links": [
+    2855
+   ]
+  },
+  {
+   "rid": 2900,
+   "class": "Jixa1",
+   "roo": "ji1.roo",
+   "name": "The forlorn path to Jixa",
+   "links": [
+    585,
+    950,
+    2901
+   ]
+  },
+  {
+   "rid": 2901,
+   "class": "Jixa2",
+   "roo": "ji2.roo",
+   "name": "Chupacabra Territory",
+   "links": [
+    45,
+    2900,
+    2902
+   ]
+  },
+  {
+   "rid": 2902,
+   "class": "Jixa3",
+   "roo": "ji3.roo",
+   "name": "Archaic Obelisk",
+   "links": [
+    2901,
+    2903
+   ]
+  },
+  {
+   "rid": 2903,
+   "class": "JixaCity",
+   "roo": "jixa.roo",
+   "name": "Hidden Village of Jixa",
+   "links": [
+    2902,
+    2904,
+    2905,
+    2906,
+    2907,
+    2908,
+    2952
+   ]
+  },
+  {
+   "rid": 2904,
+   "class": "Jixa4",
+   "roo": "ji4.roo",
+   "name": "Outskirts of Jixa",
+   "links": [
+    2815,
+    2903,
+    2954
+   ]
+  },
+  {
+   "rid": 2905,
+   "class": "JixaInn",
+   "roo": "jixa_inn.roo",
+   "name": "The Wandering Fiddler Pub",
+   "links": [
+    2903
+   ]
+  },
+  {
+   "rid": 2906,
+   "class": "JixaDye",
+   "roo": "jixa_dye.roo",
+   "name": "The Rainbow Forge",
+   "links": [
+    2903
+   ]
+  },
+  {
+   "rid": 2907,
+   "class": "JixaHall",
+   "roo": "jixa_hall.roo",
+   "name": "The Adventurer's Hall of Jixa",
+   "links": [
+    2903
+   ]
+  },
+  {
+   "rid": 2908,
+   "class": "JixaSmith",
+   "roo": "jixa_smith.roo",
+   "name": "Between Hammer and Anvil",
+   "links": [
+    2903
+   ]
+  },
+  {
+   "rid": 2950,
+   "class": "MGToseast",
+   "roo": "toseast_mg.roo",
+   "name": "Eastern gate to the city of Tos",
+   "links": [
+    61,
+    596,
+    2951
+   ]
+  },
+  {
+   "rid": 2951,
+   "class": "Emgtoswamp",
+   "roo": "emgtoswamp.roo",
+   "name": "The Duke's Way",
+   "links": [
+    2950,
+    2952,
+    2953
+   ]
+  },
+  {
+   "rid": 2952,
+   "class": "Swamptojixa",
+   "roo": "swamptojixa.roo",
+   "name": "Eastern Duke's Way",
+   "links": [
+    2903,
+    2951,
+    2953
+   ]
+  },
+  {
+   "rid": 2953,
+   "class": "Swamp1",
+   "roo": "swamp1.roo",
+   "name": "The Marsh",
+   "links": [
+    719,
+    2951,
+    2952,
+    2954
+   ]
+  },
+  {
+   "rid": 2954,
+   "class": "Swamp2",
+   "roo": "swamp2.roo",
+   "name": "The desolate Mire",
+   "links": [
+    2817,
+    2904,
+    2953
+   ]
+  },
+  {
+   "rid": 2960,
+   "class": "BergMine",
+   "roo": "bergmine.roo",
+   "name": "The mines of Berg",
+   "links": [
+    2800,
+    2810,
+    2961
+   ]
+  },
+  {
+   "rid": 2961,
+   "class": "BanditCamp",
+   "roo": "banditcamp.roo",
+   "name": "Bandit Camp",
+   "links": [
+    2818,
+    2960,
+    2962
+   ]
+  },
+  {
+   "rid": 2962,
+   "class": "BanditCave",
+   "roo": "banditcave.roo",
+   "name": "Hideout of the Eastern Bandits",
+   "links": [
+    2961
+   ]
+  },
+  {
+   "rid": 3000,
+   "class": "DeathRealmH4",
+   "roo": "h4.roo",
+   "name": "Death Realm",
+   "links": [
+    3001,
+    3011,
+    3018
+   ]
+  },
+  {
+   "rid": 3001,
+   "class": "DeathRealmH3",
+   "roo": "h3.roo",
+   "name": "Death Realm",
+   "links": [
+    3000,
+    3002,
+    3021
+   ]
+  },
+  {
+   "rid": 3002,
+   "class": "DeathRealmI3",
+   "roo": "i3.roo",
+   "name": "Death Realm",
+   "links": [
+    3001,
+    3006,
+    3008
+   ]
+  },
+  {
+   "rid": 3003,
+   "class": "DeathRealmBarloqueSouth",
+   "roo": "barls.roo",
+   "name": "Death Realm",
+   "links": [
+    3002,
+    3004
+   ]
+  },
+  {
+   "rid": 3004,
+   "class": "DeathRealmBarloqueNorth",
+   "roo": "barln.roo",
+   "name": "Death Realm",
+   "links": [
+    3003,
+    3005,
+    3031
+   ]
+  },
+  {
+   "rid": 3005,
+   "class": "DeathRealmBarloquePort",
+   "roo": "barlport.roo",
+   "name": "Death Realm",
+   "links": [
+    3004
+   ]
+  },
+  {
+   "rid": 3006,
+   "class": "DeathRealmJ3",
+   "roo": "j3.roo",
+   "name": "Death Realm",
+   "links": [
+    3002,
+    3007
+   ]
+  },
+  {
+   "rid": 3007,
+   "class": "DeathRealmCastle2b",
+   "roo": "castle2b.roo",
+   "name": "Death Realm",
+   "links": [
+    3006
+   ]
+  },
+  {
+   "rid": 3008,
+   "class": "DeathRealmBadland2",
+   "roo": "badland2.roo",
+   "name": "Death Realm",
+   "links": [
+    3002,
+    3009
+   ]
+  },
+  {
+   "rid": 3009,
+   "class": "DeathRealmBadland1",
+   "roo": "badland1.roo",
+   "name": "Death Realm",
+   "links": [
+    3008,
+    3010
+   ]
+  },
+  {
+   "rid": 3010,
+   "class": "DeathRealmK5",
+   "roo": "k5.roo",
+   "name": "Death Realm",
+   "links": []
+  },
+  {
+   "rid": 3011,
+   "class": "DeathRealmH5",
+   "roo": "h5.roo",
+   "name": "Death Realm",
+   "links": [
+    3000,
+    3012
+   ]
+  },
+  {
+   "rid": 3012,
+   "class": "DeathRealmH6",
+   "roo": "h6.roo",
+   "name": "Death Realm",
+   "links": [
+    3011,
+    3044,
+    3048
+   ]
+  },
+  {
+   "rid": 3013,
+   "class": "DeathRealmTos",
+   "roo": "tos.roo",
+   "name": "Death Realm",
+   "links": [
+    3012,
+    3014,
+    3015,
+    3017
+   ]
+  },
+  {
+   "rid": 3015,
+   "class": "DeathRealmTosGraveyard",
+   "roo": "tosgrave.roo",
+   "name": "Death Realm",
+   "links": [
+    3013,
+    3016
+   ]
+  },
+  {
+   "rid": 3016,
+   "class": "DeathRealmTosCrypt",
+   "roo": "toscrypt.roo",
+   "name": "Death Realm",
+   "links": [
+    3015
+   ]
+  },
+  {
+   "rid": 3017,
+   "class": "DeathRealmDuke1",
+   "roo": "duke1.roo",
+   "name": "Death Realm",
+   "links": [
+    3013
+   ]
+  },
+  {
+   "rid": 3018,
+   "class": "DeathRealmG4",
+   "roo": "g4.roo",
+   "name": "Death Realm",
+   "links": [
+    3000,
+    3020,
+    3021
+   ]
+  },
+  {
+   "rid": 3019,
+   "class": "DeathRealmCorNoth",
+   "roo": "cornoth.roo",
+   "name": "Death Realm",
+   "links": [
+    3018,
+    3045
+   ]
+  },
+  {
+   "rid": 3020,
+   "class": "DeathRealmF4",
+   "roo": "f4.roo",
+   "name": "Death Realm",
+   "links": [
+    3018,
+    3021,
+    3022
+   ]
+  },
+  {
+   "rid": 3021,
+   "class": "DeathRealmF3",
+   "roo": "f3.roo",
+   "name": "Death Realm",
+   "links": [
+    3001,
+    3020
+   ]
+  },
+  {
+   "rid": 3022,
+   "class": "DeathRealmE4",
+   "roo": "e4.roo",
+   "name": "Death Realm",
+   "links": [
+    3020,
+    3023,
+    3024
+   ]
+  },
+  {
+   "rid": 3023,
+   "class": "DeathRealmD5",
+   "roo": "d5.roo",
+   "name": "Death Realm",
+   "links": [
+    3022,
+    3024,
+    3025,
+    3033
+   ]
+  },
+  {
+   "rid": 3024,
+   "class": "DeathRealmD4",
+   "roo": "d4.roo",
+   "name": "Death Realm",
+   "links": [
+    3022,
+    3023,
+    3027,
+    3029
+   ]
+  },
+  {
+   "rid": 3025,
+   "class": "DeathRealmC5",
+   "roo": "c5.roo",
+   "name": "Death Realm",
+   "links": [
+    3023,
+    3026,
+    3032
+   ]
+  },
+  {
+   "rid": 3026,
+   "class": "DeathRealmMarion",
+   "roo": "marion.roo",
+   "name": "Death Realm",
+   "links": []
+  },
+  {
+   "rid": 3027,
+   "class": "DeathRealmC4",
+   "roo": "c4.roo",
+   "name": "Death Realm",
+   "links": [
+    3024
+   ]
+  },
+  {
+   "rid": 3028,
+   "class": "DeathRealmTemple",
+   "roo": "temple.roo",
+   "name": "Death Realm",
+   "links": [
+    3027
+   ]
+  },
+  {
+   "rid": 3029,
+   "class": "DeathRealmE2",
+   "roo": "e2.roo",
+   "name": "Death Realm",
+   "links": [
+    3024,
+    3030
+   ]
+  },
+  {
+   "rid": 3030,
+   "class": "DeathRealmF2",
+   "roo": "f2.roo",
+   "name": "Death Realm",
+   "links": [
+    3029,
+    3031
+   ]
+  },
+  {
+   "rid": 3031,
+   "class": "DeathRealmBarlSewer",
+   "roo": "dbarlsew.roo",
+   "name": "Death Realm",
+   "links": [
+    3030
+   ]
+  },
+  {
+   "rid": 3032,
+   "class": "DeathRealmC6",
+   "roo": "c6.roo",
+   "name": "Death Realm",
+   "links": [
+    3025,
+    3033,
+    3036
+   ]
+  },
+  {
+   "rid": 3033,
+   "class": "DeathRealmD6E6",
+   "roo": "d6e6.roo",
+   "name": "Death Realm",
+   "links": [
+    3023,
+    3032,
+    3034,
+    3035,
+    3037,
+    3038
+   ]
+  },
+  {
+   "rid": 3034,
+   "class": "DeathRealmLD6E6",
+   "roo": "d6e6ulake.roo",
+   "name": "Death Realm",
+   "links": [
+    3033
+   ]
+  },
+  {
+   "rid": 3035,
+   "class": "DeathRealmE5",
+   "roo": "e5.roo",
+   "name": "Death Realm",
+   "links": [
+    3033
+   ]
+  },
+  {
+   "rid": 3036,
+   "class": "DeathRealmC7",
+   "roo": "c7.roo",
+   "name": "Death Realm",
+   "links": [
+    3032,
+    3037
+   ]
+  },
+  {
+   "rid": 3037,
+   "class": "DeathRealmD7",
+   "roo": "d7.roo",
+   "name": "Death Realm",
+   "links": [
+    3033,
+    3036,
+    3038,
+    3039
+   ]
+  },
+  {
+   "rid": 3038,
+   "class": "DeathRealmE7",
+   "roo": "e7.roo",
+   "name": "Death Realm",
+   "links": [
+    3033,
+    3037,
+    3039
+   ]
+  },
+  {
+   "rid": 3039,
+   "class": "DeathRealmJasperWest",
+   "roo": "jaswest.roo",
+   "name": "Death Realm",
+   "links": [
+    3037,
+    3038,
+    3040
+   ]
+  },
+  {
+   "rid": 3040,
+   "class": "DeathRealmJasper",
+   "roo": "jaseast.roo",
+   "name": "Death Realm",
+   "links": [
+    3039,
+    3041
+   ]
+  },
+  {
+   "rid": 3041,
+   "class": "DeathRealmF8",
+   "roo": "f8.roo",
+   "name": "Death Realm",
+   "links": [
+    3040,
+    3042,
+    3046
+   ]
+  },
+  {
+   "rid": 3042,
+   "class": "DeathRealmG8",
+   "roo": "g8.roo",
+   "name": "Death Realm",
+   "links": [
+    3041,
+    3043,
+    3053
+   ]
+  },
+  {
+   "rid": 3043,
+   "class": "DeathRealmG6",
+   "roo": "g6.roo",
+   "name": "Death Realm",
+   "links": [
+    3042,
+    3044,
+    3045,
+    3047
+   ]
+  },
+  {
+   "rid": 3044,
+   "class": "DeathRealmH7",
+   "roo": "h7.roo",
+   "name": "Death Realm",
+   "links": [
+    3012,
+    3043,
+    3049
+   ]
+  },
+  {
+   "rid": 3045,
+   "class": "DeathRealmG5",
+   "roo": "g5.roo",
+   "name": "Death Realm",
+   "links": [
+    3019,
+    3043
+   ]
+  },
+  {
+   "rid": 3046,
+   "class": "DeathRealmF7",
+   "roo": "f7.roo",
+   "name": "Death Realm",
+   "links": [
+    3041,
+    3047
+   ]
+  },
+  {
+   "rid": 3047,
+   "class": "DeathRealmF6",
+   "roo": "f6.roo",
+   "name": "Death Realm",
+   "links": [
+    3043,
+    3046
+   ]
+  },
+  {
+   "rid": 3048,
+   "class": "DeathRealmI6",
+   "roo": "i6.roo",
+   "name": "Death Realm",
+   "links": [
+    3012,
+    3014,
+    3049
+   ]
+  },
+  {
+   "rid": 3049,
+   "class": "DeathRealmI7",
+   "roo": "i7.roo",
+   "name": "Death Realm",
+   "links": [
+    3044,
+    3048,
+    3050
+   ]
+  },
+  {
+   "rid": 3050,
+   "class": "DeathRealmI8",
+   "roo": "i8.roo",
+   "name": "Death Realm",
+   "links": [
+    3049,
+    3051
+   ]
+  },
+  {
+   "rid": 3052,
+   "class": "DeathRealmH9",
+   "roo": "h9.roo",
+   "name": "Death Realm",
+   "links": [
+    3051,
+    3053
+   ]
+  },
+  {
+   "rid": 3053,
+   "class": "DeathRealmG9",
+   "roo": "g9.roo",
+   "name": "Death Realm",
+   "links": [
+    3042,
+    3052,
+    3054
+   ]
+  },
+  {
+   "rid": 3054,
+   "class": "DeathRealmKraanan",
+   "roo": "tempkra.roo",
+   "name": "Death Realm",
+   "links": [
+    3053
+   ]
+  },
+  {
+   "rid": 3055,
+   "class": "DeathRealmCastle",
+   "roo": "dcastle.roo",
+   "name": "Death Realm",
+   "links": [
+    3051
+   ]
+  },
+  {
+   "rid": 3056,
+   "class": "DeathRealmCastle1",
+   "roo": "castle1.roo",
+   "name": "Death Realm",
+   "links": [
+    3055,
+    3058,
+    3059,
+    3060
+   ]
+  },
+  {
+   "rid": 3057,
+   "class": "DeathRealmCastle2",
+   "roo": "greeny.roo",
+   "name": "Death Realm",
+   "links": [
+    3056
+   ]
+  },
+  {
+   "rid": 3059,
+   "class": "DeathRealmCastle4",
+   "roo": "castle1b.roo",
+   "name": "Death Realm",
+   "links": [
+    3056
+   ]
+  },
+  {
+   "rid": 3060,
+   "class": "DeathRealmThrone1",
+   "roo": "throne1.roo",
+   "name": "Death Realm",
+   "links": [
+    3056
+   ]
+  },
+  {
+   "rid": 3061,
+   "class": "DeathRealmThrone2",
+   "roo": "throne2.roo",
+   "name": "Death Realm",
+   "links": [
+    3060
+   ]
+  },
+  {
+   "rid": 9000,
+   "class": "OldJasper",
+   "roo": "ojas.roo",
+   "name": "Historic Jasper",
+   "links": []
+  },
+  {
+   "rid": 9001,
+   "class": "OldMarion",
+   "roo": "omar.roo",
+   "name": "Historic Marion",
+   "links": []
+  },
+  {
+   "rid": 9002,
+   "class": "OldBarloqueNorth",
+   "roo": "obarln.roo",
+   "name": "Historic North Barloque",
+   "links": []
+  },
+  {
+   "rid": 9003,
+   "class": "OldBarloqueSouth",
+   "roo": "obarls.roo",
+   "name": "Historic South Barloque",
+   "links": []
+  },
+  {
+   "rid": 9004,
+   "class": "OldCorNoth",
+   "roo": "ocornoth.roo",
+   "name": "Historic Cor Noth",
+   "links": [
+    9005
+   ]
+  },
+  {
+   "rid": 9005,
+   "class": "OldCorNothUniversity",
+   "roo": "ocoruniv.roo",
+   "name": "The Historic Hall of Genealogy",
+   "links": [
+    9004
+   ]
+  }
+ ]
+}

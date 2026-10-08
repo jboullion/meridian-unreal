@@ -22,9 +22,12 @@ class APlayerController;
  *      security value, and the players list (BP_PLAYERS) has our character;
  *   5. reloading the data (what BP_INVALIDATE_DATA does after a server save) brings the room back,
  *      and chat still works after;
- *   6. Log Off returns to the character list (BP_REQ_QUIT, BP_QUIT, the server's menu) and the
+ *   6. travel: it walks our zones' exits to Farol West and off its east edge into the Forest of Farol,
+ *      a room we haven't built: it is built from the server's files (UMRRuntimeRooms), the pawn
+ *      stands on its floor, chat works there, and walking off its west edge comes back;
+ *   7. Log Off returns to the character list (BP_REQ_QUIT, BP_QUIT, the server's menu) and the
  *      character enters again;
- *   7. it logs off cleanly.
+ *   8. it logs off cleanly.
  * Entering a zone also checks that ours was built from the server's room (its security value).
  * Logs "MRNetTest: PASS/FAIL ..." per step and "MRNetTest: DONE <passed>/<steps>", then quits.
  * -MRNetHold=<seconds> stays that long after saying hello (for a look from another client): it
@@ -41,13 +44,21 @@ public:
 	void Start(APlayerController* InController);
 
 private:
-	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Relog, Logoff, Done };
+	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Travel, Relog, Logoff, Done };
 
 	void Tick();
 	void Pass(const FString& What);
 	void Fail(const FString& What);
 	void Finish();
 	bool TakeExit();
+	/** One hop toward TargetRid through our zones' tile and edge exits (false: no way there). */
+	bool HopToward(int32 TargetRid);
+	/** Teleport the pawn just past an edge of its zone's grid: the server takes the edge exit. */
+	bool StepOffEdge(uint8 Edge);
+	/** The Travel step's checks, run in the runtime room. */
+	void CheckRuntimeRoom();
+	/** Every creature in the room is drawn (a sprite of ours, or the server's bitmap). */
+	void CheckCreaturesDrawn();
 	/** The new character the creator path sends (and what our object should then wear). */
 	void SendNewCharacter(class UMRNetSubsystem* Net);
 	void CheckLook(class UMRNetSubsystem* Net);
@@ -80,4 +91,9 @@ private:
 	/** Rooms entered before the reload. */
 	int32 RoomsBefore = 0;
 	bool bSaid = false;
+	/** Travel: the zone a hop left from (0: none under way), the runtime room's zone, what's done there. */
+	int32 HopFrom = 0;
+	int32 RuntimeRid = 0;
+	int32 TravelStage = 0;
+	double StageTime = 0.0;
 };

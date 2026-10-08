@@ -15,6 +15,11 @@
 #include "Net/MRNetObject.h"
 #include "Net/MRNetSubsystem.h"
 #include "Net/MRNetWorld.h"
+#include "World/MRRuntimeRooms.h"
+#include "Net/MRAssetCache.h"
+#include "World/MRBgf.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Net/MRProtocol.h"
 #include "Player/MRPlayerState.h"
 #include "Serialization/JsonReader.h"
@@ -200,6 +205,8 @@ void UMRNetWorldSubsystem::OnPhaseChanged()
 		// left the game (logoff or disconnect): back to the login screen over Raza
 		ClearObjects();
 		Rid = 0;
+		++RoomTicket;  // a room still loading is no longer wanted
+		LoadingRoom.Reset();
 		if (APlayerController* PC = GetPC(); PC && PC->GetPawn())
 		{
 			APawn* Pawn = PC->GetPawn();
@@ -224,24 +231,89 @@ void UMRNetWorldSubsystem::OnRoomEntered()
 	ClearObjects();
 	const FMRNetPlayer& P = Net->GetPlayer();
 	const int32 PrevRid = Rid;
-	Rid = Zones->RidForRoom(P.RoomFile);
-	UE_LOG(LogMeridian, Log, TEXT("MRNet: entered %s (%s) -> zone %d, %d objects"), *P.RoomFile, *P.RoomName, Rid, Net->GetObjects().Num());
-	if (!Rid)
+	const int32 BuiltRid = Zones->RidForRoom(P.RoomFile);
+	UE_LOG(LogMeridian, Log, TEXT("MRNet: entered %s (%s) -> zone %d, %d objects"), *P.RoomFile, *P.RoomName, BuiltRid, Net->GetObjects().Num());
+	// the server names its room by the .roo's security value (clientd3d game.c): ours must be built from the same file
+	const FMRZoneInfo* Zone = Zones->FindZone(BuiltRid);
+	bRoomMatchesServer = !Zone || !Zone->bHasRooSecurity || MRNetRead::SecurityMatches(Zone->RooSecurity, P.RoomSecurity);
+	if (BuiltRid && bRoomMatchesServer)
 	{
-		UE_LOG(LogMeridian, Warning, TEXT("MRNet: no zone is built from %s; staying put"), *P.RoomFile);
-		// before the first room there is no pawn: say why on the login screen (Cancel logs off)
-		Net->SetStatus(FString::Printf(TEXT("%s isn't in this version of the game yet."), *P.RoomName));
+		Rid = BuiltRid;
+		FinishEnterRoom(PrevRid);
 		return;
 	}
-	// the server names its room by the .roo's security value (clientd3d game.c): ours must be built from the same file
-	const FMRZoneInfo* Zone = Zones->FindZone(Rid);
-	bRoomMatchesServer = !Zone || !Zone->bHasRooSecurity || MRNetRead::SecurityMatches(Zone->RooSecurity, P.RoomSecurity);
-	if (!bRoomMatchesServer)
+	if (BuiltRid)
 	{
-		UE_LOG(LogMeridian, Warning, TEXT("MRNet: zone %d was built from a different %s than the server's (security %08x, server %08x)"),
-			Rid, *P.RoomFile, Zone->RooSecurity, P.RoomSecurity);
+		UE_LOG(LogMeridian, Warning, TEXT("MRNet: zone %d was built from a different %s than the server's (security %08x, server %08x); building the server's"),
+			BuiltRid, *P.RoomFile, Zone->RooSecurity, P.RoomSecurity);
 	}
+
+	// a room we haven't built (or not this version of it): build it from the server's files (docs/adr/0012)
+	UMRRuntimeRooms* Runtime = GetWorld()->GetSubsystem<UMRRuntimeRooms>();
+	if (!Runtime)
+	{
+		Rid = 0;
+		return;
+	}
+	Rid = 0;  // nothing moves or spawns until it's built
+	LoadingRoom = P.RoomName;
+	SetPawnFrozen(true);
+	Net->SetStatus(FString::Printf(TEXT("Loading %s..."), *P.RoomName));
+	const int32 Ticket = ++RoomTicket;
+	TWeakObjectPtr<UMRNetWorldSubsystem> Weak(this);
+	Runtime->Request(P.RoomFile, P.RoomName, P.RoomSecurity, [Weak, Ticket, PrevRid](int32 NewRid)
+	{
+		UMRNetWorldSubsystem* Self = Weak.Get();
+		if (!Self || Ticket != Self->RoomTicket)
+		{
+			return;  // another room came since
+		}
+		Self->LoadingRoom.Reset();
+		UMRNetSubsystem* N = Self->GetNet();
+		if (!NewRid || !N || N->GetPhase() != EMRNetPhase::InGame)
+		{
+			UE_LOG(LogMeridian, Warning, TEXT("MRNet: couldn't build %s; staying put"), N ? *N->GetPlayer().RoomFile : TEXT("the room"));
+			if (N)
+			{
+				N->SetStatus(FString::Printf(TEXT("%s couldn't be loaded."), *N->GetPlayer().RoomName));
+			}
+			Self->SetPawnFrozen(false);
+			return;
+		}
+		Self->Rid = NewRid;
+		Self->FinishEnterRoom(PrevRid);
+	});
+}
+
+void UMRNetWorldSubsystem::SetPawnFrozen(bool bFrozen)
+{
+	APlayerController* PC = GetPC();
+	ACharacter* Char = PC ? Cast<ACharacter>(PC->GetPawn()) : nullptr;
+	UCharacterMovementComponent* Move = Char ? Char->GetCharacterMovement() : nullptr;
+	if (!Move)
+	{
+		return;
+	}
+	if (bFrozen)
+	{
+		Move->DisableMovement();
+	}
+	else if (Move->MovementMode == MOVE_None)
+	{
+		Move->SetMovementMode(MOVE_Walking);
+	}
+}
+
+void UMRNetWorldSubsystem::FinishEnterRoom(int32 PrevRid)
+{
+	UMRNetSubsystem* Net = GetNet();
+	if (!Net)
+	{
+		return;
+	}
+	Net->SetStatus(FString());
 	PlacePlayer(PrevRid == Rid);
+	SetPawnFrozen(false);
 	ApplySelfLook();
 	for (const TPair<uint32, FMRNetObject>& Pair : Net->GetObjects())
 	{
@@ -250,6 +322,10 @@ void UMRNetWorldSubsystem::OnRoomEntered()
 	LastSentKod = FIntPoint(-1, -1);
 	LastSentAngle = -1;
 	UpdateScreens();
+	if (UMRRuntimeRooms* Runtime = GetWorld()->GetSubsystem<UMRRuntimeRooms>())
+	{
+		Runtime->Prefetch(Net->GetPlayer().RoomFile);  // the rooms one exit away build from the disk cache
+	}
 }
 
 void UMRNetWorldSubsystem::ApplySelfLook()
@@ -284,6 +360,7 @@ void UMRNetWorldSubsystem::PlacePlayer(bool bSameRoom)
 	}
 	const FVector Floor = Zones->KodToWorld(Rid, Self->KodRow, Self->KodCol, true);
 	const FRotator Facing(0.0, MRUnits::KodAngleToYaw(Self->Angle), 0.0);
+	UE_LOG(LogMeridian, Verbose, TEXT("MRNet: placing the player at (%d, %d) of zone %d: %s"), Self->KodRow, Self->KodCol, Rid, *Floor.ToString());
 	if (AMRPlayerState* PS = PC->GetPlayerState<AMRPlayerState>())
 	{
 		PS->SetZoneId(Rid);  // the minimap, music and moods follow the zone
@@ -348,11 +425,6 @@ void UMRNetWorldSubsystem::SpawnObject(const FMRNetObject& Object)
 		return;
 	}
 	const FName Look = LookFor(Object);
-	if (Look.IsNone())
-	{
-		UE_LOG(LogMeridian, Log, TEXT("MRNet: no sprite for %s (%s); not drawn"), *Object.Name, *Object.Icon);
-		return;
-	}
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	const FVector Floor = Zones->KodToWorld(Rid, Object.KodRow, Object.KodCol, true);
@@ -363,12 +435,59 @@ void UMRNetWorldSubsystem::SpawnObject(const FMRNetObject& Object)
 	}
 	Actor->Init(Object.Id, Look, Object.Name);
 	FMRSpriteAppearance A;
-	if (MRNetLook::AppearanceFromObject(Object, A))
+	if (Look.IsNone())
+	{
+		AttachBgfSprite(Actor, Object);  // no sprite of ours: the server's own bitmap
+	}
+	else if (MRNetLook::AppearanceFromObject(Object, A))
 	{
 		Actor->SetAppearance(A);
 	}
 	Actor->Place(Floor, Object.Angle);
 	Actors.Add(Object.Id, Actor);
+}
+
+void UMRNetWorldSubsystem::AttachBgfSprite(AMRNetObject* Actor, const FMRNetObject& Object)
+{
+	UMRNetSubsystem* Net = GetNet();
+	FMRAssetCache* Cache = Net ? Net->GetAssets() : nullptr;
+	const FString File = Object.Icon.ToLower();
+	if (!Cache || File.IsEmpty() || !Cache->IsListed(File))
+	{
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: no sprite or bitmap for %s (%s); not drawn"), *Object.Name, *Object.Icon);
+		return;
+	}
+	const FMRNetAnimation Standing = Object.Animation;
+	const FMRNetAnimation Moving = Object.MotionAnimation;
+	if (const TSharedPtr<const FMRBgf>* Known = Bgfs.Find(File))
+	{
+		Actor->SetBgfSprite(File, *Known);
+		Actor->SetServerAnimation(Standing, Moving);
+		return;
+	}
+	TWeakObjectPtr<UMRNetWorldSubsystem> Weak(this);
+	TWeakObjectPtr<AMRNetObject> WeakActor(Actor);
+	Cache->Fetch(File, [Weak, WeakActor, File, Standing, Moving](bool bOk, const TArray<uint8>& Bytes)
+	{
+		UMRNetWorldSubsystem* Self = Weak.Get();
+		if (!Self)
+		{
+			return;
+		}
+		TSharedPtr<FMRBgf> Bgf = MakeShared<FMRBgf>();
+		FString Error;
+		if (!bOk || !Bgf->Load(Bytes, Error))
+		{
+			UE_LOG(LogMeridian, Warning, TEXT("MRNet: %s: %s"), *File, bOk ? *Error : TEXT("not downloaded"));
+			return;
+		}
+		Self->Bgfs.Add(File, Bgf);
+		if (AMRNetObject* A = WeakActor.Get())
+		{
+			A->SetBgfSprite(File, Bgf);
+			A->SetServerAnimation(Standing, Moving);
+		}
+	});
 }
 
 void UMRNetWorldSubsystem::ClearObjects()
@@ -401,7 +520,21 @@ void UMRNetWorldSubsystem::OnObjectChanged(uint32 Id)
 	}
 	AMRNetObject* A = FindActor(Id);
 	const FMRNetObject* O = GetNet() ? GetNet()->FindObject(Id) : nullptr;
-	if (A && O && LookFor(*O) != A->GetLook())
+	if (A && O && A->GetLook().IsNone() && LookFor(*O).IsNone())
+	{
+		// drawn from its bitmap: a new bitmap (a corpse) means a new sprite, else a new animation
+		if (A->GetBgfName() != O->Icon.ToLower())
+		{
+			A->Destroy();
+			Actors.Remove(Id);
+			SpawnObject(*O);
+		}
+		else
+		{
+			A->SetServerAnimation(O->Animation, O->MotionAnimation);
+		}
+	}
+	else if (A && O && LookFor(*O) != A->GetLook())
 	{
 		A->Destroy();
 		Actors.Remove(Id);

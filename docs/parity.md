@@ -13,7 +13,7 @@ This file tracks what the Unreal client does compared with the original desktop 
 
 Protocol facts go in [research/blakserv-protocol.md](research/blakserv-protocol.md), each with the blakserv or clientd3d source it came from.
 
-Last survey: 2026-10-08. M0 done the same day.
+Last survey: 2026-10-08. M0 and M1 done the same day.
 
 ## Session and account
 
@@ -38,7 +38,7 @@ Last survey: 2026-10-08. M0 done the same day.
 |---|---|---|---|---|
 | Enter a room, walk, turn | `BP_PLAYER`, `BP_REQ_MOVE`, `BP_REQ_TURN` | Done | Done | — |
 | Doors ("go") and edge exits | `BP_REQ_GO` | Done | Done | — |
-| Every room in the world | `.roo` | Partial: 13 demo rooms; any other room "stays put" | Done: 362 rooms parsed at runtime | M1, W2 |
+| Every room in the world | `.roo` | Done: 13 built rooms; any other room is built at runtime from the server's files | Done: 362 rooms parsed at runtime | M1, W2 |
 | Server room changes: lifts, doors, texture swaps | `BP_SECTOR_MOVE`, `BP_WALL_ANIMATE`, `BP_CHANGE_TEXTURE`, ... | Missing | Missing | M7 |
 | Scrolling and animated textures | from the `.roo` | Missing | Done | M7 |
 | Sky and background overlays (sun, moon) | `BP_BACKGROUND`, `BP_*_BG_OVERLAY` | Missing: our own sky | Done | M1, M7 |
@@ -52,7 +52,7 @@ Last survey: 2026-10-08. M0 done the same day.
 |---|---|---|---|---|
 | Creatures as sprites (players, monsters, NPCs) | `BP_ROOM_CONTENTS`, `BP_CREATE`, `BP_MOVE`, ... | Done, for converted sprites | Done | — |
 | Items, containers, signs and ornaments | the same | Missing: only creatures are spawned | Done | M2 |
-| Sprites we haven't converted | `.bgf` | Missing: not drawn | Done | M1 |
+| Sprites we haven't converted | `.bgf` | Done: drawn from the server's bitmap (no overlays or colours yet) | Done | M1 |
 | Draw effects, name colours, object lights | object fields | Partial: read into the world model (M0), not drawn yet | Done | M2 |
 | Name plates | — | Missing | Done | M2 |
 | Armour, weapons and hats on players | overlays | Partial: face, hair and colours only | Done | M2 |
@@ -152,7 +152,7 @@ Last survey: 2026-10-08. M0 done the same day.
 |---|---|---|
 | Authored | 13 (Raza and around, RIDs 300–308, 330–333) | the zone-environment skill |
 | Baked | 0 | W2: every room, built automatically from the blockout |
-| Runtime | 0 | M1: any room the server sends that isn't built |
+| Runtime | every other room (about 380) | M1: built when entered, from the server's `.roo` and textures |
 
 The server serves about 395 rooms. `ReferenceServers/Server-104/resource/rooms` has 362 of them; the Server 104 client folder has 378.
 
@@ -161,7 +161,7 @@ The server serves about 395 rooms. `ReferenceServers/Server-104/resource/rooms` 
 | M | Name |
 |---|---|
 | M0 | Foundations: client world model, session robustness, asset cache, Escape menu (done 2026-10-08) |
-| M1 | Whole-world travel: runtime rooms and runtime sprites |
+| M1 | Whole-world travel: runtime rooms and runtime sprites (done 2026-10-08) |
 | M2 | See and select everything: all objects, name plates, targeting, Look, equipment overlays |
 | M3 | Inventory and items |
 | M4 | Combat, death and effects |

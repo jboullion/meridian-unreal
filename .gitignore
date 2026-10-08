@@ -6,6 +6,8 @@
 # Generated, reproducible build outputs: extracted reference art, blockout meshes, previews.
 # Regenerate with tools/setup.ps1. Original game art must never be committed.
 /build/
+# the original palette, for runtime BGF decoding (tools/bgf2png/bgf2png.py --palette)
+/data/runtime/
 
 # --- Secrets
 .env

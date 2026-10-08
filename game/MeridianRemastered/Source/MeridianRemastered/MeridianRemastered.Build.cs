@@ -31,7 +31,9 @@ public class MeridianRemastered : ModuleRules
 			"RenderCore",
 			"AudioMixer",
 			"WebSockets",
-			"HTTP"
+			"HTTP",
+			"ProceduralMeshComponent",
+			"PhysicsCore"
 		});
 
 		PublicIncludePaths.Add(ModuleDirectory);

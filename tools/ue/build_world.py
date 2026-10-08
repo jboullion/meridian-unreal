@@ -65,7 +65,7 @@ import chimneys  # noqa: E402
 import fires  # noqa: E402
 import scatter  # noqa: E402
 from build_cache import file_digest, source  # noqa: E402
-from environment_materials import ENV as ENVIRONMENT_DIR, ZoneMaterials, ai_prop_material, assign_materials, tree_materials  # noqa: E402
+from environment_materials import ENV as ENVIRONMENT_DIR, ZoneMaterials, ai_prop_material, assign_materials, build_runtime_room_material, tree_materials  # noqa: E402
 from zone_mood import MOODS, apply_level_mood  # noqa: E402
 
 LAYOUT = os.path.join(REPO, "data", "zone_layout.json")
@@ -1055,6 +1055,7 @@ def main(args):
         # chimney smoke and moths (phase 5); the ambient particles reuse SM_Precip
         import_kit_mesh("SM_Puffs", materials, {"puffs": materials.atmosphere["smoke"]})
     build_audio.build_audio()  # the original's sounds (docs/adr/0006)
+    build_runtime_room_material()  # rooms built at runtime from the server's files (docs/adr/0012)
 
     zone_levels, bad = [], 0
     try:

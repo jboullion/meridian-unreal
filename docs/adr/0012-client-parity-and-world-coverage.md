@@ -59,13 +59,13 @@ So when a server changes a room, players still get a correct room, just not the 
   - lowered wading floors and depth areas;
   - geometry grouped by sector, so server room changes (§5) can move it.
 - **The room actor** (`AMRRuntimeRoom`):
-  - a `UDynamicMeshComponent`, with `GeometryFramework` added to `Build.cs`;
+  - two `UProceduralMeshComponent`s (the `ProceduralMeshComponent` plugin): one section per texture to draw, and a hidden collision mesh;
   - complex collision on `ECC_WorldStatic`, so `TraceFloor`, the capsule and step-up work as they do now;
-  - its material does a palette lookup with nearest filtering, makes index 254 transparent, and multiplies the original light by the sector light.
+  - its material (`/Game/Generated/Runtime/M_RuntimeRoom`) is unlit: the texture, made at runtime from the BGF through the palette with nearest filtering and index 254 cut out, times the sector light.
 - **Zone hookup:**
-  - `UMRZoneSubsystem::RegisterRuntimeZone` gives the room a reserved origin outside the baked grid;
+  - `UMRZoneSubsystem::AddRuntimeZone` adds the room as a zone with an origin in a row of slots 16 km north of the built zones;
   - the "staying put" branch becomes: download, build, then place the pawn, with a loading overlay meanwhile;
-  - the last 3 rooms stay in memory, and neighbouring rooms (from `data/net/room_links.json`) are prefetched.
+  - the last 3 rooms stay built, and neighbouring rooms (from `data/net/rooms.json`) are prefetched.
 - **Runtime sprites.** A creature or item with no pre-imported atlas gets its frames from the same BGF reader. It is drawn with the original look instead of not at all.
 
 ### 3. The asset cache
@@ -168,7 +168,7 @@ The existing movement, UI-shot and look-dev runs stay green. Look-dev compares r
 - A test against the local server got no reply in 60 s.
 - A broken stream, or a `BP_RESYNC` from the server, ends the session. Details: [blakserv-protocol.md](../research/blakserv-protocol.md), "Session".
 
-**Verification (local Shards stack):**
+**Verification (local Shards stack), M0:**
 - All 18 `Meridian.*` automation tests pass, including the new `Meridian.Net.World`: round-trips of `BP_PLAYER`, room objects, `BP_CHANGE`, players, the room security value and the manifest hash.
 - `run_net_test.ps1` reports **DONE 10/10**; with `-Create`, 11/11. The new steps:
   - our zone is built from the server's room (its security value);
@@ -178,6 +178,54 @@ The existing movement, UI-shot and look-dev runs stay green. Look-dev compares r
   - Log Off returns to the character list and the character enters again.
 - `run_move_test.ps1` reports 8/8.
 - UI shots `build/ui/shots/m0/` (`18_game_menu.png`); online shots `Saved/Screenshots/MRNet/online_4.png` (the online inventory) and `online_5.png` (the menu with Log Off).
+
+### M1, whole-world travel (2026-10-08)
+**What landed:**
+- **Format notes:** [roo-format.md](../research/roo-format.md) and [bgf-format.md](../research/bgf-format.md), from reading `clientd3d`.
+- **`World/MRRooFile`, `World/MRBgf`:** clean readers of rooms and bitmaps. `MRBgf` also makes a transient texture of a bitmap through the palette.
+- **The palette:** the original client compiles it in and no server serves one. `tools/bgf2png/bgf2png.py --palette` writes `data/runtime/palette.bin` (git-ignored; `tools/setup.ps1` runs it, and `package.ps1` copies `data/`).
+- **`World/MRRoomMesh`:** the C++ port of our own `roo2gltf` meshing.
+  - Same triangles, in the same order. The only difference is the winding: the switch from glTF's axes to UE's is a mirror, so faces are flipped to keep floors facing up, as UE's glTF import does for the built zones.
+  - Its sector lookup uses a grid instead of scanning every leaf. All 362 reference rooms build in 1 s, against about 5½ minutes in Python.
+- **`World/MRRuntimeRoom`, `World/MRRuntimeRooms`:**
+  - the actor, and the subsystem that fetches the `.roo` and its `grdNNNNN.bgf` files through the asset cache, builds them, registers the zone, keeps the last three rooms and prefetches the neighbours.
+  - A runtime zone's RID is 100000 + the room's Kod RID (`data/net/rooms.json`, a new output of `tools/kod_extract/extract.py`: all 429 Kod rooms with their exits' targets).
+  - The material comes from `environment_materials.build_runtime_room_material`, built by `build_world.ps1`; `/Game/Generated/Runtime` is in `DirectoriesToAlwaysCook`.
+- **`UMRNetWorldSubsystem`:**
+  - a room we haven't built, or whose security value differs from the one ours was built from, becomes a runtime room;
+  - the pawn is frozen and the HUD says "Loading <room>..." until it's ready.
+- **`World/MRBgfSpriteComponent`:** a creature with no sprite of ours is drawn from the server's own bitmap.
+  - It is an upright quad turned to the camera, showing the bitmap for its group (the server's animation records, standing and moving) at the view slot the original would pick, its feet where the original puts them.
+  - Before, such creatures weren't drawn at all.
+
+**Changed from the plan:**
+- `ProceduralMeshComponent` instead of `UDynamicMeshComponent`: it has sections and cooked complex collision built in.
+- The sky (`.bsf`, `BP_BACKGROUND`) moves to M7: runtime rooms show our sky meanwhile.
+- `room_links.json` became `rooms.json`, which also names each room.
+
+**Found on the way:** an edge exit needs a move into a sector past the room's box ([blakserv-protocol.md](../research/blakserv-protocol.md), "In the game").
+
+**Verification (local Shards stack):**
+- `Meridian.World.Rooms`:
+  - the C++ meshes of all 13 built zones equal `roo2gltf`'s `.glb` files triangle for triangle, render and collision;
+  - every room's security value and grid size equal `zone_layout.json`'s;
+  - all 362 reference rooms parse and build.
+- `Meridian.World.Bgf`: 150 textures decode to `bgf2png`'s sizes, shrink and transparency, and the palette loads.
+- All 20 `Meridian.*` automation tests pass.
+- `run_net_test.ps1` reports **DONE 15/15** (16/16 with `-Create`). The new travel step:
+  - walks from wherever the character is through our zones to Farol West, then off its east edge;
+  - the Forest of Farol (`c6.roo`, Kod RID 536) is built from the server's files in about 0.03 s as zone 100536;
+  - the pawn stands on its floor, every creature there is drawn (spiders and living trees, from their bitmaps), chat works;
+  - walking off its west edge comes back to Farol West.
+- `run_move_test.ps1` reports 8/8 (one run of four gave 7/8: a flaky step not touched by M1). UI shots `build/ui/shots/m1/` are unchanged.
+- Pictures (`run_net_test.ps1 -Render`): `Saved/Screenshots/MRNet/runtime_room_0.png` (the forest) and `runtime_room_1.png` (a spider drawn from `spider.bgf`).
+
+**Not yet:**
+- the minimap of a runtime room (it says "no map"): M2;
+- scrolling and animated textures, server room changes, the sky: M7;
+- geometry grouped by sector (for moving lifts and doors, §5): the mesh is grouped by texture for now; M7 splits moving sectors out;
+- lighting beyond the sector light (sprites drawn from bitmaps are full bright): M7;
+- packaging with the new plugin and cook directory is untested (a package build takes over an hour).
 
 ## Alternatives considered
 

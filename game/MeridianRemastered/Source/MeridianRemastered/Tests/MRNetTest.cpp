@@ -20,6 +20,11 @@
 #include "Engine/LocalPlayer.h"
 #include "UnrealClient.h"
 #include "Zones/MRZoneSubsystem.h"
+#include "Components/CapsuleComponent.h"
+#include "Core/MRUnits.h"
+#include "GameFramework/Character.h"
+#include "World/MRRuntimeRoom.h"
+#include "World/MRRuntimeRooms.h"
 
 namespace
 {
@@ -217,7 +222,205 @@ bool UMRNetTest::TakeExit()
 			return true;
 		}
 	}
+	// no door to another zone of ours (the Outskirts have none): walk off an edge instead
+	for (const FMREdgeExit& E : Zone->EdgeExits)
+	{
+		if (Zones->FindZone(E.DestRid) && StepOffEdge(static_cast<uint8>(E.Edge)))
+		{
+			return true;
+		}
+	}
 	return false;
+}
+
+bool UMRNetTest::StepOffEdge(uint8 Edge)
+{
+	APlayerController* PC = Controller.Get();
+	UMRNetWorldSubsystem* NetWorld = PC ? PC->GetWorld()->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
+	UMRZoneSubsystem* Zones = PC ? PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>() : nullptr;
+	APawn* Pawn = PC ? PC->GetPawn() : nullptr;
+	const FMRZoneInfo* Zone = Zones && NetWorld ? Zones->FindZone(NetWorld->GetRid()) : nullptr;
+	if (!Pawn || !Zone)
+	{
+		return false;
+	}
+	// just past the edge where there is floor: Kod takes an edge exit only for a move outside the room's
+	// box that still lands in one of its sectors (user.kod UserMove, room.kod SomethingMoved), as a road
+	// drawn past the edge. Search along the edge, nearest to where we stand first.
+	const FVector2D Size = Zone->GridSizeRoo;
+	const FVector2D Here = MRUnits::LocalToRoo(Pawn->GetActorLocation() - Zone->Origin);
+	const double Out = MRUnits::RooPerSquare / 4;
+	const bool bAcross = Edge == static_cast<uint8>(EMREdge::North) || Edge == static_cast<uint8>(EMREdge::South);
+	const double Along = bAcross ? Here.X : Here.Y;
+	const double Length = bAcross ? Size.X : Size.Y;
+	FVector At;
+	bool bFound = false;
+	for (double Offset = 0.0; Offset <= Length && !bFound; Offset += MRUnits::RooPerSquare / 2)
+	{
+		for (const double Sign : {1.0, -1.0})
+		{
+			const double A = FMath::Clamp(Along + Sign * Offset, 0.0, Length);
+			FVector2D Target;
+			switch (static_cast<EMREdge>(Edge))
+			{
+			case EMREdge::North: Target = FVector2D(A, -Out); break;
+			case EMREdge::South: Target = FVector2D(A, Size.Y + Out); break;
+			case EMREdge::East: Target = FVector2D(Size.X + Out, A); break;
+			default: Target = FVector2D(-Out, A); break;
+			}
+			FVector P = Zone->Origin + MRUnits::RooToLocal(Target) + FVector(0.0, 0.0, Pawn->GetActorLocation().Z - Zone->Origin.Z);
+			if (Zones->TraceFloor(P))
+			{
+				At = P + FVector(0.0, 0.0, Pawn->GetSimpleCollisionHalfHeight() + 2.0);
+				bFound = true;
+				break;
+			}
+		}
+	}
+	static const TCHAR* Names[] = {TEXT("north"), TEXT("south"), TEXT("east"), TEXT("west")};
+	if (!bFound)
+	{
+		UE_LOG(LogMeridian, Display, TEXT("MRNetTest: travel: no floor past the %s edge of zone %d"), Names[FMath::Min<int32>(Edge, 3)], Zone->Rid);
+		return false;
+	}
+	UE_LOG(LogMeridian, Display, TEXT("MRNetTest: travel: stepping off the %s edge of zone %d"), Names[FMath::Min<int32>(Edge, 3)], Zone->Rid);
+	return Pawn->TeleportTo(At, Pawn->GetActorRotation(), false, true);
+}
+
+bool UMRNetTest::HopToward(int32 TargetRid)
+{
+	APlayerController* PC = Controller.Get();
+	UMRNetWorldSubsystem* NetWorld = PC ? PC->GetWorld()->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
+	UMRZoneSubsystem* Zones = PC ? PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>() : nullptr;
+	APawn* Pawn = PC ? PC->GetPawn() : nullptr;
+	const int32 From = NetWorld ? NetWorld->GetRid() : 0;
+	if (!Pawn || !Zones || !Zones->FindZone(From))
+	{
+		return false;
+	}
+	// breadth first over our zones; remember each zone's first hop
+	TMap<int32, int32> FirstHop;
+	TArray<int32> Queue = {From};
+	FirstHop.Add(From, 0);
+	for (int32 i = 0; i < Queue.Num() && !FirstHop.Contains(TargetRid); ++i)
+	{
+		const FMRZoneInfo* Z = Zones->FindZone(Queue[i]);
+		TArray<int32> Next;
+		for (const FMRZoneExit& E : Z->Exits)
+		{
+			if (!E.bLocked)
+			{
+				Next.Add(E.DestRid);
+			}
+		}
+		for (const FMREdgeExit& E : Z->EdgeExits)
+		{
+			Next.Add(E.DestRid);
+		}
+		for (const int32 N : Next)
+		{
+			if (Zones->FindZone(N) && !FirstHop.Contains(N))
+			{
+				FirstHop.Add(N, i == 0 ? N : FirstHop[Queue[i]]);
+				Queue.Add(N);
+			}
+		}
+	}
+	const int32* Hop = FirstHop.Find(TargetRid);
+	if (!Hop || !*Hop)
+	{
+		return false;
+	}
+	const FMRZoneInfo* Z = Zones->FindZone(From);
+	for (const FMRZoneExit& E : Z->Exits)
+	{
+		if (!E.bLocked && E.DestRid == *Hop)
+		{
+			const FVector At = Zones->GridToWorld(From, E.Row, E.Col, true) + FVector(0.0, 0.0, Pawn->GetSimpleCollisionHalfHeight() + 2.0);
+			UE_LOG(LogMeridian, Display, TEXT("MRNetTest: travel: the exit (%d, %d) of zone %d toward %d"), E.Row, E.Col, From, *Hop);
+			Pawn->TeleportTo(At, Pawn->GetActorRotation(), false, true);
+			NetWorld->RequestGo();
+			return true;
+		}
+	}
+	for (const FMREdgeExit& E : Z->EdgeExits)
+	{
+		if (E.DestRid == *Hop)
+		{
+			return StepOffEdge(static_cast<uint8>(E.Edge));
+		}
+	}
+	return false;
+}
+
+void UMRNetTest::CheckRuntimeRoom()
+{
+	APlayerController* PC = Controller.Get();
+	UMRNetSubsystem* Net = NetOf(PC);
+	UMRNetWorldSubsystem* NetWorld = PC->GetWorld()->GetSubsystem<UMRNetWorldSubsystem>();
+	UMRZoneSubsystem* Zones = PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>();
+	UMRRuntimeRooms* Runtime = PC->GetWorld()->GetSubsystem<UMRRuntimeRooms>();
+	const FString Room = Net->GetPlayer().RoomFile;
+	const AMRRuntimeRoom* Actor = Runtime ? Runtime->FindRoomActor(Room) : nullptr;
+	if (Actor)
+	{
+		Pass(FString::Printf(TEXT("built %s (%s) from the server's files as zone %d"), *Room, *Net->GetPlayer().RoomName, NetWorld->GetRid()));
+	}
+	else
+	{
+		Fail(FString::Printf(TEXT("travel: %s has no runtime room"), *Room));
+	}
+	// standing on its floor: the capsule's bottom on the surface right under it (the pawn itself ignored)
+	const ACharacter* Char = Cast<ACharacter>(PC->GetPawn());
+	FHitResult Hit;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(MRNetTestFloor), true, Char);
+	const FVector At = Char ? Char->GetActorLocation() : FVector::ZeroVector;
+	const double Feet = Char ? At.Z - Char->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() : 0.0;
+	if (Char && PC->GetWorld()->LineTraceSingleByChannel(Hit, At, At - FVector(0, 0, 1000), ECC_WorldStatic, Params)
+		&& FMath::Abs(Feet - Hit.ImpactPoint.Z) < 10.0 && Hit.GetActor() == Actor)
+	{
+		const FMRNetObject* Self = Net->GetSelf();
+		Pass(FString::Printf(TEXT("the pawn stands on the runtime room's floor at (%d, %d), %.1f cm off"), Self ? Self->KodRow : 0,
+			Self ? Self->KodCol : 0, FMath::Abs(Feet - Hit.ImpactPoint.Z)));
+	}
+	else
+	{
+		Fail(FString::Printf(TEXT("travel: the pawn isn't on the runtime room's floor (feet %.0f, below it: %s at %.0f)"), Feet,
+			*GetNameSafe(Hit.GetActor()), Hit.ImpactPoint.Z));
+	}
+}
+
+void UMRNetTest::CheckCreaturesDrawn()
+{
+	APlayerController* PC = Controller.Get();
+	UMRNetSubsystem* Net = NetOf(PC);
+	UMRNetWorldSubsystem* NetWorld = PC->GetWorld()->GetSubsystem<UMRNetWorldSubsystem>();
+	// every creature in it is drawn: with a sprite of ours, or else from the server's bitmap
+	TArray<FString> Drawn, Missing;
+	for (const TPair<uint32, FMRNetObject>& Pair : Net->GetObjects())
+	{
+		if (Pair.Key == Net->GetPlayer().Id || !Pair.Value.IsCreature())
+		{
+			continue;
+		}
+		const AMRNetObject* A = NetWorld->FindActor(Pair.Key);
+		if (A && (!A->GetLook().IsNone() || A->GetBgfName().Len() > 0))
+		{
+			Drawn.Add(FString::Printf(TEXT("%s (%s)"), *Pair.Value.Name, A->GetLook().IsNone() ? *A->GetBgfName() : *A->GetLook().ToString()));
+		}
+		else
+		{
+			Missing.Add(FString::Printf(TEXT("%s (%s)"), *Pair.Value.Name, *Pair.Value.Icon));
+		}
+	}
+	if (Missing.IsEmpty())
+	{
+		Pass(FString::Printf(TEXT("every creature in the runtime room is drawn: %s"), Drawn.IsEmpty() ? TEXT("none there") : *FString::Join(Drawn, TEXT(", "))));
+	}
+	else
+	{
+		Fail(FString::Printf(TEXT("travel: creatures not drawn: %s"), *FString::Join(Missing, TEXT(", "))));
+	}
 }
 
 void UMRNetTest::Tick()
@@ -406,7 +609,7 @@ void UMRNetTest::Tick()
 			if (!TakeExit())
 			{
 				Fail(FString::Printf(TEXT("exit: zone %d has no exit to a zone we have"), NetWorld->GetRid()));
-				Advance(EStep::Logoff);
+				Advance(EStep::Assets);
 			}
 		}
 		else if (bAsked && NetWorld->GetRid() && NetWorld->GetRid() != StartRid)
@@ -487,15 +690,143 @@ void UMRNetTest::Tick()
 		{
 			Pass(FString::Printf(TEXT("reloaded the data: the room came back (%d objects, %d players) and \"%s\" was heard"), Net->GetObjects().Num(),
 				Net->GetUsers().Num(), *SayText));
-			Advance(EStep::Relog);
+			Advance(EStep::Travel);
 		}
 		else if (bTimedOut || Net->GetPhase() == EMRNetPhase::Offline)
 		{
 			Fail(FString::Printf(TEXT("reload: %s"), Net->GetPhase() == EMRNetPhase::Offline ? *Net->GetLastError()
 				: bSaid ? TEXT("our line never came back") : TEXT("the room never came back")));
-			Advance(Net->GetPhase() == EMRNetPhase::Offline ? EStep::Logoff : EStep::Relog);
+			Advance(Net->GetPhase() == EMRNetPhase::Offline ? EStep::Logoff : EStep::Travel);
 		}
 		break;
+
+	case EStep::Travel:
+	{
+		// our zones -> Farol West (331) -> off its east edge: the Forest of Farol, built at runtime
+		constexpr int32 FarolWest = 331;
+		const int32 Here = NetWorld->GetRid();
+		if (Net->GetPhase() == EMRNetPhase::Offline)
+		{
+			Fail(FString::Printf(TEXT("travel: %s"), *Net->GetLastError()));
+			Advance(EStep::Logoff);
+			break;
+		}
+		if (bTimedOut)
+		{
+			Fail(FString::Printf(TEXT("travel: stuck in zone %d (stage %d, loading \"%s\")"), Here, TravelStage, *NetWorld->GetLoadingRoom()));
+			Advance(EStep::Relog);
+			break;
+		}
+		if (HopFrom && (Here == HopFrom || Here == 0))
+		{
+			break;  // a hop under way (Here is 0 while a runtime room builds)
+		}
+		if (HopFrom)
+		{
+			HopFrom = 0;
+			StepStart = Now;  // each hop gets the full timeout
+		}
+		if (TravelStage == 0)
+		{
+			if (Here >= UMRRuntimeRooms::RuntimeRidBase)
+			{
+				RuntimeRid = Here;
+				CheckRuntimeRoom();
+				SayText = FString::Printf(TEXT("Hello from the forest %d"), FMath::RandRange(100, 999));
+				Net->Say(SayText);
+				TravelStage = 1;
+			}
+			else if (Here == FarolWest && Now - StepStart > 1.0)
+			{
+				HopFrom = Here;
+				StepOffEdge(static_cast<uint8>(EMREdge::East));
+			}
+			else if (Here && Here != FarolWest && Now - StepStart > 1.0)
+			{
+				HopFrom = Here;
+				if (!HopToward(FarolWest))
+				{
+					Fail(FString::Printf(TEXT("travel: no way from zone %d to Farol West"), Here));
+					Advance(EStep::Relog);
+				}
+			}
+		}
+		else if (TravelStage == 1 && Net->GetChat().ContainsByPredicate([this](const FMRChatLine& L) { return L.Text.Contains(SayText); }))
+		{
+			Pass(FString::Printf(TEXT("said \"%s\" in the runtime room and heard it back"), *SayText));
+			TravelStage = 2;
+			StageTime = Now;
+		}
+		else if (TravelStage >= 2 && TravelStage <= 5)
+		{
+			// rendering: a picture of the runtime room, a turn, another picture (each a moment apart: the
+			// capture is at the frame's end, so a turn in the same frame comes out motion-blurred)
+			const bool bRender = FApp::CanEverRender();
+			if (Now - StageTime < (TravelStage % 2 == 0 ? 1.5 : 0.5))
+			{
+				break;
+			}
+			if (bRender && TravelStage % 2 == 0)
+			{
+				const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"),
+					FString::Printf(TEXT("runtime_room_%d.png"), TravelStage / 2 - 1));
+				FScreenshotRequest::RequestScreenshot(File, true, false);
+				UE_LOG(LogMeridian, Display, TEXT("MRNetTest: screenshot %s"), *File);
+			}
+			else if (bRender && TravelStage == 3)
+			{
+				// face the nearest creature drawn from its own bitmap, else just turn round
+				const APawn* Me = PC->GetPawn();
+				const AMRNetObject* Nearest = nullptr;
+				for (TActorIterator<AMRNetObject> It(PC->GetWorld()); It && Me; ++It)
+				{
+					if (!It->GetBgfName().IsEmpty() && (!Nearest || FVector::Dist(It->GetActorLocation(), Me->GetActorLocation())
+						< FVector::Dist(Nearest->GetActorLocation(), Me->GetActorLocation())))
+					{
+						Nearest = *It;
+					}
+				}
+				if (Nearest)
+				{
+					// step to a few metres from it (a normal move: the server sees it), then look at it
+					APawn* Pawn = PC->GetPawn();
+					const FVector Dir = (Nearest->GetActorLocation() - Pawn->GetActorLocation()).GetSafeNormal2D();
+					FVector Near = Nearest->GetActorLocation() - Dir * 500.0;
+					if (UMRZoneSubsystem* Zones = PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>(); Zones && Zones->TraceFloor(Near))
+					{
+						Pawn->TeleportTo(Near + FVector(0.0, 0.0, Pawn->GetSimpleCollisionHalfHeight() + 2.0), Pawn->GetActorRotation(), false, true);
+					}
+				}
+				PC->SetControlRotation(Nearest && Me ? FRotator(-5.0, (Nearest->GetActorLocation() - Me->GetActorLocation()).Rotation().Yaw, 0.0)
+					: PC->GetControlRotation() + FRotator(0.0, 150.0, 0.0));
+				if (Nearest)
+				{
+					UE_LOG(LogMeridian, Display, TEXT("MRNetTest: looking at %s (%s), %.0f m away"), *Nearest->GetObjectName(), *Nearest->GetBgfName(),
+						FVector::Dist(Nearest->GetActorLocation(), Me->GetActorLocation()) / 100.0);
+				}
+			}
+			StageTime = Now;
+			if (++TravelStage == 6)
+			{
+				CheckCreaturesDrawn();  // (a moment after arriving: their bitmaps download first)
+				HopFrom = Here;
+				StepOffEdge(static_cast<uint8>(EMREdge::West));
+			}
+		}
+		else if (TravelStage == 6 && Here && Here != RuntimeRid)
+		{
+			if (Here == FarolWest)
+			{
+				Pass(FString::Printf(TEXT("walked off the runtime room's west edge back into Farol West (zone %d)"), Here));
+			}
+			else
+			{
+				Fail(FString::Printf(TEXT("travel: the west edge led to zone %d, not Farol West"), Here));
+			}
+			Advance(EStep::Relog);
+		}
+		break;
+	}
 
 	case EStep::Relog:
 		if (!bAsked)

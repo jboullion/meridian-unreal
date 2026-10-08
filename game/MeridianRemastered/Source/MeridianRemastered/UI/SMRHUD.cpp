@@ -4,6 +4,7 @@
 #include "Framework/Application/SlateApplication.h"
 #include "GameFramework/HUD.h"
 #include "GameFramework/PlayerController.h"
+#include "Net/MRNetWorldSubsystem.h"
 #include "Rendering/DrawElements.h"
 #include "UI/MRInventorySource.h"
 #include "UI/MRUIStyle.h"
@@ -475,11 +476,24 @@ void SMRHUDRoot::Rebuild()
 		[
 			SNew(SMRCursorStack, Ui)
 		]
+		// a room being built from the server's files (UMRRuntimeRooms): say so over the old one
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
+		[
+			MRUI::Label(Style, TAttribute<FText>::CreateLambda([this]() { return FText::FromString(LoadingText()); }), 14.f, true)
+		]
 		+ SOverlay::Slot()
 		[
 			GameMenu.ToSharedRef()
 		]
 	];
+}
+
+FString SMRHUDRoot::LoadingText() const
+{
+	const UMRUISubsystem* Ui = UI.Get();
+	const APlayerController* PC = Ui ? Ui->GetPlayerController() : nullptr;
+	const UMRNetWorldSubsystem* NetWorld = PC && PC->GetWorld() ? PC->GetWorld()->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
+	return NetWorld && !NetWorld->GetLoadingRoom().IsEmpty() ? FString::Printf(TEXT("Loading %s..."), *NetWorld->GetLoadingRoom()) : FString();
 }
 
 TSharedRef<SWidget> SMRHUDRoot::MakeHotbarArea()

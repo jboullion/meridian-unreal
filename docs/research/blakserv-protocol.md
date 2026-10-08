@@ -176,7 +176,8 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
 - **Moving the player** (the client's `move.c`):
   - `BP_REQ_MOVE` (100): `u16 row`, `u16 col`, `u8 speed` (walk 25, run 55), `u32 room object`. The original sends one about every 250 ms.
   - Moving off the room's edge is a request to leave; send it at most once a second, at walking speed.
-  - The server rejects only destinations outside the room's sectors, by sending `BP_MOVE` back.
+  - The server rejects only destinations outside the room's sectors, by sending `BP_MOVE` back (`user.kod UserMove`: `LIR_SECTOR_INSIDE`).
+  - **An edge exit** is a move that lands in a sector but outside the room's box: the `.roo`'s things box, the same rectangle as its width and height ([roo-format.md](roo-format.md)). `room.kod SomethingMoved` then takes the `LEAVE_*` exit on that side. Rooms with edge exits draw floor past the box there (a road, a forest's edge), and that's where to walk out. A point past the box with no floor under it is refused and the player snapped back (checked 2026-10-08: the Outskirts' north edge).
 - **Exits and turning:** stand on the exit square and send `BP_REQ_GO` (102). Turning is `BP_REQ_TURN` (101): `u32 own id`, `u16 angle`.
 - **Chat:**
   - Send `BP_SAY_TO` (110): `u8 type` (`SAY_*`), `string text`.

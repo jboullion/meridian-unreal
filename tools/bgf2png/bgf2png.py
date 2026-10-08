@@ -5,6 +5,7 @@ Decode Meridian 59 .bgf sprite/texture files (BGF v10) to PNG.
     python tools/bgf2png/bgf2png.py --textures 9592 1022    # wall/floor textures -> build/textures/grdNNNNN.png
     python tools/bgf2png/bgf2png.py --textures-for-zones    # every texture the demo .roo files use
     python tools/bgf2png/bgf2png.py --list cow              # print header / groups only
+    python tools/bgf2png/bgf2png.py --palette               # data/runtime/palette.bin (runtime rooms)
 
 Output for a sprite:
     build/bgf/<name>/frame_NN.png   every bitmap, RGBA (palette index 254 = transparent)
@@ -49,6 +50,17 @@ CLIENT_RES = [Path(r"C:\Users\jboul\AppData\Local\Meridian-104\resource"),
               Path(r"H:\Steam\steamapps\common\Meridian 59\resource")]
 PALETTE_FILE = SERVER104 / "blakston.pal"
 TRANSPARENT = 254
+
+
+PALETTE_BIN = ROOT / "data" / "runtime" / "palette.bin"
+
+
+def write_palette_bin(pal) -> Path:
+    """The palette as 768 bytes of RGB, for the game's runtime BGF decoding (World/MRBgf; the original
+    client compiles its palette in, so no server serves one). Git-ignored: original game data."""
+    PALETTE_BIN.parent.mkdir(parents=True, exist_ok=True)
+    PALETTE_BIN.write_bytes(bytes(v for rgb in pal for v in rgb))
+    return PALETTE_BIN
 
 
 def load_palette() -> list[tuple[int, int, int]]:
@@ -210,8 +222,11 @@ def main():
     ap.add_argument("--textures", nargs="*", type=int)
     ap.add_argument("--textures-for-zones", action="store_true")
     ap.add_argument("--list", action="store_true")
+    ap.add_argument("--palette", action="store_true", help="write data/runtime/palette.bin")
     a = ap.parse_args()
     pal = load_palette()
+    if a.palette:
+        print(f"wrote {write_palette_bin(pal)}")
 
     for n in a.names:
         f = find_file(a.res, n)

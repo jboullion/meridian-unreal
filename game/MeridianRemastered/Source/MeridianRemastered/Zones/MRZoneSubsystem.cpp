@@ -404,6 +404,32 @@ bool UMRZoneSubsystem::LoadData()
 	return Zones.Num() > 0;
 }
 
+void UMRZoneSubsystem::AddRuntimeZone(const FMRZoneInfo& Info, const TArray<FMRDepthArea>& LocalDepthAreas)
+{
+	RemoveRuntimeZone(Info.Rid);
+	Zones.Add(Info.Rid, Info);
+	const FVector2D Origin(Info.Origin);
+	for (const FMRDepthArea& Local : LocalDepthAreas)
+	{
+		FMRDepthArea& A = DepthAreas.Add_GetRef(Local);
+		A.RuntimeRid = Info.Rid;
+		A.Bounds = FBox2D(ForceInit);
+		for (FVector2D& P : A.Points)
+		{
+			P += Origin;
+			A.Bounds += P;
+		}
+	}
+}
+
+void UMRZoneSubsystem::RemoveRuntimeZone(int32 Rid)
+{
+	if (Zones.Remove(Rid) > 0)
+	{
+		DepthAreas.RemoveAll([Rid](const FMRDepthArea& A) { return A.RuntimeRid == Rid; });
+	}
+}
+
 FVector UMRZoneSubsystem::GridToWorld(int32 Rid, int32 Row, int32 Col, bool bTraceFloor) const
 {
 	const FMRZoneInfo* Z = Zones.Find(Rid);

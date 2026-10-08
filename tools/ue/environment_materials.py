@@ -112,6 +112,47 @@ def _instance(name, parent, textures=None, scalars=None, vectors=None):
     return cache.get_or_build(path, key, "instances", build)
 
 
+RUNTIME_DIR = "/Game/Generated/Runtime"   # loaded by path at runtime (cooked: DefaultGame.ini DirectoriesToAlwaysCook)
+
+
+def build_runtime_room_material():
+    """/Game/Generated/Runtime/M_RuntimeRoom: rooms the game builds from the server's .roo files
+    (AMRRuntimeRoom, docs/adr/0012). The original's look: unlit, its texture (a transient texture
+    the game makes from the BGF through the palette, parameter "Tex") times the sector light it
+    carries as vertex colour; palette index 254 is cut out (masked); two-sided, like its walls."""
+    name, path = "M_RuntimeRoom", RUNTIME_DIR + "/M_RuntimeRoom"
+
+    def build():
+        if eal.does_asset_exist(path):
+            mat = eal.load_asset(path)
+            mel.delete_all_material_expressions(mat)
+        else:
+            mat = asset_tools.create_asset(name, RUNTIME_DIR, unreal.Material, unreal.MaterialFactoryNew())
+        mat.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+        mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+        mat.set_editor_property("two_sided", True)
+        tex = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -700, 0, parameter_name="Tex",
+                    sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR,
+                    texture=eal.load_asset("/Engine/EngineResources/DefaultTexture"))
+        vcol = _expr(mat, unreal.MaterialExpressionVertexColor, -700, 300)
+        bright = _expr(mat, unreal.MaterialExpressionScalarParameter, -700, 450, parameter_name="Brightness", default_value=1.0)
+        lit = _expr(mat, unreal.MaterialExpressionMultiply, -400, 100)
+        mel.connect_material_expressions(tex, "RGB", lit, "A")
+        mel.connect_material_expressions(vcol, "R", lit, "B")
+        out = _expr(mat, unreal.MaterialExpressionMultiply, -200, 150)
+        mel.connect_material_expressions(lit, "", out, "A")
+        mel.connect_material_expressions(bright, "", out, "B")
+        mel.connect_material_property(out, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+        mel.connect_material_property(tex, "A", unreal.MaterialProperty.MP_OPACITY_MASK)
+        mel.recompile_material(mat)
+        eal.save_loaded_asset(mat)
+        log("built " + path)
+
+    cache = build_cache.CACHE
+    key = cache.key(build_cache.source(build_runtime_room_material, _expr))
+    return cache.get_or_build(path, key, "masters", build)
+
+
 MPC_NAME = "MPC_Environment"
 # scalars in MPC_Environment: moods set them (moods.json "Collection"; tools/ue/zone_mood.py in the
 # editor, UMREnvironmentSubsystem in game), the game clock writes GameHour, the director LampsOn

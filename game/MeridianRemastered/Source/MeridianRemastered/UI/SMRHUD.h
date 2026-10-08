@@ -220,5 +220,7 @@ private:
 	TSharedRef<SWidget> MakeHotbarArea();
 	TSharedRef<SWidget> MakeSpellBar();
 	bool IsSpellBarHovered() const;
+	/** "Loading <room>..." while a room is built from the server's files, else empty. */
+	FString LoadingText() const;
 	EVisibility GetHUDVisibility() const;
 };

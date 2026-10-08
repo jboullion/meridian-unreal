@@ -134,13 +134,13 @@ WASD + mouse (running at the original's 12.9 m/s; `mr.Move.SpeedScale` scales ev
 
 ## Testing and verification
 
-- **Online smoke test** (~1 min; needs the Shards dev stack, `npm run dev` in meridian-browser): a headless game logs in to the local server, enters a zone (checking it's built from the server's room), chats, takes an exit, fetches the room through the asset cache, finds itself in the players list, reloads its data, logs off to the character list and back in, and logs off (`MRNetTest: DONE 10/10`). Run it after touching `Source/.../Net/`, the login screen, zones or spawning. `-Render -Hold 40` stays in a game window with screenshots (`Saved/Screenshots/MRNet/`: the character page, the world, the dialog), for a look from the Shards client. Protocol unit tests: `-ExecCmds="Automation RunTests Meridian.Net;Quit"`.
+- **Online smoke test** (~1 min; needs the Shards dev stack, `npm run dev` in meridian-browser): a headless game logs in to the local server, enters a zone (checking it's built from the server's room), chats, takes an exit, fetches the room through the asset cache, finds itself in the players list, reloads its data, travels through our zones and off Farol West's east edge into a room built at runtime (`c6.roo`) and back, logs off to the character list and back in, and logs off (`MRNetTest: DONE 15/15`). `-Render` also writes `runtime_room_0/1.png`. Run it after touching `Source/.../Net/`, the login screen, zones or spawning. `-Render -Hold 40` stays in a game window with screenshots (`Saved/Screenshots/MRNet/`: the character page, the world, the dialog), for a look from the Shards client. Protocol unit tests: `-ExecCmds="Automation RunTests Meridian.Net;Quit"`; runtime rooms: `Meridian.World` (the C++ meshes against `roo2gltf`'s, every reference room, BGF decoding).
 
   ```bash
   powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_net_test.ps1
   ```
 
-  `-Create` uses a fresh account and makes its character through the creator's path (`DONE 11/11`, including "the server shows the new character's chosen face"). Run it after touching `Net/MRCharInfo`, the creator or `Net/MRNetLook`.
+  `-Create` uses a fresh account and makes its character through the creator's path (`DONE 16/16`, including "the server shows the new character's chosen face"). Run it after touching `Net/MRCharInfo`, the creator or `Net/MRNetLook`.
 
 - **Legacy network smoke test** (~2 min; starts a UE dedicated server and a headless client, walks the demo's exits, exits 0 on success). Run it after touching zones, streaming, spawning or replication while the UE-server path still exists:
 
@@ -191,7 +191,8 @@ WASD + mouse (running at the original's 12.9 m/s; `mr.Move.SpeedScale` scales ev
 | `Environment/MRScatterActor` | Instanced grass placed by the world build |
 | `Audio/MRAudioSubsystem` | The original's music, room loops and ambient sounds per zone |
 | `Monsters/` | `AMRMonster` (sprite body, stand-in AI) and `UMRMonsterSubsystem` (spawns from the zone data) |
-| `Tests/` | `MRNetTest` (online), `MRNetTests` and `MRCharInfoTests` (protocol and creation unit tests), `MRZoneSmokeTest`, `MRMoveTest`, `MRScreenshotTour`, `MRProfileTour`, `MRLookDevTour`, `MRSpriteNetTest`, `MRSpriteClipTour`, `MRMonsterTour`, `MRUIShots`, `MRMapCapture` |
+| `World/` | Rooms built at runtime from the server's files (ADR 0012): `MRRooFile` (.roo reader), `MRBgf` (.bgf reader, palette, transient textures), `MRRoomMesh` (the port of `roo2gltf`'s meshing), `AMRRuntimeRoom` (the room: draw and collision meshes), `UMRRuntimeRooms` (fetch, build, keep, prefetch; zone RIDs 100000 + Kod RID), `UMRBgfSpriteComponent` (a creature drawn from its own bitmap) |
+| `Tests/` | `MRNetTest` (online), `MRNetTests` and `MRCharInfoTests` (protocol and creation unit tests), `MRWorldTests` (runtime rooms), `MRZoneSmokeTest`, `MRMoveTest`, `MRScreenshotTour`, `MRProfileTour`, `MRLookDevTour`, `MRSpriteNetTest`, `MRSpriteClipTour`, `MRMonsterTour`, `MRUIShots`, `MRMapCapture` |
 
 ## Zones and streaming
 
@@ -204,9 +205,9 @@ WASD + mouse (running at the original's 12.9 m/s; `mr.Move.SpeedScale` scales ev
 
 ## Tools reference
 
-- `tools/kod_extract/` — `kodparse.py` (case-insensitive Kod reader with inheritance) and `extract.py` (zones, monsters, NPCs and shops, spells, skills, items, constants, and `charinfo.json`: what the character creator offers). Demo zones are `DEMO_RIDS`.
+- `tools/kod_extract/` — `kodparse.py` (case-insensitive Kod reader with inheritance) and `extract.py` (zones, monsters, NPCs and shops, spells, skills, items, constants, and `charinfo.json`: what the character creator offers; `net/rooms.json`: every Kod room, its `.roo` and exit targets, for runtime rooms). Demo zones are `DEMO_RIDS`.
 - `tools/roo2gltf/roo2gltf.py` — `.roo` to glTF blockouts (BSP floors/ceilings, Doom-style walls, slopes, the original client's UV rules) plus world positions of exits, objects, spawns and wading areas, and a collision blockout without the walls the original lets you walk through (`<rid>_<class>_collision.glb`). `--walls-only` writes just the minimap's wall lines (`build/zones/<rid>_<class>_walls.json`).
-- `tools/bgf2png/bgf2png.py` — BGF v10 decoder: sprite contact sheets, un-rotated textures, size catalog.
+- `tools/bgf2png/bgf2png.py` — BGF v10 decoder: sprite contact sheets, un-rotated textures, size catalog; `--palette` writes `data/runtime/palette.bin` (git-ignored) for runtime rooms.
 - `tools/blender/` — `render_glb.py` (previews), `prop_glb.py` (AI prop previews and normalising), `build_zone_art.py` + `zone_detail.py` + `zone_grime.py` (rebuilt buildings; `art_src/environment/zones/<rid>/<Building>.blend` overrides, `--seed-override`), `build_grass_kit.py`, `build_tree_kit.py` (procedural trees, ADR 0007 "Trees"), `build_prop_kit.py` (rain and smoke quads), `check_overlaps.py`.
 - `tools/environment/` — pure-Python helpers: `blockout.py`, `facades.py` (opening review sheet), `scatter.py`, `shelter.py`, `fires.py`, `chimneys.py`.
 - `tools/textures/` — `make_placeholders.py` (upscale with `4xTextures_GTAV_rgt-s_dither`, Real-ESRGAN fallback; Marigold or rule-based normals; incremental), `make_tree_textures.py` (leaf atlas and bark from a tree sprite), `ai_maps.py` (runs in `build/texai/.venv`), `upscale.py`, `setup_ai.ps1`.
@@ -229,7 +230,8 @@ Full commands, flags and caches for the environment tools: [zone-environment/ref
 - Packaging a standalone dedicated server needs a source-built engine; until then use PIE's dedicated-server mode.
 - **Online, the rsb:** the client needs *the server's* `rsc0000.rsb` (downloaded from its `assets` URL into `Saved/MRNet/<server>/`): the security redbook and every name come from it. A wrong one shows as "the first message after each echo ping decodes, the next is garbage".
 - **Online, the security word:** every game message sent steps the security streams; never drop or reorder one after `FMRConnection::Send`. One wrong security word and blakserv hangs up.
-- **Online, missing content:** a server room with no zone of ours (outside the demo RIDs) leaves the player where they were, with a warning (Esc, Log Off gets out); a creature without a converted sprite isn't drawn. M1 of ADR 0012 builds such rooms at runtime.
+- **Online, rooms we haven't built:** built at runtime from the server's files (`UMRRuntimeRooms`). They need `data/runtime/palette.bin` (`bgf2png.py --palette`) and `/Game/Generated/Runtime/M_RuntimeRoom` (`build_world.ps1`). A creature without a converted sprite is drawn from its own bitmap.
+- **Online, edge exits:** the server takes one only for a move into a sector past the room's box; a step into the void is snapped back (`docs/research/blakserv-protocol.md`).
 - **Online, no resync:** blakserv's game-mode resync can't complete (a signed-char compare), so a broken stream ends the session. Never send `BP_RESYNC`.
 - **Online, local Vite:** the local Vite server listens on `[::1]:5173` only; use `localhost`, not `127.0.0.1`, in `data/net/servers.json`.
 

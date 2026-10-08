@@ -9,6 +9,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Misc/App.h"
 #include "Character/MRCharacterMovementComponent.h"
+#include "Net/MRNetWorld.h"
+#include "World/MRBgf.h"
+#include "World/MRBgfSpriteComponent.h"
 
 namespace
 {
@@ -76,6 +79,32 @@ void AMRNetObject::SetAppearance(const FMRSpriteAppearance& A)
 	}
 }
 
+void AMRNetObject::SetBgfSprite(const FString& InBgfName, TSharedPtr<const FMRBgf> Bgf)
+{
+	BgfName = InBgfName;
+	if (!FApp::CanEverRender())
+	{
+		return;
+	}
+	if (!BgfSprite)
+	{
+		BgfSprite = NewObject<UMRBgfSpriteComponent>(this, TEXT("BgfSprite"));
+		BgfSprite->SetupAttachment(GetCapsuleComponent());
+		// the feet on the floor: the capsule's bottom
+		BgfSprite->SetRelativeLocation(FVector(0.0, 0.0, -GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight()));
+		BgfSprite->RegisterComponent();
+	}
+	BgfSprite->SetBgf(Bgf);
+}
+
+void AMRNetObject::SetServerAnimation(const FMRNetAnimation& Standing, const FMRNetAnimation& Moving)
+{
+	if (BgfSprite)
+	{
+		BgfSprite->SetAnimation(Standing, Moving);
+	}
+}
+
 void AMRNetObject::Place(const FVector& World, int32 KodAngle)
 {
 	const FVector At = World + FVector(0.0, 0.0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 2.0);
@@ -115,6 +144,10 @@ void AMRNetObject::TurnTo(int32 KodAngle)
 void AMRNetObject::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (BgfSprite)
+	{
+		BgfSprite->SetMoving(bHasTarget);
+	}
 	if (!bHasTarget)
 	{
 		return;
