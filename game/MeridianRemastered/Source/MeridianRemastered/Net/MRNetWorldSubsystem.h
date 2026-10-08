@@ -44,6 +44,28 @@ public:
 	bool DoesRoomMatchServer() const { return bRoomMatchesServer; }
 	/** A room is being built from the server's files (UMRRuntimeRooms): its name, else empty. */
 	const FString& GetLoadingRoom() const { return LoadingRoom; }
+
+	// --- targets (docs/adr/0012 M2; the original's gameuser.c UserTargetNextOrPrevious, SetUserTargetID)
+	/** The chosen target (0: none). Our own id when targeting ourselves. */
+	uint32 GetTargetId() const { return TargetId; }
+	/** What the crosshair is on (0: nothing): the object nearest the middle of the view, in reach and in sight. */
+	uint32 GetAimId() const { return AimId; }
+	void SetTarget(uint32 Id);
+	void ClearTarget() { SetTarget(0); }
+	/** The original's next / previous target: the attackable objects in view, left to right. */
+	void TargetNextOrPrevious(bool bNext);
+	void TargetSelf();
+	/** Take what the crosshair is on as the target (or clear it when it's on nothing). */
+	void TargetAim();
+	/** Look (BP_REQ_LOOK) at the target, else at what the crosshair is on. False: nothing to look at. */
+	bool LookAtTarget();
+	/** Every object at the crosshair, nearest the middle first (the Look picker when there are several). */
+	TArray<uint32> ObjectsAtAim() const { return AimStack; }
+	/** Every object actor here (the name plates and the minimap draw them). */
+	const TMap<uint32, TWeakObjectPtr<AMRNetObject>>& GetActors() const { return Actors; }
+	/** How far names show and the crosshair reaches: the original's 15 squares (object3d.h MAX_NAME_DISTANCE). */
+	static double NameDistanceCm();
+	FSimpleMulticastDelegate OnTargetChanged;
 	/** The creature actor for a server object, if any. */
 	AMRNetObject* FindActor(uint32 Id) const;
 	/** The look a server object is drawn with (None: not drawn). */
@@ -74,6 +96,10 @@ private:
 	void OnObjectRemoved(uint32 Id);
 
 	void SpawnObject(const FMRNetObject& Object);
+	/** The world build's visible props here (built zones: the server's lamps, signs, tables as meshes). */
+	void GatherProps();
+	/** A prop standing on this floor point's square, and its top. */
+	bool FindPropAt(const FVector& Floor, double& OutTop) const;
 	/** An object with no sprite of ours gets the server's bitmap (fetched through the asset cache, parsed once). */
 	void AttachBgfSprite(AMRNetObject* Actor, const FMRNetObject& Object);
 	void ClearObjects();
@@ -83,11 +109,17 @@ private:
 	void ApplySelfLook();
 	void ShowBackdrop();
 	void SendMovement(double Now);
+	void UpdateAim();
+	/** In view of the camera and not behind a wall: where (in pixels) and how far. */
+	bool IsInSight(const AMRNetObject* A, FVector2D& OutScreen, double& OutDistance) const;
 
 	bool bActive = false;
 	int32 Rid = 0;
 	bool bRoomMatchesServer = true;
 	FString LoadingRoom;
+	uint32 TargetId = 0;
+	uint32 AimId = 0;
+	TArray<uint32> AimStack;
 	/** Bumped per room: a runtime room finishing after the server moved us on is ignored. */
 	int32 RoomTicket = 0;
 	TMap<uint32, TWeakObjectPtr<AMRNetObject>> Actors;
@@ -101,4 +133,5 @@ private:
 	mutable TMap<FString, FName> LookByBgf;
 	/** Parsed bitmaps of objects drawn from the server's files, by file name (lower case). */
 	TMap<FString, TSharedPtr<const FMRBgf>> Bgfs;
+	TArray<TWeakObjectPtr<AActor>> Props;
 };

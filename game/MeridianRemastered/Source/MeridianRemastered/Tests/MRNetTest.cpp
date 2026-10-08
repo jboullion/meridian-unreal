@@ -11,6 +11,8 @@
 #include "Misc/Paths.h"
 #include "Net/MRAssetCache.h"
 #include "Net/MRCharInfo.h"
+#include "Net/MRProtocol.h"
+#include "Net/MRResources.h"
 #include "Net/MRNetWorld.h"
 #include "Net/MRNetObject.h"
 #include "Net/MRNetSubsystem.h"
@@ -78,6 +80,7 @@ void UMRNetTest::Start(APlayerController* InController)
 		return;
 	}
 	UE_LOG(LogMeridian, Display, TEXT("MRNetTest: logging in to %s as %s"), *Net->GetServers()[Server].Name, *User);
+	Net->OnDescription.AddWeakLambda(this, [this]() { ++Descriptions; });
 	Net->Connect(Server, User, Pass);
 	Step = EStep::Login;
 	StepStart = FPlatformTime::Seconds();
@@ -690,15 +693,196 @@ void UMRNetTest::Tick()
 		{
 			Pass(FString::Printf(TEXT("reloaded the data: the room came back (%d objects, %d players) and \"%s\" was heard"), Net->GetObjects().Num(),
 				Net->GetUsers().Num(), *SayText));
-			Advance(EStep::Travel);
+			Advance(EStep::Look);
 		}
 		else if (bTimedOut || Net->GetPhase() == EMRNetPhase::Offline)
 		{
 			Fail(FString::Printf(TEXT("reload: %s"), Net->GetPhase() == EMRNetPhase::Offline ? *Net->GetLastError()
 				: bSaid ? TEXT("our line never came back") : TEXT("the room never came back")));
-			Advance(Net->GetPhase() == EMRNetPhase::Offline ? EStep::Logoff : EStep::Travel);
+			Advance(Net->GetPhase() == EMRNetPhase::Offline ? EStep::Logoff : EStep::Look);
 		}
 		break;
+
+	case EStep::Look:
+	{
+		const uint32 Me = Net->GetPlayer().Id;
+		const FMRNetDescription& D = Net->GetDescription();
+		UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+		if (bTimedOut)
+		{
+			Fail(FString::Printf(TEXT("look: stuck at stage %d"), LookStage));
+			Advance(EStep::Travel);
+			break;
+		}
+		// first to the Inn of Raza (zone 301), where Marcus the innkeeper stands
+		constexpr int32 Inn = 301;
+		const int32 Here = NetWorld->GetRid();
+		if (LookStage == 0)
+		{
+			if (HopFrom && (Here == HopFrom || Here == 0))
+			{
+				break;  // a hop under way
+			}
+			if (HopFrom)
+			{
+				HopFrom = 0;
+				StepStart = Now;
+			}
+			if (Here == Inn)
+			{
+				LookStage = 10;
+				StageTime = Now;
+			}
+			else if (Here && Now - StepStart > 1.0)
+			{
+				HopFrom = Here;
+				if (!HopToward(Inn))
+				{
+					HopFrom = 0;
+					LookStage = 10;  // no way there: look around here
+					StageTime = Now;
+				}
+			}
+			break;
+		}
+		if (LookStage == 10 && Now - StageTime > 1.5)
+		{
+			// every object here has an actor, drawn one way or another
+			int32 ByLook = 0, ByBitmap = 0, ByProp = 0, None = 0;
+			TArray<FString> Missing;
+			for (const TPair<uint32, FMRNetObject>& Pair : Net->GetObjects())
+			{
+				if (Pair.Key == Me)
+				{
+					continue;
+				}
+				const AMRNetObject* A = NetWorld->FindActor(Pair.Key);
+				if (!A)
+				{
+					Missing.Add(Pair.Value.Name);
+				}
+				else if (!A->GetLook().IsNone()) ++ByLook;
+				else if (A->IsShownByProp()) ++ByProp;
+				else if (!A->GetBgfName().IsEmpty()) ++ByBitmap;
+				else ++None;
+			}
+			if (Missing.IsEmpty())
+			{
+				Pass(FString::Printf(TEXT("every object in %s has an actor: %d with our sprites, %d by props, %d from their bitmaps, %d without a picture"),
+					*Net->GetPlayer().RoomName, ByLook, ByProp, ByBitmap, None));
+			}
+			else
+			{
+				Fail(FString::Printf(TEXT("look: objects without an actor: %s"), *FString::Join(Missing, TEXT(", "))));
+			}
+			// a named object that isn't a player: an NPC first
+			const FMRNetObject* Pick = nullptr;
+			for (const TPair<uint32, FMRNetObject>& Pair : Net->GetObjects())
+			{
+				const FMRNetObject& O = Pair.Value;
+				if (O.IsPlayer() || !(O.Flags & MRMsg::OF_DISPLAY_NAME) || (O.Flags & MRMsg::OF_NOEXAMINE))
+				{
+					continue;
+				}
+				if (!Pick || ((O.Flags & MRMsg::OF_NPC) && !(Pick->Flags & MRMsg::OF_NPC)))
+				{
+					Pick = &O;
+				}
+			}
+			LookId = Pick ? Pick->Id : Me;
+			if (FApp::CanEverRender() && Pick)
+			{
+				// its name and the target's brackets over the world, before the dialog covers them
+				NetWorld->SetTarget(LookId);
+				if (const AMRNetObject* A = NetWorld->FindActor(LookId); A && PC->GetPawn())
+				{
+					PC->SetControlRotation(FRotator(-8.0, (A->GetActorLocation() - PC->GetPawn()->GetActorLocation()).Rotation().Yaw, 0.0));
+				}
+				LookStage = 11;
+				StageTime = Now;
+				break;
+			}
+			DescriptionsBefore = Descriptions;
+			Net->RequestLook(LookId);
+			LookStage = 1;
+		}
+		else if (LookStage == 11 && Now - StageTime > 1.0)
+		{
+			const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), TEXT("names.png"));
+			FScreenshotRequest::RequestScreenshot(File, true, false);
+			LookStage = 12;
+			StageTime = Now;
+		}
+		else if (LookStage == 12 && Now - StageTime > 0.5)
+		{
+			DescriptionsBefore = Descriptions;
+			Net->RequestLook(LookId);
+			LookStage = 1;
+		}
+		else if (LookStage == 1 && Descriptions > DescriptionsBefore && D.Object.Id == LookId)
+		{
+			Pass(FString::Printf(TEXT("looked at %s: \"%s\"%s"), *D.Object.Name, *MRServerText::StripStyle(D.Text).Left(70),
+				D.Inscription.IsEmpty() ? TEXT("") : *FString::Printf(TEXT(" (inscribed \"%s\")"), *D.Inscription.Left(40))));
+			StageTime = Now;
+			LookStage = 2;
+		}
+		else if (LookStage == 2 && Now - StageTime > 1.5)
+		{
+			if (FApp::CanEverRender())
+			{
+				// (a moment after it opened: its picture downloads first)
+				FScreenshotRequest::RequestScreenshot(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), TEXT("look_object.png")), true, false);
+			}
+			DescriptionsBefore = Descriptions;
+			Net->RequestLook(Me);
+			LookStage = 3;
+		}
+		else if (LookStage == 3 && Descriptions > DescriptionsBefore && D.Object.Id == Me)
+		{
+			if (D.bPlayer && D.bEditable)
+			{
+				Pass(FString::Printf(TEXT("looked at ourselves (UC_LOOK_PLAYER, editable): \"%s\""), *MRServerText::StripStyle(D.Text).Left(60)));
+			}
+			else
+			{
+				Fail(FString::Printf(TEXT("look: our own description came back as player %d, editable %d"), D.bPlayer, D.bEditable));
+			}
+			if (FApp::CanEverRender())
+			{
+				const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), TEXT("look_self.png"));
+				PC->GetWorldTimerManager().SetTimerForNextTick([File]() { FScreenshotRequest::RequestScreenshot(File, true, false); });
+			}
+			Marker = FString::Printf(TEXT("An Unreal traveller (test %d)."), FMath::RandRange(100, 999));
+			DescriptionsBefore = Descriptions;
+			if (UI)
+			{
+				UI->SaveDescription(Me, Marker);  // as the dialog's Save does
+			}
+			else
+			{
+				Net->ChangeDescription(Me, Marker);
+				Net->RequestLook(Me);
+			}
+			LookStage = 4;
+		}
+		else if (LookStage == 4 && Descriptions > DescriptionsBefore && D.Object.Id == Me)
+		{
+			if (D.Text.Contains(Marker))
+			{
+				Pass(FString::Printf(TEXT("changed our description (BP_CHANGE_DESCRIPTION) and read it back: \"%s\""), *Marker));
+			}
+			else
+			{
+				Fail(FString::Printf(TEXT("look: our new description didn't come back (\"%s\")"), *D.Text.Left(60)));
+			}
+			if (UI)
+			{
+				UI->CloseLook();
+			}
+			Advance(EStep::Travel);
+		}
+		break;
+	}
 
 	case EStep::Travel:
 	{
@@ -788,6 +972,10 @@ void UMRNetTest::Tick()
 				}
 				if (Nearest)
 				{
+					if (UMRNetWorldSubsystem* NW = PC->GetWorld()->GetSubsystem<UMRNetWorldSubsystem>())
+					{
+						NW->SetTarget(Nearest->GetServerId());  // its brackets in the picture
+					}
 					// step to a few metres from it (a normal move: the server sees it), then look at it
 					APawn* Pawn = PC->GetPawn();
 					const FVector Dir = (Nearest->GetActorLocation() - Pawn->GetActorLocation()).GetSafeNormal2D();

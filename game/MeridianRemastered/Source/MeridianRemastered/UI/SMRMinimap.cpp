@@ -7,6 +7,9 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/FileHelper.h"
+#include "Net/MRNetObject.h"
+#include "Net/MRNetWorldSubsystem.h"
+#include "Net/MRProtocol.h"
 #include "Player/MRPlayerState.h"
 #include "Rendering/DrawElements.h"
 #include "Serialization/JsonReader.h"
@@ -186,13 +189,36 @@ int32 SMRMinimap::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FS
 
 	const APawn* Pawn = PC->GetPawn();
 	const FVector2D Player = Pawn ? FVector2D(Pawn->GetActorLocation()) : FVector2D::ZeroVector;
-	if (MapBrush.GetResourceObject() && Rect.bIsValid)
+	// the visible world square around the player: at zoom 1 minimap_span_m across, or the whole
+	// picture for a smaller room
+	const double Base = FMath::Min<double>(S->Number(TEXT("minimap_span_m"), 50.f) * 100.0, Rect.bIsValid ? Rect.GetSize().X : 1e9);
+	const double Span = Base / FMath::Max(0.25f, Zoom);
+	const FBox2D View(Player - FVector2D(Span * 0.5), Player + FVector2D(Span * 0.5));
+	auto ToMap = [&View, Span, Side](const FVector2D& World) { return FVector2f((World - View.Min) / Span) * Side; };
+	const UMRZoneSubsystem* Zones = PC->GetWorld() ? PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>() : nullptr;
+	const FMRZoneInfo* Zone = Zones ? Zones->FindZone(GeometryRid) : nullptr;
+	if (!MapBrush.GetResourceObject() && Zone && Zone->MapWalls.Num() > 0)
 	{
-		// the visible world square around the player, intersected with the picture
-		// at zoom 1 the view is minimap_span_m across, or the whole picture for a smaller room
-		const double Base = FMath::Min<double>(S->Number(TEXT("minimap_span_m"), 50.f) * 100.0, Rect.GetSize().X);
-		const double Span = Base / FMath::Max(0.25f, Zoom);
-		const FBox2D View(Player - FVector2D(Span * 0.5), Player + FVector2D(Span * 0.5));
+		// a room built at runtime: the original map's wall lines, in ink on the parchment
+		const FLinearColor Ink = FLinearColor(0.16f, 0.11f, 0.07f, 0.9f) * Tint;
+		const FBox2D Clip(View.Min - FVector2D(Span * 0.1), View.Max + FVector2D(Span * 0.1));
+		for (const FVector4& W : Zone->MapWalls)
+		{
+			const FVector2D A(W.X, W.Y), B(W.Z, W.W);
+			if (!Clip.IsInside(A) && !Clip.IsInside(B))
+			{
+				continue;
+			}
+			TArray<FVector2f> Line = {ToMap(A), ToMap(B)};
+			for (FVector2f& P : Line)
+			{
+				P = FVector2f(FMath::Clamp(P.X, 0.f, Side), FMath::Clamp(P.Y, 0.f, Side));
+			}
+			FSlateDrawElement::MakeLines(Out, Layer + 1, Geo.ToPaintGeometry(), Line, ESlateDrawEffect::None, Ink, true, FMath::Max(1.f, Px * 0.6f));
+		}
+	}
+	else if (MapBrush.GetResourceObject() && Rect.bIsValid)
+	{
 		const FBox2D Part(FVector2D(FMath::Max(View.Min.X, Rect.Min.X), FMath::Max(View.Min.Y, Rect.Min.Y)),
 			FVector2D(FMath::Min(View.Max.X, Rect.Max.X), FMath::Min(View.Max.Y, Rect.Max.Y)));
 		if (Part.Max.X > Part.Min.X && Part.Max.Y > Part.Min.Y)
@@ -204,12 +230,37 @@ int32 SMRMinimap::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FS
 			MRPaint::Box(Out, Layer + 1, Geo, &MapBrush, Pos, Size, Tint);
 		}
 	}
-	else
+	else if (!Zone || Zone->MapWalls.Num() == 0)
 	{
 		const FString Missing = LOCTEXT("NoMap", "no map").ToString();
 		const FSlateFontInfo Font = S->Font(8.f);
 		const FVector2f M = MRPaint::MeasureText(Missing, Font);
 		MRPaint::Text(Out, Layer + 1, Geo, Missing, Font, (MapSize - M) * 0.5f + FVector2f(0.f, Side * 0.2f), FLinearColor(0.2f, 0.18f, 0.15f, 0.8f) * Tint, 0.f);
+	}
+
+	// the server's objects with a minimap dot (proto.h MM_*): players blue, enemies red, guild friends
+	// green, monsters dark red, NPCs gold
+	if (const UMRNetWorldSubsystem* NetWorld = PC->GetWorld() ? PC->GetWorld()->GetSubsystem<UMRNetWorldSubsystem>() : nullptr)
+	{
+		const float Dot = FMath::Max(2.f, 2.2f * Px);
+		for (const TPair<uint32, TWeakObjectPtr<AMRNetObject>>& Pair : NetWorld->GetActors())
+		{
+			const AMRNetObject* A = Pair.Value.Get();
+			const uint32 MM = A ? A->GetMinimapFlags() : 0;
+			if (!MM || A->GetDrawEffect() == MRMsg::DRAWFX_INVISIBLE || !View.IsInside(FVector2D(A->GetActorLocation())))
+			{
+				continue;
+			}
+			FLinearColor C(0.1f, 0.25f, 0.9f);                                           // MM_PLAYER
+			if (MM & MRMsg::MM_ENEMY) C = FLinearColor(0.9f, 0.05f, 0.05f);
+			else if (MM & (MRMsg::MM_FRIEND | MRMsg::MM_GUILDMATE)) C = FLinearColor(0.1f, 0.7f, 0.15f);
+			else if (MM & MRMsg::MM_NPC) C = FLinearColor(0.95f, 0.75f, 0.1f);
+			else if (MM & MRMsg::MM_MONSTER) C = MM & MRMsg::MM_BOSS ? FLinearColor(0.75f, 0.1f, 0.8f) : FLinearColor(0.55f, 0.05f, 0.05f);
+			else if (!(MM & MRMsg::MM_PLAYER)) C = FLinearColor(0.35f, 0.3f, 0.25f);
+			const FVector2f P = ToMap(FVector2D(A->GetActorLocation()));
+			FSlateDrawElement::MakeBox(Out, Layer + 2, Geo.ToPaintGeometry(FVector2f(Dot, Dot), FSlateLayoutTransform(P - FVector2f(Dot * 0.5f))),
+				S->White(), ESlateDrawEffect::None, C * Tint);
+		}
 	}
 
 	// the player: an arrow turned to the view's heading (yaw 0 = east = right; the art points north)

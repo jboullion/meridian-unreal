@@ -22,12 +22,15 @@ class APlayerController;
  *      security value, and the players list (BP_PLAYERS) has our character;
  *   5. reloading the data (what BP_INVALIDATE_DATA does after a server save) brings the room back,
  *      and chat still works after;
- *   6. travel: it walks our zones' exits to Farol West and off its east edge into the Forest of Farol,
+ *   6. look: every object in the room has an actor (our sprite, its bitmap, or a prop of the world
+ *      build); BP_REQ_LOOK on a named object brings its description; on ourselves UC_LOOK_PLAYER,
+ *      editable, and a new description (BP_CHANGE_DESCRIPTION) comes back in the next look;
+ *   7. travel: it walks our zones' exits to Farol West and off its east edge into the Forest of Farol,
  *      a room we haven't built: it is built from the server's files (UMRRuntimeRooms), the pawn
  *      stands on its floor, chat works there, and walking off its west edge comes back;
- *   7. Log Off returns to the character list (BP_REQ_QUIT, BP_QUIT, the server's menu) and the
+ *   8. Log Off returns to the character list (BP_REQ_QUIT, BP_QUIT, the server's menu) and the
  *      character enters again;
- *   8. it logs off cleanly.
+ *   9. it logs off cleanly.
  * Entering a zone also checks that ours was built from the server's room (its security value).
  * Logs "MRNetTest: PASS/FAIL ..." per step and "MRNetTest: DONE <passed>/<steps>", then quits.
  * -MRNetHold=<seconds> stays that long after saying hello (for a look from another client): it
@@ -44,7 +47,7 @@ public:
 	void Start(APlayerController* InController);
 
 private:
-	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Travel, Relog, Logoff, Done };
+	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Travel, Relog, Logoff, Done };
 
 	void Tick();
 	void Pass(const FString& What);
@@ -96,4 +99,10 @@ private:
 	int32 RuntimeRid = 0;
 	int32 TravelStage = 0;
 	double StageTime = 0.0;
+	/** Look: what we asked about, how many descriptions have come, and our marker text. */
+	uint32 LookId = 0;
+	int32 Descriptions = 0;
+	int32 DescriptionsBefore = 0;
+	int32 LookStage = 0;
+	FString Marker;
 };

@@ -76,6 +76,17 @@ public:
 	/** Leave the server (if on one) and close the game. */
 	void QuitGame();
 
+	// --- Look (SMRLookDialog; the server's descriptions: UMRNetSubsystem::OnDescription)
+	/** Several things under the crosshair: list them to pick one to look at. */
+	void ShowLookPicker(const TArray<uint32>& Ids);
+	/** Ask the server for an object's description (it opens the dialog when it arrives). */
+	void LookAt(uint32 ObjectId);
+	/** Save one's own description and show it again. */
+	void SaveDescription(uint32 ObjectId, const FString& Text);
+	void CloseLook();
+	bool IsLookOpen() const { return bLookOpen; }
+	TSharedPtr<class SMRLookDialog> GetLookDialog() const;
+
 	// --- slots (from the slot widgets)
 	void OnSlotMouseDown(const FMRSlotRef& Slot, bool bRight, bool bShift);
 	void OnSlotMouseUp(const FMRSlotRef& Slot);
@@ -162,6 +173,15 @@ private:
 	bool bInventoryOpen = false;
 	bool bChatOpen = false;
 	bool bGameMenuOpen = false;
+	bool bLookOpen = false;
+	/** The Look dialog's picture: an object's own bitmap, or a player's face portrait. */
+	FSlateBrush LookBrush;
+	UPROPERTY(Transient)
+	TObjectPtr<class UTexture2D> LookPicture;
+	uint32 LookPictureFor = 0;
+	FDelegateHandle NetDescriptionHandle;
+	void OnNetDescription();
+	void SetLookOpen(bool bOpen);
 	bool bTextInput = false;
 	int32 StatsVersion = 0;
 	FDelegateHandle NetStatsHandle;

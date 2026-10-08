@@ -209,6 +209,25 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
   - **The bar fills to the current max.** Health is sent as value, 0, 100, max health, and the original draws 27 of 27 as a full bar. Intellect 20 with a current max of 50 is 40%.
   - **Server 104's groups:** 1 Condition (health, mana, vigor, experience); 2 Stats (27: Unbound Energy, Training Pts, the six stats, Karma, Bulk Carried, Weight Carried, Offense, Defense, Armor, then 13 resistances); 3 Spells and 4 Skills (list stats: name, the spell or skill object, the ability percentage, its icon); 5 Quests (list stats with headers).
 
+## Seeing and choosing things (`clientd3d/d3drender.c`, `gameuser.c`, `server.c`; `merintr.c HandleLookPlayer`)
+- **Names** over objects (`d3drender.c` around `:3141`):
+  - drawn for objects with `OF_DISPLAY_NAME`, not `DRAWFX_INVISIBLE`, within 15 squares (`object3d.h MAX_NAME_DISTANCE`);
+  - signs (`OF_SIGN`) at any distance, and the current target always;
+  - the colour is the object's `u32 name colour` (`0x00RRGGBB`), black with `DRAWFX_BLACK` (`color.c`).
+- **Drawing effects** (`proto.h DRAWFX_*`): 1–3 translucent 25/50/75 %, 4 black, 5 invisible, 7 haze, 11 grey haze.
+- **Minimap dots** (`proto.h MM_*`): player `0x1`, enemy `0x2`, friend `0x4`, guildmate `0x8`, monster `0x20`, NPC `0x40`, own minion `0x100`, boss `0x800`.
+- **Targets** (client only; the server never hears of them):
+  - `[` and `]` cycle through the attackable (`OF_ATTACKABLE`), visible objects in view (`gameuser.c UserTargetNextOrPrevious`);
+  - `\` targets yourself; Escape clears the target before anything else (`intrface.c A_TARGETCLEAR`);
+  - the target's name always shows.
+- **Look:**
+  - The client sends `BP_REQ_LOOK` (116) `u32 id`. The right mouse button was the original's look (`merintr.c`, `A_LOOKMOUSE`).
+  - At an object the server answers `BP_LOOK` (207): an object (as in a room's contents, with its light), `u8 flags` (`DF_EDITABLE` 1, `DF_INSCRIBED` 2), `u32 format` + its parameters, and with either flag `u32 format` + parameters again (the inscription).
+  - At a player (`user.kod SendLookPlayer`) it answers `BP_USERCOMMAND` (155) `u8 UC_LOOK_PLAYER` (2): an object, `u8 editable` (1 for yourself or an admin), `u32 format` + parameters (the description), `u32 format` + parameters (extra lines), `string` web page.
+  - **Writing a description:** `BP_CHANGE_DESCRIPTION` (126) `u32 object`, `string` (up to 1000 characters, `object.h MAX_DESCRIPTION`).
+  - The format strings can number their parameters (`%s$2`, `srvrstr.c CheckMessageOrder`), but no Server 104 Kod resource does, so we don't reorder.
+- **First-person overlays:** `BP_PLAYER_OVERLAY` (151) is `u8 screen hotspot`, then an object without its light (`ExtractObjectNoLight`; its id names the slot, `PWO_RIGHT_HAND`...). Kod sends the fist and weapon swings this way (`player.kod DoWindowOverlayFistAttack`).
+
 ## Session (`blakserv/game.c`, Kod `user.kod`; the client side is `clientd3d/game.c`, `com.c`)
 - **Leaving the game but not the server:**
   - The client sends `BP_REQ_QUIT` (54). The server logs the character off and answers `BP_QUIT` (149) (`GameProtocolParse`, `GameClientExit`).

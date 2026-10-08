@@ -160,11 +160,33 @@ struct FMRNetStatGroup
 	const FMRNetStat* FindByNum(uint8 Num) const { return Stats.FindByPredicate([Num](const FMRNetStat& S) { return S.Num == Num; }); }
 };
 
+/**
+ * A description to show: BP_LOOK for an object (clientd3d server.c HandleLook) or BP_USERCOMMAND
+ * UC_LOOK_PLAYER for a player (merintr.c HandleLookPlayer).
+ */
+struct FMRNetDescription
+{
+	FMRNetObject Object;
+	bool bPlayer = false;
+	/** BP_LOOK's DF_* flags: DF_INSCRIBED (a sign, a scroll) has an inscription; DF_EDITABLE can be written. */
+	uint8 Flags = 0;
+	/** A player's own description (or an admin's view): it can be changed (BP_CHANGE_DESCRIPTION). */
+	bool bEditable = false;
+	/** The description, formatted (style codes kept: MRServerText::StripStyle removes them). */
+	FString Text;
+	FString Inscription;
+	/** A player's extra lines (guild, title...) and web page. */
+	FString ExtraInfo;
+	FString Url;
+};
+
 /** Everything the server has said about the session's game state. */
 struct FMRNetWorld
 {
 	FMRNetPlayer Player;
 	TMap<uint32, FMRNetObject> Objects;
+	/** What the player holds as the original drew it in first person (BP_PLAYER_OVERLAY), by screen hotspot. */
+	TMap<uint8, FMRNetObject> PlayerOverlays;
 	/** Who is logged on, by object id. */
 	TMap<uint32, FMRNetUser> Users;
 	TArray<FMRNetStatGroup> StatGroups;
@@ -190,6 +212,12 @@ namespace MRNetRead
 	MERIDIANREMASTERED_API bool Motion(FMRReader& R, const FMRResourceTable& Res, FMRNetObject& Out);
 	/** An object in a room (ExtractNewRoomObject): the object, its position and angle, its motion record. */
 	MERIDIANREMASTERED_API bool RoomObject(FMRReader& R, const FMRResourceTable& Res, FMRNetObject& Out);
+	/** An object without its light (ExtractObjectNoLight: BP_PLAYER_OVERLAY's). */
+	MERIDIANREMASTERED_API bool ObjectNoLight(FMRReader& R, const FMRResourceTable& Res, FMRNetObject& Out);
+	/** BP_LOOK's body after the type byte. */
+	MERIDIANREMASTERED_API bool Look(FMRReader& R, const FMRResourceTable& Res, FMRNetDescription& Out);
+	/** UC_LOOK_PLAYER's body after BP_USERCOMMAND's type bytes. */
+	MERIDIANREMASTERED_API bool LookPlayer(FMRReader& R, const FMRResourceTable& Res, FMRNetDescription& Out);
 	/** BP_PLAYER's body after the type byte. */
 	MERIDIANREMASTERED_API bool Player(FMRReader& R, const FMRResourceTable& Res, FMRNetPlayer& Out);
 	/** One entry of BP_PLAYERS, or BP_PLAYER_ADD's body (the name comes as a string, not a resource). */

@@ -10,6 +10,7 @@
 #include "Misc/App.h"
 #include "Character/MRCharacterMovementComponent.h"
 #include "Net/MRNetWorld.h"
+#include "Net/MRProtocol.h"
 #include "World/MRBgf.h"
 #include "World/MRBgfSpriteComponent.h"
 
@@ -95,6 +96,7 @@ void AMRNetObject::SetBgfSprite(const FString& InBgfName, TSharedPtr<const FMRBg
 		BgfSprite->RegisterComponent();
 	}
 	BgfSprite->SetBgf(Bgf);
+	SetDrawEffect(DrawEffect);
 }
 
 void AMRNetObject::SetServerAnimation(const FMRNetAnimation& Standing, const FMRNetAnimation& Moving)
@@ -103,6 +105,57 @@ void AMRNetObject::SetServerAnimation(const FMRNetAnimation& Standing, const FMR
 	{
 		BgfSprite->SetAnimation(Standing, Moving);
 	}
+}
+
+void AMRNetObject::SetStatic()
+{
+	bStatic = true;
+	if (UCharacterMovementComponent* Move = GetCharacterMovement())
+	{
+		Move->DisableMovement();
+		Move->SetComponentTickEnabled(false);
+	}
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void AMRNetObject::SetShownByProp(double InPropTop)
+{
+	bShownByProp = true;
+	PropTop = InPropTop;
+}
+
+void AMRNetObject::SetDrawEffect(uint8 Effect)
+{
+	DrawEffect = Effect;
+	const bool bInvisible = Effect == MRMsg::DRAWFX_INVISIBLE;
+	if (BgfSprite)
+	{
+		BgfSprite->SetVisibility(!bInvisible);
+		BgfSprite->SetDrawEffect(Effect);
+	}
+	if (SpriteBody)
+	{
+		SpriteBody->SetVisibility(!bInvisible, true);
+	}
+}
+
+FVector AMRNetObject::GetNameAnchor() const
+{
+	const UCapsuleComponent* Capsule = GetCapsuleComponent();
+	const FVector Feet = GetActorLocation() - FVector(0.0, 0.0, Capsule->GetScaledCapsuleHalfHeight());
+	if (bShownByProp)
+	{
+		return FVector(Feet.X, Feet.Y, FMath::Max(PropTop, Feet.Z + 30.0) + 25.0);
+	}
+	if (BgfSprite && BgfSprite->GetNumSections() > 0)
+	{
+		return FVector(Feet.X, Feet.Y, BgfSprite->Bounds.GetBox().Max.Z + 25.0);
+	}
+	if (SpriteBody)
+	{
+		return Feet + FVector(0.0, 0.0, 215.0);  // a player's height and a little (docs/sprites.md)
+	}
+	return Feet + FVector(0.0, 0.0, 60.0);
 }
 
 void AMRNetObject::Place(const FVector& World, int32 KodAngle)
@@ -117,7 +170,7 @@ void AMRNetObject::Place(const FVector& World, int32 KodAngle)
 void AMRNetObject::MoveTo(const FVector& World, uint8 Speed)
 {
 	const FVector At = World + FVector(0.0, 0.0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 2.0);
-	if (FVector::Dist2D(At, GetActorLocation()) > SnapCm)
+	if (bStatic || FVector::Dist2D(At, GetActorLocation()) > SnapCm)
 	{
 		SetActorLocation(At, false, nullptr, ETeleportType::TeleportPhysics);
 		bHasTarget = false;

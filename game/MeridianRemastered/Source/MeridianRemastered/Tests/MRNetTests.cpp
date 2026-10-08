@@ -211,6 +211,40 @@ bool FMRNetWorldTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("the top 4 bits don't count"), MRNetRead::SecurityMatches(0xA1234567u, 0x01234567u));
 	TestFalse(TEXT("a different room"), MRNetRead::SecurityMatches(0xA1234567u, 0xA1234568u));
 
+	// BP_LOOK: an object, flags, its description (a format and its parameters), then an inscription
+	Add(16, "A %s for sale.");
+	Add(17, "Welcome to Raza.");
+	Rsb[8] = 8;  // the entry count
+	FMRResourceTable Res2;
+	TestTrue(TEXT("rsb with descriptions parses"), Res2.Load(Rsb));
+	FMRWriter L(MRMsg::BP_LOOK);
+	L.U32(7).U32(10).U32(11).U32(MRMsg::OF_SIGN).U8(0).U32(0).U32(0xFFFFFF).U8(0).U8(0).U16(0).U8(MRMsg::ANIMATE_NONE).U16(1).U8(0);
+	L.U8(MRMsg::DF_INSCRIBED).U32(16).U32(11).U32(17);
+	FMRReader LR(L.Bytes);
+	FMRNetDescription D;
+	TestTrue(TEXT("BP_LOOK reads to its end"), MRNetRead::Look(LR, Res2, D) && LR.AtEnd());
+	TestEqual(TEXT("BP_LOOK description"), D.Text, FString(TEXT("A shillings for sale.")));
+	TestEqual(TEXT("BP_LOOK inscription"), D.Inscription, FString(TEXT("Welcome to Raza.")));
+
+	// UC_LOOK_PLAYER (after BP_USERCOMMAND's two type bytes): object, editable, description, extra, web page
+	FMRWriter P2(MRMsg::BP_USERCOMMAND);
+	P2.U8(MRMsg::UC_LOOK_PLAYER);
+	P2.U32(0x123).U32(14).U32(11).U32(MRMsg::OF_PLAYER).U8(0).U32(MRMsg::MM_PLAYER).U32(0xFFFFFF).U8(0).U8(0).U16(0).U8(MRMsg::ANIMATE_NONE).U16(1).U8(0);
+	P2.U8(1).U32(17).U32(16).U32(11).Str(TEXT("http://example.org"));
+	FMRReader PR2(P2.Bytes, 2);
+	FMRNetDescription PD;
+	TestTrue(TEXT("UC_LOOK_PLAYER reads to its end"), MRNetRead::LookPlayer(PR2, Res2, PD) && PR2.AtEnd());
+	TestTrue(TEXT("one's own description is editable"), PD.bPlayer && PD.bEditable);
+	TestEqual(TEXT("player web page"), PD.Url, FString(TEXT("http://example.org")));
+
+	// BP_PLAYER_OVERLAY's object has no light (ExtractObjectNoLight)
+	FMRWriter OV(MRMsg::BP_PLAYER_OVERLAY);
+	OV.U8(4).U32(2).U32(10).U32(0).U32(0).U8(0).U32(0).U32(0).U8(0).U8(0).U8(MRMsg::ANIMATE_ONCE).U32(175).U16(1).U16(3).U16(0).U8(0);
+	FMRReader OVR(OV.Bytes, 2);
+	FMRNetObject Hand;
+	TestTrue(TEXT("player overlay reads to its end"), MRNetRead::ObjectNoLight(OVR, Res2, Hand) && OVR.AtEnd());
+	TestEqual(TEXT("player overlay animation"), static_cast<int32>(Hand.Animation.Type), static_cast<int32>(MRMsg::ANIMATE_ONCE));
+
 	// the manifest's hash: the first 16 hex digits of SHA-1 ("abc": a9993e36 4706816a ...)
 	TestEqual(TEXT("manifest hash"), FMRAssetCache::HashBytes({'a', 'b', 'c'}), FString(TEXT("a9993e364706816a")));
 	return true;

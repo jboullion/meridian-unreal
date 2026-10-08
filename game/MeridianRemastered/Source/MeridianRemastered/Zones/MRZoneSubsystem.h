@@ -76,6 +76,11 @@ struct FMRZoneInfo
 	 */
 	uint32 RooSecurity = 0;
 	bool bHasRooSecurity = false;
+	/**
+	 * A runtime room's walls for the minimap (world XY, UE cm: x0, y0, x1, y1): its one-sided walls,
+	 * as the original's map draws them (roo2gltf write_walls). Built zones use their captured picture.
+	 */
+	TArray<FVector4> MapWalls;
 
 	double GridArea() const { return GridSizeRoo.X * GridSizeRoo.Y; }
 };

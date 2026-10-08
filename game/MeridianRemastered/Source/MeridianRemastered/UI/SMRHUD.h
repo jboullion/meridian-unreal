@@ -7,6 +7,7 @@
 class SEditableText;
 class SMRChatLog;
 class SMRGameMenu;
+class SMRLookDialog;
 class SMRInventoryScreen;
 class SMRMinimap;
 class STextBlock;
@@ -207,11 +208,15 @@ public:
 	void OpenChat();
 	/** Show or hide the Escape menu (it takes the keyboard when shown). */
 	void SetGameMenuOpen(bool bOpen);
+	/** The Look dialog (shown with SetLookOpen; UMRUISubsystem fills it). */
+	TSharedPtr<SMRLookDialog> GetLookDialog() const { return LookDialog; }
+	void SetLookOpen(bool bOpen);
 
 private:
 	TWeakObjectPtr<UMRUISubsystem> UI;
 	TSharedPtr<SMRInventoryScreen> Inventory;
 	TSharedPtr<SMRGameMenu> GameMenu;
+	TSharedPtr<SMRLookDialog> LookDialog;
 	TSharedPtr<SMRChatLog> ChatLog;
 	TSharedPtr<SWidget> SpellBar;
 	TSharedPtr<SWidget> HotbarArea;

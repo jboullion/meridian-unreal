@@ -187,6 +187,32 @@ namespace MRMsg
 	constexpr uint8 BP_SECTOR_CHANGE = 239;
 	constexpr uint8 BP_REQ_GET_FROM_CONTAINER = 240;
 
+	// user commands inside BP_USERCOMMAND (proto.h UC_*)
+	constexpr uint8 UC_LOOK_PLAYER = 2;
+
+	// BP_LOOK description flags (proto.h DF_*)
+	constexpr uint8 DF_EDITABLE = 0x01;
+	constexpr uint8 DF_INSCRIBED = 0x02;
+
+	// drawing effects (proto.h DRAWFX_*): an object's DrawEffect
+	constexpr uint8 DRAWFX_TRANSLUCENT25 = 0x01;
+	constexpr uint8 DRAWFX_TRANSLUCENT50 = 0x02;
+	constexpr uint8 DRAWFX_TRANSLUCENT75 = 0x03;
+	constexpr uint8 DRAWFX_BLACK = 0x04;
+	constexpr uint8 DRAWFX_INVISIBLE = 0x05;
+	constexpr uint8 DRAWFX_DITHERINVIS = 0x07;
+	constexpr uint8 DRAWFX_DITHERGREY = 0x0B;
+
+	// minimap dots (proto.h MM_*)
+	constexpr uint32 MM_PLAYER = 0x0001;
+	constexpr uint32 MM_ENEMY = 0x0002;
+	constexpr uint32 MM_FRIEND = 0x0004;
+	constexpr uint32 MM_GUILDMATE = 0x0008;
+	constexpr uint32 MM_MONSTER = 0x0020;
+	constexpr uint32 MM_NPC = 0x0040;
+	constexpr uint32 MM_MINION_SELF = 0x0100;
+	constexpr uint32 MM_BOSS = 0x0800;
+
 	// say types (proto.h SAY_*)
 	constexpr uint8 SAY_NORMAL = 1;
 	constexpr uint8 SAY_YELL = 2;

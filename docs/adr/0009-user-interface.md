@@ -113,6 +113,17 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
   - `UMRUISubsystem` swaps the source when the server phase changes; the widgets read the current one.
 - Sheets: `build/ui/shots/m0/18_game_menu.png` (offline), `game/MeridianRemastered/Saved/Screenshots/MRNet/online_4.png` and `online_5.png` (`run_net_test.ps1 -Render -Hold 52`).
 
+## Over the world, and Look (2026-10-08, M2a of ADR 0012)
+- **`SMRWorldOverlay`** (under every panel) draws:
+  - the server's names, as the original: `OF_DISPLAY_NAME` within 15 squares, signs at any distance, the target always, in the name colour, smaller with distance, not through walls;
+  - corner brackets on the target (red if it can be attacked, gold if not) and fainter ones on what the crosshair is on;
+  - a small crosshair while the mouse looks.
+- **`SMRLookDialog`** (right mouse button):
+  - the stone panel with a picture on an inset, the description, inscription, extra lines and web page;
+  - one's own description in a text box with Save;
+  - a list to pick from when several things are under the crosshair.
+  - While it is open the UI has the keyboard and mouse.
+
 ## Consequences
 - Inventory and equipment are still **mock data offline** and empty online (M3). Spells don't cast; a "cast" plays the sprite's cast action and a cooldown sweep. Online, the vitals, stats, spells and skills come from the server's stat groups (`docs/research/blakserv-protocol.md`, "Stats"). Offline they come from the attributes and the mock file.
 - Equipment doesn't change the avatar yet (no equipment layers on the sprite body).

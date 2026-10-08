@@ -27,6 +27,11 @@
 #include "UI/SMRInventoryScreen.h"
 #include "UI/SMRCharCreator.h"
 #include "UI/SMRLoginScreen.h"
+#include "UI/SMRLookDialog.h"
+#include "Net/MRAssetCache.h"
+#include "Net/MRNetLook.h"
+#include "Net/MRProtocol.h"
+#include "World/MRBgf.h"
 #include "UI/SMRMinimap.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SBoxPanel.h"
@@ -59,6 +64,7 @@ void UMRUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	{
 		NetStatsHandle = Net->OnStatsChanged.AddUObject(this, &UMRUISubsystem::OnNetStats);
 		NetPhaseHandle = Net->OnPhaseChanged.AddUObject(this, &UMRUISubsystem::OnNetPhase);
+		NetDescriptionHandle = Net->OnDescription.AddUObject(this, &UMRUISubsystem::OnNetDescription);
 	}
 }
 
@@ -102,7 +108,132 @@ void UMRUISubsystem::OnNetPhase()
 	if (Phase != EMRNetPhase::InGame)
 	{
 		bGameMenuOpen = false;
+		bLookOpen = false;
 	}
+}
+
+// ------------------------------------------------------------------------------ look
+
+TSharedPtr<SMRLookDialog> UMRUISubsystem::GetLookDialog() const
+{
+	return HUD.IsValid() ? HUD->GetLookDialog() : nullptr;
+}
+
+void UMRUISubsystem::SetLookOpen(bool bOpen)
+{
+	if (!HUD.IsValid())
+	{
+		return;
+	}
+	if (bOpen)
+	{
+		SetInventoryOpen(false);
+		SetGameMenuOpen(false);
+	}
+	if (!bOpen && bLookOpen && !Login.IsValid())
+	{
+		SetCreatorCapturing(false);  // the portrait of a player looked at
+	}
+	bLookOpen = bOpen;
+	HUD->SetLookOpen(bOpen);
+	ApplyInputMode();
+}
+
+void UMRUISubsystem::CloseLook()
+{
+	SetLookOpen(false);
+}
+
+void UMRUISubsystem::LookAt(uint32 ObjectId)
+{
+	if (UMRNetSubsystem* Net = GetNet())
+	{
+		Net->RequestLook(ObjectId);
+	}
+}
+
+void UMRUISubsystem::SaveDescription(uint32 ObjectId, const FString& Text)
+{
+	if (UMRNetSubsystem* Net = GetNet())
+	{
+		Net->ChangeDescription(ObjectId, Text);
+		Net->RequestLook(ObjectId);  // show what the server now has
+	}
+}
+
+void UMRUISubsystem::ShowLookPicker(const TArray<uint32>& Ids)
+{
+	const UMRNetSubsystem* Net = GetNet();
+	TSharedPtr<SMRLookDialog> Dialog = GetLookDialog();
+	if (!Net || !Dialog.IsValid())
+	{
+		return;
+	}
+	TArray<FText> Names;
+	for (const uint32 Id : Ids)
+	{
+		const FMRNetObject* O = Net->FindObject(Id);
+		Names.Add(FText::FromString(O ? O->Name : FString::Printf(TEXT("#%u"), Id)));
+	}
+	Dialog->ShowPicker(Ids, Names);
+	SetLookOpen(true);
+}
+
+void UMRUISubsystem::OnNetDescription()
+{
+	UMRNetSubsystem* Net = GetNet();
+	TSharedPtr<SMRLookDialog> Dialog = GetLookDialog();
+	if (!Net || !Dialog.IsValid())
+	{
+		return;
+	}
+	const FMRNetDescription& D = Net->GetDescription();
+	UE_LOG(LogMeridian, Log, TEXT("UI: looking at %s (%s)"), *D.Object.Name, D.bPlayer ? TEXT("a player") : *D.Object.Icon);
+	LookBrush = FSlateBrush();
+	LookBrush.DrawAs = ESlateBrushDrawType::NoDrawType;  // nothing until the picture is there (an empty brush draws white)
+	LookPicture = nullptr;
+	LookPictureFor = D.Object.Id;
+	FMRSpriteAppearance A;
+	if (D.bPlayer && MRNetLook::AppearanceFromObject(D.Object, A))
+	{
+		// a player: their face, from the creator's portrait preview
+		SetCreatorAppearance(A);
+		SetCreatorCapturing(true);
+		if (UObject* Target = GetCreatorTarget(true))
+		{
+			UMRUIStyle::SetImage(LookBrush, Target, FVector2f(256.f, 256.f));
+		}
+	}
+	else if (FMRAssetCache* Cache = Net->GetAssets(); Cache && Cache->IsListed(D.Object.Icon))
+	{
+		// anything else: its own bitmap, its current group seen from the front
+		const int32 Group = FMath::Max<int32>(1, D.Object.Animation.Type == MRMsg::ANIMATE_NONE ? D.Object.Animation.Group : D.Object.Animation.GroupLow) - 1;
+		const uint32 For = D.Object.Id;
+		TWeakObjectPtr<UMRUISubsystem> Weak(this);
+		Cache->Fetch(D.Object.Icon, [Weak, For, Group](bool bOk, const TArray<uint8>& Bytes)
+		{
+			UMRUISubsystem* Self = Weak.Get();
+			FMRBgf Bgf;
+			FString Error;
+			if (!Self || Self->LookPictureFor != For || !bOk || !Bgf.Load(Bytes, Error))
+			{
+				return;
+			}
+			const int32 Bitmap = Bgf.Groups.IsValidIndex(Group) && Bgf.Groups[Group].Num() > 0 ? Bgf.Groups[Group][0] : 0;
+			if (UTexture2D* Tex = Bgf.MakeTexture(Bgf.Bitmaps.IsValidIndex(Bitmap) ? Bitmap : 0, false))
+			{
+				Tex->AddressX = TA_Clamp;
+				Tex->AddressY = TA_Clamp;
+				Tex->UpdateResource();
+				Self->LookPicture = Tex;
+				// fit the box, keeping its shape (the box is square)
+				const float Side = FMath::Max(Tex->GetSizeX(), Tex->GetSizeY());
+				UMRUIStyle::SetImage(Self->LookBrush, Tex, FVector2f(Tex->GetSizeX(), Tex->GetSizeY()) * (256.f / Side));
+			}
+		});
+	}
+	Dialog->ShowDescription(D, &LookBrush);
+	SetLookOpen(true);
 }
 
 void UMRUISubsystem::Deinitialize()
@@ -117,6 +248,7 @@ void UMRUISubsystem::Deinitialize()
 	{
 		Net->OnStatsChanged.Remove(NetStatsHandle);
 		Net->OnPhaseChanged.Remove(NetPhaseHandle);
+		Net->OnDescription.Remove(NetDescriptionHandle);
 	}
 	Super::Deinitialize();
 }
@@ -216,7 +348,7 @@ void UMRUISubsystem::OpenChat()
 	{
 		SetInventoryOpen(false);
 	}
-	if (bGameMenuOpen)
+	if (bGameMenuOpen || bLookOpen)
 	{
 		return;
 	}
@@ -275,6 +407,7 @@ void UMRUISubsystem::RemoveHUD()
 	bInventoryOpen = false;
 	bChatOpen = false;
 	bGameMenuOpen = false;
+	bLookOpen = false;
 	if (Avatar)
 	{
 		Avatar->Destroy();
@@ -465,7 +598,16 @@ void UMRUISubsystem::ApplyInputMode()
 	{
 		return;  // the login screen owns the input (ShowLogin)
 	}
-	if (bGameMenuOpen)
+	if (bLookOpen && !bGameMenuOpen)
+	{
+		// reading (or writing one's description): the dialog has the keyboard and the mouse
+		FInputModeUIOnly Mode;
+		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		PC->SetInputMode(Mode);
+		PC->bShowMouseCursor = true;
+		PC->SetIgnoreLookInput(true);
+	}
+	else if (bGameMenuOpen)
 	{
 		// the menu has the keyboard (Esc closes it); nothing walks or looks meanwhile
 		FInputModeUIOnly Mode;

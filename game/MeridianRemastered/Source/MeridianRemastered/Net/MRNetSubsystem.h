@@ -126,6 +126,12 @@ public:
 	void RequestTurn(int32 KodAngle);
 	void RequestGo();
 	void Say(const FString& Text);
+	/** Ask for an object's (or a player's) description: BP_REQ_LOOK; the answer fires OnDescription. */
+	void RequestLook(uint32 ObjectId);
+	/** Write a description (one's own: BP_CHANGE_DESCRIPTION, up to 1000 characters). */
+	void ChangeDescription(uint32 ObjectId, const FString& Text);
+	/** The last description the server sent (OnDescription). */
+	const FMRNetDescription& GetDescription() const { return Description; }
 
 	// --- state
 	EMRNetPhase GetPhase() const { return Phase; }
@@ -183,6 +189,8 @@ public:
 	FOnMRNetEvent OnUsersChanged;
 	/** IsWaiting changed. */
 	FOnMRNetEvent OnWaitChanged;
+	/** A description arrived (BP_LOOK, UC_LOOK_PLAYER): GetDescription. */
+	FOnMRNetEvent OnDescription;
 
 private:
 	void LoadServers();
@@ -229,6 +237,7 @@ private:
 	bool bWaiting = false;
 	int32 RoomsEntered = 0;
 	TArray<FMRChatLine> Chat;
+	FMRNetDescription Description;
 	bool bRequestedStats = false;
 	TSharedPtr<FMRAssetCache> Assets;
 

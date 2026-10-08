@@ -11,6 +11,7 @@
 #include "Net/MRNetWorld.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "Core/MRUnits.h"
 #include "World/MRBgf.h"
 #include "World/MRRooFile.h"
 #include "World/MRRoomMesh.h"
@@ -342,6 +343,14 @@ void UMRRuntimeRooms::Finish(TSharedPtr<FPending> Job)
 		Info.BoundsWorld = FBox2D(FVector2D(Bounds.Min) + FVector2D(Origin), FVector2D(Bounds.Max) + FVector2D(Origin));
 	}
 	Info.GeometryRid = Rid;
+	for (const FMRRooWall& W : Room.Walls)
+	{
+		if (!W.PosSector || !W.NegSector)
+		{
+			Info.MapWalls.Add(FVector4(Origin.X + W.X0 * MRUnits::CmPerRoo, Origin.Y + W.Y0 * MRUnits::CmPerRoo,
+				Origin.X + W.X1 * MRUnits::CmPerRoo, Origin.Y + W.Y1 * MRUnits::CmPerRoo));
+		}
+	}
 	Info.RooSecurity = Room.Security;
 	Info.bHasRooSecurity = true;
 	if (Entry)

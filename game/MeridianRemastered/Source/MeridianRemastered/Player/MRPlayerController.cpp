@@ -144,6 +144,17 @@ void AMRPlayerController::BuildUIInput()
 	MenuAction = MakeAction(TEXT("IA_Menu"), EInputActionValueType::Boolean);
 	UIContext->MapKey(MenuAction, EKeys::Escape);
 	UIContext->MapKey(MenuAction, EKeys::F10);
+	TargetNextAction = MakeAction(TEXT("IA_TargetNext"), EInputActionValueType::Boolean);
+	UIContext->MapKey(TargetNextAction, EKeys::Tab);
+	UIContext->MapKey(TargetNextAction, EKeys::RightBracket);
+	TargetPreviousAction = MakeAction(TEXT("IA_TargetPrevious"), EInputActionValueType::Boolean);
+	UIContext->MapKey(TargetPreviousAction, EKeys::LeftBracket);
+	TargetSelfAction = MakeAction(TEXT("IA_TargetSelf"), EInputActionValueType::Boolean);
+	UIContext->MapKey(TargetSelfAction, EKeys::Backslash);
+	TargetAimAction = MakeAction(TEXT("IA_TargetAim"), EInputActionValueType::Boolean);
+	UIContext->MapKey(TargetAimAction, EKeys::T);
+	LookAction = MakeAction(TEXT("IA_Look"), EInputActionValueType::Boolean);
+	UIContext->MapKey(LookAction, EKeys::RightMouseButton);
 }
 
 void AMRPlayerController::SetupInputComponent()
@@ -165,6 +176,11 @@ void AMRPlayerController::SetupInputComponent()
 	Input->BindAction(ChatAction, ETriggerEvent::Started, this, &AMRPlayerController::OnChatKey);
 	Input->BindAction(MapZoomAction, ETriggerEvent::Started, this, &AMRPlayerController::OnMapZoom);
 	Input->BindAction(MenuAction, ETriggerEvent::Started, this, &AMRPlayerController::OnMenuKey);
+	Input->BindAction(TargetNextAction, ETriggerEvent::Started, this, &AMRPlayerController::OnTargetNext);
+	Input->BindAction(TargetPreviousAction, ETriggerEvent::Started, this, &AMRPlayerController::OnTargetPrevious);
+	Input->BindAction(TargetSelfAction, ETriggerEvent::Started, this, &AMRPlayerController::OnTargetSelf);
+	Input->BindAction(TargetAimAction, ETriggerEvent::Started, this, &AMRPlayerController::OnTargetAim);
+	Input->BindAction(LookAction, ETriggerEvent::Started, this, &AMRPlayerController::OnLookKey);
 }
 
 UMRUISubsystem* AMRPlayerController::GetUI() const
@@ -221,10 +237,77 @@ void AMRPlayerController::OnChatKey()
 
 void AMRPlayerController::OnMenuKey()
 {
-	if (UMRUISubsystem* UI = GetUI())
+	// the original's Escape: clear the target first (intrface.c A_TARGETCLEAR), then the menu
+	UMRNetWorldSubsystem* NetWorld = GetNetWorld();
+	UMRUISubsystem* UI = GetUI();
+	if (NetWorld && NetWorld->GetTargetId() && !(UI && UI->IsGameMenuOpen()))
+	{
+		NetWorld->ClearTarget();
+		return;
+	}
+	if (UI)
 	{
 		UI->ToggleGameMenu();
 	}
+}
+
+UMRNetWorldSubsystem* AMRPlayerController::GetNetWorld() const
+{
+	UMRNetWorldSubsystem* NetWorld = GetWorld()->GetSubsystem<UMRNetWorldSubsystem>();
+	return NetWorld && NetWorld->IsActive() ? NetWorld : nullptr;
+}
+
+void AMRPlayerController::OnTargetNext()
+{
+	if (UMRNetWorldSubsystem* NetWorld = GetNetWorld())
+	{
+		// Shift+Tab goes back
+		NetWorld->TargetNextOrPrevious(!(IsInputKeyDown(EKeys::LeftShift) || IsInputKeyDown(EKeys::RightShift)));
+	}
+}
+
+void AMRPlayerController::OnTargetPrevious()
+{
+	if (UMRNetWorldSubsystem* NetWorld = GetNetWorld())
+	{
+		NetWorld->TargetNextOrPrevious(false);
+	}
+}
+
+void AMRPlayerController::OnTargetSelf()
+{
+	if (UMRNetWorldSubsystem* NetWorld = GetNetWorld())
+	{
+		NetWorld->TargetSelf();
+	}
+}
+
+void AMRPlayerController::OnTargetAim()
+{
+	if (UMRNetWorldSubsystem* NetWorld = GetNetWorld())
+	{
+		NetWorld->TargetAim();
+	}
+}
+
+void AMRPlayerController::OnLookKey()
+{
+	UMRNetWorldSubsystem* NetWorld = GetNetWorld();
+	if (!NetWorld)
+	{
+		return;
+	}
+	// several things under the crosshair (a pile of items): let the player pick (UMRUISubsystem)
+	const TArray<uint32> Stack = NetWorld->ObjectsAtAim();
+	if (!NetWorld->GetTargetId() && Stack.Num() > 1)
+	{
+		if (UMRUISubsystem* UI = GetUI())
+		{
+			UI->ShowLookPicker(Stack);
+			return;
+		}
+	}
+	NetWorld->LookAtTarget();
 }
 
 void AMRPlayerController::OnMapZoom(const FInputActionValue& Value)

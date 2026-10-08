@@ -20,6 +20,7 @@ void FMRNetWorld::ResetRoom()
 {
 	Objects.Reset();
 	Users.Reset();
+	PlayerOverlays.Reset();
 }
 
 void FMRNetWorld::Reset()
@@ -135,6 +136,67 @@ bool MRNetRead::Object(FMRReader& R, const FMRResourceTable& Res, FMRNetObject& 
 	Overlays(R, Res, Out.OverlayParts);
 	Out.Icon = Res.Get(Out.IconRsc);
 	Out.Name = Res.Get(Out.NameRsc);
+	return R.IsOk();
+}
+
+bool MRNetRead::ObjectNoLight(FMRReader& R, const FMRResourceTable& Res, FMRNetObject& Out)
+{
+	const uint32 RawId = R.U32();
+	Out.Id = MRMsg::PlainId(RawId);
+	Out.Amount = MRMsg::IsNumberId(RawId) ? R.U32() : 0;
+	Out.IconRsc = R.U32();
+	Out.NameRsc = R.U32();
+	Out.Flags = R.U32();
+	Out.DrawEffect = R.U8();
+	Out.MinimapFlags = R.U32();
+	Out.NameColor = R.U32();
+	Out.ObjectType = R.U8();
+	Out.MoveOn = R.U8();
+	Out.Light = FMRNetLight();
+	Palette(R, Out.Xlat, Out.Effect);
+	Animation(R, Out.Animation);
+	Overlays(R, Res, Out.OverlayParts);
+	Out.Icon = Res.Get(Out.IconRsc);
+	Out.Name = Res.Get(Out.NameRsc);
+	return R.IsOk();
+}
+
+bool MRNetRead::Look(FMRReader& R, const FMRResourceTable& Res, FMRNetDescription& Out)
+{
+	Out = FMRNetDescription();
+	if (!Object(R, Res, Out.Object))
+	{
+		return false;
+	}
+	Out.Flags = R.U8();
+	if (!MRServerText::Format(Res, R.U32(), R, Out.Text))
+	{
+		return false;
+	}
+	if (Out.Flags & (MRMsg::DF_EDITABLE | MRMsg::DF_INSCRIBED))
+	{
+		if (!MRServerText::Format(Res, R.U32(), R, Out.Inscription))
+		{
+			return false;
+		}
+	}
+	return R.IsOk();
+}
+
+bool MRNetRead::LookPlayer(FMRReader& R, const FMRResourceTable& Res, FMRNetDescription& Out)
+{
+	Out = FMRNetDescription();
+	Out.bPlayer = true;
+	if (!Object(R, Res, Out.Object))
+	{
+		return false;
+	}
+	Out.bEditable = R.U8() != 0;
+	if (!MRServerText::Format(Res, R.U32(), R, Out.Text) || !MRServerText::Format(Res, R.U32(), R, Out.ExtraInfo))
+	{
+		return false;
+	}
+	Out.Url = R.Str();
 	return R.IsOk();
 }
 

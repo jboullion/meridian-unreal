@@ -65,6 +65,24 @@ void UMRBgfSpriteComponent::SetBgf(TSharedPtr<const FMRBgf> InBgf)
 	Restart();
 }
 
+void UMRBgfSpriteComponent::SetDrawEffect(uint8 Effect)
+{
+	if (!Material)
+	{
+		return;
+	}
+	float Opacity = 1.f;
+	switch (Effect)
+	{
+	case MRMsg::DRAWFX_TRANSLUCENT25: Opacity = 0.25f; break;
+	case MRMsg::DRAWFX_TRANSLUCENT50: case MRMsg::DRAWFX_DITHERINVIS: case MRMsg::DRAWFX_DITHERGREY: Opacity = 0.5f; break;
+	case MRMsg::DRAWFX_TRANSLUCENT75: Opacity = 0.75f; break;
+	default: break;
+	}
+	Material->SetScalarParameterValue(TEXT("Opacity"), Opacity);
+	Material->SetScalarParameterValue(TEXT("Brightness"), Effect == MRMsg::DRAWFX_BLACK ? 0.f : 1.f);
+}
+
 void UMRBgfSpriteComponent::SetAnimation(const FMRNetAnimation& Standing, const FMRNetAnimation& Moving)
 {
 	StandingDef = ToTrack(Standing);

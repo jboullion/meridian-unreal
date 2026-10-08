@@ -227,6 +227,42 @@ The existing movement, UI-shot and look-dev runs stay green. Look-dev compares r
 - lighting beyond the sector light (sprites drawn from bitmaps are full bright): M7;
 - packaging with the new plugin and cook directory is untested (a package build takes over an hour).
 
+### M2a, see and select (2026-10-08)
+**What landed:**
+- **Every object the server sends has an actor** (`AMRNetObject`), not just creatures. Each is shown one of three ways:
+  - a creature we have a sprite for wears it;
+  - in a built zone, an object whose square holds a prop of the world build (the server's lamps, signs, tables, placed as meshes by `build_world.py`) is shown by that prop: a stand-in with no sprite, matched within 0.3 of a square of a `ZoneProp` actor;
+  - anything else is drawn from its bitmap.
+  - Non-creatures stand still (no movement ticks). Drawing effects: invisible hides, black darkens, translucent dithers (`M_RuntimeRoom` gained `Opacity`).
+- **Name plates, target brackets and a crosshair** (`UI/SMRWorldOverlay`), with the original's rules.
+- **Targets** (`UMRNetWorldSubsystem`):
+  - what the crosshair is on (in reach and in sight) is the aim;
+  - T takes it as the target; Tab or `]` / Shift+Tab or `[` cycle the attackable objects in view, left to right; `\` targets yourself;
+  - Esc clears the target before opening the menu.
+- **Look** (`UI/SMRLookDialog`, the right mouse button):
+  - `BP_REQ_LOOK` → `BP_LOOK` (description, inscription) or `UC_LOOK_PLAYER` (description, extra lines, web page);
+  - the picture is the object's own bitmap, or a player's face from the creator's portrait;
+  - one's own description can be edited and saved (`BP_CHANGE_DESCRIPTION`);
+  - a pile under the crosshair is listed first to pick from.
+- **Minimap:** dots by the server's minimap flags; a runtime room draws its one-sided walls.
+- **`BP_PLAYER_OVERLAY`** is read into the world model, for M2b.
+
+**Split from the plan:** equipment on players (armour, weapons, hats) and the first-person weapon became **M2b**. They need the sprite pipeline to convert the original's equipment bitmaps (only 65 player and monster bitmaps are converted), and their look is the maintainer's call from sheets.
+
+**Verification (local Shards stack):**
+- `Meridian.Net.World` also round-trips `BP_LOOK`, `UC_LOOK_PLAYER` and `BP_PLAYER_OVERLAY`; all 20 automation tests pass.
+- `run_net_test.ps1` reports **DONE 19/19** (20/20 with `-Create`). The new Look step:
+  - walks to the Inn of Raza;
+  - checks that every object has an actor (the Inn: 1 with our sprite, 7 by props, 5 from bitmaps);
+  - looks at Marcus ("A veteran of the Orc Wars...");
+  - looks at ourselves (editable), saves a new description and reads it back.
+- `run_move_test.ps1` reports 8/8; UI shots `build/ui/shots/m2/` are unchanged offline.
+- Pictures (`-Render`), in `Saved/Screenshots/MRNet/`:
+  - `names.png`: Marcus's name and target brackets, the NPC dot on the minimap;
+  - `look_object.png`: his Look dialog with his sprite;
+  - `look_self.png`: one's own, editable, with the face portrait;
+  - `runtime_room_1.png`: a target in a runtime room, its walls on the minimap.
+
 ## Alternatives considered
 
 - **Bake every room before allowing travel:** no runtime code, but hours of GPU texture work and hundreds of levels to import before anyone can leave Raza. A room changed on the server would also break until rebuilt.

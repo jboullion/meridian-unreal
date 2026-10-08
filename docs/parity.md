@@ -13,7 +13,7 @@ This file tracks what the Unreal client does compared with the original desktop 
 
 Protocol facts go in [research/blakserv-protocol.md](research/blakserv-protocol.md), each with the blakserv or clientd3d source it came from.
 
-Last survey: 2026-10-08. M0 and M1 done the same day.
+Last survey: 2026-10-08. M0, M1 and M2a done the same day.
 
 ## Session and account
 
@@ -51,14 +51,14 @@ Last survey: 2026-10-08. M0 and M1 done the same day.
 | Feature | Messages | UE | Shards | M |
 |---|---|---|---|---|
 | Creatures as sprites (players, monsters, NPCs) | `BP_ROOM_CONTENTS`, `BP_CREATE`, `BP_MOVE`, ... | Done, for converted sprites | Done | — |
-| Items, containers, signs and ornaments | the same | Missing: only creatures are spawned | Done | M2 |
+| Items, containers, signs and ornaments | the same | Done: drawn from their bitmaps, or by the world build's props in built zones | Done | M2 |
 | Sprites we haven't converted | `.bgf` | Done: drawn from the server's bitmap (no overlays or colours yet) | Done | M1 |
-| Draw effects, name colours, object lights | object fields | Partial: read into the world model (M0), not drawn yet | Done | M2 |
-| Name plates | — | Missing | Done | M2 |
-| Armour, weapons and hats on players | overlays | Partial: face, hair and colours only | Done | M2 |
-| First-person weapon and shield | `BP_PLAYER_OVERLAY` | Missing: a fixed picture | Done | M2 |
-| Look / examine dialog | `BP_REQ_LOOK`, `BP_LOOK` | Missing | Done | M2 |
-| Player descriptions | `UC_LOOK_PLAYER`, `BP_CHANGE_DESCRIPTION` | Missing | Done | M2 |
+| Draw effects, name colours, object lights | object fields | Partial: invisible, black and translucent (dithered) on bitmap sprites; name colours; object lights are M7 | Done | M2, M7 |
+| Name plates | — | Done: the original's rules (15 squares, signs, the target), not through walls | Done | M2 |
+| Armour, weapons and hats on players | overlays | Partial: face, hair and colours only | Done | M2b |
+| First-person weapon and shield | `BP_PLAYER_OVERLAY` | Partial: read into the world model; still a fixed picture | Done | M2b |
+| Look / examine dialog | `BP_REQ_LOOK`, `BP_LOOK` | Done: right mouse button; picture, description, inscription; a picker for a pile; context buttons are M3 | Done | M2, M3 |
+| Player descriptions | `UC_LOOK_PLAYER`, `BP_CHANGE_DESCRIPTION` | Done: face portrait, extra lines, web page; edit and save one's own | Done | M2 |
 
 ## Inventory and items
 
@@ -79,7 +79,7 @@ Last survey: 2026-10-08. M0 and M1 done the same day.
 | Feature | Messages | UE | Shards | M |
 |---|---|---|---|---|
 | Attack (aim picks the target) | `BP_REQ_ATTACK` | Missing: animation only | Done (click target) | M4 |
-| Targeting: click, Tab, self, clear, halo | — | Missing | Done | M2 |
+| Targeting: aim, Tab, self, clear, halo | — | Done: the crosshair aims, T takes it, Tab / [ ] cycle, \ self, Esc clears; brackets | Done | M2 |
 | Projectiles | `BP_SHOOT`, `BP_RADIUS_SHOOT` | Missing | Done | M4 |
 | Screen effects: blind, paralyze, shake, invert, pain, whiteout, flash | `BP_EFFECT` | Missing | Done | M4 |
 | Blur, waver, rain, snow, sand | `BP_EFFECT` | Missing | Missing | M4 |
@@ -138,7 +138,7 @@ Last survey: 2026-10-08. M0 and M1 done the same day.
 |---|---|---|---|
 | HUD, hotbars, inventory dialog | Done (as UI; data per rows above) | Done | — |
 | Minimap: walls and the player | Done | Done | — |
-| Minimap: players, monsters, items | Missing | Done | M2 |
+| Minimap: players, monsters, NPCs | Done: dots by the server's minimap flags; runtime rooms draw their walls | Done | M2 |
 | Map annotations | Missing | Missing | M9 |
 | Options: graphics, audio, controls | Missing: console variables only | Done | M9 |
 | Key rebinding, Modern and Original presets | Missing: hard-coded | Done | M9 |
@@ -162,7 +162,7 @@ The server serves about 395 rooms. `ReferenceServers/Server-104/resource/rooms` 
 |---|---|
 | M0 | Foundations: client world model, session robustness, asset cache, Escape menu (done 2026-10-08) |
 | M1 | Whole-world travel: runtime rooms and runtime sprites (done 2026-10-08) |
-| M2 | See and select everything: all objects, name plates, targeting, Look, equipment overlays |
+| M2 | See and select everything: all objects, name plates, targeting, Look (M2a, done 2026-10-08); equipment overlays (M2b) |
 | M3 | Inventory and items |
 | M4 | Combat, death and effects |
 | M5 | Spells, skills, enchantments, stats |

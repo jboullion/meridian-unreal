@@ -52,6 +52,14 @@ private:
 	void OnChatKey();
 	/** Esc or F10: the Escape menu (in PIE, Esc stops play: use F10 there). */
 	void OnMenuKey();
+	/** Tab or ] (Shift+Tab: back), [ , \ (self), T (what the crosshair is on): the original's targets (merintr.c). */
+	void OnTargetNext();
+	void OnTargetPrevious();
+	void OnTargetSelf();
+	void OnTargetAim();
+	/** Right mouse button: look at the target, else what the crosshair is on (the original's look-mouse). */
+	void OnLookKey();
+	class UMRNetWorldSubsystem* GetNetWorld() const;
 	void OnMapZoom(const FInputActionValue& Value);
 	class UMRUISubsystem* GetUI() const;
 
@@ -63,6 +71,11 @@ private:
 	UPROPERTY(Transient) TObjectPtr<UInputAction> ChatAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> MapZoomAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> MenuAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> TargetNextAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> TargetPreviousAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> TargetSelfAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> TargetAimAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> LookAction;
 
 	/** Zones requested by the server, with the time the request expires. */
 	TMap<int32, double> PreparedZones;

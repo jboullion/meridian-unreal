@@ -117,9 +117,11 @@ RUNTIME_DIR = "/Game/Generated/Runtime"   # loaded by path at runtime (cooked: D
 
 def build_runtime_room_material():
     """/Game/Generated/Runtime/M_RuntimeRoom: rooms the game builds from the server's .roo files
-    (AMRRuntimeRoom, docs/adr/0012). The original's look: unlit, its texture (a transient texture
-    the game makes from the BGF through the palette, parameter "Tex") times the sector light it
-    carries as vertex colour; palette index 254 is cut out (masked); two-sided, like its walls."""
+    (AMRRuntimeRoom, docs/adr/0012) and objects drawn from their own bitmaps (UMRBgfSpriteComponent).
+    The original's look: unlit, its texture (a transient texture the game makes from the BGF through
+    the palette, parameter "Tex") times the sector light it carries as vertex colour, times
+    "Brightness" (0: the original's black drawing effect); palette index 254 is cut out (masked);
+    "Opacity" < 1 dithers it away (the translucent drawing effects); two-sided, like its walls."""
     name, path = "M_RuntimeRoom", RUNTIME_DIR + "/M_RuntimeRoom"
 
     def build():
@@ -143,7 +145,14 @@ def build_runtime_room_material():
         mel.connect_material_expressions(lit, "", out, "A")
         mel.connect_material_expressions(bright, "", out, "B")
         mel.connect_material_property(out, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
-        mel.connect_material_property(tex, "A", unreal.MaterialProperty.MP_OPACITY_MASK)
+        opacity = _expr(mat, unreal.MaterialExpressionScalarParameter, -700, 600, parameter_name="Opacity", default_value=1.0)
+        dither = _expr(mat, unreal.MaterialExpressionMaterialFunctionCall, -450, 600)
+        dither.set_editor_property("material_function", eal.load_asset("/Engine/Functions/Engine_MaterialFunctions02/Utility/DitherTemporalAA"))
+        mel.connect_material_expressions(opacity, "", dither, "Alpha Threshold")
+        mask = _expr(mat, unreal.MaterialExpressionMultiply, -200, 450)
+        mel.connect_material_expressions(tex, "A", mask, "A")
+        mel.connect_material_expressions(dither, "Result", mask, "B")
+        mel.connect_material_property(mask, "", unreal.MaterialProperty.MP_OPACITY_MASK)
         mel.recompile_material(mat)
         eal.save_loaded_asset(mat)
         log("built " + path)

@@ -327,6 +327,23 @@ void UMRNetSubsystem::Say(const FString& Text)
 	}
 }
 
+void UMRNetSubsystem::RequestLook(uint32 ObjectId)
+{
+	if (Connection.IsValid() && Phase == EMRNetPhase::InGame && ObjectId && !IsWaiting())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_LOOK).U32(ObjectId));
+	}
+}
+
+void UMRNetSubsystem::ChangeDescription(uint32 ObjectId, const FString& Text)
+{
+	if (Connection.IsValid() && Phase == EMRNetPhase::InGame && ObjectId && !IsWaiting())
+	{
+		// (clientd3d object.h MAX_DESCRIPTION)
+		Connection->Send(FMRWriter(MRMsg::BP_CHANGE_DESCRIPTION).U32(ObjectId).Str(Text.Left(1000)));
+	}
+}
+
 // ------------------------------------------------------------------------------ game data
 
 FString UMRNetSubsystem::CacheDir() const
@@ -838,6 +855,55 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		if (MRServerText::Format(Resources, FormatId, R, Text))
 		{
 			AddChat(Text, 0);
+		}
+		break;
+	}
+	case MRMsg::BP_LOOK:
+	{
+		FMRNetDescription D;
+		if (MRNetRead::Look(R, Resources, D))
+		{
+			Description = MoveTemp(D);
+			OnDescription.Broadcast();
+		}
+		else
+		{
+			UE_LOG(LogMeridian, Warning, TEXT("MRNet: BP_LOOK couldn't be read (%d bytes)"), Body.Num());
+		}
+		break;
+	}
+	case MRMsg::BP_USERCOMMAND:
+	{
+		const uint8 Command = R.U8();
+		if (Command == MRMsg::UC_LOOK_PLAYER)
+		{
+			FMRNetDescription D;
+			if (MRNetRead::LookPlayer(R, Resources, D))
+			{
+				Description = MoveTemp(D);
+				OnDescription.Broadcast();
+			}
+			else
+			{
+				UE_LOG(LogMeridian, Warning, TEXT("MRNet: UC_LOOK_PLAYER couldn't be read (%d bytes)"), Body.Num());
+			}
+		}
+		break;  // the other user commands: guilds, preferences... (docs/parity.md)
+	}
+	case MRMsg::BP_PLAYER_OVERLAY:
+	{
+		const uint8 Hotspot = R.U8();
+		FMRNetObject O;
+		if (MRNetRead::ObjectNoLight(R, Resources, O))
+		{
+			if (O.IconRsc)
+			{
+				World.PlayerOverlays.Add(Hotspot, MoveTemp(O));
+			}
+			else
+			{
+				World.PlayerOverlays.Remove(Hotspot);
+			}
 		}
 		break;
 	}

@@ -11,9 +11,11 @@
 #include "UI/MRUISubsystem.h"
 #include "UI/SMRChatLog.h"
 #include "UI/SMRGameMenu.h"
+#include "UI/SMRLookDialog.h"
 #include "UI/SMRInventoryScreen.h"
 #include "UI/SMRMinimap.h"
 #include "UI/SMRSlot.h"
+#include "UI/SMRWorldOverlay.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SUniformGridPanel.h"
 #include "Widgets/SBoxPanel.h"
@@ -445,11 +447,18 @@ void SMRHUDRoot::Rebuild()
 	Inventory->SetVisibility(Ui->IsInventoryOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 	ChatLog = SNew(SMRChatLog, Ui);
 	GameMenu = SNew(SMRGameMenu, Ui);
+	LookDialog = SNew(SMRLookDialog, Ui);
+	LookDialog->SetVisibility(Ui->IsLookOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 	GameMenu->SetVisibility(Ui->IsGameMenuOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 
 	ChildSlot
 	[
 		SNew(SOverlay)
+		// names, the target and the crosshair over the world (under every panel)
+		+ SOverlay::Slot()
+		[
+			SNew(SMRWorldOverlay, Ui)
+		]
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0.f, 0.f, 0.f, Style->Number(TEXT("hotbar_bottom"), 6.f) * Px)
 		[
 			HotbarArea.ToSharedRef()
@@ -480,6 +489,10 @@ void SMRHUDRoot::Rebuild()
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
 		[
 			MRUI::Label(Style, TAttribute<FText>::CreateLambda([this]() { return FText::FromString(LoadingText()); }), 14.f, true)
+		]
+		+ SOverlay::Slot()
+		[
+			LookDialog.ToSharedRef()
 		]
 		+ SOverlay::Slot()
 		[
@@ -622,6 +635,14 @@ void SMRHUDRoot::OpenChat()
 	if (ChatLog.IsValid())
 	{
 		ChatLog->OpenInput();
+	}
+}
+
+void SMRHUDRoot::SetLookOpen(bool bOpen)
+{
+	if (LookDialog.IsValid())
+	{
+		LookDialog->SetVisibility(bOpen ? EVisibility::Visible : EVisibility::Collapsed);
 	}
 }
 

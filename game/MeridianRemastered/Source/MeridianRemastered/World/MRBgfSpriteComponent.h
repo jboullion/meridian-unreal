@@ -30,6 +30,8 @@ public:
 	void SetAnimation(const FMRNetAnimation& Standing, const FMRNetAnimation& Moving);
 	/** Moving: show the motion record's animation. */
 	void SetMoving(bool bInMoving);
+	/** The original's drawing effect (DRAWFX_*): black (Brightness 0), translucent (Opacity). */
+	void SetDrawEffect(uint8 Effect);
 	/** The bitmap shown (tests), or -1. */
 	int32 GetShownBitmap() const { return Shown; }
 
