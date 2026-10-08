@@ -14,6 +14,7 @@
 #include "Net/MRNetLook.h"
 #include "Net/MRNetObject.h"
 #include "Net/MRNetSubsystem.h"
+#include "Net/MRNetWorld.h"
 #include "Net/MRProtocol.h"
 #include "Player/MRPlayerState.h"
 #include "Serialization/JsonReader.h"
@@ -222,6 +223,7 @@ void UMRNetWorldSubsystem::OnRoomEntered()
 	}
 	ClearObjects();
 	const FMRNetPlayer& P = Net->GetPlayer();
+	const int32 PrevRid = Rid;
 	Rid = Zones->RidForRoom(P.RoomFile);
 	UE_LOG(LogMeridian, Log, TEXT("MRNet: entered %s (%s) -> zone %d, %d objects"), *P.RoomFile, *P.RoomName, Rid, Net->GetObjects().Num());
 	if (!Rid)
@@ -231,7 +233,15 @@ void UMRNetWorldSubsystem::OnRoomEntered()
 		Net->SetStatus(FString::Printf(TEXT("%s isn't in this version of the game yet."), *P.RoomName));
 		return;
 	}
-	PlacePlayer();
+	// the server names its room by the .roo's security value (clientd3d game.c): ours must be built from the same file
+	const FMRZoneInfo* Zone = Zones->FindZone(Rid);
+	bRoomMatchesServer = !Zone || !Zone->bHasRooSecurity || MRNetRead::SecurityMatches(Zone->RooSecurity, P.RoomSecurity);
+	if (!bRoomMatchesServer)
+	{
+		UE_LOG(LogMeridian, Warning, TEXT("MRNet: zone %d was built from a different %s than the server's (security %08x, server %08x)"),
+			Rid, *P.RoomFile, Zone->RooSecurity, P.RoomSecurity);
+	}
+	PlacePlayer(PrevRid == Rid);
 	ApplySelfLook();
 	for (const TPair<uint32, FMRNetObject>& Pair : Net->GetObjects())
 	{
@@ -261,7 +271,7 @@ void UMRNetWorldSubsystem::ApplySelfLook()
 	}
 }
 
-void UMRNetWorldSubsystem::PlacePlayer()
+void UMRNetWorldSubsystem::PlacePlayer(bool bSameRoom)
 {
 	UMRNetSubsystem* Net = GetNet();
 	UMRZoneSubsystem* Zones = GetWorld()->GetSubsystem<UMRZoneSubsystem>();
@@ -280,6 +290,10 @@ void UMRNetWorldSubsystem::PlacePlayer()
 	}
 	if (APawn* Pawn = PC->GetPawn())
 	{
+		if (bSameRoom && FVector::Dist2D(Pawn->GetActorLocation(), Floor) <= SnapBackCm)
+		{
+			return;  // the same room again (its data was reloaded): we are where the server thinks
+		}
 		const FVector At = Floor + FVector(0.0, 0.0, Pawn->GetSimpleCollisionHalfHeight() + 2.0);
 		Pawn->TeleportTo(At, Facing, false, true);
 	}
@@ -443,7 +457,8 @@ void UMRNetWorldSubsystem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	UMRNetSubsystem* Net = GetNet();
-	if (Net && Net->GetPhase() == EMRNetPhase::InGame && Rid)
+	// (not while the server saves or our data is being reloaded: the room's object id may change)
+	if (Net && Net->GetPhase() == EMRNetPhase::InGame && Rid && !Net->IsWaiting())
 	{
 		SendMovement(FPlatformTime::Seconds());
 	}
@@ -455,7 +470,7 @@ void UMRNetWorldSubsystem::RequestGo()
 	UMRZoneSubsystem* Zones = GetWorld()->GetSubsystem<UMRZoneSubsystem>();
 	APlayerController* PC = GetPC();
 	APawn* Pawn = PC ? PC->GetPawn() : nullptr;
-	if (!Net || Net->GetPhase() != EMRNetPhase::InGame || !Rid || !Zones || !Pawn)
+	if (!Net || Net->GetPhase() != EMRNetPhase::InGame || !Rid || !Zones || !Pawn || Net->IsWaiting())
 	{
 		return;
 	}

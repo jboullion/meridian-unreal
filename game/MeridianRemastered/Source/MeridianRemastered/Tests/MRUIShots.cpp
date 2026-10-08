@@ -154,6 +154,9 @@ void UMRUIShots::Start(APlayerController* InController)
 					UI->SetInventoryOpen(false);
 				}
 			}, 1.f},
+		// the Escape menu (offline: no Log Off)
+		{TEXT("game_menu"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->SetGameMenuOpen(true); }, 0.8f},
+		{TEXT(""), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->SetGameMenuOpen(false); }, 0.3f},
 		// the login screen (docs/adr/0010-meridian-servers.md), over the HUD here; online it has the town to itself
 		{TEXT("login"), [](APlayerController* PC) { PreviewLogin(PC, EMRNetPhase::Offline); }, 1.f},
 		{TEXT("login_error"), [](APlayerController* PC) { PreviewLogin(PC, EMRNetPhase::Offline, false, TEXT("Login failed. Check your password.")); }, 0.6f},

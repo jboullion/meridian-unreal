@@ -70,6 +70,12 @@ struct FMRZoneInfo
 	UPROPERTY(BlueprintReadOnly) TArray<FMREdgeExit> EdgeExits;
 	/** Zones reachable through one exit (tile or edge); the client keeps these preloaded. */
 	UPROPERTY(BlueprintReadOnly) TArray<int32> Neighbours;
+	/**
+	 * The security value of the .roo it was built from (zone_layout.json "roo_security", tools/roo2gltf).
+	 * Online, the server's BP_PLAYER says which room it means; a mismatch means a different room.
+	 */
+	uint32 RooSecurity = 0;
+	bool bHasRooSecurity = false;
 
 	double GridArea() const { return GridSizeRoo.X * GridSizeRoo.Y; }
 };

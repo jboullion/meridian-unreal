@@ -9,6 +9,7 @@
 #include "UI/MRUIStyle.h"
 #include "UI/MRUISubsystem.h"
 #include "UI/SMRChatLog.h"
+#include "UI/SMRGameMenu.h"
 #include "UI/SMRInventoryScreen.h"
 #include "UI/SMRMinimap.h"
 #include "UI/SMRSlot.h"
@@ -442,6 +443,8 @@ void SMRHUDRoot::Rebuild()
 	Inventory = SNew(SMRInventoryScreen, Ui);
 	Inventory->SetVisibility(Ui->IsInventoryOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 	ChatLog = SNew(SMRChatLog, Ui);
+	GameMenu = SNew(SMRGameMenu, Ui);
+	GameMenu->SetVisibility(Ui->IsGameMenuOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 
 	ChildSlot
 	[
@@ -471,6 +474,10 @@ void SMRHUDRoot::Rebuild()
 		+ SOverlay::Slot()
 		[
 			SNew(SMRCursorStack, Ui)
+		]
+		+ SOverlay::Slot()
+		[
+			GameMenu.ToSharedRef()
 		]
 	];
 }
@@ -601,6 +608,18 @@ void SMRHUDRoot::OpenChat()
 	if (ChatLog.IsValid())
 	{
 		ChatLog->OpenInput();
+	}
+}
+
+void SMRHUDRoot::SetGameMenuOpen(bool bOpen)
+{
+	if (GameMenu.IsValid())
+	{
+		GameMenu->SetVisibility(bOpen ? EVisibility::Visible : EVisibility::Collapsed);
+		if (bOpen)
+		{
+			GameMenu->OnOpened();
+		}
 	}
 }
 

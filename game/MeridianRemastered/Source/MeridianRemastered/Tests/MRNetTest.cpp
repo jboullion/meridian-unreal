@@ -9,7 +9,9 @@
 #include "Misc/App.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Paths.h"
+#include "Net/MRAssetCache.h"
 #include "Net/MRCharInfo.h"
+#include "Net/MRNetWorld.h"
 #include "Net/MRNetObject.h"
 #include "Net/MRNetSubsystem.h"
 #include "Net/MRNetWorldSubsystem.h"
@@ -311,6 +313,15 @@ void UMRNetTest::Tick()
 			Pass(FString::Printf(TEXT("entered %s (%s) as zone %d at (%d, %d), %d objects in the room"), *Net->GetPlayer().RoomFile,
 				*Net->GetPlayer().RoomName, StartRid, Self ? Self->KodRow : 0, Self ? Self->KodCol : 0, Net->GetObjects().Num()));
 			CheckLook(Net);
+			if (NetWorld->DoesRoomMatchServer())
+			{
+				Pass(FString::Printf(TEXT("zone %d is built from the server's %s (security %08x)"), StartRid, *Net->GetPlayer().RoomFile,
+					Net->GetPlayer().RoomSecurity & 0x0FFFFFFF));
+			}
+			else
+			{
+				Fail(FString::Printf(TEXT("zone %d isn't built from the server's %s"), StartRid, *Net->GetPlayer().RoomFile));
+			}
 			Advance(EStep::Say);
 		}
 		else if (bTimedOut || Net->GetPhase() == EMRNetPhase::Offline)
@@ -348,6 +359,11 @@ void UMRNetTest::Tick()
 		if (T > HoldSeconds)
 		{
 			LogCreatures();
+			if (UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr)
+			{
+				UI->SetGameMenuOpen(false);
+				UI->SetInventoryOpen(false);
+			}
 			Advance(EStep::Exit);
 			break;
 		}
@@ -360,14 +376,19 @@ void UMRNetTest::Tick()
 			}
 			++HoldMoves;
 		}
-		if (FApp::CanEverRender() && T > 5.0 + 8.0 * Shots && Shots < 4)
+		if (FApp::CanEverRender() && T > 5.0 + 8.0 * Shots && Shots < 6)
 		{
-			// two of the world, then the dialog on the server's stats and spells (its stat groups)
+			// two of the world, the dialog on the server's stats, spells and the (online) inventory, then the Escape menu
 			UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
-			if (UI && Shots >= 2)
+			if (UI && Shots >= 2 && Shots <= 4)
 			{
 				UI->SetInventoryOpen(true);
-				UI->SetInventoryTab(Shots == 2 ? 3 : 1);
+				UI->SetInventoryTab(Shots == 2 ? 3 : Shots == 3 ? 1 : 0);
+			}
+			else if (UI && Shots == 5)
+			{
+				UI->SetInventoryOpen(false);
+				UI->SetGameMenuOpen(true);
 			}
 			const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), FString::Printf(TEXT("online_%d.png"), Shots));
 			// a moment for the dialog to lay out before the capture
@@ -391,11 +412,120 @@ void UMRNetTest::Tick()
 		else if (bAsked && NetWorld->GetRid() && NetWorld->GetRid() != StartRid)
 		{
 			Pass(FString::Printf(TEXT("took an exit from zone %d to zone %d (%s)"), StartRid, NetWorld->GetRid(), *Net->GetPlayer().RoomName));
-			Advance(EStep::Logoff);
+			Advance(EStep::Assets);
 		}
 		else if (bTimedOut)
 		{
 			Fail(FString::Printf(TEXT("exit: still in zone %d"), NetWorld->GetRid()));
+			Advance(EStep::Assets);
+		}
+		break;
+
+	case EStep::Assets:
+		if (!bAsked)
+		{
+			bAsked = true;
+			const FString Room = Net->GetPlayer().RoomFile.ToLower();
+			const uint32 Security = Net->GetPlayer().RoomSecurity;
+			TWeakObjectPtr<UMRNetTest> Weak(this);
+			Net->GetAssets()->Fetch(Room, [Weak, Room, Security](bool bOk, const TArray<uint8>& Bytes)
+			{
+				if (UMRNetTest* Self = Weak.Get())
+				{
+					Self->bAssetDone = true;
+					Self->bAssetOk = bOk && MRNetRead::SecurityMatches(MRNetRead::RooSecurity(Bytes), Security);
+					Self->AssetResult = FString::Printf(TEXT("%s: %s, %d bytes, security %08x (server %08x)"), *Room, bOk ? TEXT("downloaded") : TEXT("failed"),
+						Bytes.Num(), MRNetRead::RooSecurity(Bytes), Security);
+				}
+			});
+		}
+		else if (bAssetDone)
+		{
+			TArray<uint8> Again;
+			if (bAssetOk && Net->GetAssets()->Load(Net->GetPlayer().RoomFile, Again))
+			{
+				Pass(FString::Printf(TEXT("asset cache (%d files listed): %s, then read back from the cache"), Net->GetAssets()->NumListed(), *AssetResult));
+			}
+			else
+			{
+				Fail(FString::Printf(TEXT("asset cache: %s"), *AssetResult));
+			}
+			const FMRNetUser* Me = Net->GetUsers().Find(Net->GetPlayer().Id);
+			if (Me)
+			{
+				Pass(FString::Printf(TEXT("the players list has %d players, us among them (%s)"), Net->GetUsers().Num(), *Me->Name));
+			}
+			else
+			{
+				Fail(FString::Printf(TEXT("players list: %d players, not us"), Net->GetUsers().Num()));
+			}
+			Advance(EStep::Reload);
+		}
+		else if (bTimedOut)
+		{
+			Fail(TEXT("asset cache: no answer"));
+			Advance(EStep::Reload);
+		}
+		break;
+
+	case EStep::Reload:
+		if (!bAsked)
+		{
+			bAsked = true;
+			bSaid = false;
+			RoomsBefore = Net->GetRoomsEntered();
+			Net->ReloadData();
+		}
+		else if (!bSaid && Net->GetRoomsEntered() > RoomsBefore && !Net->IsWaiting() && NetWorld->GetRid())
+		{
+			// the room is back: is the session still fine?
+			bSaid = true;
+			SayText = FString::Printf(TEXT("Reloaded %d"), FMath::RandRange(100, 999));
+			Net->Say(SayText);
+		}
+		else if (bSaid && Net->GetChat().ContainsByPredicate([this](const FMRChatLine& L) { return L.Text.Contains(SayText); }))
+		{
+			Pass(FString::Printf(TEXT("reloaded the data: the room came back (%d objects, %d players) and \"%s\" was heard"), Net->GetObjects().Num(),
+				Net->GetUsers().Num(), *SayText));
+			Advance(EStep::Relog);
+		}
+		else if (bTimedOut || Net->GetPhase() == EMRNetPhase::Offline)
+		{
+			Fail(FString::Printf(TEXT("reload: %s"), Net->GetPhase() == EMRNetPhase::Offline ? *Net->GetLastError()
+				: bSaid ? TEXT("our line never came back") : TEXT("the room never came back")));
+			Advance(Net->GetPhase() == EMRNetPhase::Offline ? EStep::Logoff : EStep::Relog);
+		}
+		break;
+
+	case EStep::Relog:
+		if (!bAsked)
+		{
+			bAsked = true;
+			bSaid = false;
+			Net->ReturnToCharacters();
+		}
+		else if (!bSaid && Net->GetPhase() == EMRNetPhase::Characters && Net->GetStatus().IsEmpty() && !PC->GetPawn())
+		{
+			const FMRCharacterSlot* Named = Net->GetCharacters().FindByPredicate([](const FMRCharacterSlot& C) { return !C.bNeedsCreation; });
+			if (!Named)
+			{
+				Fail(TEXT("log off to the characters: the list has no character"));
+				Advance(EStep::Logoff);
+				break;
+			}
+			bSaid = true;
+			UE_LOG(LogMeridian, Display, TEXT("MRNetTest: back at the character list (%d slots); entering as %s again"), Net->GetCharacters().Num(), *Named->Name);
+			Net->UseCharacter(Named->Id);
+		}
+		else if (bSaid && Net->GetPhase() == EMRNetPhase::InGame && NetWorld->GetRid() && PC->GetPawn())
+		{
+			Pass(FString::Printf(TEXT("logged off to the character list and entered again (%s)"), *Net->GetPlayer().RoomName));
+			Advance(EStep::Logoff);
+		}
+		else if (bTimedOut || Net->GetPhase() == EMRNetPhase::Offline)
+		{
+			Fail(FString::Printf(TEXT("log off to the characters: phase %d, %s"), static_cast<int32>(Net->GetPhase()),
+				Net->GetLastError().IsEmpty() ? *Net->GetStatus() : *Net->GetLastError()));
 			Advance(EStep::Logoff);
 		}
 		break;

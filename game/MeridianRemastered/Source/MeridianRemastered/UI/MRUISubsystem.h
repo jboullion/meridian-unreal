@@ -66,6 +66,16 @@ public:
 	void DebugFoldSpellSchool(int32 School);
 	bool IsInventoryOpen() const { return bInventoryOpen; }
 
+	// --- the Escape menu (SMRGameMenu)
+	void ToggleGameMenu();
+	void SetGameMenuOpen(bool bOpen);
+	bool IsGameMenuOpen() const { return bGameMenuOpen; }
+	/** Playing on a server: Log Off goes back to the character list. */
+	bool CanLogOff() const;
+	void LogOffToCharacters();
+	/** Leave the server (if on one) and close the game. */
+	void QuitGame();
+
 	// --- slots (from the slot widgets)
 	void OnSlotMouseDown(const FMRSlotRef& Slot, bool bRight, bool bShift);
 	void OnSlotMouseUp(const FMRSlotRef& Slot);
@@ -127,8 +137,12 @@ public:
 	class UTexture2D* GetMapTexture(int32 GeometryRid);
 
 private:
+	/** What the widgets show: Mock offline, an UMRNetInventory while in a server's game. */
 	UPROPERTY(Transient)
 	TObjectPtr<UMRInventorySource> Source;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UMRInventorySource> Mock;
 
 	UPROPERTY(Transient)
 	TObjectPtr<AMRAvatarPreview> Avatar;
@@ -147,10 +161,15 @@ private:
 	TSharedPtr<class SMRLoginScreen> Login;
 	bool bInventoryOpen = false;
 	bool bChatOpen = false;
+	bool bGameMenuOpen = false;
 	bool bTextInput = false;
 	int32 StatsVersion = 0;
 	FDelegateHandle NetStatsHandle;
+	FDelegateHandle NetPhaseHandle;
 	void OnNetStats(uint32 Group);
+	/** In a server's game: a fresh UMRNetInventory for this character; out of it: the mock. */
+	void OnNetPhase();
+	void UseSource(UMRInventorySource* InSource);
 	class UMRNetSubsystem* GetNet() const;
 	FMRSlotRef HoveredSlot;
 	/** Where the mouse went down with an empty cursor: releasing over another slot places (drag and drop). */

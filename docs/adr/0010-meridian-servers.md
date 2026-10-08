@@ -78,10 +78,10 @@ TODO.md already set the goal: the Unreal game should be "a full client build for
 ## Follow-up work
 - **The VM:** add `app://meridian-remastered` to `GATEWAY_ORIGINS` in the VM's `deploy/.env` and restart the gateway. Until then "Shards (online)" gets 403.
 - **Retire the UE-server path:** remove the dedicated-server spawn wait, `ClientPrepareZone` and `IsZoneReadyFor`, `MRZoneSmokeTest` / `run_zone_test.ps1`, `MRSpriteNetTest` / `run_sprite_net_test.ps1`, and the "Play As Client" instructions.
-- **Next features:**
+- **Next features** (the full plan is in [ADR 0012](0012-client-parity-and-world-coverage.md) and [docs/parity.md](../parity.md)):
   - player looks from the server's overlays: done 2026-10-07 for the face, hair and colours. Armour torsos, weapons and hats aren't drawn from the server yet;
   - the full character creator: done 2026-10-07;
   - stats, inventory and spells from the server (the inventory dialog's `UMRInventorySource` seam);
   - combat;
   - sounds and lighting messages;
-  - room checksums.
+  - room checksums: done 2026-10-08 (M0 of ADR 0012). Every room's `.roo` security value is checked against `BP_PLAYER`'s.

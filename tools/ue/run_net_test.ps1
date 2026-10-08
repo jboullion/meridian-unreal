@@ -1,7 +1,9 @@
 # Online smoke test (docs/adr/0010-meridian-servers.md): the game, standalone, plays on a Meridian
 # server through its WebSocket gateway (UMRNetTest): logs in (an unknown name makes the account),
-# plays or creates a character, enters a zone, says a line and hears it back, takes an exit into
-# another zone and logs off.
+# plays or creates a character, enters a zone (built from the server's room), says a line and
+# hears it back, takes an exit into another zone, fetches the room through the asset cache, finds
+# itself in the players list, resynchronises, logs off to the character list and enters again, and
+# logs off (DONE 10/10; 11/11 with -Create).
 #
 # Needs the server running. For the local Shards stack, in E:\2026_Experiments\meridian-browser:
 #   npm run dev      (blakserv, the gateway on ws://localhost:8059, the game files on http://localhost:5173)
@@ -69,7 +71,7 @@ if (Test-Path $log) {
     Select-String -Path $log -Pattern "LogMeridian.*(MRNetTest|MRNet:)" | ForEach-Object { $_.Line -replace '^\[[^\]]*\]\[[^\]]*\]', '' }
 }
 $done = if (Test-Path $log) { Select-String -Path $log -Pattern "MRNetTest: DONE (\d+)/(\d+)" | Select-Object -Last 1 } else { $null }
-if ($done -and $done.Matches[0].Groups[1].Value -eq $done.Matches[0].Groups[2].Value -and [int]$done.Matches[0].Groups[2].Value -ge 5) {
+if ($done -and $done.Matches[0].Groups[1].Value -eq $done.Matches[0].Groups[2].Value -and [int]$done.Matches[0].Groups[2].Value -ge 10) {
     Write-Host "PASS: $($done.Matches[0].Value)"
     exit 0
 }

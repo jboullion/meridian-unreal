@@ -107,10 +107,6 @@ public:
 	virtual int32 GetSpellPercent(FName Spell) const override { const int32* P = SpellPercents.Find(Spell); return P ? *P : -1; }
 	virtual const TArray<FMRStatView>& GetStats() const override { return Stats; }
 
-	/** Online: the server's spell and skill lists replace the mock ones (the rest stays mock until the server owns inventory). */
-	void SetKnownSpells(const TArray<FName>& InSpells, const TMap<FName, int32>& InPercents);
-	void SetSkills(const TMap<FName, int32>& InSkills);
-
 protected:
 	virtual FMRSlotContent GetRaw(const FMRSlotRef& Slot) const override;
 	virtual void SetRaw(const FMRSlotRef& Slot, const FMRSlotContent& Content) override;
@@ -126,4 +122,35 @@ private:
 	TMap<FName, int32> SpellPercents;
 	TMap<FName, int32> Skills;
 	TArray<FMRStatView> Stats;
+};
+
+/**
+ * The UI's source while playing on a server (docs/adr/0012-client-parity-and-world-coverage.md):
+ * the character's spells and skills as the server lists them (its stat groups 3 and 4, by name into
+ * our data), and a spell bar kept on this client. The bag, hotbar and equipment show nothing yet:
+ * the server's inventory messages come with M3 (docs/parity.md), and no mock items are shown online.
+ */
+UCLASS()
+class MERIDIANREMASTERED_API UMRNetInventory : public UMRInventorySource
+{
+	GENERATED_BODY()
+
+public:
+	virtual const TArray<FName>& GetKnownSpells() const override { return KnownSpells; }
+	virtual const TMap<FName, int32>& GetSkills() const override { return Skills; }
+	virtual int32 GetSpellPercent(FName Spell) const override { const int32* P = SpellPercents.Find(Spell); return P ? *P : -1; }
+
+	void SetKnownSpells(const TArray<FName>& InSpells, const TMap<FName, int32>& InPercents);
+	void SetSkills(const TMap<FName, int32>& InSkills);
+
+protected:
+	virtual FMRSlotContent GetRaw(const FMRSlotRef& Slot) const override;
+	virtual void SetRaw(const FMRSlotRef& Slot, const FMRSlotContent& Content) override;
+
+private:
+	TArray<FName> KnownSpells;
+	TMap<FName, int32> SpellPercents;
+	TMap<FName, int32> Skills;
+	FMRSlotContent SpellBar[9];
+	FMRSlotContent Cursor;
 };

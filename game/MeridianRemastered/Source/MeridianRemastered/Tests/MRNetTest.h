@@ -18,7 +18,14 @@ class APlayerController;
  *   1. it enters a zone we have, with the pawn at the server's position;
  *   2. a line it says comes back from the server (BP_SAID);
  *   3. standing on an exit square takes it to another zone (BP_REQ_GO, a new room);
- *   4. it logs off cleanly.
+ *   4. the room's .roo comes through the asset cache, matching the manifest and the server's
+ *      security value, and the players list (BP_PLAYERS) has our character;
+ *   5. reloading the data (what BP_INVALIDATE_DATA does after a server save) brings the room back,
+ *      and chat still works after;
+ *   6. Log Off returns to the character list (BP_REQ_QUIT, BP_QUIT, the server's menu) and the
+ *      character enters again;
+ *   7. it logs off cleanly.
+ * Entering a zone also checks that ours was built from the server's room (its security value).
  * Logs "MRNetTest: PASS/FAIL ..." per step and "MRNetTest: DONE <passed>/<steps>", then quits.
  * -MRNetHold=<seconds> stays that long after saying hello (for a look from another client): it
  * steps back and forth, logs the creatures it draws and, when rendering, takes screenshots into
@@ -34,7 +41,7 @@ public:
 	void Start(APlayerController* InController);
 
 private:
-	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Logoff, Done };
+	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Relog, Logoff, Done };
 
 	void Tick();
 	void Pass(const FString& What);
@@ -66,4 +73,11 @@ private:
 	double CharacterShotAt = 0.0;
 	FString SayText;
 	FTimerHandle Timer;
+	/** The asset cache's answer (Assets step). */
+	bool bAssetDone = false;
+	FString AssetResult;
+	bool bAssetOk = false;
+	/** Rooms entered before the reload. */
+	int32 RoomsBefore = 0;
+	bool bSaid = false;
 };

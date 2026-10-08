@@ -6,6 +6,7 @@
 
 class SEditableText;
 class SMRChatLog;
+class SMRGameMenu;
 class SMRInventoryScreen;
 class SMRMinimap;
 class STextBlock;
@@ -204,10 +205,13 @@ public:
 	TSharedPtr<SMRInventoryScreen> GetInventory() const { return Inventory; }
 	/** Start typing a chat line (online). */
 	void OpenChat();
+	/** Show or hide the Escape menu (it takes the keyboard when shown). */
+	void SetGameMenuOpen(bool bOpen);
 
 private:
 	TWeakObjectPtr<UMRUISubsystem> UI;
 	TSharedPtr<SMRInventoryScreen> Inventory;
+	TSharedPtr<SMRGameMenu> GameMenu;
 	TSharedPtr<SMRChatLog> ChatLog;
 	TSharedPtr<SWidget> SpellBar;
 	TSharedPtr<SWidget> HotbarArea;

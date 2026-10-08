@@ -100,8 +100,21 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
 - `tools/ui/minimap.py` makes the black empty space outside a zone transparent (only where it touches the picture's edge, so dark water stays), so the parchment shows there. It also draws the walls from `roo2gltf.py --walls-only`.
 - Alternatives not taken: the original's hand-drawn wall map only (it's still there in the `walls` and `parchment` styles); a Blender render of the blockout (it lacks the finished art); a global clip plane (it needs `r.AllowGlobalClipPlane`, which costs every frame, and Nanite ignores it).
 
+## Escape menu and the online source (2026-10-08, M0 of [ADR 0012](0012-client-parity-and-world-coverage.md))
+- **The Escape menu** (`UI/SMRGameMenu`) has Resume, Options, Log Off and Quit Game, in the login screen's stone panel over the dimmed world.
+  - Esc or F10 opens it. In Play-In-Editor, Esc stops the session, so use F10 there.
+  - Options is greyed out until M9.
+  - **Log Off** returns to the character list and stays connected (`UMRNetSubsystem::ReturnToCharacters`). It shows only online.
+  - **Quit Game** logs off first.
+  - While the menu is open the UI has the keyboard and nothing walks or looks.
+- **Two inventory sources:**
+  - **Offline:** `UMRMockInventory`, as before.
+  - **In a server's game:** a fresh `UMRNetInventory` per character. It holds the server's spells and skills, and a spell bar kept on this client. The bag, hotbar and equipment are empty until M3; no mock items are shown online.
+  - `UMRUISubsystem` swaps the source when the server phase changes; the widgets read the current one.
+- Sheets: `build/ui/shots/m0/18_game_menu.png` (offline), `game/MeridianRemastered/Saved/Screenshots/MRNet/online_4.png` and `online_5.png` (`run_net_test.ps1 -Render -Hold 52`).
+
 ## Consequences
-- Inventory, equipment and the spell bar are still **mock data**: local, not saved, not replicated. Spells don't cast; a "cast" plays the sprite's cast action and a cooldown sweep. Online, the vitals, stats, spells and skills come from the server's stat groups (`docs/research/blakserv-protocol.md`, "Stats"). Offline they come from the attributes and the mock file.
+- Inventory and equipment are still **mock data offline** and empty online (M3). Spells don't cast; a "cast" plays the sprite's cast action and a cooldown sweep. Online, the vitals, stats, spells and skills come from the server's stat groups (`docs/research/blakserv-protocol.md`, "Stats"). Offline they come from the attributes and the mock file.
 - Equipment doesn't change the avatar yet (no equipment layers on the sprite body).
 - Rebindable keys (Enhanced Input user settings, a Controls page) are the next step for "editable in the controller settings". The UI actions are already separate actions in their own context.
 - A real font and gamepad navigation are open.

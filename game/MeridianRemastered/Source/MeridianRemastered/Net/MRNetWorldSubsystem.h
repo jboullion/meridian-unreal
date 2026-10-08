@@ -39,6 +39,8 @@ public:
 	bool IsActive() const { return bActive; }
 	/** The zone of the server's current room (0 until one arrives or if we don't have it). */
 	int32 GetRid() const { return Rid; }
+	/** Our zone was built from the same .roo as the server's room (its security value matches). */
+	bool DoesRoomMatchServer() const { return bRoomMatchesServer; }
 	/** The creature actor for a server object, if any. */
 	AMRNetObject* FindActor(uint32 Id) const;
 	/** The look a server object is drawn with (None: not drawn). */
@@ -66,7 +68,8 @@ private:
 
 	void SpawnObject(const FMRNetObject& Object);
 	void ClearObjects();
-	void PlacePlayer();
+	/** Put the pawn where the server says; bSameRoom (the room's data reloaded): only if it is far off. */
+	void PlacePlayer(bool bSameRoom);
 	/** Our pawn wears what the server says our character looks like (MRNetLook). */
 	void ApplySelfLook();
 	void ShowBackdrop();
@@ -74,6 +77,7 @@ private:
 
 	bool bActive = false;
 	int32 Rid = 0;
+	bool bRoomMatchesServer = true;
 	TMap<uint32, TWeakObjectPtr<AMRNetObject>> Actors;
 
 	FIntPoint LastSentKod = FIntPoint(-1, -1);

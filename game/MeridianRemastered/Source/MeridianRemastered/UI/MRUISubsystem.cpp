@@ -9,6 +9,7 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "Engine/World.h"
 #include "Framework/Application/SlateApplication.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/PlayerController.h"
 #include "MeridianRemastered.h"
 #include "Dom/JsonObject.h"
@@ -44,11 +45,11 @@ void UMRUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	// UMRUIStyle and UMRGameDataSubsystem are game instance subsystems: already up before a local player's
 	Super::Initialize(Collection);
 
-	UMRMockInventory* Mock = NewObject<UMRMockInventory>(this);
-	Mock->SetData(GetData());
-	Mock->LoadFromJson();
-	Mock->OnSelectionChanged.AddWeakLambda(this, [this]() { SelectionTime = Now(); });
-	Source = Mock;
+	UMRMockInventory* MockInventory = NewObject<UMRMockInventory>(this);
+	MockInventory->SetData(GetData());
+	MockInventory->LoadFromJson();
+	Mock = MockInventory;
+	UseSource(Mock);
 
 	if (UMRUIStyle* Style = GetStyle())
 	{
@@ -57,6 +58,50 @@ void UMRUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	if (UMRNetSubsystem* Net = GetNet())
 	{
 		NetStatsHandle = Net->OnStatsChanged.AddUObject(this, &UMRUISubsystem::OnNetStats);
+		NetPhaseHandle = Net->OnPhaseChanged.AddUObject(this, &UMRUISubsystem::OnNetPhase);
+	}
+}
+
+void UMRUISubsystem::UseSource(UMRInventorySource* InSource)
+{
+	if (Source == InSource)
+	{
+		return;
+	}
+	if (Source)
+	{
+		Source->ReturnCursor();
+		Source->OnSelectionChanged.RemoveAll(this);
+	}
+	Source = InSource;
+	if (Source)
+	{
+		Source->OnSelectionChanged.AddWeakLambda(this, [this]() { SelectionTime = Now(); });
+	}
+	HoveredSlot = PressSlot = FMRSlotRef();
+	++StatsVersion;
+}
+
+void UMRUISubsystem::OnNetPhase()
+{
+	const UMRNetSubsystem* Net = GetNet();
+	const EMRNetPhase Phase = Net ? Net->GetPhase() : EMRNetPhase::Offline;
+	if (Phase == EMRNetPhase::InGame && !Cast<UMRNetInventory>(Source))
+	{
+		// a character entered a server's game: its own spell bar, its spells and skills as the server sends them
+		UMRNetInventory* NetInventory = NewObject<UMRNetInventory>(this);
+		NetInventory->SetData(GetData());
+		UseSource(NetInventory);
+		OnNetStats(3);
+		OnNetStats(4);
+	}
+	else if (Phase != EMRNetPhase::InGame && Source != Mock)
+	{
+		UseSource(Mock);
+	}
+	if (Phase != EMRNetPhase::InGame)
+	{
+		bGameMenuOpen = false;
 	}
 }
 
@@ -71,6 +116,7 @@ void UMRUISubsystem::Deinitialize()
 	if (UMRNetSubsystem* Net = GetNet())
 	{
 		Net->OnStatsChanged.Remove(NetStatsHandle);
+		Net->OnPhaseChanged.Remove(NetPhaseHandle);
 	}
 	Super::Deinitialize();
 }
@@ -170,6 +216,10 @@ void UMRUISubsystem::OpenChat()
 	{
 		SetInventoryOpen(false);
 	}
+	if (bGameMenuOpen)
+	{
+		return;
+	}
 	bChatOpen = true;
 	ApplyInputMode();
 	HUD->OpenChat();
@@ -224,6 +274,7 @@ void UMRUISubsystem::RemoveHUD()
 	HUD.Reset();
 	bInventoryOpen = false;
 	bChatOpen = false;
+	bGameMenuOpen = false;
 	if (Avatar)
 	{
 		Avatar->Destroy();
@@ -303,9 +354,60 @@ void UMRUISubsystem::ToggleInventory()
 	SetInventoryOpen(!bInventoryOpen);
 }
 
+void UMRUISubsystem::ToggleGameMenu()
+{
+	SetGameMenuOpen(!bGameMenuOpen);
+}
+
+void UMRUISubsystem::SetGameMenuOpen(bool bOpen)
+{
+	if (!HUD.IsValid() || bOpen == bGameMenuOpen)
+	{
+		return;
+	}
+	if (bOpen)
+	{
+		SetInventoryOpen(false);
+		if (bChatOpen)
+		{
+			return;  // Esc belongs to the chat line while typing
+		}
+	}
+	bGameMenuOpen = bOpen;
+	ApplyInputMode();
+	HUD->SetGameMenuOpen(bOpen);
+}
+
+bool UMRUISubsystem::CanLogOff() const
+{
+	const UMRNetSubsystem* Net = GetNet();
+	return Net && Net->GetPhase() == EMRNetPhase::InGame;
+}
+
+void UMRUISubsystem::LogOffToCharacters()
+{
+	SetGameMenuOpen(false);
+	if (UMRNetSubsystem* Net = GetNet(); Net && CanLogOff())
+	{
+		UE_LOG(LogMeridian, Log, TEXT("UI: log off to the character list"));
+		Net->ReturnToCharacters();
+	}
+}
+
+void UMRUISubsystem::QuitGame()
+{
+	SetGameMenuOpen(false);
+	if (UMRNetSubsystem* Net = GetNet())
+	{
+		Net->Logoff();  // BP_REQ_QUIT first: the character leaves the world cleanly
+	}
+	APlayerController* PC = GetPlayerController();
+	UKismetSystemLibrary::QuitGame(PC, PC, EQuitPreference::Quit, false);
+}
+
 void UMRUISubsystem::SetInventoryOpen(bool bOpen)
 {
-	if (!HUD.IsValid() || bOpen == bInventoryOpen)
+	if (!HUD.IsValid() || bOpen == bInventoryOpen || (bOpen && bGameMenuOpen))
 	{
 		return;
 	}
@@ -363,7 +465,16 @@ void UMRUISubsystem::ApplyInputMode()
 	{
 		return;  // the login screen owns the input (ShowLogin)
 	}
-	if (bInventoryOpen && bTextInput)
+	if (bGameMenuOpen)
+	{
+		// the menu has the keyboard (Esc closes it); nothing walks or looks meanwhile
+		FInputModeUIOnly Mode;
+		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		PC->SetInputMode(Mode);
+		PC->bShowMouseCursor = true;
+		PC->SetIgnoreLookInput(true);
+	}
+	else if (bInventoryOpen && bTextInput)
 	{
 		// typing in the dialog (the spell search): every key goes to the text box, the cursor stays
 		PC->SetInputMode(FInputModeUIOnly());
@@ -582,9 +693,9 @@ void UMRUISubsystem::OnNetStats(uint32 Group)
 	++StatsVersion;
 	UMRNetSubsystem* Net = GetNet();
 	UMRGameDataSubsystem* Data = GetData();
-	UMRMockInventory* Mock = Cast<UMRMockInventory>(Source);
+	UMRNetInventory* NetInventory = Cast<UMRNetInventory>(Source);
 	const FMRNetStatGroup* G = Net ? Net->FindStatGroup(static_cast<uint8>(Group)) : nullptr;
-	if (!G || !Data || !Mock || (Group != 3 && Group != 4))
+	if (!G || !G->bReceived || !Data || !NetInventory || (Group != 3 && Group != 4))
 	{
 		return;
 	}
@@ -622,11 +733,11 @@ void UMRUISubsystem::OnNetStats(uint32 Group)
 	}
 	if (Group == 3)
 	{
-		Mock->SetKnownSpells(Spells, Percents);
+		NetInventory->SetKnownSpells(Spells, Percents);
 	}
 	else
 	{
-		Mock->SetSkills(Percents);
+		NetInventory->SetSkills(Percents);
 	}
 }
 

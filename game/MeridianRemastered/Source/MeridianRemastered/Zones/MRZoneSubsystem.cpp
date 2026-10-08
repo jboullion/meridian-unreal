@@ -241,6 +241,12 @@ bool UMRZoneSubsystem::LoadData()
 		Info.Origin = FVector(O[0]->AsNumber(), O[1]->AsNumber(), O[2]->AsNumber());
 		const TArray<TSharedPtr<FJsonValue>>& G = L->GetArrayField(TEXT("grid_size_roo"));
 		Info.GridSizeRoo = FVector2D(G[0]->AsNumber(), G[1]->AsNumber());
+		double Security = 0.0;
+		if (L->TryGetNumberField(TEXT("roo_security"), Security))
+		{
+			Info.RooSecurity = static_cast<uint32>(static_cast<int64>(Security));
+			Info.bHasRooSecurity = true;
+		}
 		const TSharedPtr<FJsonObject>* Bounds = nullptr;
 		if (L->TryGetObjectField(TEXT("bounds_m"), Bounds))
 		{

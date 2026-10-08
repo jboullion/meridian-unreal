@@ -1,0 +1,174 @@
+# Client parity checklist
+
+This file tracks what the Unreal client does compared with the original desktop client. The aim is parity with the original client playing the Server 104 ruleset on a Meridian server (blakserv). The plan behind it is [ADR 0012](adr/0012-client-parity-and-world-coverage.md). Update a row whenever a feature lands.
+
+**Columns:**
+- **UE:** this client today.
+  - Done: works online.
+  - Partial: some of it works; the note says what.
+  - Mock: the UI exists but runs on local data.
+  - Missing: nothing yet.
+- **Shards:** the Meridian Shards client (`E:\2026_Experiments\meridian-browser`), which is our behaviour oracle. Its code is GPLv2: read it only to see what it does, never copy it.
+- **M:** the milestone that delivers the feature (see "Milestones" below).
+
+Protocol facts go in [research/blakserv-protocol.md](research/blakserv-protocol.md), each with the blakserv or clientd3d source it came from.
+
+Last survey: 2026-10-08. M0 done the same day.
+
+## Session and account
+
+| Feature | Messages | UE | Shards | M |
+|---|---|---|---|---|
+| Log in, create an account by logging in | `AP_LOGIN`, `AP_LOGINOK`, `AP_GETCHOICE` | Done | Done | — |
+| Login error messages | `AP_LOGINFAILED`, `AP_ACCOUNTUSED`, ... | Done | Done | — |
+| Character list, message of the day | `BP_CHARACTERS` | Done | Done | — |
+| Character creator | `BP_CHARINFO`, `BP_NEW_CHARINFO` | Done | Done | — |
+| Delete a character | `BP_DELETE_CHARACTER` | Missing | Missing | M9 |
+| Change password | `BP_CHANGE_PASSWORD`, `BP_PASSWORD_OK/NOT_OK` | Missing | Missing | M9 |
+| Keep-alive and redbook | `BP_PING`, `BP_ECHO_PING` | Done | Done | — |
+| Server saves: wait and invalidate | `BP_WAIT`, `BP_UNWAIT`, `BP_INVALIDATE_DATA` | Done: no moves while waiting; the room, players and stats are asked for again | Done | M0 |
+| Resync after a bad frame | `BP_RESYNC` | Not possible: blakserv's game-mode handshake can't complete, so a broken stream ends the session (protocol notes, "Session") | Missing | — |
+| Escape menu: log off to the character list, quit | `BP_REQ_QUIT`, `BP_QUIT`, `AP_GETCHOICE` | Done: Esc or F10; Options waits for M9 | Done | M0 |
+| Room checksum | `BP_PLAYER` security | Done: checked on every room; a mismatch is logged (M1 builds the room at runtime instead) | Done | M0 |
+| The server's game files | `manifest.json`, `<assets>/<name>` | Done: the asset cache downloads and hash-checks any listed file | Done | M0 |
+
+## World and movement
+
+| Feature | Messages | UE | Shards | M |
+|---|---|---|---|---|
+| Enter a room, walk, turn | `BP_PLAYER`, `BP_REQ_MOVE`, `BP_REQ_TURN` | Done | Done | — |
+| Doors ("go") and edge exits | `BP_REQ_GO` | Done | Done | — |
+| Every room in the world | `.roo` | Partial: 13 demo rooms; any other room "stays put" | Done: 362 rooms parsed at runtime | M1, W2 |
+| Server room changes: lifts, doors, texture swaps | `BP_SECTOR_MOVE`, `BP_WALL_ANIMATE`, `BP_CHANGE_TEXTURE`, ... | Missing | Missing | M7 |
+| Scrolling and animated textures | from the `.roo` | Missing | Done | M7 |
+| Sky and background overlays (sun, moon) | `BP_BACKGROUND`, `BP_*_BG_OVERLAY` | Missing: our own sky | Done | M1, M7 |
+| Server lighting | `BP_LIGHT_AMBIENT`, `BP_LIGHT_PLAYER`, `BP_LIGHT_SHADING` | Missing: moods only | Done | M7 |
+| Sector light changes | `BP_SECTOR_LIGHT` | Missing | Missing | M7 |
+| Set view, translation override | `BP_SET_VIEW`, `BP_RESET_VIEW`, `BP_XLAT_OVERRIDE` | Missing | Missing | M7 |
+
+## Objects
+
+| Feature | Messages | UE | Shards | M |
+|---|---|---|---|---|
+| Creatures as sprites (players, monsters, NPCs) | `BP_ROOM_CONTENTS`, `BP_CREATE`, `BP_MOVE`, ... | Done, for converted sprites | Done | — |
+| Items, containers, signs and ornaments | the same | Missing: only creatures are spawned | Done | M2 |
+| Sprites we haven't converted | `.bgf` | Missing: not drawn | Done | M1 |
+| Draw effects, name colours, object lights | object fields | Partial: read into the world model (M0), not drawn yet | Done | M2 |
+| Name plates | — | Missing | Done | M2 |
+| Armour, weapons and hats on players | overlays | Partial: face, hair and colours only | Done | M2 |
+| First-person weapon and shield | `BP_PLAYER_OVERLAY` | Missing: a fixed picture | Done | M2 |
+| Look / examine dialog | `BP_REQ_LOOK`, `BP_LOOK` | Missing | Done | M2 |
+| Player descriptions | `UC_LOOK_PLAYER`, `BP_CHANGE_DESCRIPTION` | Missing | Done | M2 |
+
+## Inventory and items
+
+| Feature | Messages | UE | Shards | M |
+|---|---|---|---|---|
+| Inventory list | `BP_INVENTORY`, `BP_INVENTORY_ADD/REMOVE` | Missing online (an empty bag, no mock items); mock offline | Done | M3 |
+| Use and unuse, equipment slots | `BP_REQ_USE`, `BP_USE_LIST`, `BP_USE`, `BP_UNUSE` | Mock | Done | M3 |
+| Apply to a target, activate | `BP_REQ_APPLY`, `BP_REQ_ACTIVATE` | Missing | Done | M3 |
+| Get and drop (stack amounts) | `BP_REQ_GET`, `BP_REQ_DROP` | Mock | Done | M3 |
+| Containers | `BP_SEND_OBJECT_CONTENTS`, `BP_REQ_PUT`, `BP_REQ_GET_FROM_CONTAINER` | Missing | Done | M3 |
+| Give | `BP_REQ_GIVE` | Missing | Missing | M3 |
+| Reorder | `BP_REQ_INVENTORY_MOVE` | Mock | Missing | M3 |
+| Hotbar | — | Missing online; mock offline | Missing | M3 |
+| Equipment on the avatar preview | — | Missing | — | M3 |
+
+## Combat and effects
+
+| Feature | Messages | UE | Shards | M |
+|---|---|---|---|---|
+| Attack (aim picks the target) | `BP_REQ_ATTACK` | Missing: animation only | Done (click target) | M4 |
+| Targeting: click, Tab, self, clear, halo | — | Missing | Done | M2 |
+| Projectiles | `BP_SHOOT`, `BP_RADIUS_SHOOT` | Missing | Done | M4 |
+| Screen effects: blind, paralyze, shake, invert, pain, whiteout, flash | `BP_EFFECT` | Missing | Done | M4 |
+| Blur, waver, rain, snow, sand | `BP_EFFECT` | Missing | Missing | M4 |
+| Death and the Underworld | `BP_PLAYER` | Untested | Done | M4 |
+| Damage numbers (our addition) | hit messages | Missing | Done | M4 |
+
+## Spells, skills and stats
+
+| Feature | Messages | UE | Shards | M |
+|---|---|---|---|---|
+| Vitals bars | `BP_STAT` group 1 | Done | Done | — |
+| Stats tab | group 2 | Done | Done | — |
+| Spell and skill lists | `BP_SPELLS`, `BP_SKILLS` (+ADD/REMOVE) | Partial: from stat groups 3 and 4 | Done | M5 |
+| Cast with targets | `BP_REQ_CAST` | Missing: animation only | Done | M5 |
+| Spell bar | — | Partial: online it holds the server's spells (kept on this client); casting is M5 | Missing | M5 |
+| Enchantments on you and on the room | `BP_ADD_ENCHANTMENT`, `BP_REMOVE_ENCHANTMENT` | Missing | Done | M5 |
+| Quests tab | group 5 | Missing: an empty tab | Done | M5 |
+| Stat changes, retraining | `BP_REQ_STAT_CHANGE`, `BP_CHANGED_STATS_*` | Missing | Missing | M5 |
+| Rest and stand | `UC_REST`, `UC_STAND` | Missing | Done | M5 |
+
+## NPCs and trade
+
+| Feature | Messages | UE | Shards | M |
+|---|---|---|---|---|
+| Buy from an NPC | `BP_REQ_BUY`, `BP_BUY_LIST`, `BP_REQ_BUY_ITEMS` | Missing | Done | M6 |
+| Sell (offer) | `BP_REQ_OFFER`, `BP_OFFERED`, `BP_COUNTEROFFER`, ... | Missing | Done | M6 |
+| Trade with players | `BP_OFFER`, `BP_REQ_COUNTEROFFER`, `BP_COUNTEROFFERED` | Missing | Partial | M6 |
+| Vault | `BP_REQ_WITHDRAWAL`, `BP_WITHDRAWAL_LIST`, `BP_REQ_DEPOSIT` | Missing | Done | M6 |
+| Bank money | `UC_DEPOSIT`, `UC_WITHDRAW`, `UC_BALANCE` | Missing | Done | M6 |
+
+## Communication
+
+| Feature | Messages | UE | Shards | M |
+|---|---|---|---|---|
+| Say, and the chat log | `BP_SAY_TO`, `BP_SAID` | Done | Done | — |
+| Yell, broadcast, emote, tell | `BP_SAY_TO` | Missing | Done | M8 |
+| Group chat | `BP_SAY_GROUP` | Missing | Done | M8 |
+| Guild chat | `BP_SAY_TO` (guild) | Missing | Missing | M8 |
+| Chat tabs, timestamps, `~` colours | — | Partial: colours from the rsb | Done | M8 |
+| Who list and ignore | `BP_PLAYERS`, `BP_PLAYER_ADD/REMOVE` | Partial: the list is kept (M0); no window yet | Done | M8 |
+| Mail | `BP_MAIL`, `BP_SEND_MAIL`, `BP_LOOKUP_NAMES`, ... | Missing | Missing | M8 |
+| News boards | `BP_LOOK_NEWSGROUP`, `BP_ARTICLES`, `BP_ARTICLE`, ... | Missing | Missing | M8 |
+| Guilds | `UC_*GUILD*` | Missing | Missing | M8 |
+| Emotes and moods | `BP_ACTION` | Missing: local test keys only | Missing | M8 |
+
+## Sound
+
+| Feature | Messages | UE | Shards | M |
+|---|---|---|---|---|
+| Sounds from the server | `BP_PLAY_WAVE`, `BP_STOP_WAVE` | Missing: local zone audio | Done | M7 |
+| Music from the server | `BP_PLAY_MUSIC`, `BP_PLAY_MIDI` | Missing: local zone music | Done | M7 |
+
+## Interface and settings
+
+| Feature | UE | Shards | M |
+|---|---|---|---|
+| HUD, hotbars, inventory dialog | Done (as UI; data per rows above) | Done | — |
+| Minimap: walls and the player | Done | Done | — |
+| Minimap: players, monsters, items | Missing | Done | M2 |
+| Map annotations | Missing | Missing | M9 |
+| Options: graphics, audio, controls | Missing: console variables only | Done | M9 |
+| Key rebinding, Modern and Original presets | Missing: hard-coded | Done | M9 |
+| Server-kept game options (`CF_*`) | Missing | Done | M9 |
+| Tooltips | Missing | Missing | M9 |
+| Admin and guide commands | Missing | Missing | M9 (optional) |
+
+## World coverage
+
+| Tier | Rooms | Notes |
+|---|---|---|
+| Authored | 13 (Raza and around, RIDs 300–308, 330–333) | the zone-environment skill |
+| Baked | 0 | W2: every room, built automatically from the blockout |
+| Runtime | 0 | M1: any room the server sends that isn't built |
+
+The server serves about 395 rooms. `ReferenceServers/Server-104/resource/rooms` has 362 of them; the Server 104 client folder has 378.
+
+## Milestones
+
+| M | Name |
+|---|---|
+| M0 | Foundations: client world model, session robustness, asset cache, Escape menu (done 2026-10-08) |
+| M1 | Whole-world travel: runtime rooms and runtime sprites |
+| M2 | See and select everything: all objects, name plates, targeting, Look, equipment overlays |
+| M3 | Inventory and items |
+| M4 | Combat, death and effects |
+| M5 | Spells, skills, enchantments, stats |
+| M6 | NPCs, economy, player trade |
+| M7 | Server-driven world: sound, light, room changes, texture animation |
+| M8 | Communication and social |
+| M9 | Settings, account, polish |
+| W2 | Baked tier for every room (runs alongside, after M1) |
+| W3 | Authored zones, one at a time |

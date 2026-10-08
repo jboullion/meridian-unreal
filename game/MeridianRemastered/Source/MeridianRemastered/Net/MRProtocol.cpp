@@ -242,3 +242,4 @@ void FMRServerToken::Rekey(uint8 TokenByte, const TArray<uint8>& InRedbook)
 	Redbook = InRedbook;
 	Pos = 0;
 }
+

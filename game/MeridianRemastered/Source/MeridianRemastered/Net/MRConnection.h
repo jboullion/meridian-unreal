@@ -13,6 +13,14 @@ class IWebSocket;
  * AP_REQ_GAME -> AP_GAME) and, in game mode, the security word on every message sent, the
  * type-byte token on every message received, the echo ping re-key and the 5 s keep-alive ping.
  * Everything else is handed to OnMessage. Lives on the game thread.
+ *
+ * Leaving the game (BP_QUIT) puts the session back at the server's menu: it sends a new
+ * AP_GETCHOICE, we answer AP_REQ_GAME, and the character list follows (blakserv game.c
+ * GameProtocolParse, synched.c SynchedDoMenu).
+ *
+ * A broken stream ends the session. blakserv's resync handshake (BP_RESYNC, then a beacon string)
+ * can't complete: game.c GameSyncInputChar compares a signed char with the beacon's byte 255, so it
+ * never gets past the second byte (docs/research/blakserv-protocol.md, "Session").
  */
 class MERIDIANREMASTERED_API FMRConnection : public TSharedFromThis<FMRConnection>
 {

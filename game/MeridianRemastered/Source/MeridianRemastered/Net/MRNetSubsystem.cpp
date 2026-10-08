@@ -10,6 +10,7 @@
 #include "Misc/ConfigCacheIni.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Net/MRAssetCache.h"
 #include "Net/MRConnection.h"
 #include "Net/MRProtocol.h"
 #include "Serialization/JsonReader.h"
@@ -32,16 +33,6 @@ namespace
 	constexpr int32 MaxChatLines = 200;
 }
 
-bool FMRNetObject::IsPlayer() const
-{
-	return (Flags & MRMsg::OF_PLAYER) != 0;
-}
-
-bool FMRNetObject::IsCreature() const
-{
-	return (Flags & (MRMsg::OF_PLAYER | MRMsg::OF_ATTACKABLE | MRMsg::OF_NPC)) != 0;
-}
-
 // ------------------------------------------------------------------------------ setup
 
 void UMRNetSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -54,6 +45,7 @@ void UMRNetSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		GConfig->GetString(ConfigSection, TEXT("LastUser"), LastUser, GGameUserSettingsIni);
 	}
 	LastServer = Servers.IsValidIndex(LastServer) ? LastServer : 0;
+	Assets = MakeShared<FMRAssetCache>();
 	TickHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateUObject(this, &UMRNetSubsystem::Tick));
 }
 
@@ -68,6 +60,10 @@ void UMRNetSubsystem::Deinitialize()
 		Connection.Reset();
 	}
 	Retired.Reset();
+	if (Assets.IsValid())
+	{
+		Assets->CancelAll();
+	}
 	Super::Deinitialize();
 }
 
@@ -187,7 +183,19 @@ void UMRNetSubsystem::Connect(int32 InServer, const FString& User, const FString
 		GConfig->Flush(false, GGameUserSettingsIni);
 	}
 	SetPhase(EMRNetPhase::Connecting, TEXT("Fetching game data..."));
+	Assets->Configure(Servers[InServer].Assets, CacheDir());
 	FetchGameData();
+}
+
+void UMRNetSubsystem::ReturnToCharacters()
+{
+	if (!Connection.IsValid() || Phase != EMRNetPhase::InGame)
+	{
+		return;
+	}
+	// game.c: BP_REQ_QUIT logs the character off and answers BP_QUIT (HandleMessage)
+	Connection->Send(FMRWriter(MRMsg::BP_REQ_QUIT));
+	SetPhase(EMRNetPhase::Connecting, TEXT("Leaving the game..."));
 }
 
 void UMRNetSubsystem::Logoff()
@@ -212,13 +220,17 @@ void UMRNetSubsystem::HandleClosed(const FString& Error)
 	}
 	PendingPassword.Reset();
 	LastError = Error;
-	Objects.Reset();
-	Player = FMRNetPlayer();
+	World.Reset();
 	Characters.Reset();
 	CharInfo = FMRCharInfo();
 	bSubmittingCharacter = false;
-	StatGroups.Reset();
 	bRequestedStats = false;
+	bAwaitingRoom = false;
+	bWaiting = false;
+	if (Assets.IsValid())
+	{
+		Assets->CancelAll();
+	}
 	Resources.ClearDynamic();
 	if (!Error.IsEmpty())
 	{
@@ -286,7 +298,7 @@ void UMRNetSubsystem::RequestMove(int32 KodRow, int32 KodCol, uint8 Speed)
 		Connection->Send(FMRWriter(MRMsg::BP_REQ_MOVE)
 			.U16(static_cast<uint16>(FMath::Clamp(KodRow, 0, 65535)))
 			.U16(static_cast<uint16>(FMath::Clamp(KodCol, 0, 65535)))
-			.U8(Speed).U32(Player.RoomObjectId));
+			.U8(Speed).U32(World.Player.RoomObjectId));
 	}
 }
 
@@ -294,7 +306,7 @@ void UMRNetSubsystem::RequestTurn(int32 KodAngle)
 {
 	if (Connection.IsValid() && Phase == EMRNetPhase::InGame)
 	{
-		Connection->Send(FMRWriter(MRMsg::BP_REQ_TURN).U32(Player.Id).U16(static_cast<uint16>(((KodAngle % 4096) + 4096) % 4096)));
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_TURN).U32(World.Player.Id).U16(static_cast<uint16>(((KodAngle % 4096) + 4096) % 4096)));
 	}
 }
 
@@ -375,6 +387,8 @@ void UMRNetSubsystem::OnManifest(FHttpRequestPtr Request, FHttpResponsePtr Respo
 		&& FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Response->GetContentAsString()), Root) && Root.IsValid())
 	{
 		Root->TryGetStringField(TEXT("rsbHash"), Hash);
+		const TSharedPtr<FJsonObject>* Files = nullptr;
+		Assets->SetManifest(Root->TryGetObjectField(TEXT("files"), Files) ? *Files : nullptr);
 	}
 	if (Hash.IsEmpty())
 	{
@@ -471,108 +485,6 @@ void UMRNetSubsystem::OpenSocket()
 
 // ------------------------------------------------------------------------------ messages
 
-void UMRNetSubsystem::SkipPalette(FMRReader& R)
-{
-	// an optional prefix: a palette translation or a drawing effect (proto.h ANIMATE_TRANSLATION/EFFECT)
-	const uint8 Next = R.Peek();
-	if (Next == MRMsg::ANIMATE_TRANSLATION || Next == MRMsg::ANIMATE_EFFECT)
-	{
-		R.Skip(2);
-	}
-}
-
-int32 UMRNetSubsystem::ReadPalette(FMRReader& R)
-{
-	const uint8 Next = R.Peek();
-	if (Next == MRMsg::ANIMATE_TRANSLATION)
-	{
-		R.U8();
-		return R.U8();
-	}
-	if (Next == MRMsg::ANIMATE_EFFECT)
-	{
-		R.Skip(2);
-	}
-	return -1;
-}
-
-void UMRNetSubsystem::SkipAnimation(FMRReader& R)
-{
-	switch (R.U8())
-	{
-	case MRMsg::ANIMATE_NONE: R.Skip(2); break;          // group
-	case MRMsg::ANIMATE_CYCLE: R.Skip(4 + 2 + 2); break; // period, low, high
-	case MRMsg::ANIMATE_ONCE: R.Skip(4 + 2 + 2 + 2); break;
-	default: break;
-	}
-}
-
-void UMRNetSubsystem::ReadOverlays(FMRReader& R, TArray<FString>* Out, TArray<FMRNetOverlay>* OutParts)
-{
-	const int32 N = R.U8();
-	for (int32 i = 0; i < N && R.IsOk(); ++i)
-	{
-		const uint32 Icon = R.U32();
-		const uint8 Hotspot = R.U8();
-		const int32 Xlat = ReadPalette(R);
-		SkipAnimation(R);
-		if (Out)
-		{
-			Out->Add(Resources.Get(Icon));
-		}
-		if (OutParts)
-		{
-			OutParts->Add(FMRNetOverlay{FPaths::GetBaseFilename(Resources.Get(Icon)).ToLower(), Hotspot, Xlat});
-		}
-	}
-}
-
-bool UMRNetSubsystem::ReadObject(FMRReader& R, FMRNetObject& Out)
-{
-	const uint32 RawId = R.U32();
-	Out.Id = MRMsg::PlainId(RawId);
-	if (MRMsg::IsNumberId(RawId))
-	{
-		R.U32();  // amount
-	}
-	Out.IconRsc = R.U32();
-	Out.NameRsc = R.U32();
-	Out.Flags = R.U32();
-	R.U8();  // drawing effect
-	Out.MinimapFlags = R.U32();
-	R.U32();  // name colour
-	Out.ObjectType = R.U8();
-	Out.MoveOn = R.U8();
-	if (R.U16() != 0)  // light: flags, then intensity and colour
-	{
-		R.Skip(3);
-	}
-	Out.Xlat = ReadPalette(R);
-	SkipAnimation(R);
-	Out.Overlays.Reset();
-	Out.OverlayParts.Reset();
-	ReadOverlays(R, &Out.Overlays, &Out.OverlayParts);
-	Out.Icon = Resources.Get(Out.IconRsc);
-	Out.Name = Resources.Get(Out.NameRsc);
-	return R.IsOk();
-}
-
-bool UMRNetSubsystem::ReadRoomObject(FMRReader& R, FMRNetObject& Out)
-{
-	if (!ReadObject(R, Out))
-	{
-		return false;
-	}
-	Out.KodRow = R.U16();
-	Out.KodCol = R.U16();
-	Out.Angle = R.U16();
-	// the motion state (what it shows while moving): ignored for now
-	SkipPalette(R);
-	SkipAnimation(R);
-	ReadOverlays(R, nullptr);
-	return R.IsOk();
-}
-
 void UMRNetSubsystem::AddChat(const FString& Text, uint8 Kind)
 {
 	FMRChatLine Line;
@@ -588,59 +500,40 @@ void UMRNetSubsystem::AddChat(const FString& Text, uint8 Kind)
 	OnChat.Broadcast(Line);
 }
 
-bool UMRNetSubsystem::ReadStat(FMRReader& R, FMRNetStat& Out)
-{
-	// merintr.c ExtractStatistic: num, name, type, then a numeric value (with limits when it's an
-	// integer) or a list entry (object, value, icon)
-	Out.Num = R.U8();
-	Out.NameRsc = R.U32();
-	Out.Name = Resources.Get(Out.NameRsc);
-	Out.Type = R.U8();
-	if (Out.Type == FMRNetStat::Numeric)
-	{
-		Out.Tag = R.U8();
-		const uint32 Value = R.U32();
-		if (Out.Tag == 1)
-		{
-			Out.Value = static_cast<int32>(Value);
-			Out.Min = R.I32();
-			Out.Max = R.I32();
-			Out.CurrentMax = R.I32();
-		}
-		else
-		{
-			Out.ValueText = Resources.Get(Value);
-		}
-	}
-	else if (Out.Type == FMRNetStat::List)
-	{
-		Out.ObjectId = MRMsg::PlainId(R.U32());
-		Out.Value = R.I32();
-		Out.IconRsc = R.U32();
-		Out.Icon = Resources.Get(Out.IconRsc);
-	}
-	else
-	{
-		return false;  // unknown type: the rest of the message can't be read
-	}
-	return R.IsOk();
-}
-
-FMRNetStatGroup& UMRNetSubsystem::StatGroup(uint8 Group)
-{
-	if (FMRNetStatGroup* G = StatGroups.FindByPredicate([Group](const FMRNetStatGroup& E) { return E.Group == Group; }))
-	{
-		return *G;
-	}
-	FMRNetStatGroup& G = StatGroups.AddDefaulted_GetRef();
-	G.Group = Group;
-	StatGroups.Sort([](const FMRNetStatGroup& A, const FMRNetStatGroup& B) { return A.Group < B.Group; });
-	return *StatGroups.FindByPredicate([Group](const FMRNetStatGroup& E) { return E.Group == Group; });
-}
-
 const FMRNetStatGroup* UMRNetSubsystem::FindStatGroup(uint8 Group) const
 {
-	return StatGroups.FindByPredicate([Group](const FMRNetStatGroup& E) { return E.Group == Group; });
+	return World.FindStatGroup(Group);
+}
+
+void UMRNetSubsystem::SetWaiting(bool bInWaiting)
+{
+	const bool bWas = IsWaiting();
+	bWaiting = bInWaiting;
+	if (IsWaiting() != bWas)
+	{
+		OnWaitChanged.Broadcast();
+	}
+}
+
+void UMRNetSubsystem::ReloadData()
+{
+	if (!Connection.IsValid() || Phase != EMRNetPhase::InGame)
+	{
+		return;
+	}
+	UE_LOG(LogMeridian, Log, TEXT("MRNet: asking for the player, room, players and stats again"));
+	const bool bWas = IsWaiting();
+	World.ResetRoom();
+	bAwaitingRoom = true;
+	if (!bWas)
+	{
+		OnWaitChanged.Broadcast();
+	}
+	Connection->Send(FMRWriter(MRMsg::BP_SEND_PLAYER));
+	Connection->Send(FMRWriter(MRMsg::BP_SEND_ROOM_CONTENTS));
+	Connection->Send(FMRWriter(MRMsg::BP_SEND_PLAYERS));
+	// a save renumbers objects, the spells and skills in the stat groups too
+	Connection->Send(FMRWriter(MRMsg::BP_SEND_STAT_GROUPS));
 }
 
 void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
@@ -713,36 +606,41 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		OnCharactersChanged.Broadcast();
 		break;
 	case MRMsg::BP_PLAYER:
-	{
-		Player.Id = MRMsg::PlainId(R.U32());
-		R.U32();  // icon
-		R.U32();  // name
-		Player.RoomObjectId = R.U32();
-		Player.RoomFile = Resources.Get(R.U32());
-		Player.RoomName = Resources.Get(R.U32());
-		Player.RoomSecurity = R.U32();
-		bAwaitingRoom = true;
-		UE_LOG(LogMeridian, Log, TEXT("MRNet: room %s (%s)"), *Player.RoomFile, *Player.RoomName);
+		if (MRNetRead::Player(R, Resources, World.Player))
+		{
+			bAwaitingRoom = true;
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: room %s (%s), security %08x, ambient light %d, background %s"), *World.Player.RoomFile,
+				*World.Player.RoomName, World.Player.RoomSecurity, World.Player.AmbientLight, *World.Player.Background);
+		}
+		else
+		{
+			UE_LOG(LogMeridian, Warning, TEXT("MRNet: BP_PLAYER cut short (%d bytes)"), Body.Num());
+		}
 		break;
-	}
 	case MRMsg::BP_ROOM_CONTENTS:
 	{
 		R.U32();  // room object
 		const int32 N = R.U16();
-		Objects.Reset();
+		World.Objects.Reset();
 		for (int32 i = 0; i < N; ++i)
 		{
 			FMRNetObject O;
-			if (!ReadRoomObject(R, O))
+			if (!MRNetRead::RoomObject(R, Resources, O))
 			{
 				UE_LOG(LogMeridian, Warning, TEXT("MRNet: room contents cut short at object %d of %d"), i, N);
 				break;
 			}
-			Objects.Add(O.Id, MoveTemp(O));
+			World.Objects.Add(O.Id, MoveTemp(O));
 		}
+		const bool bWasWaiting = IsWaiting();
 		bAwaitingRoom = false;
+		++RoomsEntered;
 		SetPhase(EMRNetPhase::InGame);
 		OnRoomEntered.Broadcast();
+		if (bWasWaiting && !IsWaiting())
+		{
+			OnWaitChanged.Broadcast();
+		}
 		if (!bRequestedStats)
 		{
 			// the stat groups' names first, then every group (merintr stats.c StatsGroupsInfo)
@@ -756,7 +654,7 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		const int32 N = R.U8();
 		for (int32 i = 1; i <= N && R.IsOk(); ++i)
 		{
-			FMRNetStatGroup& G = StatGroup(static_cast<uint8>(i));
+			FMRNetStatGroup& G = World.StatGroup(static_cast<uint8>(i));
 			G.NameRsc = R.U32();
 			G.Name = Resources.Get(G.NameRsc);
 		}
@@ -775,14 +673,14 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		for (int32 i = 0; i < N; ++i)
 		{
 			FMRNetStat S;
-			if (!ReadStat(R, S))
+			if (!MRNetRead::Stat(R, Resources, S))
 			{
 				UE_LOG(LogMeridian, Warning, TEXT("MRNet: stat group %d cut short at %d of %d"), Group, i, N);
 				break;
 			}
 			Stats.Add(MoveTemp(S));
 		}
-		FMRNetStatGroup& G = StatGroup(Group);
+		FMRNetStatGroup& G = World.StatGroup(Group);
 		G.Stats = MoveTemp(Stats);
 		G.bReceived = true;
 		UE_LOG(LogMeridian, Log, TEXT("MRNet: stat group %d (%s): %d stats"), Group, *G.Name, G.Stats.Num());
@@ -793,9 +691,9 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 	{
 		const uint8 Group = R.U8();
 		FMRNetStat S;
-		if (ReadStat(R, S))
+		if (MRNetRead::Stat(R, Resources, S))
 		{
-			FMRNetStatGroup& G = StatGroup(Group);
+			FMRNetStatGroup& G = World.StatGroup(Group);
 			if (FMRNetStat* Existing = G.Stats.FindByPredicate([&S](const FMRNetStat& E) { return E.Num == S.Num; }))
 			{
 				*Existing = MoveTemp(S);
@@ -811,10 +709,10 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 	case MRMsg::BP_CREATE:
 	{
 		FMRNetObject O;
-		if (ReadRoomObject(R, O))
+		if (MRNetRead::RoomObject(R, Resources, O))
 		{
 			const uint32 Id = O.Id;
-			Objects.Add(Id, MoveTemp(O));
+			World.Objects.Add(Id, MoveTemp(O));
 			OnObjectAdded.Broadcast(Id);
 		}
 		break;
@@ -822,7 +720,7 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 	case MRMsg::BP_REMOVE:
 	{
 		const uint32 Id = MRMsg::PlainId(R.U32());
-		if (Objects.Remove(Id) > 0)
+		if (World.Objects.Remove(Id) > 0)
 		{
 			OnObjectRemoved.Broadcast(Id);
 		}
@@ -830,10 +728,11 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 	}
 	case MRMsg::BP_CHANGE:
 	{
+		// the object and a new motion record (clientd3d server.c HandleChange); where it is stays
 		FMRNetObject O;
-		if (ReadObject(R, O))
+		if (MRNetRead::Object(R, Resources, O) && MRNetRead::Motion(R, Resources, O))
 		{
-			if (FMRNetObject* Existing = Objects.Find(O.Id))
+			if (FMRNetObject* Existing = World.Objects.Find(O.Id))
 			{
 				O.KodRow = Existing->KodRow;
 				O.KodCol = Existing->KodCol;
@@ -851,7 +750,7 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		const int32 Row = R.U16();
 		const int32 Col = R.U16();
 		const uint8 Speed = R.U8() & 0x7F;  // bit 7: turn to face the way it moves
-		if (FMRNetObject* O = Objects.Find(Id); O && R.IsOk())
+		if (FMRNetObject* O = World.Objects.Find(Id); O && R.IsOk())
 		{
 			O->KodRow = Row;
 			O->KodCol = Col;
@@ -864,7 +763,7 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 	{
 		const uint32 Id = MRMsg::PlainId(R.U32());
 		const int32 Angle = R.U16();
-		if (FMRNetObject* O = Objects.Find(Id); O && R.IsOk())
+		if (FMRNetObject* O = World.Objects.Find(Id); O && R.IsOk())
 		{
 			O->Angle = Angle;
 			OnObjectMoved.Broadcast(Id);
@@ -883,23 +782,41 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 	}
 	case MRMsg::BP_PLAYERS:
 	{
+		// everyone logged on; their names become resources (clientd3d server.c HandlePlayers)
+		World.Users.Reset();
 		const int32 N = R.U16();
-		for (int32 i = 0; i < N && R.IsOk(); ++i)
+		for (int32 i = 0; i < N; ++i)
 		{
-			R.U32();
-			const uint32 NameRsc = R.U32();
-			Resources.SetDynamic(NameRsc, R.Str());
-			R.Skip(4 + 1 + 4 + 4 + 1 + 1);  // flags, draw type, minimap flags, name colour, object type, move-on
+			FMRNetUser U;
+			if (!MRNetRead::User(R, U))
+			{
+				UE_LOG(LogMeridian, Warning, TEXT("MRNet: players list cut short at %d of %d"), i, N);
+				break;
+			}
+			Resources.SetDynamic(U.NameRsc, U.Name);
+			World.Users.Add(U.Id, MoveTemp(U));
 		}
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: %d players logged on"), World.Users.Num());
+		OnUsersChanged.Broadcast();
 		break;
 	}
 	case MRMsg::BP_PLAYER_ADD:
 	{
-		R.U32();
-		const uint32 NameRsc = R.U32();
-		Resources.SetDynamic(NameRsc, R.Str());
+		FMRNetUser U;
+		if (MRNetRead::User(R, U))
+		{
+			Resources.SetDynamic(U.NameRsc, U.Name);
+			World.Users.Add(U.Id, MoveTemp(U));
+			OnUsersChanged.Broadcast();
+		}
 		break;
 	}
+	case MRMsg::BP_PLAYER_REMOVE:
+		if (World.Users.Remove(MRMsg::PlainId(R.U32())) > 0)
+		{
+			OnUsersChanged.Broadcast();
+		}
+		break;
 	case MRMsg::BP_SAID:
 	{
 		R.U32();  // sender
@@ -924,10 +841,27 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		}
 		break;
 	}
+	case MRMsg::BP_WAIT:
+		// the server is saving; its objects are renumbered after (user.kod GarbageCollecting)
+		SetWaiting(true);
+		break;
+	case MRMsg::BP_UNWAIT:
+		SetWaiting(false);
+		break;
+	case MRMsg::BP_INVALIDATE_DATA:
+		ReloadData();
+		break;
 	case MRMsg::BP_QUIT:
-		Logoff();
+		// out of the game, still connected: the connection asks for the game again and the character
+		// list follows (the original went back to its main menu: clientd3d game.c GameQuit)
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: left the game"));
+		World.Reset();
+		bRequestedStats = false;
+		bAwaitingRoom = false;
+		bWaiting = false;
+		SetPhase(EMRNetPhase::Connecting, TEXT("Loading characters..."));
 		break;
 	default:
-		break;  // not handled yet (stats, inventory, sounds, lighting...)
+		break;  // not handled yet: docs/parity.md says which milestone does
 	}
 }

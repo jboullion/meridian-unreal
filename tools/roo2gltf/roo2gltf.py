@@ -533,6 +533,15 @@ def zone_layout(zone: dict, room: Room) -> dict:
     }
 
 
+def roo_security(path: Path) -> int:
+    """The room's security value: the u32 after the magic and version in the .roo header. The
+    server sends it in BP_PLAYER and the client compares the low 28 bits (clientd3d bspload.c
+    LoadRoomFile, game.c SetPlayerInfo): a mismatch means our zone isn't built from the server's room."""
+    with open(path, "rb") as f:
+        head = f.read(12)
+    return struct.unpack_from("<I", head, 8)[0]
+
+
 def depth_areas(room: Room) -> list[dict]:
     """The sectors with a wading depth (SF_MASK_DEPTH 1-3: fields, pools) as convex BSP-leaf
     polygons, [x, z] glTF metres in zone coordinates. The original slows you to 3/4, 1/2 and 1/4
@@ -631,6 +640,7 @@ def main():
         lay = zone_layout(z, room)
         lay["mesh"] = f"build/zones/{stem}.glb"
         lay["roo"] = z["roo"]
+        lay["roo_security"] = roo_security(roo)
         layouts.append(lay)
         if a.preview:
             write_preview(room, lay, a.out / f"{stem}.png")

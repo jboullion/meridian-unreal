@@ -511,19 +511,6 @@ void UMRMockInventory::LoadFromJson()
 	Changed();
 }
 
-void UMRMockInventory::SetKnownSpells(const TArray<FName>& InSpells, const TMap<FName, int32>& InPercents)
-{
-	KnownSpells = InSpells;
-	SpellPercents = InPercents;
-	Changed();
-}
-
-void UMRMockInventory::SetSkills(const TMap<FName, int32>& InSkills)
-{
-	Skills = InSkills;
-	Changed();
-}
-
 FMRSlotContent UMRMockInventory::GetRaw(const FMRSlotRef& Slot) const
 {
 	switch (Slot.Area)
@@ -596,4 +583,53 @@ void UMRMockInventory::OnDropped(const FMRSlotContent& Content)
 {
 	// nothing to drop into yet: the server will create the item in the world
 	UE_LOG(LogMeridian, Log, TEXT("UI mock inventory: dropped %d x %s"), Content.Count, *Content.Id.ToString());
+}
+
+// ------------------------------------------------------------------------------ online
+
+void UMRNetInventory::SetKnownSpells(const TArray<FName>& InSpells, const TMap<FName, int32>& InPercents)
+{
+	KnownSpells = InSpells;
+	SpellPercents = InPercents;
+	// a spell the character no longer knows leaves the bar
+	for (FMRSlotContent& S : SpellBar)
+	{
+		if (!S.IsEmpty() && !KnownSpells.Contains(S.Id))
+		{
+			S = FMRSlotContent();
+		}
+	}
+	Changed();
+}
+
+void UMRNetInventory::SetSkills(const TMap<FName, int32>& InSkills)
+{
+	Skills = InSkills;
+	Changed();
+}
+
+FMRSlotContent UMRNetInventory::GetRaw(const FMRSlotRef& Slot) const
+{
+	switch (Slot.Area)
+	{
+	case EMRSlotArea::SpellBar:
+		return Slot.Index >= 0 && Slot.Index < HotbarSlots ? SpellBar[Slot.Index] : FMRSlotContent();
+	case EMRSlotArea::Cursor:
+		return Cursor;
+	default:
+		return FMRSlotContent();  // the server's inventory: M3
+	}
+}
+
+void UMRNetInventory::SetRaw(const FMRSlotRef& Slot, const FMRSlotContent& Content)
+{
+	const FMRSlotContent C = Content.IsEmpty() ? FMRSlotContent() : Content;
+	if (Slot.Area == EMRSlotArea::SpellBar && Slot.Index >= 0 && Slot.Index < HotbarSlots)
+	{
+		SpellBar[Slot.Index] = C;
+	}
+	else if (Slot.Area == EMRSlotArea::Cursor)
+	{
+		Cursor = C;
+	}
 }

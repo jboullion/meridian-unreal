@@ -1,6 +1,6 @@
 # ADR 0001: Engine, server architecture and data pipeline
 
-- Status: Accepted; decisions 2, 4, 6 and 7 (our own server, Supabase accounts, server-side zone changes, action combat) superseded by [ADR 0010](0010-meridian-servers.md) on 2026-10-07: the remaster now plays on Meridian servers (blakserv)
+- Status: Accepted; decisions 2, 4, 6 and 7 (our own server, Supabase accounts, server-side zone changes, action combat) superseded by [ADR 0010](0010-meridian-servers.md) on 2026-10-07: the remaster now plays on Meridian servers (blakserv). Online combat (aim picks the target, the server rolls the hit) is in [ADR 0012](0012-client-parity-and-world-coverage.md)
 - Date: 2026-10-04
 
 ## Context

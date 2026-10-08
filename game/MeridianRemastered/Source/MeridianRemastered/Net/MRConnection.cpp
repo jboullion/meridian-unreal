@@ -161,7 +161,7 @@ void FMRConnection::OnBytes(const void* Data, SIZE_T Size)
 	}
 	if (Decoder.IsBroken())
 	{
-		// blakserv's resync (a beacon handshake) isn't implemented: a broken stream ends the session
+		// (no resync: blakserv's handshake can't complete, see the class comment)
 		UE_LOG(LogMeridian, Warning, TEXT("MRNet: corrupt frame header"));
 		Fail(TEXT("Lost the connection to the server (protocol error)."));
 	}
@@ -189,7 +189,9 @@ void FMRConnection::HandleFrame(FMRFrame& Frame)
 	{
 		Epoch = Frame.Epoch;  // our messages carry the latest epoch, or the server ignores them
 	}
-	if (Frame.Body[0] == MRMsg::BP_ECHO_PING)
+	switch (Frame.Body[0])
+	{
+	case MRMsg::BP_ECHO_PING:
 	{
 		FMRReader R(Frame.Body);
 		const uint8 TokenByte = R.U8() ^ 0xED;
@@ -206,6 +208,17 @@ void FMRConnection::HandleFrame(FMRFrame& Frame)
 		}
 		Token.Rekey(TokenByte, Redbook);
 		return;
+	}
+	case MRMsg::BP_RESYNC:
+		// the server couldn't read a frame of ours and now waits for a beacon it can't recognise
+		Fail(TEXT("Lost the connection to the server (protocol error)."));
+		return;
+	case MRMsg::BP_QUIT:
+		// out of the game, back at the server's menu: its AP_GETCHOICE comes next (HandleLogin)
+		State = EState::Login;
+		break;
+	default:
+		break;
 	}
 	if (OnMessage)
 	{

@@ -4,10 +4,12 @@
 #include "Containers/Ticker.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Net/MRCharInfo.h"
+#include "Net/MRNetWorld.h"
 #include "Net/MRResources.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "MRNetSubsystem.generated.h"
 
+class FMRAssetCache;
 class FMRConnection;
 class FMRReader;
 class UWorld;
@@ -37,98 +39,11 @@ struct FMRCharacterSlot
 	bool bNeedsCreation = false;
 };
 
-/** An overlay on an object (a player's head, face parts, hair, arms, weapon): proto.h's overlay record. */
-struct FMRNetOverlay
-{
-	FString Bgf;           // the bitmap without its extension, lower case ("phax")
-	uint8 Hotspot = 0;     // where it attaches (player.kod SendOverlays: 1 head, 11 eyes, 12 mouth, 13 hair, 14 nose...)
-	int32 Xlat = -1;       // its palette translation (ANIMATE_TRANSLATION), -1 = none
-};
-
-/** An object in the player's room, as the server describes it. */
-struct FMRNetObject
-{
-	uint32 Id = 0;         // without the number tag
-	uint32 IconRsc = 0;
-	uint32 NameRsc = 0;
-	FString Icon;          // the bitmap's file name, e.g. "bunny2.bgf"
-	FString Name;
-	uint32 Flags = 0;      // OF_*
-	uint32 MinimapFlags = 0;
-	uint8 ObjectType = 0;
-	uint8 MoveOn = 0;
-	/** Position in Kod fine units: square * 64 + fine, rows and columns starting at 1 (so 64 is the room's edge). */
-	int32 KodRow = 0;
-	int32 KodCol = 0;
-	/** Facing, 0..4095 (0 = east, increasing toward south). */
-	int32 Angle = 0;
-	/** Last move speed (BP_MOVE), 0 = arrived. */
-	uint8 Speed = 0;
-	/** Overlay bitmap names (a player's head, arms, weapon...). */
-	TArray<FString> Overlays;
-	/** The same overlays with their hotspots and translations. */
-	TArray<FMRNetOverlay> OverlayParts;
-	/** The object's own palette translation (a player's body: its shirt), -1 = none. */
-	int32 Xlat = -1;
-
-	bool IsPlayer() const;
-	/** Something alive to draw as a sprite: a player, a monster or an NPC. */
-	bool IsCreature() const;
-};
-
-/** The player's own character and room (BP_PLAYER). */
-struct FMRNetPlayer
-{
-	uint32 Id = 0;
-	uint32 RoomObjectId = 0;
-	FString RoomFile;      // "razainn.roo"
-	FString RoomName;      // "The Inn of Raza"
-	uint32 RoomSecurity = 0;
-};
-
 struct FMRChatLine
 {
 	FString Text;
 	uint8 Kind = 0;        // MRMsg::SAY_* for speech, 0 for game messages
 	double Time = 0.0;
-};
-
-/**
- * One of the player's statistics as the server describes it (BP_STAT_GROUP / BP_STAT; merintr's
- * Statistic). The server decides which stats exist, their names and order, so the UI lists
- * whatever it sends: Server 104's group 2 is Unbound Energy, Training Pts, the six stats, Karma,
- * Bulk Carried... and the resistances.
- */
-struct FMRNetStat
-{
-	enum EType : uint8 { Numeric = 1, List = 2 };
-	uint8 Num = 0;          // the stat's number in its group (not its place: Unbound Energy is 27 but listed first)
-	uint32 NameRsc = 0;
-	FString Name;
-	uint8 Type = Numeric;
-	// numeric: the value is an integer (Tag 1, with limits) or a resource (Tag 2, ValueText)
-	uint8 Tag = 1;
-	int32 Value = 0;
-	int32 Min = 0;
-	int32 Max = 0;
-	int32 CurrentMax = 0;   // what the bar fills to (health: the maximum health; Max is the scale's end)
-	FString ValueText;
-	// list (spells, skills, quests): the object, its value (an ability percentage) and icon
-	uint32 ObjectId = 0;
-	uint32 IconRsc = 0;
-	FString Icon;           // "ifirebal.bgf"
-};
-
-/** A group of stats (BP_STAT_GROUPS names them; Server 104: Condition, Stats, Spells, Skills, Quests). */
-struct FMRNetStatGroup
-{
-	uint8 Group = 0;        // 1-based, as the server numbers them
-	uint32 NameRsc = 0;
-	FString Name;
-	TArray<FMRNetStat> Stats;
-	bool bReceived = false;
-
-	const FMRNetStat* FindByNum(uint8 Num) const { return Stats.FindByPredicate([Num](const FMRNetStat& S) { return S.Num == Num; }); }
 };
 
 enum class EMRNetPhase : uint8
@@ -148,7 +63,9 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetChat, const FMRChatLine&);
 /**
  * The session with a Meridian server (docs/adr/0010-meridian-servers.md): the server list, the
  * server's game data, login, character select and creation, and the state of the player's room.
- * UMRNetWorldSubsystem puts that state into the UE world; the login screen and the chat log read it.
+ * The state lives in an FMRNetWorld (Net/MRNetWorld.h); UMRNetWorldSubsystem puts it into the UE
+ * world, and the login screen, HUD and chat log read it. The server's other game files (rooms,
+ * bitmaps, sounds) come through the asset cache (Net/MRAssetCache.h).
  *
  * The protocol is ours (Net/MRProtocol, written from blakserv); never port Shards (GPLv2) code here.
  */
@@ -179,6 +96,16 @@ public:
 	void Connect(int32 ServerIndex, const FString& User, const FString& Password);
 	/** Leave the server (or stop connecting). */
 	void Logoff();
+	/**
+	 * Leave the game for the character list, staying connected: BP_REQ_QUIT; the server answers
+	 * BP_QUIT and puts the session back at its menu, and we ask for the game again (FMRConnection).
+	 */
+	void ReturnToCharacters();
+	/**
+	 * Forget the room and ask for the player, room, players and stats again: what BP_INVALIDATE_DATA
+	 * does after a server save (clientd3d game.c ResetUserData). Also a test hook.
+	 */
+	void ReloadData();
 	void UseCharacter(uint32 Id);
 	/** Open the creator for an empty slot: asks the server what it offers (BP_CHARINFO, OnCharInfo). */
 	void RequestCharInfo(uint32 SlotId);
@@ -206,14 +133,26 @@ public:
 	const FString& GetLastError() const { return LastError; }
 	const TArray<FMRCharacterSlot>& GetCharacters() const { return Characters; }
 	const FString& GetMotd() const { return Motd; }
-	const FMRNetPlayer& GetPlayer() const { return Player; }
-	const TMap<uint32, FMRNetObject>& GetObjects() const { return Objects; }
-	const FMRNetObject* FindObject(uint32 Id) const { return Objects.Find(Id); }
-	const FMRNetObject* GetSelf() const { return Objects.Find(Player.Id); }
+	const FMRNetWorld& GetNetWorld() const { return World; }
+	const FMRNetPlayer& GetPlayer() const { return World.Player; }
+	const TMap<uint32, FMRNetObject>& GetObjects() const { return World.Objects; }
+	const FMRNetObject* FindObject(uint32 Id) const { return World.Objects.Find(Id); }
+	const FMRNetObject* GetSelf() const { return World.Objects.Find(World.Player.Id); }
+	/** Who is logged on (BP_PLAYERS), by object id. */
+	const TMap<uint32, FMRNetUser>& GetUsers() const { return World.Users; }
+	/**
+	 * The server is saving (BP_WAIT .. BP_UNWAIT), or our data is stale and being asked for again
+	 * (BP_INVALIDATE_DATA, a resync): object ids may change, so nothing should name one meanwhile.
+	 */
+	bool IsWaiting() const { return bWaiting || bAwaitingRoom; }
+	/** Rooms entered since connecting (also the same room again after the data was reloaded). */
+	int32 GetRoomsEntered() const { return RoomsEntered; }
+	/** The server's game files (rooms, bitmaps, sounds), or null before connecting. */
+	FMRAssetCache* GetAssets() const { return Assets.Get(); }
 	const TArray<FMRChatLine>& GetChat() const { return Chat; }
 	const FMRResourceTable& GetResources() const { return Resources; }
 	/** The player's stat groups (empty until the server has sent them, after entering the game). */
-	const TArray<FMRNetStatGroup>& GetStatGroups() const { return StatGroups; }
+	const TArray<FMRNetStatGroup>& GetStatGroups() const { return World.StatGroups; }
 	/** A group by the server's number (Server 104: 1 condition, 2 stats, 3 spells, 4 skills, 5 quests). */
 	const FMRNetStatGroup* FindStatGroup(uint8 Group) const;
 	const FMRServerEntry* GetServer() const { return Servers.IsValidIndex(ServerIndex) ? &Servers[ServerIndex] : nullptr; }
@@ -240,6 +179,10 @@ public:
 	FOnMRNetChat OnChat;
 	/** A stat group arrived or a stat in it changed (the group's number). */
 	FOnMRNetObjectEvent OnStatsChanged;
+	/** The players list changed (BP_PLAYERS, BP_PLAYER_ADD, BP_PLAYER_REMOVE). */
+	FOnMRNetEvent OnUsersChanged;
+	/** IsWaiting changed. */
+	FOnMRNetEvent OnWaitChanged;
 
 private:
 	void LoadServers();
@@ -257,16 +200,8 @@ private:
 	// messages
 	void HandleMessage(const TArray<uint8>& Body);
 	void HandleClosed(const FString& Error);
-	bool ReadObject(FMRReader& R, FMRNetObject& Out);
-	bool ReadRoomObject(FMRReader& R, FMRNetObject& Out);
-	static void SkipPalette(FMRReader& R);
-	/** The optional translation or effect prefix: the translation, or -1. */
-	static int32 ReadPalette(FMRReader& R);
-	static void SkipAnimation(FMRReader& R);
-	void ReadOverlays(FMRReader& R, TArray<FString>* Out, TArray<FMRNetOverlay>* OutParts = nullptr);
 	void AddChat(const FString& Text, uint8 Kind);
-	bool ReadStat(FMRReader& R, FMRNetStat& Out);
-	FMRNetStatGroup& StatGroup(uint8 Group);
+	void SetWaiting(bool bInWaiting);
 
 	TArray<FMRServerEntry> Servers;
 	int32 LastServer = 0;
@@ -289,12 +224,13 @@ private:
 	FMRCharInfo CharInfo;
 	uint32 CreateSlot = 0;
 	bool bSubmittingCharacter = false;
-	FMRNetPlayer Player;
+	FMRNetWorld World;
 	bool bAwaitingRoom = false;
-	TMap<uint32, FMRNetObject> Objects;
+	bool bWaiting = false;
+	int32 RoomsEntered = 0;
 	TArray<FMRChatLine> Chat;
-	TArray<FMRNetStatGroup> StatGroups;
 	bool bRequestedStats = false;
+	TSharedPtr<FMRAssetCache> Assets;
 
 	FTSTicker::FDelegateHandle TickHandle;
 };

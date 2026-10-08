@@ -88,7 +88,7 @@ Interiors sit at their zone's `world_origin_cm` (`data/zone_layout.json`). `MRBo
 ## Generated files you read but don't edit
 | File | What |
 |---|---|
-| `data/zone_layout.json` | per zone: `world_origin_cm`, objects, exits (from `roo2gltf`) |
+| `data/zone_layout.json` | per zone: `world_origin_cm`, objects, exits, `roo_security` (the .roo's security value, checked against the server's room online) (from `roo2gltf`) |
 | `build/textures/catalog.json` | per texture: `name`, `w`, `h`, `shrink`, `frames`, `groups`, `has_transparency` |
 | `build/textures_placeholder/placeholders.json` | per texture: maps, `masked`, roughness, normal strength, `atlas` |
 | `build/environment/zone_<rid>/manifest.json`, `openings.json` | what `build_world.py` imports; every painted opening built or not |

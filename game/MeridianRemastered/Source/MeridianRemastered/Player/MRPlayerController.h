@@ -50,6 +50,8 @@ private:
 	void OnSpellKey(int32 Index);
 	void OnInventoryKey();
 	void OnChatKey();
+	/** Esc or F10: the Escape menu (in PIE, Esc stops play: use F10 there). */
+	void OnMenuKey();
 	void OnMapZoom(const FInputActionValue& Value);
 	class UMRUISubsystem* GetUI() const;
 
@@ -60,6 +62,7 @@ private:
 	UPROPERTY(Transient) TObjectPtr<UInputAction> InventoryAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> ChatAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> MapZoomAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> MenuAction;
 
 	/** Zones requested by the server, with the time the request expires. */
 	TMap<int32, double> PreparedZones;

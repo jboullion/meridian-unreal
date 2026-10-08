@@ -141,6 +141,9 @@ void AMRPlayerController::BuildUIInput()
 	UIContext->MapKey(MapZoomAction, EKeys::Add);
 	UIContext->MapKey(MapZoomAction, EKeys::Hyphen).Modifiers.Add(NewObject<UInputModifierNegate>(UIContext));
 	UIContext->MapKey(MapZoomAction, EKeys::Subtract).Modifiers.Add(NewObject<UInputModifierNegate>(UIContext));
+	MenuAction = MakeAction(TEXT("IA_Menu"), EInputActionValueType::Boolean);
+	UIContext->MapKey(MenuAction, EKeys::Escape);
+	UIContext->MapKey(MenuAction, EKeys::F10);
 }
 
 void AMRPlayerController::SetupInputComponent()
@@ -161,6 +164,7 @@ void AMRPlayerController::SetupInputComponent()
 	Input->BindAction(InventoryAction, ETriggerEvent::Started, this, &AMRPlayerController::OnInventoryKey);
 	Input->BindAction(ChatAction, ETriggerEvent::Started, this, &AMRPlayerController::OnChatKey);
 	Input->BindAction(MapZoomAction, ETriggerEvent::Started, this, &AMRPlayerController::OnMapZoom);
+	Input->BindAction(MenuAction, ETriggerEvent::Started, this, &AMRPlayerController::OnMenuKey);
 }
 
 UMRUISubsystem* AMRPlayerController::GetUI() const
@@ -212,6 +216,14 @@ void AMRPlayerController::OnChatKey()
 	if (Net && Net->IsActive() && UI)
 	{
 		UI->OpenChat();
+	}
+}
+
+void AMRPlayerController::OnMenuKey()
+{
+	if (UMRUISubsystem* UI = GetUI())
+	{
+		UI->ToggleGameMenu();
 	}
 }
 

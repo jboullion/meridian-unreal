@@ -9,7 +9,8 @@ Never copy or translate code from Server-104 or from Meridian Shards (both GPLv2
 ## Transport
 - **TCP to blakserv:** port 5959.
 - **Over a WebSocket:** the Shards gateway passes the byte stream through unchanged. It does not re-frame: one WebSocket message can hold part of a frame or several frames.
-- **The server speaks first.** On a fresh connection it sends `AP_GETLOGIN`. The beacon handshake (`BP_RESYNC`, `blakserv/game.c GameSyncInit`) is only for recovering a broken stream. We don't implement it; a broken stream ends the session.
+- **The server speaks first.** On a fresh connection it sends `AP_GETLOGIN`.
+- **A broken stream ends the session.** The beacon handshake (`BP_RESYNC`, `blakserv/game.c GameSyncInit`) was meant to recover one, but it can't work in game mode (tested 2026-10-08, "Session" below).
 - **Keep-alive:** blakserv hangs up an idle game session (`[Inactive] Game`, 30 s on Shards). The client sends `BP_PING` every 5 s.
 
 ## Frames (`blakserv/session.c SendGameClient`, `session.h HEADERBYTES`)
@@ -137,13 +138,18 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
 - A server bug: `system.kod:4593` overwrites the "is this slot still new" check with the name check, so it isn't enforced.
 
 ## In the game (`clientd3d/server.c` shows what the client expects)
-- **`BP_PLAYER` (130)** fields:
+- **`BP_PLAYER` (130)** fields (`HandlePlayer`; the message must end exactly there):
   - `u32 id`, `icon`, `name`, `room object`, `room file resource` (e.g. `razainn.roo`), `room name resource`;
-  - `u32 room security` (the room checksum);
-  - `u8 ambient`, `u8 light`;
-  - `u32 background`, `wading sound`, `room flags`, depth 1–3.
+  - `u32 room security` (the room checksum, below);
+  - `u8 ambient light`, `u8 player light`;
+  - `u32 background` (a bitmap resource, e.g. `2skyd.bgf`), `u32 wading sound`, `u32 room flags`;
+  - `u32 depth 1`, `depth 2`, `depth 3`: the server's override of the room's three wading depths (`SetOverrideRoomDepth`, shifted left 4).
 
   A room change is a new `BP_PLAYER` followed by `BP_ROOM_CONTENTS`.
+- **The room security value:**
+  - It is the `u32` at byte 8 of the `.roo` file, after the 4-byte magic and the `u32` version (`bspload.c LoadRoomFile`).
+  - The client compares only the low 28 bits with `BP_PLAYER`'s (`game.c` after `LoadRoomFile`): the server sets the top 4 bits as an object tag. Raza is `f9ea1ac4` from the server and `89ea1ac4` in `raza.roo`.
+  - `tools/roo2gltf` writes it to `data/zone_layout.json` (`roo_security`); `UMRNetWorldSubsystem` checks it on every room.
 - **An object** (`ExtractObject`), field by field:
   - `u32 id`. Its top 4 bits are a tag; tag 1 is a number item and is followed by `u32 amount`.
   - `u32 icon`, `u32 name`, `u32 flags` (`OF_*`).
@@ -163,7 +169,7 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
   - `u16 angle` (0–4095, 0 = east, increasing toward south);
   - its motion state: palette prefix, animation, overlays.
 - **`BP_ROOM_CONTENTS` (134):** `u32 room object`, `u16 n`, n room objects.
-- **Objects coming and going:** `BP_CREATE` (217) is a room object; `BP_REMOVE` (218) is `u32 id`; `BP_CHANGE` (219) is an object, a palette prefix, an animation and overlays.
+- **Objects coming and going:** `BP_CREATE` (217) is a room object; `BP_REMOVE` (218) is `u32 id`; `BP_CHANGE` (219) is an object followed by its new motion state (palette prefix, animation, overlays), with no position (`HandleChange`).
 - **Movement from the server:**
   - `BP_MOVE` (200): `u32 id`, `u16 row`, `u16 col`, `u8 speed`. Bit 7 of the speed means "turn to face the move".
   - `BP_TURN` (201): `u32 id`, `u16 angle`.
@@ -183,8 +189,13 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
   - `%r`: a resource id formatted with the parameters that follow it.
   - A `$0` right after a formatter consumes the parameter but hides it.
   - Style codes are `~` plus a letter (`~B` bold, `~I` italic, `~n` normal, colour letters).
-- **Names:** `BP_CHANGE_RESOURCE` (30) is `u32 id`, `string` and adds a name at runtime. `BP_PLAYERS` (136) and `BP_PLAYER_ADD` (137) carry player names the same way.
-- **Leaving:** `BP_REQ_QUIT` (54) leaves the game; the server answers `BP_QUIT` (149).
+- **Names:** `BP_CHANGE_RESOURCE` (30) is `u32 id`, `string` and adds a name at runtime.
+- **Who is logged on** (`HandlePlayers`, `HandleAddPlayer`, `HandleRemovePlayer`):
+  - `BP_PLAYERS` (136): `u16 n`, then n players.
+  - `BP_PLAYER_ADD` (137): one player.
+  - A player: `u32 id`, `u32 name resource`, `string name`, `u32 flags`, `u8 draw type`, `u32 minimap flags`, `u32 name colour`, `u8 object type`, `u8 move-on type`. The name becomes that resource's text.
+  - `BP_PLAYER_REMOVE` (138): `u32 id`.
+  - The server sends `BP_PLAYERS` by itself when a character enters (seen 2026-10-08); after that, ask with `BP_SEND_PLAYERS` (44).
 - **Stats** (`module/merintr/merintr.c HandleStat*`, `ExtractStatistic`; the server side is `kod/.../player/user.kod ToCliStats`, `ToCliStatGroups`). The server decides which stats exist and names them; the client lists what it sends.
   - **Asking:** `BP_SEND_STAT_GROUPS` (52) with no fields; then `BP_SEND_STATS` (41) `u8 group` for each group. The original asks for group 1 and the shown group; we ask for every group after the first `BP_ROOM_CONTENTS`.
   - **`BP_STAT_GROUPS` (133):** `u8 n`, n × `u32 name resource`. Groups are numbered from 1. Server 104 sends five: Condition, Stats, Spells, Skills, Quests.
@@ -196,6 +207,30 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
   - **`num` is not the order.** Server 104's Unbound Energy is number 27 but comes first; Training Pts is 8 and comes second. Keep the message's order.
   - **The bar fills to the current max.** Health is sent as value, 0, 100, max health, and the original draws 27 of 27 as a full bar. Intellect 20 with a current max of 50 is 40%.
   - **Server 104's groups:** 1 Condition (health, mana, vigor, experience); 2 Stats (27: Unbound Energy, Training Pts, the six stats, Karma, Bulk Carried, Weight Carried, Offense, Defense, Armor, then 13 resistances); 3 Spells and 4 Skills (list stats: name, the spell or skill object, the ability percentage, its icon); 5 Quests (list stats with headers).
+
+## Session (`blakserv/game.c`, Kod `user.kod`; the client side is `clientd3d/game.c`, `com.c`)
+- **Leaving the game but not the server:**
+  - The client sends `BP_REQ_QUIT` (54). The server logs the character off and answers `BP_QUIT` (149) (`GameProtocolParse`, `GameClientExit`).
+  - The session goes back to the server's menu (`SynchedInit`). Since the account is already known, the server sends a fresh `AP_GETCHOICE` with new seeds, then `AP_CREDITS` (`SynchedDoMenu`).
+  - Answer `AP_REQ_GAME` as at login: `AP_GAME` follows, then `BP_LOAD_MODULE char.dll`, and the character list.
+  - The type-byte token keeps sliding through all of this; don't reset it.
+  - The original client went to its main menu on `BP_QUIT` (`GameQuit`). We ask for the game straight away, so Log Off lands on the character list.
+- **Server saves** (`user.kod GarbageCollecting`, `GarbageCollectingDone`, `InvalidateData`):
+  - `BP_WAIT` (21), no fields: the server is saving. Object ids are renumbered, so the original clears its target (`HandleWait`).
+  - Afterwards, `BP_INVALIDATE_DATA` (228) then `BP_UNWAIT` (22), both with no fields.
+  - On `BP_INVALIDATE_DATA` the client forgets the room and its inventory and asks for everything again (`ResetUserData`): `BP_SEND_PLAYER` (40), `BP_SEND_ROOM_CONTENTS` (42), `BP_SEND_PLAYERS` (44), `BP_REQ_INVENTORY` (117). We also ask for the stat groups: the spells' and skills' object ids change too.
+  - `BP_REQ_MOVE` carries the room object's id, and Kod ignores a move whose room isn't the player's (`user.kod`), so moves sent between the save and the new `BP_PLAYER` are lost anyway. We send none while waiting.
+- **Resync doesn't work in game mode:**
+  - A client that sends `BP_RESYNC` (2) puts the session in `GAME_BEACON` (`GameSyncInit`). The server then reads raw bytes until the 9-byte beacon `1 255 66 76 65 75 10 13 2` arrives (`resync.c beacon_str`).
+  - `GameSyncInputChar` compares a plain `char` (signed in both the MSVC and Linux builds; neither makefile passes `/J` or `-funsigned-char`) with the `unsigned char` beacon. Byte 255 reads as -1, so the match restarts at the second byte every time.
+  - The session stays in beacon mode until it times out. We tried it against the local Shards server on 2026-10-08: no reply in 60 s.
+  - So the client never sends `BP_RESYNC`. A `BP_RESYNC` from the server (it couldn't read us: `GameSendResync` sends ten) ends the session too.
+
+## The server's game files (the Shards site, `<site>/assets/`)
+- **`manifest.json`:** `{generated, rsbHash, files: {name: {size, hash, mtime}}}`. Names are lower case with no folders. The local stack lists 4,766 files (`.roo`, `.bgf`, `.ogg`, `.wav`, `.bsf`, ...).
+- **`hash`** is the first 16 hex digits of the file's SHA-1, lower case; `rsbHash` is the same for `rsc0000.rsb`.
+- **Fetching:** `<assets>/<name>?v=<hash>`. The query string only defeats HTTP caches.
+- `Net/MRAssetCache` downloads on demand into `Saved/MRNet/<server>/assets/` and checks every file against its hash.
 
 ## The resource file (`util/rscload.c`)
 `rsc0000.rsb` starts with `"RSC\x01"`, `i32 version` (5) and `i32 count`. Each entry is `i32 id`, `i32 language` and a NUL-terminated string. Language 0 is the default text.
