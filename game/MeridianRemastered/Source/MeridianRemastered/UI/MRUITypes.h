@@ -119,6 +119,16 @@ struct FMRSpellDef
 	TArray<FMRReagent> Reagents;
 };
 
+/** A line of the Quests page (the server's stat group 5): a heading (no object), or a quest. */
+struct FMRQuestView
+{
+	FString Name;
+	/** The quest's object (looked at for its description); 0 for a heading. */
+	uint32 ObjectId = 0;
+	/** Its bitmap ("quest.bgf"), for the icon. */
+	FString Icon;
+};
+
 /** One stat line on the Stats page: the server's (online) or the mock list's (offline). */
 struct FMRStatView
 {

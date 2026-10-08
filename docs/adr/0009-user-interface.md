@@ -143,6 +143,15 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
   - pain is red, whiteout white, and flashes and the override are the `XLAT_BLEND*` colours;
   - blindness is black, with no names or brackets.
 
+## Spells, enchantments, quests and retraining (2026-10-08, M5 of ADR 0012)
+- **The spell bar casts online.** A spell that needs a target and has none shows "Cast X on what?" under the crosshair. The next click on something, `\` for yourself, or a click on an item in the dialog picks it; Esc stops. U does the same for using an item on something.
+- **Enchantment icons** (`SMREnchantments`):
+  - the player's at the top left, as the original drew them by the player's portrait;
+  - the room's under the minimap;
+  - their spell's icon, else their own bitmap, named on hover.
+- **The Quests page** lists the server's headings (gold) and quests (icon and name; a click looks at one).
+- **Retraining** (`SMRStatChange`): a centred stone panel with the six stats, − and + buttons, the points left, and Change (once every point is placed) or Cancel.
+
 ## Consequences
 - Inventory and equipment are still **mock data offline** and empty online (M3). Spells don't cast; a "cast" plays the sprite's cast action and a cooldown sweep. Online, the vitals, stats, spells and skills come from the server's stat groups (`docs/research/blakserv-protocol.md`, "Stats"). Offline they come from the attributes and the mock file.
 - Equipment doesn't change the avatar yet (no equipment layers on the sprite body).

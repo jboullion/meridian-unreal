@@ -28,6 +28,7 @@
 #include "UI/SMRCharCreator.h"
 #include "UI/SMRLoginScreen.h"
 #include "UI/SMRLookDialog.h"
+#include "UI/SMRStatChange.h"
 #include "Net/MRAssetCache.h"
 #include "Net/MRNetLook.h"
 #include "Net/MRNetObject.h"
@@ -71,6 +72,9 @@ void UMRUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		NetDescriptionHandle = Net->OnDescription.AddUObject(this, &UMRUISubsystem::OnNetDescription);
 		NetContentsHandle = Net->OnContents.AddUObject(this, &UMRUISubsystem::OnNetContents);
 		NetHitHandle = Net->OnHit.AddUObject(this, &UMRUISubsystem::OnNetHit);
+		NetAbilitiesHandle = Net->OnAbilitiesChanged.AddUObject(this, &UMRUISubsystem::RebuildAbilities);
+		NetStatChangeHandle = Net->OnStatChange.AddUObject(this, &UMRUISubsystem::OnNetStatChange);
+		NetStatChangeResultHandle = Net->OnStatChangeResult.AddUObject(this, &UMRUISubsystem::OnNetStatChangeResult);
 	}
 }
 
@@ -105,8 +109,7 @@ void UMRUISubsystem::OnNetPhase()
 		NetInventory->SetData(GetData());
 		NetInventory->SetNet(GetNet());
 		UseSource(NetInventory);
-		OnNetStats(3);
-		OnNetStats(4);
+		RebuildAbilities();
 	}
 	else if (Phase != EMRNetPhase::InGame && Source != Mock)
 	{
@@ -149,6 +152,65 @@ void UMRUISubsystem::SetLookOpen(bool bOpen)
 void UMRUISubsystem::CloseLook()
 {
 	SetLookOpen(false);
+}
+
+void UMRUISubsystem::SetStatChangeOpen(bool bOpen)
+{
+	if (!HUD.IsValid())
+	{
+		return;
+	}
+	if (bOpen)
+	{
+		SetInventoryOpen(false);
+		SetGameMenuOpen(false);
+		SetLookOpen(false);
+	}
+	bStatChangeOpen = bOpen;
+	HUD->SetStatChangeOpen(bOpen);
+	ApplyInputMode();
+}
+
+void UMRUISubsystem::OnNetStatChange()
+{
+	DebugShowStatChange(GetNet()->GetStatChange());
+}
+
+void UMRUISubsystem::DebugShowStatChange(const FMRNetStatChange& Offer)
+{
+	if (HUD.IsValid() && HUD->GetStatChange().IsValid())
+	{
+		HUD->GetStatChange()->Reset(Offer);
+		SetStatChangeOpen(true);
+	}
+}
+
+void UMRUISubsystem::SubmitStatChange(const int32 (&Values)[6])
+{
+	uint8 Stats[6];
+	for (int32 i = 0; i < 6; ++i)
+	{
+		Stats[i] = static_cast<uint8>(FMath::Clamp(Values[i], 1, 50));
+	}
+	if (UMRNetSubsystem* Net = GetNet())
+	{
+		Net->ChangeStats(Stats);
+	}
+}
+
+void UMRUISubsystem::CloseStatChange()
+{
+	SetStatChangeOpen(false);
+}
+
+void UMRUISubsystem::OnNetStatChangeResult(bool bOk)
+{
+	// BP_CHANGED_STATS_OK / _NOT_OK (stats.c): the server's own lines say what changed
+	if (UMRNetSubsystem* Net = GetNet(); Net && !bOk)
+	{
+		Net->AddGameMessage(TEXT("The stat change was refused."));
+	}
+	SetStatChangeOpen(false);
 }
 
 void UMRUISubsystem::LookAt(uint32 ObjectId)
@@ -406,6 +468,9 @@ void UMRUISubsystem::Deinitialize()
 		Net->OnDescription.Remove(NetDescriptionHandle);
 		Net->OnContents.Remove(NetContentsHandle);
 		Net->OnHit.Remove(NetHitHandle);
+		Net->OnAbilitiesChanged.Remove(NetAbilitiesHandle);
+		Net->OnStatChange.Remove(NetStatChangeHandle);
+		Net->OnStatChangeResult.Remove(NetStatChangeResultHandle);
 	}
 	Super::Deinitialize();
 }
@@ -612,6 +677,18 @@ void UMRUISubsystem::OnSpellKey(int32 Index)
 	{
 		return;
 	}
+	// online: the server's spell (its target chosen as the original's SpellCast); its animation comes back
+	APlayerController* ThePC = GetPlayerController();
+	if (UMRNetWorldSubsystem* NetWorld = ThePC && ThePC->GetWorld() ? ThePC->GetWorld()->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
+		NetWorld && NetWorld->IsActive())
+	{
+		const uint32* Id = SpellIds.Find(C.Id);
+		if (Id && NetWorld->CastSpell(*Id))
+		{
+			SpellCastTime[Index] = Now();
+		}
+		return;
+	}
 	// mock cast: the sprite's cast action and the slot's cooldown sweep (spells come with the server)
 	SpellCastTime[Index] = Now();
 	if (APlayerController* PC = GetPlayerController())
@@ -755,7 +832,7 @@ void UMRUISubsystem::ApplyInputMode()
 	{
 		return;  // the login screen owns the input (ShowLogin)
 	}
-	if (bLookOpen && !bGameMenuOpen)
+	if ((bLookOpen || bStatChangeOpen) && !bGameMenuOpen)
 	{
 		// reading (or writing one's description): the dialog has the keyboard and the mouse
 		FInputModeUIOnly Mode;
@@ -812,6 +889,18 @@ void UMRUISubsystem::OnSlotMouseDown(const FMRSlotRef& Slot, bool bRight, bool b
 	if (!Source)
 	{
 		return;
+	}
+	// choosing a spell's or item's target: an item in the dialog is it (gameuser.c's GAME_SELECT)
+	APlayerController* ThePC = GetPlayerController();
+	if (UMRNetWorldSubsystem* NetWorld = ThePC && ThePC->GetWorld() ? ThePC->GetWorld()->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
+		NetWorld && NetWorld->IsChoosingTarget())
+	{
+		if (const uint32 Id = Source->Get(Slot).ObjectId)
+		{
+			NetWorld->ChooseTarget(Id);
+			PressSlot = FMRSlotRef();
+			return;
+		}
 	}
 	const bool bCarrying = !Source->Get(FMRSlotRef(EMRSlotArea::Cursor, 0)).IsEmpty();
 	if (bShift && !bCarrying)
@@ -1066,46 +1155,164 @@ void UMRUISubsystem::OnNetStats(uint32 Group)
 	{
 		return;
 	}
-	// Server 104's groups 3 and 4 are the character's spells and skills (a list stat per entry: its
-	// name and ability percentage); our data gives school, level, icon and description by name
+	RebuildAbilities();  // the percentages changed
+}
+
+void UMRUISubsystem::RebuildAbilities()
+{
+	UMRNetSubsystem* Net = GetNet();
+	UMRGameDataSubsystem* Data = GetData();
+	UMRNetInventory* NetInventory = Cast<UMRNetInventory>(Source);
+	if (!Net || !Data || !NetInventory)
+	{
+		return;
+	}
+	// The server's lists (BP_SPELLS, BP_SKILLS: ids, names, targets) once they've come, else stat
+	// groups 3 and 4 (Server 104's spells and skills: a list stat per entry, its name and ability
+	// percentage). The percentages are the groups'. Our data gives school, level, icon and
+	// description by name.
+	const FMRNetWorld& W = Net->GetNetWorld();
+	const auto PercentOf = [Net](uint8 Group, const FString& Name)
+	{
+		const FMRNetStatGroup* G = Net->FindStatGroup(Group);
+		const FMRNetStat* S = G ? G->Stats.FindByPredicate([&Name](const FMRNetStat& E) { return E.Type == FMRNetStat::List && E.Name.Equals(Name, ESearchCase::IgnoreCase); }) : nullptr;
+		return S ? S->Value : -1;
+	};
 	TArray<FName> Spells;
 	TMap<FName, int32> Percents;
 	TArray<FString> Unknown;
-	for (const FMRNetStat& S : G->Stats)
+	SpellIds.Reset();
+	const auto AddSpell = [&](const FString& Name, uint32 Id)
 	{
-		if (S.Type != FMRNetStat::List)
+		const FMRSpellDef* Def = Data->FindSpellByName(Name);
+		if (!Def)
 		{
-			continue;
+			Unknown.Add(Name);
+			return;
 		}
-		if (Group == 3)
+		Spells.Add(Def->Class);
+		SpellIds.Add(Def->Class, Id);
+		if (const int32 P = PercentOf(3, Name); P >= 0)
 		{
-			if (const FMRSpellDef* Def = Data->FindSpellByName(S.Name))
+			Percents.Add(Def->Class, P);
+		}
+	};
+	if (W.bHasSpells)
+	{
+		for (const FMRNetSpell& S : W.Spells)
+		{
+			AddSpell(S.Object.Name, S.Object.Id);
+		}
+	}
+	else if (const FMRNetStatGroup* G = Net->FindStatGroup(3); G && G->bReceived)
+	{
+		for (const FMRNetStat& S : G->Stats)
+		{
+			if (S.Type == FMRNetStat::List)
 			{
-				Spells.Add(Def->Class);
-				Percents.Add(Def->Class, S.Value);
-				continue;
+				AddSpell(S.Name, S.ObjectId);
 			}
 		}
-		else if (const FMRSkillDef* Def = Data->FindSkillByName(S.Name))
+	}
+	TMap<FName, int32> Skills;
+	TArray<FString> SkillNames;
+	if (W.bHasSkills)
+	{
+		for (const FMRNetObject& O : W.Skills)
 		{
-			Percents.Add(Def->Class, S.Value);
-			continue;
+			SkillNames.Add(O.Name);
 		}
-		Unknown.Add(S.Name);
+	}
+	else if (const FMRNetStatGroup* G = Net->FindStatGroup(4); G && G->bReceived)
+	{
+		for (const FMRNetStat& S : G->Stats)
+		{
+			if (S.Type == FMRNetStat::List)
+			{
+				SkillNames.Add(S.Name);
+			}
+		}
+	}
+	for (const FString& Name : SkillNames)
+	{
+		if (const FMRSkillDef* Def = Data->FindSkillByName(Name))
+		{
+			Skills.Add(Def->Class, FMath::Max(0, PercentOf(4, Name)));
+		}
+		else
+		{
+			Unknown.Add(Name);
+		}
 	}
 	if (Unknown.Num() > 0)
 	{
-		UE_LOG(LogMeridian, Warning, TEXT("UI: server %s not in our data: %s"), Group == 3 ? TEXT("spells") : TEXT("skills"),
-			*FString::Join(Unknown, TEXT(", ")));
+		UE_LOG(LogMeridian, Warning, TEXT("UI: server spells or skills not in our data: %s"), *FString::Join(Unknown, TEXT(", ")));
 	}
-	if (Group == 3)
+	// (an empty list while the server is asked again keeps the spell bar as it is)
+	if (Spells.Num() > 0 || W.bHasSpells)
 	{
 		NetInventory->SetKnownSpells(Spells, Percents);
 	}
-	else
+	NetInventory->SetSkills(Skills);
+}
+
+void UMRUISubsystem::GetQuests(TArray<FMRQuestView>& Out) const
+{
+	Out.Reset();
+	const UMRNetSubsystem* Net = GetNet();
+	const FMRNetStatGroup* G = Net && Net->GetPhase() == EMRNetPhase::InGame ? Net->FindStatGroup(5) : nullptr;
+	if (!G || !G->bReceived)
 	{
-		NetInventory->SetSkills(Percents);
+		return;
 	}
+	// user.kod ToCliStats group 5: headings ("Active Quests: ", object 0) and the quests under them
+	for (const FMRNetStat& S : G->Stats)
+	{
+		if (S.Type == FMRNetStat::List)
+		{
+			FMRQuestView& V = Out.AddDefaulted_GetRef();
+			V.Name = S.Name.TrimStartAndEnd();
+			V.ObjectId = S.ObjectId;
+			V.Icon = S.Icon;
+		}
+	}
+}
+
+void UMRUISubsystem::LookAtQuest(uint32 ObjectId)
+{
+	if (UMRNetSubsystem* Net = GetNet())
+	{
+		Net->RequestLook(ObjectId);
+	}
+}
+
+const FSlateBrush* UMRUISubsystem::EnchantmentIcon(const FMRNetObject& O) const
+{
+	if (const FMRSpellDef* Def = GetData() ? GetData()->FindSpellByName(O.Name) : nullptr)
+	{
+		if (const FSlateBrush* Brush = GetStyle() ? GetStyle()->Icon(Def->Icon) : nullptr)
+		{
+			return Brush;
+		}
+	}
+	const int32 Group = O.Animation.Type == MRMsg::ANIMATE_NONE ? O.Animation.Group : O.Animation.GroupLow;
+	return O.Icon.IsEmpty() ? nullptr : BitmapIcon(O.Icon, FMath::Max(1, Group));
+}
+
+uint32 UMRUISubsystem::ItemToApply() const
+{
+	if (!Source)
+	{
+		return 0;
+	}
+	if (bInventoryOpen && HoveredSlot.IsValid())
+	{
+		if (const uint32 Id = Source->Get(HoveredSlot).ObjectId)
+		{
+			return Id;
+		}
+	}
+	return Source->Get(FMRSlotRef(EMRSlotArea::Hotbar, Source->GetSelectedHotbar())).ObjectId;
 }
 
 void UMRUISubsystem::GetStatSections(TArray<FMRStatSection>& Out) const

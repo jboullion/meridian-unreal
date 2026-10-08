@@ -158,6 +158,22 @@ public:
 	bool GetVital(int32 Index, float& OutValue, float& OutMax) const;
 	/** A text box in the dialog has the keyboard (the spell search): every key goes to it. */
 	void SetTextInput(bool bTyping);
+	// --- retraining (SMRStatChange; the server's BP_STAT_CHANGE)
+	/** Send the six stats (BP_CHANGED_STATS); the dialog closes on the server's answer. */
+	void SubmitStatChange(const int32 (&Values)[6]);
+	void CloseStatChange();
+	bool IsStatChangeOpen() const { return bStatChangeOpen; }
+	/** UI shots: the dialog with this offer, without a server. */
+	void DebugShowStatChange(const struct FMRNetStatChange& Offer);
+
+	/** The Quests page: the server's quest group (5), headings and quests in its order. */
+	void GetQuests(TArray<FMRQuestView>& Out) const;
+	/** Look at a quest (BP_REQ_LOOK on its object: its description in the Look dialog). */
+	void LookAtQuest(uint32 ObjectId);
+	/** An enchantment's icon: its spell's, else its own bitmap (null until that arrives). */
+	const FSlateBrush* EnchantmentIcon(const struct FMRNetObject& O) const;
+	/** What U uses on something: the item under the mouse in the dialog, else the selected hotbar item (0: none). */
+	uint32 ItemToApply() const;
 	/** The minimap picture of a geometry zone (kept loaded), or null if it hasn't been captured. */
 	class UTexture2D* GetMapTexture(int32 GeometryRid);
 
@@ -215,6 +231,17 @@ private:
 	FDelegateHandle NetDescriptionHandle;
 	FDelegateHandle NetContentsHandle;
 	FDelegateHandle NetHitHandle;
+	FDelegateHandle NetAbilitiesHandle;
+	FDelegateHandle NetStatChangeHandle;
+	FDelegateHandle NetStatChangeResultHandle;
+	bool bStatChangeOpen = false;
+	void SetStatChangeOpen(bool bOpen);
+	void OnNetStatChange();
+	void OnNetStatChangeResult(bool bOk);
+	/** Our spells (by class) to the server's spell objects: what BP_REQ_CAST names. */
+	TMap<FName, uint32> SpellIds;
+	/** The spells and skills pages from the server's lists (BP_SPELLS, BP_SKILLS) and percentages (stat groups 3, 4). */
+	void RebuildAbilities();
 	TArray<FFloater> Floaters;
 	void OnNetHit(const struct FMRNetHit& Hit);
 	void OnNetDescription();

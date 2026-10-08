@@ -599,7 +599,7 @@ void UMRNetInventory::SetKnownSpells(const TArray<FName>& InSpells, const TMap<F
 	// a spell the character no longer knows leaves the bar
 	for (FMRSlotContent& S : SpellBar)
 	{
-		if (!S.IsEmpty() && !KnownSpells.Contains(S.Id))
+		if (!S.IsEmpty() && KnownSpells.Num() > 0 && !KnownSpells.Contains(S.Id))
 		{
 			S = FMRSlotContent();
 		}

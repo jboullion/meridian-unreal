@@ -352,4 +352,71 @@ bool FMRNetCombatTest::RunTest(const FString& Parameters)
 	return true;
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMRNetSpellsTest, "Meridian.Net.Spells",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMRNetSpellsTest::RunTest(const FString& Parameters)
+{
+	TArray<uint8> Rsb = {'R', 'S', 'C', 1, 5, 0, 0, 0, 0, 0, 0, 0};
+	int32 Count = 0;
+	auto Add = [&Rsb, &Count](uint32 Id, const char* Text)
+	{
+		for (int32 i = 0; i < 4; ++i) Rsb.Add((Id >> (8 * i)) & 0xFF);
+		for (int32 i = 0; i < 4; ++i) Rsb.Add(0);
+		Rsb.Append(reinterpret_cast<const uint8*>(Text), FCStringAnsi::Strlen(Text) + 1);
+		Rsb[8] = static_cast<uint8>(++Count);
+	};
+	Add(10, "imeditate.bgf");
+	Add(11, "meditate");
+	Add(12, "iappraise.bgf");
+	Add(13, "appraise");
+	Add(14, "rmnocombat.bgf");
+	Add(15, "Safe Room");
+	FMRResourceTable Res;
+	TestTrue(TEXT("rsb parses"), Res.Load(Rsb));
+	// an object as ExtractObject reads it: id, icon, name, flags, drawing effect, minimap, name colour, types, no light, animation, no overlays
+	auto Object = [](FMRWriter& W, uint32 Id, uint32 Icon, uint32 Name)
+	{
+		W.U32(Id).U32(Icon).U32(Name).U32(0).U8(0).U32(0).U32(0).U8(0).U8(0).U16(0).U8(MRMsg::ANIMATE_NONE).U16(1).U8(0);
+	};
+
+	// BP_SPELLS (merintr.c HandleSpells): u16 count, then each spell: the object, u8 targets, u8 school
+	FMRWriter SP(MRMsg::BP_SPELLS);
+	SP.U16(2);
+	Object(SP, 0x300, 10, 11);
+	SP.U8(0).U8(7);
+	Object(SP, 0x301, 12, 13);
+	SP.U8(1).U8(7);
+	FMRReader SPR(SP.Bytes, 1);
+	TArray<FMRNetSpell> Spells;
+	TestTrue(TEXT("BP_SPELLS reads to its end"), MRNetRead::SpellList(SPR, Res, Spells) && SPR.AtEnd());
+	if (TestEqual(TEXT("two spells"), Spells.Num(), 2))
+	{
+		TestTrue(TEXT("meditate takes no target"), Spells[0].Object.Name == TEXT("meditate") && Spells[0].Targets == 0 && Spells[0].School == 7);
+		TestTrue(TEXT("appraise takes one"), Spells[1].Object.Id == 0x301 && Spells[1].Targets == 1);
+	}
+
+	// BP_ADD_ENCHANTMENT (merintr.c HandleAddEnchantment): u8 type, then the enchantment as an object
+	FMRWriter EN(MRMsg::BP_ADD_ENCHANTMENT);
+	EN.U8(MRMsg::ENCHANT_ROOM);
+	Object(EN, 0x400, 14, 15);
+	FMRReader ENR(EN.Bytes, 1);
+	FMRNetObject Ench;
+	TestTrue(TEXT("a room enchantment"), ENR.U8() == MRMsg::ENCHANT_ROOM && MRNetRead::Object(ENR, Res, Ench) && ENR.AtEnd()
+		&& Ench.Name == TEXT("Safe Room") && Ench.Icon == TEXT("rmnocombat.bgf"));
+
+	// BP_STAT_CHANGE (user.kod SendStatChange): six stats, eight school levels
+	FMRWriter SC(MRMsg::BP_REQ_STAT_CHANGE);
+	const uint8 OfferBytes[] = {50, 10, 30, 35, 40, 35, 1, 0, 0, 2, 0, 0, 1, 0};
+	for (const uint8 V : OfferBytes)
+	{
+		SC.U8(V);
+	}
+	FMRReader SCR(SC.Bytes, 1);
+	FMRNetStatChange Offer;
+	TestTrue(TEXT("BP_STAT_CHANGE reads to its end"), MRNetRead::StatChange(SCR, Offer) && SCR.AtEnd());
+	TestTrue(TEXT("its stats and levels"), Offer.Stats[0] == 50 && Offer.Stats[5] == 35 && Offer.Levels[3] == 2 && Offer.Levels[6] == 1);
+	return true;
+}
+
 #endif

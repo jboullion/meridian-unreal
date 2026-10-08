@@ -11,6 +11,7 @@
 #include "UI/SMRSlot.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SSpacer.h"
 #include "Widgets/Layout/SUniformGridPanel.h"
@@ -985,23 +986,90 @@ TSharedRef<SWidget> SMRInventoryScreen::MakeQuestsPage()
 	UMRUIStyle* S = UI->GetStyle();
 	const float Px = S->Px();
 	const float SlotPx = S->Number(TEXT("slot_px"), 22.f);
+	QuestList = SNew(SVerticalBox);
+	QuestsShown = -1;
 	TSharedRef<STextBlock> Help = Label(S, LOCTEXT("QuestHelp", "Quests you take from the people of Meridian will be listed here."), 8.f, false,
 		FLinearColor(0.75f, 0.73f, 0.68f));
 	Help->SetAutoWrapText(true);
 	Help->SetJustification(ETextJustify::Center);
+	// online: the server's quests (RebuildQuests); offline, or before they come, the placeholder
 	return SNew(SMRPanel, UI.Get()).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(2.f)
 	[
-		SNew(SBox).MaxDesiredHeight(SlotPx * 2.f * Px).MaxDesiredWidth(SlotPx * 2.f * Px).HAlign(HAlign_Fill).VAlign(VAlign_Center)
-		.Padding(12.f * Px, 0.f)
+		SNew(SOverlay)
+		+ SOverlay::Slot()
 		[
-			SNew(SVerticalBox)
-			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[Label(S, LOCTEXT("NoQuests", "No quests yet"), 12.f, true)]
-			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Fill).Padding(0.f, 4.f * Px)
+			SNew(SBox).MaxDesiredHeight(SlotPx * 2.f * Px).MaxDesiredWidth(SlotPx * 2.f * Px)
 			[
-				Help
+				SNew(SScrollBox).ScrollBarThickness(FVector2D(6.f * Px, 6.f * Px))
+				+ SScrollBox::Slot()[QuestList.ToSharedRef()]
+			]
+		]
+		+ SOverlay::Slot()
+		[
+			SNew(SBox).MaxDesiredHeight(SlotPx * 2.f * Px).MaxDesiredWidth(SlotPx * 2.f * Px).HAlign(HAlign_Fill).VAlign(VAlign_Center)
+			.Padding(12.f * Px, 0.f)
+			.Visibility_Lambda([this]() { return QuestList.IsValid() && QuestList->NumSlots() > 0 ? EVisibility::Collapsed : EVisibility::HitTestInvisible; })
+			[
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)[Label(S, LOCTEXT("NoQuests", "No quests yet"), 12.f, true)]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Fill).Padding(0.f, 4.f * Px)
+				[
+					Help
+				]
 			]
 		]
 	];
+}
+
+void SMRInventoryScreen::RebuildQuests()
+{
+	UMRUISubsystem* Ui = UI.Get();
+	if (!Ui || !QuestList.IsValid() || Ui->GetStatsVersion() == QuestsShown)
+	{
+		return;
+	}
+	QuestsShown = Ui->GetStatsVersion();
+	QuestList->ClearChildren();
+	TArray<FMRQuestView> Quests;
+	Ui->GetQuests(Quests);
+	UMRUIStyle* S = Ui->GetStyle();
+	const float Px = S->Px();
+	const FLinearColor Gold = S->Color(TEXT("heading"), FLinearColor(1.f, 0.75f, 0.3f));
+	for (const FMRQuestView& Q : Quests)
+	{
+		if (!Q.ObjectId)
+		{
+			// a heading: "Active Quests:", "No Passive Quests"...
+			QuestList->AddSlot().AutoHeight().Padding(2.f * Px, 3.f * Px, 2.f * Px, 1.f * Px)
+			[
+				Label(S, FText::FromString(Q.Name.TrimChar(TEXT(':'))), 9.f, true, Gold)
+			];
+			continue;
+		}
+		const uint32 Id = Q.ObjectId;
+		const FString Icon = Q.Icon;
+		// a quest: its icon and name; a click looks at it (its description)
+		QuestList->AddSlot().AutoHeight().Padding(6.f * Px, 0.5f * Px)
+		[
+			SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("NoBorder")).Padding(0.f)
+			.OnMouseButtonDown_Lambda([Ui, Id](const FGeometry&, const FPointerEvent&)
+			{
+				Ui->LookAtQuest(Id);
+				return FReply::Handled();
+			})
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 3.f * Px, 0.f)
+				[
+					SNew(SBox).WidthOverride(12.f * Px).HeightOverride(12.f * Px)
+					[
+						SNew(SImage).Image_Lambda([Ui, Icon]() { return Icon.IsEmpty() ? nullptr : Ui->BitmapIcon(Icon, 1); })
+					]
+				]
+				+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)[Label(S, FText::FromString(Q.Name), 9.5f)]
+			]
+		];
+	}
 }
 
 void SMRInventoryScreen::SetTab(EMRInventoryTab InTab)
@@ -1047,6 +1115,7 @@ void SMRInventoryScreen::Tick(const FGeometry& Geo, const double Time, const flo
 	RebuildSkills();
 	RebuildStats(bStatsDirty);
 	bStatsDirty = false;
+	RebuildQuests();
 	// typing in a search bar: every key goes to it (no walking, no hotbar keys)
 	if (UMRUISubsystem* Ui = UI.Get())
 	{

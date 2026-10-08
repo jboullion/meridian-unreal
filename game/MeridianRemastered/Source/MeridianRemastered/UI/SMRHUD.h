@@ -211,12 +211,16 @@ public:
 	/** The Look dialog (shown with SetLookOpen; UMRUISubsystem fills it). */
 	TSharedPtr<SMRLookDialog> GetLookDialog() const { return LookDialog; }
 	void SetLookOpen(bool bOpen);
+	/** The retraining dialog (SMRStatChange). */
+	TSharedPtr<class SMRStatChange> GetStatChange() const { return StatChange; }
+	void SetStatChangeOpen(bool bOpen);
 
 private:
 	TWeakObjectPtr<UMRUISubsystem> UI;
 	TSharedPtr<SMRInventoryScreen> Inventory;
 	TSharedPtr<SMRGameMenu> GameMenu;
 	TSharedPtr<SMRLookDialog> LookDialog;
+	TSharedPtr<class SMRStatChange> StatChange;
 	TSharedPtr<SMRChatLog> ChatLog;
 	TSharedPtr<SWidget> SpellBar;
 	TSharedPtr<SWidget> HotbarArea;

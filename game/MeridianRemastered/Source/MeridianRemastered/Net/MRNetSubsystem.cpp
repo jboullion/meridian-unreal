@@ -417,6 +417,59 @@ const TMap<uint32, int32>& UMRNetSubsystem::HitFormats()
 	return HitFormatIds;
 }
 
+void UMRNetSubsystem::CastSpell(uint32 SpellId, const TArray<uint32>& Targets)
+{
+	if (!CanSend() || !SpellId)
+	{
+		return;
+	}
+	// clientd3d protocol.c: the spell's id, then PARAM_OBJECT_LIST (u16 count, the ids)
+	FMRWriter W(MRMsg::BP_REQ_CAST);
+	W.U32(SpellId).U16(static_cast<uint16>(Targets.Num()));
+	for (const uint32 Id : Targets)
+	{
+		W.U32(Id);
+	}
+	Connection->Send(W);
+	const FMRNetSpell* S = World.FindSpell(SpellId);
+	UE_LOG(LogMeridian, Log, TEXT("MRNet: cast %s on %d target(s)"), S ? *S->Object.Name : TEXT("?"), Targets.Num());
+}
+
+void UMRNetSubsystem::Rest()
+{
+	if (CanSend())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_USERCOMMAND).U8(MRMsg::UC_REST));
+	}
+}
+
+void UMRNetSubsystem::Stand()
+{
+	if (CanSend())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_USERCOMMAND).U8(MRMsg::UC_STAND));
+	}
+}
+
+void UMRNetSubsystem::ChangeStats(const uint8 (&Stats)[6])
+{
+	if (!CanSend())
+	{
+		return;
+	}
+	// stats.c: the six stats, then the school levels as they were offered (user.kod UserChangedStats)
+	FMRWriter W(MRMsg::BP_CHANGED_STATS);
+	for (const uint8 V : Stats)
+	{
+		W.U8(V);
+	}
+	for (const uint8 V : World.StatChange.Levels)
+	{
+		W.U8(V);
+	}
+	Connection->Send(W);
+}
+
 void UMRNetSubsystem::DebugEffect(uint16 Effect, int32 Ms, int32 Xlat)
 {
 	FMRWriter W(MRMsg::BP_EFFECT);
@@ -752,6 +805,13 @@ void UMRNetSubsystem::ReloadData()
 	World.ResetInventory();
 	OnInventoryChanged.Broadcast();
 	Connection->Send(FMRWriter(MRMsg::BP_REQ_INVENTORY));
+	// and the spells, skills and player enchantments (merintr InterfaceResetData)
+	World.ResetAbilities();
+	OnAbilitiesChanged.Broadcast();
+	OnEnchantmentsChanged.Broadcast();
+	Connection->Send(FMRWriter(MRMsg::BP_SEND_SPELLS));
+	Connection->Send(FMRWriter(MRMsg::BP_SEND_SKILLS));
+	Connection->Send(FMRWriter(MRMsg::BP_SEND_ENCHANTMENTS).U8(MRMsg::ENCHANT_PLAYER));
 }
 
 void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
@@ -827,6 +887,11 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		if (MRNetRead::Player(R, Resources, World.Player))
 		{
 			bAwaitingRoom = true;
+			if (World.RoomEnchantments.Num() > 0)
+			{
+				World.RoomEnchantments.Reset();  // merintr enchant.c EnchantmentsNewRoom
+				OnEnchantmentsChanged.Broadcast();
+			}
 			UE_LOG(LogMeridian, Log, TEXT("MRNet: room %s (%s), security %08x, ambient light %d, background %s"), *World.Player.RoomFile,
 				*World.Player.RoomName, World.Player.RoomSecurity, World.Player.AmbientLight, *World.Player.Background);
 		}
@@ -866,6 +931,10 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 			Connection->Send(FMRWriter(MRMsg::BP_SEND_STAT_GROUPS));
 			// the inventory and what is in use (clientd3d game.c asks on entering the game)
 			Connection->Send(FMRWriter(MRMsg::BP_REQ_INVENTORY));
+			// the spells, skills and enchantments on us (merintr mermain.c, enchant.c EnchantmentsInit)
+			Connection->Send(FMRWriter(MRMsg::BP_SEND_SPELLS));
+			Connection->Send(FMRWriter(MRMsg::BP_SEND_SKILLS));
+			Connection->Send(FMRWriter(MRMsg::BP_SEND_ENCHANTMENTS).U8(MRMsg::ENCHANT_PLAYER));
 		}
 		break;
 	}
@@ -1124,6 +1193,100 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		}
 		break;
 	}
+	case MRMsg::BP_SPELLS:
+		if (MRNetRead::SpellList(R, Resources, World.Spells))
+		{
+			World.bHasSpells = true;
+			TArray<FString> Names;
+			for (const FMRNetSpell& S : World.Spells)
+			{
+				Names.Add(S.Object.Name);
+			}
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: %d spells: %s"), World.Spells.Num(), *FString::Join(Names, TEXT(", ")));
+			OnAbilitiesChanged.Broadcast();
+		}
+		break;
+	case MRMsg::BP_SPELL_ADD:
+	{
+		FMRNetSpell S;
+		if (MRNetRead::Spell(R, Resources, S))
+		{
+			World.Spells.RemoveAll([&S](const FMRNetSpell& E) { return E.Object.Id == S.Object.Id; });
+			World.Spells.Add(MoveTemp(S));
+			OnAbilitiesChanged.Broadcast();
+		}
+		break;
+	}
+	case MRMsg::BP_SPELL_REMOVE:
+	{
+		const uint32 Id = MRMsg::PlainId(R.U32());
+		World.Spells.RemoveAll([Id](const FMRNetSpell& E) { return E.Object.Id == Id; });
+		OnAbilitiesChanged.Broadcast();
+		break;
+	}
+	case MRMsg::BP_SKILLS:
+		if (MRNetRead::ObjectList(R, Resources, World.Skills))
+		{
+			World.bHasSkills = true;
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: %d skills"), World.Skills.Num());
+			OnAbilitiesChanged.Broadcast();
+		}
+		break;
+	case MRMsg::BP_SKILL_ADD:
+	{
+		FMRNetObject O;
+		if (MRNetRead::Object(R, Resources, O))
+		{
+			World.Skills.RemoveAll([&O](const FMRNetObject& E) { return E.Id == O.Id; });
+			World.Skills.Add(MoveTemp(O));
+			OnAbilitiesChanged.Broadcast();
+		}
+		break;
+	}
+	case MRMsg::BP_SKILL_REMOVE:
+	{
+		const uint32 Id = MRMsg::PlainId(R.U32());
+		World.Skills.RemoveAll([Id](const FMRNetObject& E) { return E.Id == Id; });
+		OnAbilitiesChanged.Broadcast();
+		break;
+	}
+	case MRMsg::BP_ADD_ENCHANTMENT:
+	{
+		// merintr.c HandleAddEnchantment: the type, then the enchantment as an object (its spell's name and icon)
+		const uint8 Type = R.U8();
+		FMRNetObject O;
+		if (MRNetRead::Object(R, Resources, O) && (Type == MRMsg::ENCHANT_PLAYER || Type == MRMsg::ENCHANT_ROOM))
+		{
+			TArray<FMRNetObject>& List = Type == MRMsg::ENCHANT_PLAYER ? World.PlayerEnchantments : World.RoomEnchantments;
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: enchantment on the %s: %s (%s)"), Type == MRMsg::ENCHANT_PLAYER ? TEXT("player") : TEXT("room"), *O.Name, *O.Icon);
+			List.RemoveAll([&O](const FMRNetObject& E) { return E.Id == O.Id; });
+			List.Add(MoveTemp(O));
+			OnEnchantmentsChanged.Broadcast();
+		}
+		break;
+	}
+	case MRMsg::BP_REMOVE_ENCHANTMENT:
+	{
+		const uint8 Type = R.U8();
+		const uint32 Id = MRMsg::PlainId(R.U32());
+		TArray<FMRNetObject>& List = Type == MRMsg::ENCHANT_PLAYER ? World.PlayerEnchantments : World.RoomEnchantments;
+		if (List.RemoveAll([Id](const FMRNetObject& E) { return E.Id == Id; }) > 0)
+		{
+			OnEnchantmentsChanged.Broadcast();
+		}
+		break;
+	}
+	case MRMsg::BP_REQ_STAT_CHANGE:
+		if (MRNetRead::StatChange(R, World.StatChange))
+		{
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: the server offers retraining"));
+			OnStatChange.Broadcast();
+		}
+		break;
+	case MRMsg::BP_CHANGED_STATS_OK:
+	case MRMsg::BP_CHANGED_STATS_NOT_OK:
+		OnStatChangeResult.Broadcast(Body[0] == MRMsg::BP_CHANGED_STATS_OK);
+		break;
 	case MRMsg::BP_EFFECT:
 		if (World.Effects.Apply(R))
 		{

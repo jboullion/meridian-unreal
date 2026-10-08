@@ -216,6 +216,7 @@ void UMRNetWorldSubsystem::OnPhaseChanged()
 		// left the game (logoff or disconnect): back to the login screen over Raza
 		ClearObjects();
 		Rid = 0;
+		bResting = false;
 		++RoomTicket;  // a room still loading is no longer wanted
 		LoadingRoom.Reset();
 		if (APlayerController* PC = GetPC(); PC && PC->GetPawn())
@@ -326,7 +327,7 @@ void UMRNetWorldSubsystem::FinishEnterRoom(int32 PrevRid)
 	}
 	Net->SetStatus(FString());
 	PlacePlayer(PrevRid == Rid);
-	SetPawnFrozen(Net->GetEffects().bParalyzed);
+	UpdateFrozen();
 	ApplySelfLook();
 	GatherProps();
 	for (const TPair<uint32, FMRNetObject>& Pair : Net->GetObjects())
@@ -572,6 +573,7 @@ void UMRNetWorldSubsystem::FetchBgf(const FString& InFile, TFunction<void(TShare
 
 void UMRNetWorldSubsystem::ClearObjects()
 {
+	CancelChoosing();  // (a new room, or its ids renumbered)
 	for (const TWeakObjectPtr<AActor>& P : Projectiles)
 	{
 		if (AActor* A = P.Get())
@@ -955,7 +957,7 @@ void UMRNetWorldSubsystem::RequestGo()
 	UMRZoneSubsystem* Zones = GetWorld()->GetSubsystem<UMRZoneSubsystem>();
 	APlayerController* PC = GetPC();
 	APawn* Pawn = PC ? PC->GetPawn() : nullptr;
-	if (!Net || Net->GetPhase() != EMRNetPhase::InGame || !Rid || !Zones || !Pawn || Net->IsWaiting())
+	if (!Net || Net->GetPhase() != EMRNetPhase::InGame || !Rid || !Zones || !Pawn || Net->IsWaiting() || bResting)
 	{
 		return;
 	}
@@ -994,6 +996,15 @@ uint32 UMRNetWorldSubsystem::Attack()
 	if (!Net || Net->GetPhase() != EMRNetPhase::InGame || !Rid || Net->IsWaiting())
 	{
 		return 0;
+	}
+	if (IsChoosingTarget())
+	{
+		ChooseTarget();  // the click picks the waiting spell's or item's target instead
+		return 0;
+	}
+	if (bResting || Net->GetEffects().bParalyzed)
+	{
+		return 0;  // mermain.c InterfaceAction: no attacks while resting or paralyzed
 	}
 	const double Now = FPlatformTime::Seconds();
 	if (Now - LastAttackTime < AttackDelay)
@@ -1044,6 +1055,140 @@ uint32 UMRNetWorldSubsystem::Attack()
 	const FMRNetObject* O = Net->FindObject(Id);
 	UE_LOG(LogMeridian, Log, TEXT("MRNet: attack %u (%s)"), Id, O ? *O->Name : TEXT("?"));
 	return Id;
+}
+
+bool UMRNetWorldSubsystem::CastSpell(uint32 SpellId)
+{
+	UMRNetSubsystem* Net = GetNet();
+	const FMRNetSpell* Spell = Net ? Net->GetNetWorld().FindSpell(SpellId) : nullptr;
+	if (!Spell || Net->GetPhase() != EMRNetPhase::InGame || Net->IsWaiting())
+	{
+		return false;
+	}
+	PendingItem = 0;
+	PendingSpell = 0;
+	if (Net->GetEffects().bParalyzed)
+	{
+		Net->AddGameMessage(TEXT("You can't lift your hands to cast the spell!"));  // IDS_SPELLPARALYZED
+		return false;
+	}
+	if (bResting)
+	{
+		Net->AddGameMessage(TEXT("You can't cast spells while you're resting."));  // IDS_SPELLRESTING
+		return false;
+	}
+	if (Spell->Targets == 0)
+	{
+		Net->CastSpell(SpellId, {});
+		return true;
+	}
+	const uint32 SelfId = Net->GetPlayer().Id;
+	if (TargetId)
+	{
+		// the chosen target if we can see it (merintr IDS_TARGETNOTVISIBLEFORCAST)
+		FVector2D Screen;
+		double Dist = 0.0;
+		const AMRNetObject* A = FindActor(TargetId);
+		if (TargetId != SelfId && !(A && IsInSight(A, Screen, Dist)))
+		{
+			Net->AddGameMessage(TEXT("You can't see your selected target."));
+			return false;
+		}
+		Net->CastSpell(SpellId, {TargetId});
+		return true;
+	}
+	if (AimId)
+	{
+		Net->CastSpell(SpellId, {AimId});
+		return true;
+	}
+	PendingSpell = SpellId;  // the next choice picks it (merintr GAME_SELECT)
+	return false;
+}
+
+void UMRNetWorldSubsystem::ApplyItem(uint32 ItemId)
+{
+	PendingSpell = 0;
+	PendingItem = ItemId;
+}
+
+FString UMRNetWorldSubsystem::GetChoosingText() const
+{
+	const UMRNetSubsystem* Net = GetNet();
+	if (!Net)
+	{
+		return FString();
+	}
+	if (const FMRNetSpell* S = PendingSpell ? Net->GetNetWorld().FindSpell(PendingSpell) : nullptr)
+	{
+		return FString::Printf(TEXT("Cast %s on what?"), *S->Object.Name);
+	}
+	if (const FMRNetObject* O = PendingItem ? Net->FindInventory(PendingItem) : nullptr)
+	{
+		return FString::Printf(TEXT("Use %s on what?"), *O->Name);
+	}
+	return FString();
+}
+
+bool UMRNetWorldSubsystem::ChooseTarget(uint32 Id)
+{
+	UMRNetSubsystem* Net = GetNet();
+	Id = Id ? Id : AimId;
+	if (!Net || !IsChoosingTarget() || !Id)
+	{
+		return false;
+	}
+	if (PendingSpell)
+	{
+		Net->CastSpell(PendingSpell, {Id});
+	}
+	else
+	{
+		Net->Apply(PendingItem, Id);
+	}
+	PendingSpell = 0;
+	PendingItem = 0;
+	return true;
+}
+
+void UMRNetWorldSubsystem::SetResting(bool bRest)
+{
+	UMRNetSubsystem* Net = GetNet();
+	if (!Net || Net->GetPhase() != EMRNetPhase::InGame)
+	{
+		return;
+	}
+	if (bRest == bResting)
+	{
+		Net->AddGameMessage(bRest ? TEXT("You're already resting.") : TEXT("You're not resting."));  // IDS_RESTING, IDS_STANDING
+		return;
+	}
+	bResting = bRest;
+	if (bRest)
+	{
+		Net->Rest();
+	}
+	else
+	{
+		Net->Stand();
+	}
+	Net->AddGameMessage(bRest ? TEXT("You rest.") : TEXT("You stop resting."));  // IDS_REST, IDS_STAND
+	UpdateFrozen();
+}
+
+void UMRNetWorldSubsystem::UpdateFrozen()
+{
+	const UMRNetSubsystem* Net = GetNet();
+	if (Rid && LoadingRoom.IsEmpty())
+	{
+		SetPawnFrozen(bResting || (Net && Net->GetEffects().bParalyzed));
+	}
+}
+
+void UMRNetWorldSubsystem::CancelChoosing()
+{
+	PendingSpell = 0;
+	PendingItem = 0;
 }
 
 bool UMRNetWorldSubsystem::FeetOf(uint32 Id, FVector& Out) const
@@ -1136,10 +1281,7 @@ void UMRNetWorldSubsystem::ApplyEffects(bool bEntered)
 		return;
 	}
 	const FMRNetEffects& E = Net->GetEffects();
-	if (Rid && LoadingRoom.IsEmpty())
-	{
-		SetPawnFrozen(E.bParalyzed);  // move.c: no walking while paralyzed
-	}
+	UpdateFrozen();  // move.c: no walking while paralyzed
 	if (UMREnvironmentSubsystem* Env = GetWorld()->GetSubsystem<UMREnvironmentSubsystem>())
 	{
 		// room.kod GetRoomWeather: snow before rain before a sandstorm (fireworks: not drawn yet)

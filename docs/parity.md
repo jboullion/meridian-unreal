@@ -66,7 +66,7 @@ Last survey: 2026-10-08. M0, M1, M2a and M2b done the same day.
 |---|---|---|---|---|
 | Inventory list | `BP_INVENTORY`, `BP_INVENTORY_ADD/REMOVE` | Done online (the server's items; a number item's amount kept by `BP_CHANGE`); mock offline | Done | M3 |
 | Use and unuse, equipment slots | `BP_REQ_USE`, `BP_USE_LIST`, `BP_USE`, `BP_UNUSE` | Done: onto an equipment slot or shift click; in-use items show on their slot (the wielded weapon in the right hand) | Done | M3 |
-| Apply to a target, activate | `BP_REQ_APPLY`, `BP_REQ_ACTIVATE` | Partial: F activates what the crosshair is on; apply is in the protocol, no UI yet (with spell targets, M5) | Done | M3, M5 |
+| Apply to a target, activate | `BP_REQ_APPLY`, `BP_REQ_ACTIVATE` | Done: F activates what the crosshair is on; U uses the selected (or hovered) item on what you choose next | Done | M3, M5 |
 | Get and drop (stack amounts) | `BP_REQ_GET`, `BP_REQ_DROP` | Done: G gets (a list for a pile); dropping out of the window drops it (right click: one of a stack; half picked up with right click) | Done | M3 |
 | Containers | `BP_SEND_OBJECT_CONTENTS`, `BP_REQ_PUT`, `BP_REQ_GET_FROM_CONTAINER` | Partial: F or Look's Inside lists the contents, picking one takes it; putting in is in the protocol, no UI yet | Done | M3 |
 | Give | an offer, `BP_REQ_OFFER` (`BP_REQ_GIVE` is unused) | Missing | Missing | M6 |
@@ -92,13 +92,13 @@ Last survey: 2026-10-08. M0, M1, M2a and M2b done the same day.
 |---|---|---|---|---|
 | Vitals bars | `BP_STAT` group 1 | Done | Done | — |
 | Stats tab | group 2 | Done | Done | — |
-| Spell and skill lists | `BP_SPELLS`, `BP_SKILLS` (+ADD/REMOVE) | Partial: from stat groups 3 and 4 | Done | M5 |
-| Cast with targets | `BP_REQ_CAST` | Missing: animation only | Done | M5 |
-| Spell bar | — | Partial: online it holds the server's spells (kept on this client); casting is M5 | Missing | M5 |
-| Enchantments on you and on the room | `BP_ADD_ENCHANTMENT`, `BP_REMOVE_ENCHANTMENT` | Missing | Done | M5 |
-| Quests tab | group 5 | Missing: an empty tab | Done | M5 |
-| Stat changes, retraining | `BP_REQ_STAT_CHANGE`, `BP_CHANGED_STATS_*` | Missing | Missing | M5 |
-| Rest and stand | `UC_REST`, `UC_STAND` | Missing | Done | M5 |
+| Spell and skill lists | `BP_SPELLS`, `BP_SKILLS` (+ADD/REMOVE) | Done: the server's lists, percentages from stat groups 3 and 4 | Done | M5 |
+| Cast with targets | `BP_REQ_CAST` | Done: the target if in view, else what the crosshair is on, else choose (a click in the room or the inventory, \ for yourself, Esc stops) | Done | M5 |
+| Spell bar | — | Done: numpad 1–9 casts; the layout is kept on this client (not saved between sessions yet) | Missing | M5 |
+| Enchantments on you and on the room | `BP_ADD_ENCHANTMENT`, `BP_REMOVE_ENCHANTMENT` | Done: icons top left (on you) and under the minimap (the room), named on hover | Done | M5 |
+| Quests tab | group 5 | Done: headings and quests; a click looks at a quest | Done | M5 |
+| Stat changes, retraining | `BP_STAT_CHANGE` (156), `BP_CHANGED_STATS*` | Partial: the six stats move (school levels kept as offered); not tried against an elder yet | Missing | M5 |
+| Rest and stand | `UC_REST`, `UC_STAND` | Done: R; no walking, attacking or casting while resting | Done | M5 |
 
 ## NPCs and trade
 
@@ -165,7 +165,7 @@ The server serves about 395 rooms. `ReferenceServers/Server-104/resource/rooms` 
 | M2 | See and select everything: all objects, name plates, targeting, Look (M2a, done 2026-10-08); equipment overlays (M2b, done 2026-10-08) |
 | M3 | Inventory and items (done 2026-10-08) |
 | M4 | Combat, death and effects (done 2026-10-08) |
-| M5 | Spells, skills, enchantments, stats |
+| M5 | Spells, skills, enchantments, stats (done 2026-10-08) |
 | M6 | NPCs, economy, player trade |
 | M7 | Server-driven world: sound, light, room changes, texture animation |
 | M8 | Communication and social |

@@ -11,6 +11,7 @@
 #include "UI/MRUISubsystem.h"
 #include "UI/SMRLookDialog.h"
 #include "MeridianRemastered.h"
+#include "Net/MRNetSubsystem.h"
 #include "Net/MRNetWorldSubsystem.h"
 #include "Player/MRPlayerState.h"
 #include "Tests/MRLookDevTour.h"
@@ -160,6 +161,10 @@ void AMRPlayerController::BuildUIInput()
 	UIContext->MapKey(GetAction, EKeys::G);
 	UseAction = MakeAction(TEXT("IA_Use"), EInputActionValueType::Boolean);
 	UIContext->MapKey(UseAction, EKeys::F);
+	RestAction = MakeAction(TEXT("IA_Rest"), EInputActionValueType::Boolean);
+	UIContext->MapKey(RestAction, EKeys::R);
+	ApplyAction = MakeAction(TEXT("IA_Apply"), EInputActionValueType::Boolean);
+	UIContext->MapKey(ApplyAction, EKeys::U);
 }
 
 void AMRPlayerController::SetupInputComponent()
@@ -188,6 +193,8 @@ void AMRPlayerController::SetupInputComponent()
 	Input->BindAction(LookAction, ETriggerEvent::Started, this, &AMRPlayerController::OnLookKey);
 	Input->BindAction(GetAction, ETriggerEvent::Started, this, &AMRPlayerController::OnGetKey);
 	Input->BindAction(UseAction, ETriggerEvent::Started, this, &AMRPlayerController::OnUseKey);
+	Input->BindAction(RestAction, ETriggerEvent::Started, this, &AMRPlayerController::OnRestKey);
+	Input->BindAction(ApplyAction, ETriggerEvent::Started, this, &AMRPlayerController::OnApplyKey);
 }
 
 UMRUISubsystem* AMRPlayerController::GetUI() const
@@ -244,9 +251,15 @@ void AMRPlayerController::OnChatKey()
 
 void AMRPlayerController::OnMenuKey()
 {
-	// the original's Escape: clear the target first (intrface.c A_TARGETCLEAR), then the menu
+	// the original's Escape: stop choosing a spell's or item's target (A_ENDSELECT), clear the
+	// target (intrface.c A_TARGETCLEAR), then the menu
 	UMRNetWorldSubsystem* NetWorld = GetNetWorld();
 	UMRUISubsystem* UI = GetUI();
+	if (NetWorld && NetWorld->IsChoosingTarget() && !(UI && UI->IsGameMenuOpen()))
+	{
+		NetWorld->CancelChoosing();
+		return;
+	}
 	if (NetWorld && NetWorld->GetTargetId() && !(UI && UI->IsGameMenuOpen()))
 	{
 		NetWorld->ClearTarget();
@@ -285,6 +298,15 @@ void AMRPlayerController::OnTargetSelf()
 {
 	if (UMRNetWorldSubsystem* NetWorld = GetNetWorld())
 	{
+		// choosing a spell's or item's target: ourselves
+		if (NetWorld->IsChoosingTarget())
+		{
+			if (const UMRNetSubsystem* Net = GetGameInstance()->GetSubsystem<UMRNetSubsystem>())
+			{
+				NetWorld->ChooseTarget(Net->GetPlayer().Id);
+			}
+			return;
+		}
 		NetWorld->TargetSelf();
 	}
 }
@@ -315,6 +337,28 @@ void AMRPlayerController::OnLookKey()
 		}
 	}
 	NetWorld->LookAtTarget();
+}
+
+void AMRPlayerController::OnRestKey()
+{
+	if (UMRNetWorldSubsystem* NetWorld = GetNetWorld())
+	{
+		NetWorld->SetResting(!NetWorld->IsResting());
+	}
+}
+
+void AMRPlayerController::OnApplyKey()
+{
+	UMRNetWorldSubsystem* NetWorld = GetNetWorld();
+	UMRUISubsystem* UI = GetUI();
+	if (!NetWorld || !UI)
+	{
+		return;
+	}
+	if (const uint32 Item = UI->ItemToApply())
+	{
+		NetWorld->ApplyItem(Item);
+	}
 }
 
 void AMRPlayerController::OnGetKey()

@@ -57,10 +57,21 @@ void FMRNetWorld::ResetInventory()
 	Contents.Reset();
 }
 
+void FMRNetWorld::ResetAbilities()
+{
+	Spells.Reset();
+	bHasSpells = false;
+	Skills.Reset();
+	bHasSkills = false;
+	PlayerEnchantments.Reset();
+	RoomEnchantments.Reset();
+}
+
 void FMRNetWorld::Reset()
 {
 	ResetRoom();
 	ResetInventory();
+	ResetAbilities();
 	Player = FMRNetPlayer();
 	StatGroups.Reset();
 	Effects.Reset();
@@ -224,6 +235,42 @@ bool MRNetRead::Object(FMRReader& R, const FMRResourceTable& Res, FMRNetObject& 
 	Overlays(R, Res, Out.OverlayParts);
 	Out.Icon = Res.Get(Out.IconRsc);
 	Out.Name = Res.Get(Out.NameRsc);
+	return R.IsOk();
+}
+
+bool MRNetRead::Spell(FMRReader& R, const FMRResourceTable& Res, FMRNetSpell& Out)
+{
+	Out = FMRNetSpell();
+	Object(R, Res, Out.Object);
+	Out.Targets = R.U8();
+	Out.School = R.U8();
+	return R.IsOk();
+}
+
+bool MRNetRead::SpellList(FMRReader& R, const FMRResourceTable& Res, TArray<FMRNetSpell>& Out)
+{
+	Out.Reset();
+	const int32 N = R.U16();
+	for (int32 i = 0; i < N && R.IsOk(); ++i)
+	{
+		if (!Spell(R, Res, Out.AddDefaulted_GetRef()))
+		{
+			return false;
+		}
+	}
+	return R.IsOk();
+}
+
+bool MRNetRead::StatChange(FMRReader& R, FMRNetStatChange& Out)
+{
+	for (uint8& V : Out.Stats)
+	{
+		V = R.U8();
+	}
+	for (uint8& V : Out.Levels)
+	{
+		V = R.U8();
+	}
 	return R.IsOk();
 }
 

@@ -10,8 +10,10 @@
 #include "UI/MRUIStyle.h"
 #include "UI/MRUISubsystem.h"
 #include "UI/SMRChatLog.h"
+#include "UI/SMREnchantments.h"
 #include "UI/SMRGameMenu.h"
 #include "UI/SMRLookDialog.h"
+#include "UI/SMRStatChange.h"
 #include "UI/SMRInventoryScreen.h"
 #include "UI/SMRMinimap.h"
 #include "UI/SMRSlot.h"
@@ -449,6 +451,8 @@ void SMRHUDRoot::Rebuild()
 	GameMenu = SNew(SMRGameMenu, Ui);
 	LookDialog = SNew(SMRLookDialog, Ui);
 	LookDialog->SetVisibility(Ui->IsLookOpen() ? EVisibility::Visible : EVisibility::Collapsed);
+	StatChange = SNew(SMRStatChange, Ui);
+	StatChange->SetVisibility(Ui->IsStatChangeOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 	GameMenu->SetVisibility(Ui->IsGameMenuOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 
 	ChildSlot
@@ -466,7 +470,21 @@ void SMRHUDRoot::Rebuild()
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0.f, Style->Number(TEXT("minimap_margin"), 8.f) * Px,
 			Style->Number(TEXT("minimap_margin"), 8.f) * Px, 0.f)
 		[
-			SNew(SMRMinimap, Ui)
+			SNew(SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight()
+			[
+				SNew(SMRMinimap, Ui)
+			]
+			// the room's enchantments under the map (merintr enchant.c: by the view)
+			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right).Padding(0.f, 3.f * Px, 0.f, 0.f)
+			[
+				SNew(SMREnchantments, Ui).bRoom(true)
+			]
+		]
+		// the enchantments on the player, top left (merintr enchant.c: by the player's portrait)
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(Style->Number(TEXT("minimap_margin"), 8.f) * Px)
+		[
+			SNew(SMREnchantments, Ui)
 		]
 		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(Style->Number(TEXT("chat_margin"), 8.f) * Px)
 		[
@@ -493,6 +511,10 @@ void SMRHUDRoot::Rebuild()
 		+ SOverlay::Slot()
 		[
 			LookDialog.ToSharedRef()
+		]
+		+ SOverlay::Slot()
+		[
+			StatChange.ToSharedRef()
 		]
 		+ SOverlay::Slot()
 		[
@@ -643,6 +665,14 @@ void SMRHUDRoot::SetLookOpen(bool bOpen)
 	if (LookDialog.IsValid())
 	{
 		LookDialog->SetVisibility(bOpen ? EVisibility::Visible : EVisibility::Collapsed);
+	}
+}
+
+void SMRHUDRoot::SetStatChangeOpen(bool bOpen)
+{
+	if (StatChange.IsValid())
+	{
+		StatChange->SetVisibility(bOpen ? EVisibility::Visible : EVisibility::Collapsed);
 	}
 }
 

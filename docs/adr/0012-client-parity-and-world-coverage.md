@@ -357,6 +357,38 @@ The existing movement, UI-shot and look-dev runs stay green. Look-dev compares r
   - `effect_pain/flash/whiteout/invert/blur.png`.
 - `run_move_test.ps1` 8/8. The UI shots (`build/ui/shots/m4/`) are unchanged from M3.
 
+### M5, spells, skills, enchantments and stats (2026-10-08)
+**What landed** (docs/research/blakserv-protocol.md, "Spells, skills and enchantments"):
+- **The server's spell and skill lists** (`BP_SPELLS`, `BP_SKILLS` and their ADD / REMOVE) feed the Spells and Skills pages. They are matched to our data by name; the percentages come from stat groups 3 and 4 as before.
+- **Casting:**
+  - The spell bar's numpad keys cast online (`BP_REQ_CAST`).
+  - A spell with no target goes at once. Otherwise it goes at the target if it is in view, else at what the crosshair is on, else the next choice picks it: the attack click, `\` for yourself, or a click on an item in the dialog. Esc stops.
+  - "Cast appraise on what?" shows under the crosshair meanwhile.
+  - The cast animation is the server's (M4). The mock cast stays offline.
+- **Using an item on something:** U picks the selected hotbar item (or the one under the mouse in the dialog), then the same choice (`BP_REQ_APPLY`). The original always waits for that click.
+- **Enchantments** (`BP_ADD_ENCHANTMENT`, `_REMOVE`; `SMREnchantments`): icons for the player's at the top left and the room's under the minimap, named on hover. The room's are dropped on each new room.
+- **Rest:** R rests or stands (`UC_REST`, `UC_STAND`). While resting the pawn doesn't walk, attack, go or cast, as the original.
+- **The Quests page** lists the server's quest group (5): headings and quests. A click looks at a quest.
+- **Retraining** (`BP_STAT_CHANGE`, `SMRStatChange`): an elder's offer opens a dialog that moves points between the six stats (1–50, the same total), and Change sends `BP_CHANGED_STATS`.
+
+**Not yet:**
+- retraining doesn't lower school levels (the original's module trades them for points), and hasn't been tried against an elder (Jasper, Marion and Ko'catan are far from the demo);
+- the spell bar layout isn't saved between sessions;
+- a player enchantment hasn't been seen yet in the test (the utility spells put none on the player);
+- the chat commands ("rest", "cast") come with M8.
+
+**Verification (local Shards stack):**
+- `Meridian.Net.Spells` (new): `BP_SPELLS` with targets and schools, a room enchantment, `BP_STAT_CHANGE`. All 23 automation tests pass.
+- `run_net_test.ps1` reports **DONE 38/38** (39/39 with `-Create`, 41/41 with `-Create -Death`). The new Spells step, in the Inn of Raza:
+  - the server's 9 spells (10 with relay for a fresh mage) are all on the Spells page;
+  - the room's "Safe Room" enchantment came;
+  - the Quests page lists "Passive Quests: Find Priestess Xiana, Find Raza's Elder; No Active Quests; No Completed Quests";
+  - appraise is cast on the mace, picked by the target choice ("You have improved in the art of appraise.");
+  - meditate (no target) is cast;
+  - resting stops walking and casting until we stand.
+- `-Render` adds `quests.png` and `choose_target.png`; the UI shots add `stat_change` (`build/ui/shots/m5/`). The other UI shots are unchanged.
+- `run_move_test.ps1` was 8/8 in one of four runs and 7/8 in the others, a different ledge check each time. Those checks read the height a fixed 1.6 s after the run starts, so a slow frame catches the character mid-fall. Nothing in M5 touches offline movement.
+
 ## Alternatives considered
 
 - **Bake every room before allowing travel:** no runtime code, but hours of GPU texture work and hundreds of levels to import before anyone can leave Raza. A room changed on the server would also break until rebuilt.

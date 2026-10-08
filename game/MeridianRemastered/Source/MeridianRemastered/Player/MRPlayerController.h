@@ -63,6 +63,10 @@ private:
 	void OnGetKey();
 	/** F: open the container or work the lever the target or crosshair is on. */
 	void OnUseKey();
+	/** R: sit down to rest, or stand up (UC_REST, UC_STAND). */
+	void OnRestKey();
+	/** U: use the selected hotbar item (or the item under the mouse in the dialog) on something. */
+	void OnApplyKey();
 	class UMRNetWorldSubsystem* GetNetWorld() const;
 	void OnMapZoom(const FInputActionValue& Value);
 	class UMRUISubsystem* GetUI() const;
@@ -82,6 +86,8 @@ private:
 	UPROPERTY(Transient) TObjectPtr<UInputAction> LookAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> GetAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> UseAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> RestAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> ApplyAction;
 
 	/** Zones requested by the server, with the time the request expires. */
 	TMap<int32, double> PreparedZones;

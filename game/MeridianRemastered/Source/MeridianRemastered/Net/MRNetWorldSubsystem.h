@@ -81,6 +81,32 @@ public:
 	uint32 Attack();
 	/** The last thing attacked (the damage we deal is drawn over it). */
 	uint32 GetLastAttackedId() const { return LastAttackedId; }
+	// --- spells and items on targets (docs/adr/0012 M5)
+	/**
+	 * Cast a known spell (merintr spells.c SpellCast). One that takes no target goes straight away;
+	 * else it goes at the target when it is in view (or is ourselves), else at what the crosshair is
+	 * on; with neither, the next choice picks it (ChooseTarget: the attack click on the crosshair's
+	 * object, \ for ourselves, a click on an item in the inventory). Returns true if it was sent now.
+	 */
+	bool CastSpell(uint32 SpellId);
+	/**
+	 * Use a carried item on something (BP_REQ_APPLY; gameuser.c StartApply): as the original, the
+	 * next choice picks what it is used on.
+	 */
+	void ApplyItem(uint32 ItemId);
+	/**
+	 * Rest (R) or stand up, as the original's rest command (merintr command.c): the server stops our
+	 * moves while we rest (PFLAG_NO_MOVE), so we don't walk, attack or cast meanwhile (mermain.c).
+	 */
+	void SetResting(bool bRest);
+	bool IsResting() const { return bResting; }
+	/** A spell or an item waits for its target; what the HUD says meanwhile ("Cast Bless on..."). */
+	bool IsChoosingTarget() const { return PendingSpell != 0 || PendingItem != 0; }
+	FString GetChoosingText() const;
+	/** Give the waiting spell or item its target (0: what the crosshair is on). False if nothing waits or there is no target. */
+	bool ChooseTarget(uint32 Id = 0);
+	void CancelChoosing();
+
 	/**
 	 * The pawn's paralysis and the room's weather follow the server's effects (BP_EFFECT).
 	 * bEntered: a room was just entered, so its weather was already falling there.
@@ -171,6 +197,11 @@ private:
 	TMap<FString, TSharedPtr<const FMRBgf>> Bgfs;
 	TArray<TWeakObjectPtr<AActor>> Props;
 	uint32 LastAttackedId = 0;
+	uint32 PendingSpell = 0;
+	bool bResting = false;
+	/** Walking stops while a room loads, while paralyzed and while resting. */
+	void UpdateFrozen();
+	uint32 PendingItem = 0;
 	double LastAttackTime = 0.0;
 	double RoomEnteredTime = 0.0;
 	TArray<TWeakObjectPtr<AActor>> Projectiles;

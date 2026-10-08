@@ -61,6 +61,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetObjectEvent, uint32 /* Id */);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetChat, const FMRChatLine&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetProjectile, const FMRNetProjectile&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetHit, const FMRNetHit&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetResult, bool);
 
 /**
  * The session with a Meridian server (docs/adr/0010-meridian-servers.md): the server list, the
@@ -166,6 +167,20 @@ public:
 	 * BP_PLAYER_OVERLAY in first person) and sounds.
 	 */
 	void Attack(uint32 TargetId);
+	// --- spells, skills, enchantments (docs/research/blakserv-protocol.md "Spells and skills")
+	/** Cast a spell (BP_REQ_CAST): its id and its targets (none for a spell that takes none). */
+	void CastSpell(uint32 SpellId, const TArray<uint32>& Targets);
+	/** Sit down to rest, or stand up again (BP_USERCOMMAND UC_REST, UC_STAND). */
+	void Rest();
+	void Stand();
+	/** Answer a retraining offer (BP_CHANGED_STATS: the six stats; the school levels as offered). */
+	void ChangeStats(const uint8 (&Stats)[6]);
+	const TArray<FMRNetSpell>& GetSpells() const { return World.Spells; }
+	const TArray<FMRNetObject>& GetSkills() const { return World.Skills; }
+	const TArray<FMRNetObject>& GetPlayerEnchantments() const { return World.PlayerEnchantments; }
+	const TArray<FMRNetObject>& GetRoomEnchantments() const { return World.RoomEnchantments; }
+	const FMRNetStatChange& GetStatChange() const { return World.StatChange; }
+
 	/** A line of the client's own in the chat log, as the original's GameMessage (e.g. "You can't see your selected target."). */
 	void AddGameMessage(const FString& Text) { AddChat(Text, 0); }
 	/** The screen effects on the player and the room's weather (BP_EFFECT), counted down each tick. */
@@ -246,6 +261,14 @@ public:
 	FOnMRNetProjectile OnProjectile;
 	/** A combat message with damage in it: we hit something, or were hit. */
 	FOnMRNetHit OnHit;
+	/** The spells or skills changed (BP_SPELLS, BP_SKILLS, their ADD / REMOVE). */
+	FOnMRNetEvent OnAbilitiesChanged;
+	/** An enchantment came or went, on the player or the room. */
+	FOnMRNetEvent OnEnchantmentsChanged;
+	/** A retraining offer arrived (BP_STAT_CHANGE): GetStatChange. */
+	FOnMRNetEvent OnStatChange;
+	/** The server's answer to ChangeStats: true BP_CHANGED_STATS_OK, false NOT_OK. */
+	FOnMRNetResult OnStatChangeResult;
 
 private:
 	void LoadServers();

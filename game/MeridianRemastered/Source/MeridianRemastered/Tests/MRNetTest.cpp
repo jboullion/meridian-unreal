@@ -28,6 +28,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Core/MRUnits.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "World/MRRuntimeRoom.h"
 #include "World/MRRuntimeRooms.h"
 
@@ -1095,6 +1096,163 @@ void UMRNetTest::Tick()
 		}
 		else if (ItemStage == 6 && Now - StageTime > 1.0)
 		{
+			Advance(EStep::Spells);
+		}
+		break;
+	}
+
+	case EStep::Spells:
+	{
+		const FMRNetWorld& W = Net->GetNetWorld();
+		UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+		if (bTimedOut)
+		{
+			Fail(FString::Printf(TEXT("spells: stuck at stage %d"), SpellStage));
+			NetWorld->SetResting(false);
+			Advance(EStep::Combat);
+			break;
+		}
+		const FMRNetSpell* Appraise = W.Spells.FindByPredicate([](const FMRNetSpell& S) { return S.Object.Name == TEXT("appraise"); });
+		const FMRNetSpell* Meditate = W.Spells.FindByPredicate([](const FMRNetSpell& S) { return S.Object.Name == TEXT("meditate"); });
+		// the server's line after a cast (not appraise's: it waits for a value to be said, and the next cast breaks it off)
+		const auto Answer = [&](bool bSkipAppraise) -> FString
+		{
+			const TArray<FMRChatLine>& Chat = Net->GetChat();
+			for (int32 i = Chat.Num() - 1; i >= SpellChat && i >= 0; --i)
+			{
+				if (!bSkipAppraise || !Chat[i].Text.Contains(TEXT("appraise")))
+				{
+					return Chat[i].Text;
+				}
+			}
+			return FString();
+		};
+		if (SpellStage == 0 && W.bHasSpells && W.bHasSkills && Now - StepStart > 1.0)
+		{
+			TArray<FString> Names;
+			for (const FMRNetSpell& S : W.Spells)
+			{
+				Names.Add(FString::Printf(TEXT("%s%s"), *S.Object.Name, S.Targets ? TEXT(" (1 target)") : TEXT("")));
+			}
+			const int32 Shown = UI && UI->GetSource() ? UI->GetSource()->GetKnownSpells().Num() : 0;
+			if (Shown == W.Spells.Num())
+			{
+				Pass(FString::Printf(TEXT("the server's %d spells (BP_SPELLS) are on the Spells page: %s; %d skills (BP_SKILLS)"),
+					W.Spells.Num(), *FString::Join(Names, TEXT(", ")), W.Skills.Num()));
+			}
+			else
+			{
+				Fail(FString::Printf(TEXT("spells: the Spells page has %d of the server's %d"), Shown, W.Spells.Num()));
+			}
+			TArray<FString> Room;
+			for (const FMRNetObject& E : Net->GetRoomEnchantments())
+			{
+				Room.Add(E.Name);
+			}
+			if (Room.Num() > 0)
+			{
+				Pass(FString::Printf(TEXT("the room's enchantments (BP_ADD_ENCHANTMENT): %s"), *FString::Join(Room, TEXT(", "))));
+			}
+			else
+			{
+				Fail(FString::Printf(TEXT("spells: no enchantment on %s (the Inn is a safe room)"), *Net->GetPlayer().RoomName));
+			}
+			SpellStage = 1;
+		}
+		else if (SpellStage == 1 && UI && FApp::CanEverRender() && SpellShot < 4)
+		{
+			// -Render: the Quests page, then the hint while an item waits for its target
+			if (Now - StageTime < 0.8)
+			{
+				break;
+			}
+			const FMRNetObject* Mace = W.Inventory.FindByPredicate([](const FMRNetObject& O) { return O.Icon.Equals(TEXT("mace.bgf"), ESearchCase::IgnoreCase); });
+			const auto Shot = [](const TCHAR* Name)
+			{
+				const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), FString::Printf(TEXT("%s.png"), Name));
+				FScreenshotRequest::RequestScreenshot(File, true, false);
+				UE_LOG(LogMeridian, Display, TEXT("MRNetTest: screenshot %s"), *File);
+			};
+			switch (SpellShot++)
+			{
+			case 0: UI->SetInventoryOpen(true); UI->SetInventoryTab(4); break;
+			case 1: Shot(TEXT("quests")); break;
+			case 2: UI->SetInventoryTab(0); UI->SetInventoryOpen(false); if (Mace) { NetWorld->ApplyItem(Mace->Id); } break;
+			default: Shot(TEXT("choose_target")); break;
+			}
+			StageTime = Now;
+		}
+		else if (SpellStage == 1 && UI)
+		{
+			NetWorld->CancelChoosing();
+			TArray<FMRQuestView> Quests;
+			UI->GetQuests(Quests);
+			if (Quests.Num() > 0)
+			{
+				TArray<FString> Lines;
+				for (const FMRQuestView& Q : Quests)
+				{
+					Lines.Add(Q.ObjectId ? Q.Name : FString::Printf(TEXT("[%s]"), *Q.Name));
+				}
+				Pass(FString::Printf(TEXT("the Quests page lists the server's quest group: %s"), *FString::Join(Lines, TEXT(" "))));
+				// appraise the mace: no target, nothing at the crosshair (-nullrhi), so the choice picks it
+				const FMRNetObject* Mace = W.Inventory.FindByPredicate([](const FMRNetObject& O) { return O.Icon.Equals(TEXT("mace.bgf"), ESearchCase::IgnoreCase); });
+				if (!Appraise || !Mace)
+				{
+					Fail(TEXT("spells: no appraise spell or no mace to cast it on"));
+					Advance(EStep::Combat);
+					break;
+				}
+				NetWorld->ClearTarget();
+				SpellChat = Net->GetChat().Num();
+				const bool bSent = NetWorld->CastSpell(Appraise->Object.Id);
+				if (!bSent && NetWorld->IsChoosingTarget())
+				{
+					UE_LOG(LogMeridian, Display, TEXT("MRNetTest: %s"), *NetWorld->GetChoosingText());
+					NetWorld->ChooseTarget(Mace->Id);
+				}
+				SpellStage = 2;
+				StageTime = Now;
+			}
+		}
+		else if (SpellStage == 2 && !Answer(false).IsEmpty() && Now - StageTime > 0.5)
+		{
+			Pass(FString::Printf(TEXT("cast appraise on the mace (BP_REQ_CAST, one target): \"%s\""), *Answer(false)));
+			SpellChat = Net->GetChat().Num();
+			NetWorld->CastSpell(Meditate ? Meditate->Object.Id : 0);
+			SpellStage = 3;
+			StageTime = Now;
+		}
+		else if (SpellStage == 3 && Answer(true).IsEmpty() && Now - StageTime > 1.5)
+		{
+			// the first cast only broke appraise's trance (user.kod UserCast: a cast in a trance ends it): again
+			SpellChat = Net->GetChat().Num();
+			NetWorld->CastSpell(Meditate ? Meditate->Object.Id : 0);
+			SpellStage = 5;
+			StageTime = Now;
+		}
+		else if ((SpellStage == 3 || SpellStage == 5) && !Answer(true).IsEmpty() && Now - StageTime > 0.5)
+		{
+			Pass(FString::Printf(TEXT("cast meditate (no target): \"%s\""), *Answer(true)));
+			NetWorld->SetResting(true);
+			SpellStage = 4;
+			StageTime = Now;
+		}
+		else if (SpellStage == 4 && Now - StageTime > 1.0)
+		{
+			const ACharacter* Char = Cast<ACharacter>(PC->GetPawn());
+			const bool bStill = Char && Char->GetCharacterMovement()->MovementMode == MOVE_None;
+			const bool bRefused = !NetWorld->CastSpell(Meditate ? Meditate->Object.Id : 0);
+			NetWorld->SetResting(false);
+			const bool bWalks = Char && Char->GetCharacterMovement()->MovementMode != MOVE_None;
+			if (bStill && bRefused && bWalks)
+			{
+				Pass(TEXT("rested (UC_REST): no walking or casting meanwhile; stood up (UC_STAND) and walks again"));
+			}
+			else
+			{
+				Fail(FString::Printf(TEXT("spells: resting: still %d, cast refused %d, walks after %d"), bStill, bRefused, bWalks));
+			}
 			Advance(EStep::Combat);
 		}
 		break;

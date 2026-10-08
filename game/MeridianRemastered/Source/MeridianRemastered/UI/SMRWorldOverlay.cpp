@@ -154,6 +154,16 @@ int32 SMRWorldOverlay::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, con
 		MRPaint::Text(Out, Layer + 2, Geo, F.Text, Font, At - FVector2f(M.X * 0.5f, M.Y), Color, Px * 0.6f);
 	}
 
+	// a spell or an item waiting for its target: say so under the crosshair
+	if (NetWorld->IsChoosingTarget())
+	{
+		const FString Hint = NetWorld->GetChoosingText() + TEXT("  (click it, \\ for yourself, Esc to stop)");
+		const FSlateFontInfo Font = S->Font(10.f, true);
+		const FVector2f M = MRPaint::MeasureText(Hint, Font);
+		MRPaint::Text(Out, Layer + 2, Geo, Hint, Font, FVector2f(Geo.GetLocalSize()) * 0.5f + FVector2f(-M.X * 0.5f, 18.f * Px),
+			FLinearColor(0.75f, 0.85f, 1.f), Px * 0.6f);
+	}
+
 	// the crosshair while the mouse looks around (the aim picks targets)
 	if (!PC->bShowMouseCursor)
 	{

@@ -291,6 +291,29 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
   - Its archway to Raza is the portal at row 11, col 3 (`uworld.kod`). The rip in space at (10, 6) leads to a random inn.
   - **A portal (`portal.kod`) takes whoever moves within a square of it, but only on a move that starts there.** The room tells the portal before the mover's own position is updated (`room.kod SomethingMoved`), so a single jump onto it does nothing; the next step does. Walking does that anyway.
 
+## Spells, skills and enchantments (`module/merintr`: `merintr.c`, `spells.c`, `enchant.c`, `command.c`; Kod `user.kod`)
+- **Asked for once the interface loads** (`mermain.c`), and again after a data reset (`InterfaceResetData`): `BP_SEND_SPELLS` (50), `BP_SEND_SKILLS` (51), and `BP_SEND_ENCHANTMENTS` (53) with `u8 ENCHANT_PLAYER` (1).
+- **`BP_SPELLS` (141):** `u16 count`, then each spell: an object (as `ExtractObject`), `u8 targets` (0 or 1), `u8 school` (1-based).
+  - `BP_SPELL_ADD` (142) is one spell; `BP_SPELL_REMOVE` (143) a `u32` id.
+  - `BP_SKILLS` (144) is `u16 count` and plain objects; `BP_SKILL_ADD` (145) and `BP_SKILL_REMOVE` (146) work the same way.
+  - The ability percentages aren't in these; they are in stat groups 3 and 4.
+- **Every character has the utility spells:** appraise (1 target), set, loadout, vault load out, meditate, phase, transference (1), conveyance (1) and blink.
+- **`BP_REQ_CAST` (105):** `u32 spell`, then `u16 count` and that many `u32` targets (`protocol.c PARAM_OBJECT_LIST`; a number item would add its amount).
+  - **Choosing the target** (`spells.c SpellCast`): a spell with no target goes straight away. Otherwise it goes at the selected target if it is visible or is the player (else "You can't see your selected target."). With no target, the client waits for a click on something in the room or the inventory (`GAME_SELECT`).
+  - **A cast made in a trance only ends the trance** (`user.kod UserCast`, `BreakTrance`). Appraise leaves you in one, waiting for a value to be said ("Say the value you wish to assign the item."), so the next cast just breaks it: "Your concentration is broken and the appraise spell fizzles."
+  - **`BP_REQ_APPLY` (108) works like a target choice:** the original always waits for a click (`gameuser.c StartApply`).
+- **`BP_ADD_ENCHANTMENT` (147):** `u8 type` (1 player, 2 room), then the enchantment as an object: its spell's name and icon. `BP_REMOVE_ENCHANTMENT` (148) is `u8 type, u32 id`.
+  - The room's enchantments are dropped on every new room (`enchant.c EnchantmentsNewRoom`), and the server sends the new room's. The Inn of Raza has "Safe Room" (`rmnocombat.bgf`); others have "PvP Combat Allowed".
+- **Rest:** `BP_USERCOMMAND` with `UC_REST` (5) or `UC_STAND` (6), and nothing comes back.
+  - Resting sets `PFLAG_NO_MOVE`, `NO_FIGHT` and `NO_MAGIC` on the server (`player.kod ResetPlayerFlagList`), so a move is snapped back.
+  - The original keeps the state itself (`command.c`): "You rest." / "You stop resting.". It refuses moves, attacks and the go key while resting or paralyzed (`mermain.c InterfaceAction`), and spells with "You can't cast spells while you're resting." / "You can't lift your hands to cast the spell!".
+- **Quests** are stat group 5 (`user.kod ToCliStats`): list stats, each a heading or a quest.
+  - Headings have object 0: "Passive Quests: ", "No Active Quests", "Completed Quests: "...
+  - Quests carry their quest object, template number and icon.
+- **Retraining:** a town elder (Jasper, Marion, Ko'catan) sends `BP_STAT_CHANGE` (156; our `BP_REQ_STAT_CHANGE`) with 14 bytes: might, intellect, stamina, agility, mysticism and aim, then the levels of Shal'ille, Qor, Kraanan, Faren, Riija, Jala, weaponcraft and crafting (`user.kod SendStatChange`).
+  - The client answers `BP_CHANGED_STATS` (157) with the same 14 bytes (`module/stats`).
+  - The server checks each stat is 1..50, each level 0..6, the stats total at most 220, and the levels against the points spent (`UserChangedStats`). It answers `BP_CHANGED_STATS_OK` (158) or `_NOT_OK` (159).
+
 ## Session (`blakserv/game.c`, Kod `user.kod`; the client side is `clientd3d/game.c`, `com.c`)
 - **Leaving the game but not the server:**
   - The client sends `BP_REQ_QUIT` (54). The server logs the character off and answers `BP_QUIT` (149) (`GameProtocolParse`, `GameClientExit`).

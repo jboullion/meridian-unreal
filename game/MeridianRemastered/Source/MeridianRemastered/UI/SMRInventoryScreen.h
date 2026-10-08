@@ -125,6 +125,10 @@ private:
 	TSharedRef<SWidget> MakeSkillsPage();
 	TSharedRef<SWidget> MakeStatsPage();
 	TSharedRef<SWidget> MakeQuestsPage();
+	/** The server's quests (stat group 5), when they changed. */
+	void RebuildQuests();
+	TSharedPtr<SVerticalBox> QuestList;
+	int32 QuestsShown = -1;
 	void RebuildBag();
 	void RebuildSpells();
 	void RebuildSkills();

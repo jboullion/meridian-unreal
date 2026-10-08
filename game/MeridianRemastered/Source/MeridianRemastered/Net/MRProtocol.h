@@ -189,6 +189,12 @@ namespace MRMsg
 
 	// user commands inside BP_USERCOMMAND (proto.h UC_*)
 	constexpr uint8 UC_LOOK_PLAYER = 2;
+	constexpr uint8 UC_REST = 5;
+	constexpr uint8 UC_STAND = 6;
+
+	// enchantment types (BP_ADD_ENCHANTMENT, BP_SEND_ENCHANTMENTS; proto.h ENCHANT_*)
+	constexpr uint8 ENCHANT_PLAYER = 1;
+	constexpr uint8 ENCHANT_ROOM = 2;
 
 	// BP_LOOK description flags (proto.h DF_*)
 	constexpr uint8 DF_EDITABLE = 0x01;

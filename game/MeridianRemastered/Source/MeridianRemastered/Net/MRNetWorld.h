@@ -194,6 +194,29 @@ struct FMRNetDescription
 	FString Url;
 };
 
+/** A spell the character knows (BP_SPELLS, BP_SPELL_ADD; merintr.c ExtractNewSpell). */
+struct FMRNetSpell
+{
+	/** Its id (what BP_REQ_CAST names), name and icon. */
+	FMRNetObject Object;
+	/** How many targets it takes: 0 casts straight away (merintr spells.c SpellCast). */
+	uint8 Targets = 0;
+	/** Its school as the server numbers it (1 Shal'ille .. 6 Jala; merintr subtracts 1). */
+	uint8 School = 0;
+};
+
+/**
+ * Retraining (BP_STAT_CHANGE; user.kod SendStatChange, a town elder's offer): the six stats (might,
+ * intellect, stamina, agility, mysticism, aim) and the school levels shown beside them (Shal'ille,
+ * Qor, Kraanan, Faren, Riija, Jala, weaponcraft, crafting). The answer is BP_CHANGED_STATS with the
+ * same 14 bytes, the stats changed.
+ */
+struct FMRNetStatChange
+{
+	uint8 Stats[6] = {};
+	uint8 Levels[8] = {};
+};
+
 /**
  * The screen effects the server has put on the player (BP_EFFECT; clientd3d effect.c PerformEffect).
  * Times are the milliseconds left, counted down by Tick as the original's AnimateEffects did.
@@ -285,6 +308,20 @@ struct FMRNetWorld
 	TArray<FMRNetObject> Contents;
 	/** The screen effects on the player and the room's weather (BP_EFFECT). Kept across rooms, as the original. */
 	FMRNetEffects Effects;
+	/** The spells and skills the character knows (BP_SPELLS, BP_SKILLS and their ADD / REMOVE), in the server's order. */
+	TArray<FMRNetSpell> Spells;
+	bool bHasSpells = false;
+	TArray<FMRNetObject> Skills;
+	bool bHasSkills = false;
+	/** Enchantments on the player (kept across rooms) and on the room (merintr enchant.c: reset on each new room). */
+	TArray<FMRNetObject> PlayerEnchantments;
+	TArray<FMRNetObject> RoomEnchantments;
+	/** The last retraining offer (BP_STAT_CHANGE). */
+	FMRNetStatChange StatChange;
+
+	const FMRNetSpell* FindSpell(uint32 Id) const { return Spells.FindByPredicate([Id](const FMRNetSpell& S) { return S.Object.Id == Id; }); }
+	/** Forget the spells, skills and the player's enchantments (logged off, or asked for again after a save). */
+	void ResetAbilities();
 
 	const FMRNetObject* FindInventory(uint32 Id) const { return Inventory.FindByPredicate([Id](const FMRNetObject& O) { return O.Id == Id; }); }
 	/** Forget the inventory (logged off, or the server renumbered its objects). */
@@ -328,6 +365,12 @@ namespace MRNetRead
 	MERIDIANREMASTERED_API bool User(FMRReader& R, FMRNetUser& Out);
 	/** A stat (merintr.c ExtractStatistic). */
 	MERIDIANREMASTERED_API bool Stat(FMRReader& R, const FMRResourceTable& Res, FMRNetStat& Out);
+	/** A spell (ExtractNewSpell): the object, then u8 targets and u8 school. */
+	MERIDIANREMASTERED_API bool Spell(FMRReader& R, const FMRResourceTable& Res, FMRNetSpell& Out);
+	/** BP_SPELLS: u16 count, then spells. */
+	MERIDIANREMASTERED_API bool SpellList(FMRReader& R, const FMRResourceTable& Res, TArray<FMRNetSpell>& Out);
+	/** BP_STAT_CHANGE's 14 bytes. */
+	MERIDIANREMASTERED_API bool StatChange(FMRReader& R, FMRNetStatChange& Out);
 	/** BP_SHOOT's body (bRadius false) or BP_RADIUS_SHOOT's, after the type byte. */
 	MERIDIANREMASTERED_API bool Projectile(FMRReader& R, const FMRResourceTable& Res, bool bRadius, FMRNetProjectile& Out);
 	/**

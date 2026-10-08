@@ -30,6 +30,10 @@ class APlayerController;
  *      BP_REQ_UNUSE; in use, it shows on its equipment slot), dropped (BP_REQ_DROP: it leaves the
  *      inventory and lies in the room) and picked up again (BP_REQ_GET); 10 of a number item are
  *      dropped and picked up (the tagged id and an amount);
+ *   7b. spells: the server's spells and skills (BP_SPELLS, BP_SKILLS) are on the Spells page, the
+ *      room's enchantments came (the Inn is a safe room), the quests (stat group 5) are listed;
+ *      appraise is cast on the mace, chosen as its target (BP_REQ_CAST with one target), then
+ *      meditate (no target), each answered by the server; resting stops walking until we stand;
  *   8. combat: in the Outskirts of Raza it fights a bunny or a baby spider until it dies
  *      (BP_REQ_ATTACK): the server answers with hit or miss lines, swings our weapon in first person
  *      (BP_PLAYER_OVERLAY), a damage number rises over what we hit, and the creature is gone. With
@@ -59,7 +63,7 @@ public:
 	void Start(APlayerController* InController);
 
 private:
-	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Items, Combat, Travel, Death, Relog, Logoff, Done };
+	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Items, Spells, Combat, Travel, Death, Relog, Logoff, Done };
 
 	void Tick();
 	void Pass(const FString& What);
@@ -124,6 +128,11 @@ private:
 	bool bItemWasInUse = false;
 	uint32 DroppedId = 0;
 	uint32 CoinsBefore = 0;
+	/** Spells: the stage and the chat read so far. */
+	int32 SpellStage = 0;
+	int32 SpellChat = 0;
+	/** -Render: the Quests page and the target hint pictures taken so far. */
+	int32 SpellShot = 0;
 	/** Combat: the stage, the creature fought, attacks sent, the chat and first-person counts before, what was seen. */
 	int32 CombatStage = 0;
 	uint32 FoeId = 0;
