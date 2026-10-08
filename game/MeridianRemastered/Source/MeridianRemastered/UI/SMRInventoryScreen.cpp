@@ -384,20 +384,217 @@ void SMRInventoryScreen::RebuildBag()
 	}
 }
 
-TSharedRef<SWidget> SMRInventoryScreen::MakeSpellsPage()
+// ------------------------------------------------------------------------------ list pages
+
+namespace
+{
+	/**
+	 * One row of a list page: a single hover region (highlighted) with one tooltip for the whole
+	 * row, so moving between the icon and the text keeps it open; a click anywhere on it acts on its slot.
+	 */
+	class SMRListRow : public SCompoundWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SMRListRow) {}
+			SLATE_DEFAULT_SLOT(FArguments, Content)
+		SLATE_END_ARGS()
+
+		void Construct(const FArguments& InArgs, UMRUISubsystem* InUI, const FMRSlotRef& InSlot)
+		{
+			UI = InUI;
+			SlotRef = InSlot;
+			ChildSlot[InArgs._Content.Widget];
+		}
+
+		virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
+			int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const override
+		{
+			UMRUIStyle* S = UI.IsValid() ? UI->GetStyle() : nullptr;
+			if (S && IsHovered())
+			{
+				MRPaint::Box(Out, Layer, Geo, S->White(), FVector2f::ZeroVector, FVector2f(Geo.GetLocalSize()), FLinearColor(1.f, 0.95f, 0.8f, 0.08f));
+			}
+			return SCompoundWidget::OnPaint(Args, Geo, Culling, Out, Layer + 1, WStyle, bParentEnabled);
+		}
+
+		virtual FReply OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event) override
+		{
+			// the row's text acts like its slot (pick a spell up, shift-click it onto the bar)
+			if (UI.IsValid() && SlotRef.IsValid() && UI->IsInventoryOpen()
+				&& (Event.GetEffectingButton() == EKeys::LeftMouseButton || Event.GetEffectingButton() == EKeys::RightMouseButton))
+			{
+				UI->NoteMouse(Event.GetScreenSpacePosition());
+				UI->OnSlotMouseDown(SlotRef, Event.GetEffectingButton() == EKeys::RightMouseButton, Event.IsShiftDown());
+				return FReply::Handled();
+			}
+			return FReply::Unhandled();
+		}
+
+	private:
+		TWeakObjectPtr<UMRUISubsystem> UI;
+		FMRSlotRef SlotRef;
+	};
+
+	/** A section's header: a divider above, an arrow, the title and a count; a click folds the section. */
+	class SMRSectionHeader : public SLeafWidget
+	{
+	public:
+		DECLARE_DELEGATE(FOnToggle);
+		SLATE_BEGIN_ARGS(SMRSectionHeader) : _bCollapsed(false), _Count(-1), _bDivider(true) {}
+			SLATE_ARGUMENT(FText, Title)
+			SLATE_ARGUMENT(bool, bCollapsed)
+			SLATE_ARGUMENT(int32, Count)
+			SLATE_ARGUMENT(bool, bDivider)
+			SLATE_EVENT(FOnToggle, OnToggle)
+		SLATE_END_ARGS()
+
+		void Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+		{
+			UI = InUI;
+			Title = InArgs._Title.ToString();
+			bCollapsed = InArgs._bCollapsed;
+			Count = InArgs._Count;
+			bDivider = InArgs._bDivider;
+			OnToggle = InArgs._OnToggle;
+		}
+
+		virtual FVector2D ComputeDesiredSize(float) const override
+		{
+			UMRUIStyle* S = UI.IsValid() ? UI->GetStyle() : nullptr;
+			const float Px = S ? S->Px() : 2.f;
+			const float TextH = S ? MRPaint::MeasureText(TEXT("Ag"), S->Font(10.f, true)).Y : 14.f;
+			return FVector2D(40.f * Px, TextH + 6.f * Px);
+		}
+
+		virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
+			int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const override
+		{
+			UMRUIStyle* S = UI.IsValid() ? UI->GetStyle() : nullptr;
+			if (!S)
+			{
+				return Layer;
+			}
+			const float Px = S->Px();
+			const FVector2f Size(Geo.GetLocalSize());
+			const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
+			const FLinearColor Heading = S->Color(TEXT("heading"), FLinearColor(1.f, 0.75f, 0.3f)) * Tint;
+			if (bDivider)
+			{
+				// a groove in the stone: a dark line over a light one
+				MRPaint::Box(Out, Layer, Geo, S->White(), FVector2f(0.f, Px), FVector2f(Size.X, Px * 0.5f), FLinearColor(0.f, 0.f, 0.f, 0.55f) * Tint);
+				MRPaint::Box(Out, Layer, Geo, S->White(), FVector2f(0.f, Px * 1.5f), FVector2f(Size.X, Px * 0.5f), FLinearColor(1.f, 1.f, 1.f, 0.18f) * Tint);
+			}
+			if (IsHovered())
+			{
+				MRPaint::Box(Out, Layer, Geo, S->White(), FVector2f(0.f, 2.f * Px), FVector2f(Size.X, Size.Y - 2.f * Px), FLinearColor(1.f, 0.95f, 0.8f, 0.06f) * Tint);
+			}
+			// the arrow: right when folded, down when open (scanlines: a small filled triangle)
+			const float A = 4.f * Px;
+			const FVector2f C(3.f * Px + A * 0.5f, 2.f * Px + (Size.Y - 2.f * Px) * 0.5f);
+			const int32 Lines = FMath::Max(2, FMath::RoundToInt(A));
+			for (int32 i = 0; i < Lines; ++i)
+			{
+				const float T = i / float(Lines - 1);  // 0 at the base, 1 at the tip
+				const float Half = A * 0.5f * (1.f - T);
+				TArray<FVector2f> Pts;
+				if (bCollapsed)
+				{
+					const float X = C.X - A * 0.5f + T * A;
+					Pts = {FVector2f(X, C.Y - Half), FVector2f(X, C.Y + Half + 0.01f)};
+				}
+				else
+				{
+					const float Y = C.Y - A * 0.5f + T * A;
+					Pts = {FVector2f(C.X - Half, Y), FVector2f(C.X + Half + 0.01f, Y)};
+				}
+				FSlateDrawElement::MakeLines(Out, Layer + 1, Geo.ToPaintGeometry(), Pts, ESlateDrawEffect::None, Heading, true, 1.2f);
+			}
+			const FSlateFontInfo Font = S->Font(10.f, true);
+			const FVector2f M = MRPaint::MeasureText(Title, Font);
+			const float TextY = 2.f * Px + (Size.Y - 2.f * Px - M.Y) * 0.5f;
+			MRPaint::Text(Out, Layer + 1, Geo, Title, Font, FVector2f(3.f * Px + A + 4.f * Px, TextY), Heading, Px * 0.5f);
+			if (Count >= 0)
+			{
+				const FString N = FString::FromInt(Count);
+				const FSlateFontInfo Small = S->Font(8.f);
+				const FVector2f NM = MRPaint::MeasureText(N, Small);
+				MRPaint::Text(Out, Layer + 1, Geo, N, Small, FVector2f(Size.X - NM.X - 4.f * Px, 2.f * Px + (Size.Y - 2.f * Px - NM.Y) * 0.5f),
+					FLinearColor(0.75f, 0.73f, 0.68f) * Tint, Px * 0.5f);
+			}
+			return Layer + 3;
+		}
+
+		virtual FReply OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event) override
+		{
+			if (Event.GetEffectingButton() == EKeys::LeftMouseButton)
+			{
+				OnToggle.ExecuteIfBound();
+				return FReply::Handled();
+			}
+			return FReply::Unhandled();
+		}
+
+	private:
+		TWeakObjectPtr<UMRUISubsystem> UI;
+		FString Title;
+		bool bCollapsed = false;
+		int32 Count = -1;
+		bool bDivider = true;
+		FOnToggle OnToggle;
+	};
+
+	bool MatchesFilter(const FString& Filter, const FString& A, const FString& B = FString())
+	{
+		return Filter.IsEmpty() || A.Contains(Filter, ESearchCase::IgnoreCase) || (!B.IsEmpty() && B.Contains(Filter, ESearchCase::IgnoreCase));
+	}
+}
+
+TSharedRef<SWidget> SMRInventoryScreen::MakeListPage(TSharedPtr<SMRTextField>& OutSearch, TSharedPtr<SVerticalBox>& OutList, const FText& Hint)
 {
 	UMRUIStyle* S = UI->GetStyle();
 	const float Px = S->Px();
 	const float SlotPx = S->Number(TEXT("slot_px"), 22.f);
-	SpellList = SNew(SVerticalBox);
-	return SNew(SMRPanel, UI.Get()).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(2.f)
-	[
-		SNew(SBox).MaxDesiredHeight(SlotPx * 2.f * Px).MaxDesiredWidth(SlotPx * 2.f * Px)
+	OutList = SNew(SVerticalBox);
+	// the search bar at the top filters the list as you type (Escape clears it)
+	TSharedPtr<SMRTextField>* SearchPtr = &OutSearch;
+	OutSearch = SNew(SMRTextField, UI.Get()).HintText(Hint).Width(SlotPx * Columns - 4.f).MaxLength(40)
+		.OnCancel_Lambda([this, SearchPtr]()
+		{
+			if (SearchPtr->IsValid())
+			{
+				(*SearchPtr)->SetText(FString());
+			}
+			if (FSlateApplication::IsInitialized())
+			{
+				FSlateApplication::Get().SetAllUserFocus(SharedThis(this), EFocusCause::SetDirectly);
+			}
+		});
+	return SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 0.f, 0.f, 3.f * Px)
 		[
-			SNew(SScrollBox).ScrollBarThickness(FVector2D(6.f * Px, 6.f * Px))
-			+ SScrollBox::Slot()[SpellList.ToSharedRef()]
+			OutSearch.ToSharedRef()
 		]
-	];
+		+ SVerticalBox::Slot().FillHeight(1.f)
+		[
+			SNew(SMRPanel, UI.Get()).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(2.f)
+			[
+				SNew(SBox).MaxDesiredHeight(SlotPx * 2.f * Px).MaxDesiredWidth(SlotPx * 2.f * Px)
+				[
+					SNew(SScrollBox).ScrollBarThickness(FVector2D(6.f * Px, 6.f * Px))
+					+ SScrollBox::Slot()[OutList.ToSharedRef()]
+				]
+			]
+		];
+}
+
+TSharedRef<SWidget> SMRInventoryScreen::MakeSpellsPage()
+{
+	return MakeListPage(SpellSearch, SpellList, LOCTEXT("SearchSpells", "Search spells..."));
+}
+
+TSharedRef<SWidget> SMRInventoryScreen::MakeSkillsPage()
+{
+	return MakeListPage(SkillSearch, SkillList, LOCTEXT("SearchSkills", "Search skills..."));
 }
 
 void SMRInventoryScreen::RebuildSpells()
@@ -410,21 +607,33 @@ void SMRInventoryScreen::RebuildSpells()
 		return;
 	}
 	const TArray<FName>& Known = Src->GetKnownSpells();
-	if (Known.Num() == SpellsShown)
+	const FString Filter = SpellSearch.IsValid() ? SpellSearch->GetText().TrimStartAndEnd() : FString();
+	// rebuilt only when what it shows changes: the spells, their percentages, the search, the folds
+	FString Key = Filter + TEXT("|");
+	for (const FName& N : Known)
+	{
+		Key += FString::Printf(TEXT("%s:%d,"), *N.ToString(), Src->GetSpellPercent(N));
+	}
+	for (int32 School : CollapsedSpellSchools)
+	{
+		Key += FString::Printf(TEXT("c%d"), School);
+	}
+	if (Key == SpellsKey)
 	{
 		return;
 	}
-	SpellsShown = Known.Num();
+	SpellsKey = Key;
 	SpellList->ClearChildren();
 	UMRUIStyle* S = Ui->GetStyle();
 	const float Px = S->Px();
 	const float SlotPx = S->Number(TEXT("list_slot_px"), 18.f);
 
-	// by school, then level, then name (the original's spell list is alphabetical; schools read better)
+	// by school, then level, then name; a search shows every school's matches, unfolded
 	TArray<int32> Order;
 	for (int32 i = 0; i < Known.Num(); ++i)
 	{
-		if (Data->FindSpell(Known[i]))
+		const FMRSpellDef* Def = Data->FindSpell(Known[i]);
+		if (Def && MatchesFilter(Filter, Def->Name.ToString(), UMRGameDataSubsystem::SchoolName(Def->School).ToString()))
 		{
 			Order.Add(i);
 		}
@@ -437,17 +646,37 @@ void SMRInventoryScreen::RebuildSpells()
 		if (SA->Level != SB->Level) return SA->Level < SB->Level;
 		return SA->Name.CompareTo(SB->Name) < 0;
 	});
+	TMap<int32, int32> PerSchool;
+	for (int32 i : Order)
+	{
+		PerSchool.FindOrAdd(Data->FindSpell(Known[i])->School)++;
+	}
 	int32 School = -1;
+	bool bFirst = true;
 	for (int32 i : Order)
 	{
 		const FMRSpellDef* Def = Data->FindSpell(Known[i]);
+		const bool bFolded = Filter.IsEmpty() && CollapsedSpellSchools.Contains(Def->School);
 		if (Def->School != School)
 		{
 			School = Def->School;
-			SpellList->AddSlot().AutoHeight().Padding(2.f * Px, 4.f * Px, 0.f, 1.f * Px)
+			const int32 ThisSchool = School;
+			SpellList->AddSlot().AutoHeight().Padding(0.f, bFirst ? 0.f : 2.f * Px, 0.f, 1.f * Px)
 			[
-				Label(S, UMRGameDataSubsystem::SchoolName(School), 10.f, true, S->Color(TEXT("heading"), FLinearColor(1.f, 0.75f, 0.3f)))
+				SNew(SMRSectionHeader, Ui).Title(UMRGameDataSubsystem::SchoolName(School)).bCollapsed(bFolded).Count(PerSchool[School]).bDivider(!bFirst)
+					.OnToggle_Lambda([this, ThisSchool]()
+					{
+						if (CollapsedSpellSchools.Remove(ThisSchool) == 0)
+						{
+							CollapsedSpellSchools.Add(ThisSchool);
+						}
+					})
 			];
+			bFirst = false;
+		}
+		if (bFolded)
+		{
+			continue;
 		}
 		FString Reagents;
 		for (const FMRReagent& R : Def->Reagents)
@@ -456,46 +685,46 @@ void SMRInventoryScreen::RebuildSpells()
 			Reagents += FString::Printf(TEXT("%s%d %s"), Reagents.IsEmpty() ? TEXT("") : TEXT(", "), R.Count,
 				Item ? *Item->Name.ToString() : *R.Item.ToString());
 		}
-		const FText Info = FText::Format(LOCTEXT("SpellInfo", "Level {0}  ·  {1} mana{2}"), FText::AsNumber(Def->Level), FText::AsNumber(Def->Mana),
+		const int32 Pct = Src->GetSpellPercent(Known[i]);
+		const FText Info = FText::Format(LOCTEXT("SpellInfo", "Level {0}  ·  {1} mana{2}{3}"), FText::AsNumber(Def->Level), FText::AsNumber(Def->Mana),
+			Pct >= 0 ? FText::Format(LOCTEXT("SpellPct", "  ·  {0}%"), FText::AsNumber(Pct)) : FText::GetEmpty(),
 			Reagents.IsEmpty() ? FText::GetEmpty() : FText::FromString(TEXT("  ·  ") + Reagents));
-		// the whole row shows the spell's tooltip, not only its icon
-		TSharedRef<SHorizontalBox> Row = SNew(SHorizontalBox);
-		Row->SetToolTip(Ui->MakeToolTip(FMRSlotContent::Spell(Known[i])));
-		SpellList->AddSlot().AutoHeight().Padding(2.f * Px, 1.f * Px)
+		const FMRSlotRef Ref(EMRSlotArea::SpellBook, i);
+		TSharedRef<SMRListRow> Row = SNew(SMRListRow, Ui, Ref)
 		[
-			Row
-		];
-		Row->AddSlot().AutoWidth()
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
 			[
-				SNew(SMRSlot, Ui, FMRSlotRef(EMRSlotArea::SpellBook, i)).Size(SlotPx)
-			];
-		Row->AddSlot().FillWidth(1.f).VAlign(VAlign_Center).Padding(4.f * Px, 0.f, 0.f, 0.f)
+				SNew(SMRSlot, Ui, Ref).Size(SlotPx).bToolTip(false)
+			]
+			+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(4.f * Px, 0.f, 0.f, 0.f)
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().AutoHeight()[Label(S, Def->Name, 10.f, true)]
 				+ SVerticalBox::Slot().AutoHeight()[Label(S, Info, 7.5f, false, FLinearColor(0.78f, 0.76f, 0.7f))]
-			];
+			]
+		];
+		// one tooltip for the whole row (the slot's own is off)
+		Row->SetToolTip(Ui->MakeToolTip(FMRSlotContent::Spell(Known[i])));
+		SpellList->AddSlot().AutoHeight().Padding(2.f * Px, 0.5f * Px)
+		[
+			Row
+		];
 	}
+	if (Order.Num() == 0)
+	{
+		SpellList->AddSlot().AutoHeight().Padding(4.f * Px)
+		[
+			Label(S, Filter.IsEmpty() ? LOCTEXT("NoSpells", "You know no spells yet.") : LOCTEXT("NoSpellMatch", "No spell matches."), 9.f, false,
+				FLinearColor(0.75f, 0.73f, 0.68f))
+		];
+	}
+	TSharedRef<STextBlock> Help = Label(S, LOCTEXT("SpellHelp", "Click a spell and put it on the spell bar, or shift-click it. Numpad 1-9 casts."), 7.5f,
+		false, FLinearColor(0.7f, 0.68f, 0.62f));
+	Help->SetAutoWrapText(true);
 	SpellList->AddSlot().AutoHeight().Padding(2.f * Px, 6.f * Px, 2.f * Px, 2.f * Px)
 	[
-		Label(S, LOCTEXT("SpellHelp", "Click a spell and put it on the spell bar, or shift-click it. Numpad 1-9 casts."), 7.5f, false,
-			FLinearColor(0.7f, 0.68f, 0.62f))
-	];
-}
-
-TSharedRef<SWidget> SMRInventoryScreen::MakeSkillsPage()
-{
-	UMRUIStyle* S = UI->GetStyle();
-	const float Px = S->Px();
-	const float SlotPx = S->Number(TEXT("slot_px"), 22.f);
-	SkillList = SNew(SVerticalBox);
-	return SNew(SMRPanel, UI.Get()).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(2.f)
-	[
-		SNew(SBox).MaxDesiredHeight(SlotPx * 2.f * Px).MaxDesiredWidth(SlotPx * 2.f * Px)
-		[
-			SNew(SScrollBox).ScrollBarThickness(FVector2D(6.f * Px, 6.f * Px))
-			+ SScrollBox::Slot()[SkillList.ToSharedRef()]
-		]
+		Help
 	];
 }
 
@@ -509,30 +738,78 @@ void SMRInventoryScreen::RebuildSkills()
 		return;
 	}
 	const TMap<FName, int32>& Skills = Src->GetSkills();
-	if (Skills.Num() == SkillsShown)
+	const FString Filter = SkillSearch.IsValid() ? SkillSearch->GetText().TrimStartAndEnd() : FString();
+	FString Key = Filter + TEXT("|");
+	for (const TPair<FName, int32>& P : Skills)
+	{
+		Key += FString::Printf(TEXT("%s:%d,"), *P.Key.ToString(), P.Value);
+	}
+	for (int32 School : CollapsedSkillSchools)
+	{
+		Key += FString::Printf(TEXT("c%d"), School);
+	}
+	if (Key == SkillsKey)
 	{
 		return;
 	}
-	SkillsShown = Skills.Num();
+	SkillsKey = Key;
 	SkillList->ClearChildren();
 	UMRUIStyle* S = Ui->GetStyle();
 	const float Px = S->Px();
 	const float IconPx = S->Number(TEXT("list_slot_px"), 18.f);
 
+	// by school (crafting, weaponcraft, brawling...), then name
 	TArray<FName> Names;
-	Skills.GetKeys(Names);
-	Names.Sort([Data](const FName& A, const FName& B)
+	for (const TPair<FName, int32>& P : Skills)
 	{
-		const FMRSkillDef* SA = Data->FindSkill(A);
-		const FMRSkillDef* SB = Data->FindSkill(B);
-		return (SA ? SA->Name.ToString() : A.ToString()) < (SB ? SB->Name.ToString() : B.ToString());
+		const FMRSkillDef* Def = Data->FindSkill(P.Key);
+		if (MatchesFilter(Filter, Def ? Def->Name.ToString() : P.Key.ToString(), Def ? UMRGameDataSubsystem::SchoolName(Def->School).ToString() : FString()))
+		{
+			Names.Add(P.Key);
+		}
+	}
+	auto SchoolOf = [Data](const FName& N) { const FMRSkillDef* D = Data->FindSkill(N); return D ? D->School : 0; };
+	auto NameOf = [Data](const FName& N) { const FMRSkillDef* D = Data->FindSkill(N); return D ? D->Name.ToString() : N.ToString(); };
+	Names.Sort([&](const FName& A, const FName& B)
+	{
+		if (SchoolOf(A) != SchoolOf(B)) return SchoolOf(A) < SchoolOf(B);
+		return NameOf(A) < NameOf(B);
 	});
+	TMap<int32, int32> PerSchool;
+	for (const FName& N : Names)
+	{
+		PerSchool.FindOrAdd(SchoolOf(N))++;
+	}
+	int32 School = -1;
+	bool bFirst = true;
 	for (const FName& Name : Names)
 	{
 		const FMRSkillDef* Def = Data->FindSkill(Name);
+		const int32 ThisSchool = SchoolOf(Name);
+		const bool bFolded = Filter.IsEmpty() && CollapsedSkillSchools.Contains(ThisSchool);
+		if (ThisSchool != School)
+		{
+			School = ThisSchool;
+			SkillList->AddSlot().AutoHeight().Padding(0.f, bFirst ? 0.f : 2.f * Px, 0.f, 1.f * Px)
+			[
+				SNew(SMRSectionHeader, Ui).Title(UMRGameDataSubsystem::SchoolName(School)).bCollapsed(bFolded).Count(PerSchool[School]).bDivider(!bFirst)
+					.OnToggle_Lambda([this, ThisSchool]()
+					{
+						if (CollapsedSkillSchools.Remove(ThisSchool) == 0)
+						{
+							CollapsedSkillSchools.Add(ThisSchool);
+						}
+					})
+			];
+			bFirst = false;
+		}
+		if (bFolded)
+		{
+			continue;
+		}
 		const int32 Pct = Skills[Name];
 		const FSlateBrush* Icon = Def ? S->Icon(Def->Icon) : nullptr;
-		SkillList->AddSlot().AutoHeight().Padding(2.f * Px, 1.5f * Px)
+		TSharedRef<SMRListRow> Row = SNew(SMRListRow, Ui, FMRSlotRef())
 		[
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
@@ -548,99 +825,150 @@ void SMRInventoryScreen::RebuildSkills()
 			]
 			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 4.f * Px, 0.f)
 			[
-				SNew(SMRBar, Ui).Width(60.f).Height(5.f).bShowText(false).Value(static_cast<float>(Pct)).Max(100.f)
+				SNew(SMRBar, Ui).Width(50.f).Height(5.f).bShowText(false).Value(static_cast<float>(Pct)).Max(100.f)
 					.Color(S->Color(TEXT("skill"), FLinearColor(0.85f, 0.6f, 0.05f)))
 			]
 			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
 			[
-				SNew(SBox).WidthOverride(24.f * Px).HAlign(HAlign_Right)
+				SNew(SBox).WidthOverride(26.f * Px).HAlign(HAlign_Right)
 				[
 					Label(S, FText::Format(LOCTEXT("Pct", "{0}%"), FText::AsNumber(Pct)), 10.f, true)
 				]
 			]
 		];
+		Row->SetToolTip(Ui->MakeSkillToolTip(Name, Pct));
+		SkillList->AddSlot().AutoHeight().Padding(2.f * Px, 1.f * Px)
+		[
+			Row
+		];
+	}
+	if (Names.Num() == 0)
+	{
+		SkillList->AddSlot().AutoHeight().Padding(4.f * Px)
+		[
+			Label(S, Filter.IsEmpty() ? LOCTEXT("NoSkills", "You have no skills yet.") : LOCTEXT("NoSkillMatch", "No skill matches."), 9.f, false,
+				FLinearColor(0.75f, 0.73f, 0.68f))
+		];
 	}
 }
 
+// ------------------------------------------------------------------------------ stats
+
 TSharedRef<SWidget> SMRInventoryScreen::MakeStatsPage()
 {
-	UMRUISubsystem* Ui = UI.Get();
-	UMRUIStyle* S = Ui->GetStyle();
+	UMRUIStyle* S = UI->GetStyle();
 	const float Px = S->Px();
 	const float SlotPx = S->Number(TEXT("slot_px"), 22.f);
-
-	auto Get = [Ui](float (UMRAttributeSet::*Fn)() const)
-	{
-		return TAttribute<float>::CreateLambda([Ui, Fn]()
-		{
-			const UMRAttributeSet* A = Ui ? Ui->GetAttributes() : nullptr;
-			return A ? (A->*Fn)() : 0.f;
-		});
-	};
-	auto StatText = [Ui](float (UMRAttributeSet::*Fn)() const)
-	{
-		return TAttribute<FText>::CreateLambda([Ui, Fn]()
-		{
-			const UMRAttributeSet* A = Ui ? Ui->GetAttributes() : nullptr;
-			return A ? FText::AsNumber(FMath::RoundToInt((A->*Fn)())) : FText::FromString(TEXT("-"));
-		});
-	};
-
-	TSharedRef<SVerticalBox> Box = SNew(SVerticalBox);
-	struct FStat { FText Name; float (UMRAttributeSet::*Fn)() const; };
-	const FStat Stats[] = {
-		{LOCTEXT("Might", "Might"), &UMRAttributeSet::GetMight},
-		{LOCTEXT("Intellect", "Intellect"), &UMRAttributeSet::GetIntellect},
-		{LOCTEXT("Stamina", "Stamina"), &UMRAttributeSet::GetStamina},
-		{LOCTEXT("Agility", "Agility"), &UMRAttributeSet::GetAgility},
-		{LOCTEXT("Mysticism", "Mysticism"), &UMRAttributeSet::GetMysticism},
-		{LOCTEXT("Aim", "Aim"), &UMRAttributeSet::GetAim},
-	};
-	Box->AddSlot().AutoHeight().Padding(2.f * Px, 2.f * Px)
-	[
-		Label(S, LOCTEXT("Attributes", "Attributes"), 10.f, true, S->Color(TEXT("heading"), FLinearColor(1.f, 0.75f, 0.3f)))
-	];
-	for (const FStat& Stat : Stats)
-	{
-		Box->AddSlot().AutoHeight().Padding(6.f * Px, 1.f * Px)
-		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot().FillWidth(1.f)[Label(S, Stat.Name, 10.f)]
-			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 6.f * Px, 0.f)
-			[
-				SNew(SMRBar, Ui).Width(80.f).Height(5.f).bShowText(false).Value(Get(Stat.Fn)).Max(50.f)
-					.Color(S->Color(TEXT("stat"), FLinearColor(0.6f, 0.5f, 0.35f)))
-			]
-			+ SHorizontalBox::Slot().AutoWidth()
-			[
-				SNew(SBox).WidthOverride(20.f * Px).HAlign(HAlign_Right)[Label(S, StatText(Stat.Fn), 10.f, true)]
-			]
-		];
-	}
-	Box->AddSlot().AutoHeight().Padding(2.f * Px, 8.f * Px, 2.f * Px, 2.f * Px)
-	[
-		Label(S, LOCTEXT("Pools", "Health, mana and vigor"), 10.f, true, S->Color(TEXT("heading"), FLinearColor(1.f, 0.75f, 0.3f)))
-	];
-	struct FPool { float (UMRAttributeSet::*Value)() const; float (UMRAttributeSet::*Max)() const; const TCHAR* Color; FLinearColor Default; };
-	const FPool Pools[] = {
-		{&UMRAttributeSet::GetHealth, &UMRAttributeSet::GetMaxHealth, TEXT("health"), FLinearColor(0.75f, 0.06f, 0.06f)},
-		{&UMRAttributeSet::GetMana, &UMRAttributeSet::GetMaxMana, TEXT("mana"), FLinearColor(0.08f, 0.2f, 0.85f)},
-		{&UMRAttributeSet::GetVigor, &UMRAttributeSet::GetMaxVigor, TEXT("vigor"), FLinearColor(0.85f, 0.6f, 0.05f)},
-	};
-	for (const FPool& P : Pools)
-	{
-		Box->AddSlot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 3.f * Px)
-		[
-			SNew(SMRBar, Ui).Width(SlotPx * Columns - 20.f).Height(9.f).Value(Get(P.Value)).Max(Get(P.Max)).Color(S->Color(P.Color, P.Default))
-		];
-	}
-	return SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(2.f)
+	StatList = SNew(SVerticalBox);
+	return SNew(SMRPanel, UI.Get()).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(2.f)
 	[
 		SNew(SBox).MaxDesiredHeight(SlotPx * 2.f * Px).MaxDesiredWidth(SlotPx * 2.f * Px)
 		[
-			Box
+			SNew(SScrollBox).ScrollBarThickness(FVector2D(6.f * Px, 6.f * Px))
+			+ SScrollBox::Slot()[StatList.ToSharedRef()]
 		]
 	];
+}
+
+void SMRInventoryScreen::RebuildStats(bool bForce)
+{
+	UMRUISubsystem* Ui = UI.Get();
+	if (!Ui || !StatList.IsValid())
+	{
+		return;
+	}
+	if (!bForce && Ui->GetStatsVersion() == StatsShown)
+	{
+		return;
+	}
+	StatsShown = Ui->GetStatsVersion();
+	StatList->ClearChildren();
+	UMRUIStyle* S = Ui->GetStyle();
+	const float Px = S->Px();
+	const FLinearColor Dim(0.78f, 0.76f, 0.7f);
+	const FLinearColor Gold = S->Color(TEXT("heading"), FLinearColor(1.f, 0.75f, 0.3f));
+
+	// the server's stats (its list, its names) in the ruleset's sections (data/ui/stat_layout.json)
+	TArray<FMRStatSection> Sections;
+	Ui->GetStatSections(Sections);
+	auto ValueText = [](const FMRStatView& V)
+	{
+		return V.Text.IsEmpty() ? FText::AsNumber(V.Value) : FText::FromString(V.Text);
+	};
+	bool bFirst = true;
+	for (const FMRStatSection& Sec : Sections)
+	{
+		const FString Title = Sec.Title.ToString();
+		if (Sec.bPoints)
+		{
+			// spendable points: apart, in their own sunk box at the top, the numbers in gold
+			TSharedRef<SVerticalBox> Box = SNew(SVerticalBox);
+			Box->AddSlot().AutoHeight().Padding(0.f, 0.f, 0.f, 1.f * Px)[Label(S, Sec.Title, 9.f, true, Gold)];
+			for (const FMRStatView& V : Sec.Stats)
+			{
+				Box->AddSlot().AutoHeight().Padding(4.f * Px, 0.5f * Px)
+				[
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)[Label(S, FText::FromString(V.Name), 10.f)]
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Label(S, ValueText(V), 12.f, true, Gold)]
+				];
+			}
+			StatList->AddSlot().AutoHeight().Padding(1.f * Px, 1.f * Px, 1.f * Px, 5.f * Px)
+			[
+				SNew(SMRPanel, Ui).Background(TEXT("bkgnd")).Frame(TEXT("inset")).Padding(3.f)
+				[
+					Box
+				]
+			];
+			continue;
+		}
+		const bool bFolded = CollapsedStatSections.Contains(Title);
+		StatList->AddSlot().AutoHeight().Padding(0.f, bFirst ? 0.f : 2.f * Px, 0.f, 1.f * Px)
+		[
+			SNew(SMRSectionHeader, Ui).Title(Sec.Title).bCollapsed(bFolded).Count(Sec.Stats.Num()).bDivider(!bFirst)
+				.OnToggle_Lambda([this, Title]()
+				{
+					if (CollapsedStatSections.Remove(Title) == 0)
+					{
+						CollapsedStatSections.Add(Title);
+					}
+					bStatsDirty = true;  // rebuilt next tick, not inside this header's own click
+				})
+		];
+		bFirst = false;
+		if (bFolded)
+		{
+			continue;
+		}
+		for (const FMRStatView& V : Sec.Stats)
+		{
+			TSharedRef<SHorizontalBox> Line = SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)[Label(S, FText::FromString(V.Name), 9.5f)];
+			if (V.Max > 0 && V.Text.IsEmpty())
+			{
+				Line->AddSlot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 5.f * Px, 0.f)
+				[
+					SNew(SMRBar, Ui).Width(60.f).Height(5.f).bShowText(false).Value(static_cast<float>(FMath::Max(0, V.Value)))
+						.Max(static_cast<float>(V.Max)).Color(S->Color(TEXT("stat"), FLinearColor(0.6f, 0.5f, 0.35f)))
+				];
+			}
+			Line->AddSlot().AutoWidth().VAlign(VAlign_Center)
+			[
+				SNew(SBox).WidthOverride(30.f * Px).HAlign(HAlign_Right)[Label(S, ValueText(V), 9.5f, true)]
+			];
+			StatList->AddSlot().AutoHeight().Padding(6.f * Px, 0.5f * Px, 3.f * Px, 0.5f * Px)
+			[
+				Line
+			];
+		}
+	}
+	if (Sections.Num() == 0)
+	{
+		StatList->AddSlot().AutoHeight().Padding(4.f * Px)
+		[
+			Label(S, LOCTEXT("NoStats", "Waiting for the server..."), 9.f, false, Dim)
+		];
+	}
 }
 
 TSharedRef<SWidget> SMRInventoryScreen::MakeQuestsPage()
@@ -672,11 +1000,29 @@ void SMRInventoryScreen::SetTab(EMRInventoryTab InTab)
 	Tab = InTab;
 }
 
+void SMRInventoryScreen::DebugSearch(EMRInventoryTab Page, const FString& Text)
+{
+	TSharedPtr<SMRTextField>& Search = Page == EMRInventoryTab::Skills ? SkillSearch : SpellSearch;
+	if (Search.IsValid())
+	{
+		Search->SetText(Text);
+	}
+}
+
+void SMRInventoryScreen::DebugFoldSpellSchool(int32 School)
+{
+	if (CollapsedSpellSchools.Remove(School) == 0)
+	{
+		CollapsedSpellSchools.Add(School);
+	}
+}
+
 void SMRInventoryScreen::OnOpened()
 {
 	RebuildBag();
 	RebuildSpells();
 	RebuildSkills();
+	RebuildStats(true);  // offline, the attributes may have changed since
 	if (FSlateApplication::IsInitialized())
 	{
 		FSlateApplication::Get().SetAllUserFocus(SharedThis(this), EFocusCause::SetDirectly);
@@ -687,6 +1033,16 @@ void SMRInventoryScreen::Tick(const FGeometry& Geo, const double Time, const flo
 {
 	SCompoundWidget::Tick(Geo, Time, Dt);
 	RebuildBag();  // grows a row when the last one fills
+	// the lists follow the search, the folds and the server's updates (each rebuilds only on a change)
+	RebuildSpells();
+	RebuildSkills();
+	RebuildStats(bStatsDirty);
+	bStatsDirty = false;
+	// typing in a search bar: every key goes to it (no walking, no hotbar keys)
+	if (UMRUISubsystem* Ui = UI.Get())
+	{
+		Ui->SetTextInput(IsTyping());
+	}
 }
 
 int32 SMRInventoryScreen::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
@@ -709,6 +1065,10 @@ FReply SMRInventoryScreen::OnKeyDown(const FGeometry& Geo, const FKeyEvent& Even
 		return FReply::Unhandled();
 	}
 	const FKey Key = Event.GetKey();
+	if (IsTyping())
+	{
+		return FReply::Unhandled();  // letters and numbers belong to the search bar
+	}
 	if (Key == EKeys::Escape || Key == EKeys::E || Key == EKeys::I)
 	{
 		Ui->SetInventoryOpen(false);
@@ -739,6 +1099,11 @@ FReply SMRInventoryScreen::OnMouseButtonDown(const FGeometry& Geo, const FPointe
 		Ui->OnClickOutside(Event.GetEffectingButton() == EKeys::RightMouseButton);
 	}
 	return FReply::Handled();  // never through to the game (no attacks while the window is open)
+}
+
+bool SMRInventoryScreen::IsTyping() const
+{
+	return (SpellSearch.IsValid() && SpellSearch->HasFocus()) || (SkillSearch.IsValid() && SkillSearch->HasFocus());
 }
 
 FReply SMRInventoryScreen::OnMouseMove(const FGeometry& Geo, const FPointerEvent& Event)

@@ -1,0 +1,52 @@
+{
+  "_doc": "How the Stats page lays out the stats a server sends (docs/adr/0009-user-interface.md). The server decides which stats exist, their names and order (its stat group 2, BP_STAT_GROUP); this only sorts them into sections, per ruleset (data/net/servers.json \"ruleset\"; offline uses default). A stat goes in the first section that names it; names are the server's, matched without case, and * matches anything (\"* Resist\"). Stats no section takes go in the last one. points: spendable points, shown apart at the top. hide: stats the HUD already shows. Offline, data/ui/mock_inventory.json \"stats\" stands in for the server's list.",
+  "default": "server104",
+  "rulesets": {
+    "server104": {
+      "sections": [
+        {
+          "title": "Points to spend",
+          "points": true,
+          "stats": [
+            "Unbound Energy",
+            "Training Pts"
+          ]
+        },
+        {
+          "title": "Attributes",
+          "stats": [
+            "Might",
+            "Intellect",
+            "Stamina",
+            "Agility",
+            "Mysticism",
+            "Aim"
+          ]
+        },
+        {
+          "title": "Character",
+          "stats": [
+            "Karma",
+            "Bulk Carried",
+            "Weight Carried",
+            "Offense",
+            "Defense",
+            "Armor"
+          ]
+        },
+        {
+          "title": "Resistances",
+          "stats": [
+            "*"
+          ]
+        }
+      ],
+      "hide": [
+        "Health",
+        "Mana",
+        "Vigor",
+        "Experience"
+      ]
+    }
+  }
+}

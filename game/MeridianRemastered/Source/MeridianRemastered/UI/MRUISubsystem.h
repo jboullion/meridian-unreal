@@ -59,6 +59,9 @@ public:
 	void SetInventoryOpen(bool bOpen);
 	/** Show a page of the dialog (EMRInventoryTab order: inventory, spells, skills, stats, quests). */
 	void SetInventoryTab(int32 Tab);
+	/** Tests (-MRUIShots): the dialog's search text on a page (1 spells, 2 skills), fold a spell school. */
+	void DebugSearch(int32 Tab, const FString& Text);
+	void DebugFoldSpellSchool(int32 School);
 	bool IsInventoryOpen() const { return bInventoryOpen; }
 
 	// --- slots (from the slot widgets)
@@ -81,6 +84,8 @@ public:
 	const FSlateBrush* IconFor(const FMRSlotContent& Content) const;
 	FText NameFor(const FMRSlotContent& Content) const;
 	TSharedPtr<IToolTip> MakeToolTip(const FMRSlotContent& Content);
+	/** A skill's tooltip: its name, school, percentage and description. */
+	TSharedPtr<IToolTip> MakeSkillToolTip(FName Skill, int32 Percent);
 	/** Spell bar cooldown left (0..1) after a cast. */
 	float SpellCooldown(int32 Index) const;
 	/** Seconds since the spell bar was last used (it shows fully for a moment). */
@@ -96,6 +101,18 @@ public:
 	/** Where each slot was last drawn (absolute / desktop pixels): -MRUIShots points the mouse at one. */
 	void NoteSlotDrawn(const FMRSlotRef& Slot, FVector2f AbsoluteCentre) { SlotCentres.Add(SlotKey(Slot), AbsoluteCentre); }
 	bool GetSlotCentre(const FMRSlotRef& Slot, FVector2f& OutAbsolute) const;
+	/**
+	 * The Stats page: the server's stat list when playing online (its stat group 2: the server
+	 * decides which stats exist), else the mock list, sorted into sections by
+	 * data/ui/stat_layout.json for the server's ruleset.
+	 */
+	void GetStatSections(TArray<FMRStatSection>& Out) const;
+	/** Bumped whenever the server's stats change (the Stats page rebuilds). */
+	int32 GetStatsVersion() const { return StatsVersion; }
+	/** Health (0), mana (1) or vigor (2): the server's (its stat group 1) online, else the local attributes. */
+	bool GetVital(int32 Index, float& OutValue, float& OutMax) const;
+	/** A text box in the dialog has the keyboard (the spell search): every key goes to it. */
+	void SetTextInput(bool bTyping);
 	/** The minimap picture of a geometry zone (kept loaded), or null if it hasn't been captured. */
 	class UTexture2D* GetMapTexture(int32 GeometryRid);
 
@@ -114,6 +131,11 @@ private:
 	TSharedPtr<class SMRLoginScreen> Login;
 	bool bInventoryOpen = false;
 	bool bChatOpen = false;
+	bool bTextInput = false;
+	int32 StatsVersion = 0;
+	FDelegateHandle NetStatsHandle;
+	void OnNetStats(uint32 Group);
+	class UMRNetSubsystem* GetNet() const;
 	FMRSlotRef HoveredSlot;
 	/** Where the mouse went down with an empty cursor: releasing over another slot places (drag and drop). */
 	FMRSlotRef PressSlot;
@@ -129,6 +151,7 @@ private:
 	static uint32 SlotKey(const FMRSlotRef& Slot) { return (static_cast<uint32>(Slot.Area) << 16) | static_cast<uint32>(Slot.Index & 0xFFFF); }
 
 	void ApplyInputMode();
+	TSharedPtr<IToolTip> FramedToolTip(const FText& Title, const FText& Line, const FText& Desc);
 	void EnsureAvatar();
 	void OnStyleReloaded();
 	FDelegateHandle StyleHandle;

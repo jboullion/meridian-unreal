@@ -53,6 +53,10 @@ public:
 	/** Known spells (spell book order) and skills with their percentages. */
 	virtual const TArray<FName>& GetKnownSpells() const PURE_VIRTUAL(UMRInventorySource::GetKnownSpells, static TArray<FName> None; return None;);
 	virtual const TMap<FName, int32>& GetSkills() const PURE_VIRTUAL(UMRInventorySource::GetSkills, static TMap<FName, int32> None; return None;);
+	/** A known spell's ability percentage, or -1 if unknown (the server sends it with the spell list). */
+	virtual int32 GetSpellPercent(FName Spell) const { return -1; }
+	/** The character's stats in the server's order (the Stats page; online, UMRUISubsystem uses the server's own list). */
+	virtual const TArray<FMRStatView>& GetStats() const { static TArray<FMRStatView> None; return None; }
 
 	/** Totals of everything carried (bag, hotbar, equipment): the original's weight and bulk. */
 	void GetTotals(int32& OutWeight, int32& OutBulk) const;
@@ -100,6 +104,12 @@ public:
 
 	virtual const TArray<FName>& GetKnownSpells() const override { return KnownSpells; }
 	virtual const TMap<FName, int32>& GetSkills() const override { return Skills; }
+	virtual int32 GetSpellPercent(FName Spell) const override { const int32* P = SpellPercents.Find(Spell); return P ? *P : -1; }
+	virtual const TArray<FMRStatView>& GetStats() const override { return Stats; }
+
+	/** Online: the server's spell and skill lists replace the mock ones (the rest stays mock until the server owns inventory). */
+	void SetKnownSpells(const TArray<FName>& InSpells, const TMap<FName, int32>& InPercents);
+	void SetSkills(const TMap<FName, int32>& InSkills);
 
 protected:
 	virtual FMRSlotContent GetRaw(const FMRSlotRef& Slot) const override;
@@ -113,5 +123,7 @@ private:
 	FMRSlotContent SpellBar[9];
 	FMRSlotContent Cursor;
 	TArray<FName> KnownSpells;
+	TMap<FName, int32> SpellPercents;
 	TMap<FName, int32> Skills;
+	TArray<FMRStatView> Stats;
 };

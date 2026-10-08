@@ -114,6 +114,27 @@ struct FMRSpellDef
 	TArray<FMRReagent> Reagents;
 };
 
+/** One stat line on the Stats page: the server's (online) or the mock list's (offline). */
+struct FMRStatView
+{
+	FString Name;
+	int32 Value = 0;
+	/** What the bar fills to (the server's current maximum); 0 = no bar. */
+	int32 Max = 0;
+	int32 Min = 0;
+	/** A stat whose value is text (a resource), shown instead of the number. */
+	FString Text;
+};
+
+/** A section of the Stats page (data/ui/stat_layout.json). */
+struct FMRStatSection
+{
+	FText Title;
+	/** Spendable points: drawn apart, at the top. */
+	bool bPoints = false;
+	TArray<FMRStatView> Stats;
+};
+
 /** A skill from data/skills.json. */
 struct FMRSkillDef
 {

@@ -13,6 +13,7 @@ void SMRSlot::Construct(const FArguments& InArgs, UMRUISubsystem* InUI, const FM
 	SizePx = InArgs._Size;
 	KeyLabel = InArgs._KeyLabel;
 	bSelectable = InArgs._bSelectable;
+	bToolTip = InArgs._bToolTip;
 	HintIcon = InArgs._HintIcon;
 }
 
@@ -155,7 +156,7 @@ void SMRSlot::OnMouseLeave(const FPointerEvent& Event)
 TSharedPtr<IToolTip> SMRSlot::GetToolTip()
 {
 	UMRUISubsystem* Ui = UI.Get();
-	if (!Ui || !Ui->GetSource() || !Ui->IsInventoryOpen())
+	if (!bToolTip || !Ui || !Ui->GetSource() || !Ui->IsInventoryOpen())
 	{
 		return nullptr;
 	}

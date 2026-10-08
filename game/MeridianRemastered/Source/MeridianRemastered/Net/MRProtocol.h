@@ -39,6 +39,7 @@ namespace MRMsg
 	constexpr uint8 BP_WAIT = 21;
 	constexpr uint8 BP_UNWAIT = 22;
 	constexpr uint8 BP_CHANGE_RESOURCE = 30;
+	constexpr uint8 BP_SEND_STATS = 41;
 	constexpr uint8 BP_SYS_MESSAGE = 31;
 	constexpr uint8 BP_MESSAGE = 32;
 	constexpr uint8 BP_SEND_CHARACTERS = 45;
@@ -48,11 +49,15 @@ namespace MRMsg
 	constexpr uint8 BP_CHARINFO_OK = 56;
 	constexpr uint8 BP_CHARINFO_NOT_OK = 57;
 	constexpr uint8 BP_LOAD_MODULE = 58;
+	constexpr uint8 BP_SEND_STAT_GROUPS = 52;
 	constexpr uint8 BP_REQ_MOVE = 100;
 	constexpr uint8 BP_REQ_TURN = 101;
 	constexpr uint8 BP_REQ_GO = 102;
 	constexpr uint8 BP_SAY_TO = 110;
 	constexpr uint8 BP_PLAYER = 130;
+	constexpr uint8 BP_STAT = 131;
+	constexpr uint8 BP_STAT_GROUP = 132;
+	constexpr uint8 BP_STAT_GROUPS = 133;
 	constexpr uint8 BP_ROOM_CONTENTS = 134;
 	constexpr uint8 BP_PLAYERS = 136;
 	constexpr uint8 BP_PLAYER_ADD = 137;

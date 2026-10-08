@@ -13,6 +13,8 @@
 #include "Net/MRNetSubsystem.h"
 #include "Net/MRNetWorldSubsystem.h"
 #include "TimerManager.h"
+#include "UI/MRUISubsystem.h"
+#include "Engine/LocalPlayer.h"
 #include "UnrealClient.h"
 #include "Zones/MRZoneSubsystem.h"
 
@@ -247,10 +249,18 @@ void UMRNetTest::Tick()
 			}
 			++HoldMoves;
 		}
-		if (FApp::CanEverRender() && T > 5.0 + 8.0 * Shots && Shots < 2)
+		if (FApp::CanEverRender() && T > 5.0 + 8.0 * Shots && Shots < 4)
 		{
+			// two of the world, then the dialog on the server's stats and spells (its stat groups)
+			UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+			if (UI && Shots >= 2)
+			{
+				UI->SetInventoryOpen(true);
+				UI->SetInventoryTab(Shots == 2 ? 3 : 1);
+			}
 			const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), FString::Printf(TEXT("online_%d.png"), Shots));
-			FScreenshotRequest::RequestScreenshot(File, true, false);
+			// a moment for the dialog to lay out before the capture
+			PC->GetWorldTimerManager().SetTimerForNextTick([File]() { FScreenshotRequest::RequestScreenshot(File, true, false); });
 			UE_LOG(LogMeridian, Display, TEXT("MRNetTest: screenshot %s"), *File);
 			++Shots;
 		}

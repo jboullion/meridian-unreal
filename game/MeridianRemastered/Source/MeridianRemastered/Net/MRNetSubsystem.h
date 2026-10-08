@@ -23,6 +23,8 @@ struct FMRServerEntry
 	FString SecretKey;
 	/** Origin header for the gateway's allowlist. */
 	FString Origin;
+	/** Which rules it runs ("server104"): how the UI lays out what it sends (data/ui/stat_layout.json). */
+	FString Ruleset;
 };
 
 /** A character on the account (BP_CHARACTERS). */
@@ -76,6 +78,44 @@ struct FMRChatLine
 	FString Text;
 	uint8 Kind = 0;        // MRMsg::SAY_* for speech, 0 for game messages
 	double Time = 0.0;
+};
+
+/**
+ * One of the player's statistics as the server describes it (BP_STAT_GROUP / BP_STAT; merintr's
+ * Statistic). The server decides which stats exist, their names and order, so the UI lists
+ * whatever it sends: Server 104's group 2 is Unbound Energy, Training Pts, the six stats, Karma,
+ * Bulk Carried... and the resistances.
+ */
+struct FMRNetStat
+{
+	enum EType : uint8 { Numeric = 1, List = 2 };
+	uint8 Num = 0;          // the stat's number in its group (not its place: Unbound Energy is 27 but listed first)
+	uint32 NameRsc = 0;
+	FString Name;
+	uint8 Type = Numeric;
+	// numeric: the value is an integer (Tag 1, with limits) or a resource (Tag 2, ValueText)
+	uint8 Tag = 1;
+	int32 Value = 0;
+	int32 Min = 0;
+	int32 Max = 0;
+	int32 CurrentMax = 0;   // what the bar fills to (health: the maximum health; Max is the scale's end)
+	FString ValueText;
+	// list (spells, skills, quests): the object, its value (an ability percentage) and icon
+	uint32 ObjectId = 0;
+	uint32 IconRsc = 0;
+	FString Icon;           // "ifirebal.bgf"
+};
+
+/** A group of stats (BP_STAT_GROUPS names them; Server 104: Condition, Stats, Spells, Skills, Quests). */
+struct FMRNetStatGroup
+{
+	uint8 Group = 0;        // 1-based, as the server numbers them
+	uint32 NameRsc = 0;
+	FString Name;
+	TArray<FMRNetStat> Stats;
+	bool bReceived = false;
+
+	const FMRNetStat* FindByNum(uint8 Num) const { return Stats.FindByPredicate([Num](const FMRNetStat& S) { return S.Num == Num; }); }
 };
 
 enum class EMRNetPhase : uint8
@@ -147,6 +187,10 @@ public:
 	const FMRNetObject* GetSelf() const { return Objects.Find(Player.Id); }
 	const TArray<FMRChatLine>& GetChat() const { return Chat; }
 	const FMRResourceTable& GetResources() const { return Resources; }
+	/** The player's stat groups (empty until the server has sent them, after entering the game). */
+	const TArray<FMRNetStatGroup>& GetStatGroups() const { return StatGroups; }
+	/** A group by the server's number (Server 104: 1 condition, 2 stats, 3 spells, 4 skills, 5 quests). */
+	const FMRNetStatGroup* FindStatGroup(uint8 Group) const;
 	const FMRServerEntry* GetServer() const { return Servers.IsValidIndex(ServerIndex) ? &Servers[ServerIndex] : nullptr; }
 
 	/** Tests and UI shots: show a character list without a server. */
@@ -163,6 +207,8 @@ public:
 	FOnMRNetObjectEvent OnObjectMoved;
 	FOnMRNetObjectEvent OnObjectRemoved;
 	FOnMRNetChat OnChat;
+	/** A stat group arrived or a stat in it changed (the group's number). */
+	FOnMRNetObjectEvent OnStatsChanged;
 
 private:
 	void LoadServers();
@@ -186,6 +232,8 @@ private:
 	static void SkipAnimation(FMRReader& R);
 	void ReadOverlays(FMRReader& R, TArray<FString>* Out);
 	void AddChat(const FString& Text, uint8 Kind);
+	bool ReadStat(FMRReader& R, FMRNetStat& Out);
+	FMRNetStatGroup& StatGroup(uint8 Group);
 
 	TArray<FMRServerEntry> Servers;
 	int32 LastServer = 0;
@@ -209,6 +257,8 @@ private:
 	bool bAwaitingRoom = false;
 	TMap<uint32, FMRNetObject> Objects;
 	TArray<FMRChatLine> Chat;
+	TArray<FMRNetStatGroup> StatGroups;
+	bool bRequestedStats = false;
 
 	FTSTicker::FDelegateHandle TickHandle;
 };

@@ -1,5 +1,5 @@
 {
-  "_doc": "The UI's mock inventory (docs/adr/0009-user-interface.md): what UMRMockInventory starts with until the server owns inventory. Classes are data/items.json, spells.json and skills.json classes; counts only matter for stackable items (NumberItem).",
+  "_doc": "The UI's mock inventory (docs/adr/0009-user-interface.md): what UMRMockInventory starts with until the server owns inventory. Classes are data/items.json, spells.json and skills.json classes; counts only matter for stackable items (NumberItem). stats: stands in for the server's stat list offline (the Stats page; Server 104's group 2, in its order).",
   "hotbar": [
     {"item": "LongSword"},
     {"item": "Bow"},
@@ -48,5 +48,34 @@
              "Haste", "CurePoison", "HolyTouch", "Darkness", "Cloak", "SummonFog", "IcyFingers", "TouchOfFlame", "Invigorate"],
   "spell_bar": ["MinorHeal", "Zap", "Blink", "Bless", "Phase", "Light", null, null, "Meditate"],
   "skills": {"Assess": 14, "Dodge": 32, "Parry": 21, "Block": 18, "SecondWind": 6, "SwordProficiency": 45, "Slash": 38,
-             "Thrust": 27, "Punch": 12, "Archery": 9, "Gathering": 22, "Mining": 3}
+             "Thrust": 27, "Punch": 12, "Archery": 9, "Gathering": 22, "Mining": 3},
+  "stats": [
+    {"name": "Unbound Energy", "value": 0, "min": 0, "max": 100},
+    {"name": "Training Pts", "value": 530, "min": 0, "max": 10000},
+    {"name": "Might", "value": 50, "min": 0, "max": 50},
+    {"name": "Intellect", "value": 20, "min": 0, "max": 50},
+    {"name": "Stamina", "value": 50, "min": 0, "max": 50},
+    {"name": "Agility", "value": 25, "min": 0, "max": 50},
+    {"name": "Mysticism", "value": 25, "min": 0, "max": 50},
+    {"name": "Aim", "value": 50, "min": 0, "max": 50},
+    {"name": "Karma", "value": 0, "min": -100, "max": 100},
+    {"name": "Bulk Carried", "value": 1257, "min": 0, "max": 1000},
+    {"name": "Weight Carried", "value": 974, "min": 0, "max": 1000},
+    {"name": "Offense", "value": 506, "min": 0, "max": 1000},
+    {"name": "Defense", "value": 433, "min": 0, "max": 1000},
+    {"name": "Armor", "value": 0, "min": 0, "max": 100},
+    {"name": "Weapon Resist", "value": 5, "min": -100, "max": 100},
+    {"name": "Thrust Resist", "value": 0, "min": -100, "max": 100},
+    {"name": "Bludgeon Resist", "value": 0, "min": -100, "max": 100},
+    {"name": "Slash Resist", "value": 0, "min": -100, "max": 100},
+    {"name": "Pierce Resist", "value": 0, "min": -100, "max": 100},
+    {"name": "Magic Resist", "value": 0, "min": -100, "max": 100},
+    {"name": "Fire Resist", "value": 0, "min": -100, "max": 100},
+    {"name": "Cold Resist", "value": 0, "min": -100, "max": 100},
+    {"name": "Shock Resist", "value": 0, "min": -100, "max": 100},
+    {"name": "Acid Resist", "value": 0, "min": -100, "max": 100},
+    {"name": "Holy Resist", "value": 0, "min": -100, "max": 100},
+    {"name": "Unholy Resist", "value": 0, "min": -100, "max": 100},
+    {"name": "Quake Resist", "value": 0, "min": -100, "max": 100}
+  ]
 }

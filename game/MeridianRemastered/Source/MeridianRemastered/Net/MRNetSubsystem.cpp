@@ -103,6 +103,7 @@ void UMRNetSubsystem::LoadServers()
 		E.Ws = S->GetStringField(TEXT("ws"));
 		E.Assets = S->GetStringField(TEXT("assets"));
 		E.SecretKey = S->GetStringField(TEXT("secret_key"));
+		S->TryGetStringField(TEXT("ruleset"), E.Ruleset);
 		if (!S->TryGetStringField(TEXT("origin"), E.Origin))
 		{
 			E.Origin = DefaultOrigin;
@@ -189,6 +190,8 @@ void UMRNetSubsystem::HandleClosed(const FString& Error)
 	Objects.Reset();
 	Player = FMRNetPlayer();
 	Characters.Reset();
+	StatGroups.Reset();
+	bRequestedStats = false;
 	Resources.ClearDynamic();
 	if (!Error.IsEmpty())
 	{
@@ -523,6 +526,61 @@ void UMRNetSubsystem::AddChat(const FString& Text, uint8 Kind)
 	OnChat.Broadcast(Line);
 }
 
+bool UMRNetSubsystem::ReadStat(FMRReader& R, FMRNetStat& Out)
+{
+	// merintr.c ExtractStatistic: num, name, type, then a numeric value (with limits when it's an
+	// integer) or a list entry (object, value, icon)
+	Out.Num = R.U8();
+	Out.NameRsc = R.U32();
+	Out.Name = Resources.Get(Out.NameRsc);
+	Out.Type = R.U8();
+	if (Out.Type == FMRNetStat::Numeric)
+	{
+		Out.Tag = R.U8();
+		const uint32 Value = R.U32();
+		if (Out.Tag == 1)
+		{
+			Out.Value = static_cast<int32>(Value);
+			Out.Min = R.I32();
+			Out.Max = R.I32();
+			Out.CurrentMax = R.I32();
+		}
+		else
+		{
+			Out.ValueText = Resources.Get(Value);
+		}
+	}
+	else if (Out.Type == FMRNetStat::List)
+	{
+		Out.ObjectId = MRMsg::PlainId(R.U32());
+		Out.Value = R.I32();
+		Out.IconRsc = R.U32();
+		Out.Icon = Resources.Get(Out.IconRsc);
+	}
+	else
+	{
+		return false;  // unknown type: the rest of the message can't be read
+	}
+	return R.IsOk();
+}
+
+FMRNetStatGroup& UMRNetSubsystem::StatGroup(uint8 Group)
+{
+	if (FMRNetStatGroup* G = StatGroups.FindByPredicate([Group](const FMRNetStatGroup& E) { return E.Group == Group; }))
+	{
+		return *G;
+	}
+	FMRNetStatGroup& G = StatGroups.AddDefaulted_GetRef();
+	G.Group = Group;
+	StatGroups.Sort([](const FMRNetStatGroup& A, const FMRNetStatGroup& B) { return A.Group < B.Group; });
+	return *StatGroups.FindByPredicate([Group](const FMRNetStatGroup& E) { return E.Group == Group; });
+}
+
+const FMRNetStatGroup* UMRNetSubsystem::FindStatGroup(uint8 Group) const
+{
+	return StatGroups.FindByPredicate([Group](const FMRNetStatGroup& E) { return E.Group == Group; });
+}
+
 void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 {
 	FMRReader R(Body);
@@ -598,6 +656,69 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		bAwaitingRoom = false;
 		SetPhase(EMRNetPhase::InGame);
 		OnRoomEntered.Broadcast();
+		if (!bRequestedStats)
+		{
+			// the stat groups' names first, then every group (merintr stats.c StatsGroupsInfo)
+			bRequestedStats = true;
+			Connection->Send(FMRWriter(MRMsg::BP_SEND_STAT_GROUPS));
+		}
+		break;
+	}
+	case MRMsg::BP_STAT_GROUPS:
+	{
+		const int32 N = R.U8();
+		for (int32 i = 1; i <= N && R.IsOk(); ++i)
+		{
+			FMRNetStatGroup& G = StatGroup(static_cast<uint8>(i));
+			G.NameRsc = R.U32();
+			G.Name = Resources.Get(G.NameRsc);
+		}
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: %d stat groups"), N);
+		for (int32 i = 1; i <= N; ++i)
+		{
+			Connection->Send(FMRWriter(MRMsg::BP_SEND_STATS).U8(static_cast<uint8>(i)));
+		}
+		break;
+	}
+	case MRMsg::BP_STAT_GROUP:
+	{
+		const uint8 Group = R.U8();
+		const int32 N = R.U8();
+		TArray<FMRNetStat> Stats;
+		for (int32 i = 0; i < N; ++i)
+		{
+			FMRNetStat S;
+			if (!ReadStat(R, S))
+			{
+				UE_LOG(LogMeridian, Warning, TEXT("MRNet: stat group %d cut short at %d of %d"), Group, i, N);
+				break;
+			}
+			Stats.Add(MoveTemp(S));
+		}
+		FMRNetStatGroup& G = StatGroup(Group);
+		G.Stats = MoveTemp(Stats);
+		G.bReceived = true;
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: stat group %d (%s): %d stats"), Group, *G.Name, G.Stats.Num());
+		OnStatsChanged.Broadcast(Group);
+		break;
+	}
+	case MRMsg::BP_STAT:
+	{
+		const uint8 Group = R.U8();
+		FMRNetStat S;
+		if (ReadStat(R, S))
+		{
+			FMRNetStatGroup& G = StatGroup(Group);
+			if (FMRNetStat* Existing = G.Stats.FindByPredicate([&S](const FMRNetStat& E) { return E.Num == S.Num; }))
+			{
+				*Existing = MoveTemp(S);
+			}
+			else
+			{
+				G.Stats.Add(MoveTemp(S));  // the group's order is the server's (Num isn't the order)
+			}
+			OnStatsChanged.Broadcast(Group);
+		}
 		break;
 	}
 	case MRMsg::BP_CREATE:

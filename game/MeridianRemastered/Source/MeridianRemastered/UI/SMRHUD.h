@@ -100,6 +100,8 @@ public:
 		SLATE_EVENT(FSimpleDelegate, OnSubmit)
 		/** Escape pressed. */
 		SLATE_EVENT(FSimpleDelegate, OnCancel)
+		/** The text changed (typing). */
+		SLATE_EVENT(FSimpleDelegate, OnChanged)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs, UMRUISubsystem* InUI);
@@ -114,6 +116,7 @@ private:
 	int32 MaxLength = 60;
 	FSimpleDelegate OnSubmit;
 	FSimpleDelegate OnCancel;
+	FSimpleDelegate OnChanged;
 };
 
 /** A stat bar like the original's (graphctl.c: a coloured fill, the gold caps), with its value. */
@@ -198,6 +201,7 @@ public:
 	void Rebuild();
 	void SetInventoryOpen(bool bOpen);
 	void SetInventoryTab(int32 Tab);
+	TSharedPtr<SMRInventoryScreen> GetInventory() const { return Inventory; }
 	/** Start typing a chat line (online). */
 	void OpenChat();
 

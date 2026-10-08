@@ -129,6 +129,7 @@ void UMRGameDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 				}
 			}
 		}
+		SpellByName.Add(Str(*O, TEXT("vrName")).ToLower(), D.Class);
 		Spells.Add(D.Class, MoveTemp(D));
 	}
 
@@ -146,9 +147,22 @@ void UMRGameDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		D.Icon = IconName(Str(*O, TEXT("vrIcon")));
 		D.School = Int(*O, TEXT("viSchool"));
 		D.Level = Int(*O, TEXT("viSkill_level"));
+		SkillByName.Add(Str(*O, TEXT("vrName")).ToLower(), D.Class);
 		Skills.Add(D.Class, MoveTemp(D));
 	}
 	UE_LOG(LogMeridian, Log, TEXT("UI data: %d items, %d spells, %d skills"), Items.Num(), Spells.Num(), Skills.Num());
+}
+
+const FMRSpellDef* UMRGameDataSubsystem::FindSpellByName(const FString& Name) const
+{
+	const FName* Class = SpellByName.Find(Name.ToLower());
+	return Class ? Spells.Find(*Class) : nullptr;
+}
+
+const FMRSkillDef* UMRGameDataSubsystem::FindSkillByName(const FString& Name) const
+{
+	const FName* Class = SkillByName.Find(Name.ToLower());
+	return Class ? Skills.Find(*Class) : nullptr;
 }
 
 EMREquipSlot UMRGameDataSubsystem::EquipSlotFor(const FMRItemDef& Item) const

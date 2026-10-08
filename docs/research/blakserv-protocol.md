@@ -135,6 +135,17 @@ u16 length | u16 check | u16 length again | u8 epoch | body (length bytes)
   - Style codes are `~` plus a letter (`~B` bold, `~I` italic, `~n` normal, colour letters).
 - **Names:** `BP_CHANGE_RESOURCE` (30) is `u32 id`, `string` and adds a name at runtime. `BP_PLAYERS` (136) and `BP_PLAYER_ADD` (137) carry player names the same way.
 - **Leaving:** `BP_REQ_QUIT` (54) leaves the game; the server answers `BP_QUIT` (149).
+- **Stats** (`module/merintr/merintr.c HandleStat*`, `ExtractStatistic`; the server side is `kod/.../player/user.kod ToCliStats`, `ToCliStatGroups`). The server decides which stats exist and names them; the client lists what it sends.
+  - **Asking:** `BP_SEND_STAT_GROUPS` (52) with no fields; then `BP_SEND_STATS` (41) `u8 group` for each group. The original asks for group 1 and the shown group; we ask for every group after the first `BP_ROOM_CONTENTS`.
+  - **`BP_STAT_GROUPS` (133):** `u8 n`, n × `u32 name resource`. Groups are numbered from 1. Server 104 sends five: Condition, Stats, Spells, Skills, Quests.
+  - **`BP_STAT_GROUP` (132):** `u8 group`, `u8 n`, n stats, in display order.
+  - **`BP_STAT` (131):** `u8 group`, one stat. It replaces the stat with the same number. The server sends these unasked when a value changes (health, a skill's percentage...).
+  - **A stat:** `u8 num`, `u32 name resource`, `u8 type`, then:
+    - type 1, numeric: `u8 tag`, `u32 value`, and when the tag is 1 (an integer) `i32 min`, `i32 max`, `i32 current max`. With tag 2 the value is a resource (text).
+    - type 2, list: `u32 object`, `i32 value`, `u32 icon resource`.
+  - **`num` is not the order.** Server 104's Unbound Energy is number 27 but comes first; Training Pts is 8 and comes second. Keep the message's order.
+  - **The bar fills to the current max.** Health is sent as value, 0, 100, max health, and the original draws 27 of 27 as a full bar. Intellect 20 with a current max of 50 is 40%.
+  - **Server 104's groups:** 1 Condition (health, mana, vigor, experience); 2 Stats (27: Unbound Energy, Training Pts, the six stats, Karma, Bulk Carried, Weight Carried, Offense, Defense, Armor, then 13 resistances); 3 Spells and 4 Skills (list stats: name, the spell or skill object, the ability percentage, its icon); 5 Quests (list stats with headers).
 
 ## The resource file (`util/rscload.c`)
 `rsc0000.rsb` starts with `"RSC\x01"`, `i32 version` (5) and `i32 count`. Each entry is `i32 id`, `i32 language` and a NUL-terminated string. Language 0 is the default text.

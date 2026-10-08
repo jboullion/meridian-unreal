@@ -21,6 +21,9 @@ public:
 	const FMRItemDef* FindItem(FName Class) const { return Items.Find(Class); }
 	const FMRSpellDef* FindSpell(FName Class) const { return Spells.Find(Class); }
 	const FMRSkillDef* FindSkill(FName Class) const { return Skills.Find(Class); }
+	/** By the name the server uses (vrName, any case): a server's spell and skill lists name them. */
+	const FMRSpellDef* FindSpellByName(const FString& Name) const;
+	const FMRSkillDef* FindSkillByName(const FString& Name) const;
 
 	/** The equipment slot an item fits (Count if none). Rings fit Ring1 (and Ring2). */
 	EMREquipSlot EquipSlotFor(const FMRItemDef& Item) const;
@@ -35,4 +38,6 @@ private:
 	TMap<FName, FMRItemDef> Items;
 	TMap<FName, FMRSpellDef> Spells;
 	TMap<FName, FMRSkillDef> Skills;
+	TMap<FString, FName> SpellByName;
+	TMap<FString, FName> SkillByName;
 };

@@ -491,6 +491,36 @@ void UMRMockInventory::LoadFromJson()
 			Skills.Add(FName(*P.Key), static_cast<int32>(P.Value->AsNumber()));
 		}
 	}
+	if (Root->TryGetArrayField(TEXT("stats"), Arr))
+	{
+		for (const TSharedPtr<FJsonValue>& V : *Arr)
+		{
+			const TSharedPtr<FJsonObject> O = V.IsValid() ? V->AsObject() : nullptr;
+			if (!O)
+			{
+				continue;
+			}
+			FMRStatView S;
+			O->TryGetStringField(TEXT("name"), S.Name);
+			O->TryGetNumberField(TEXT("value"), S.Value);
+			O->TryGetNumberField(TEXT("min"), S.Min);
+			O->TryGetNumberField(TEXT("max"), S.Max);
+			Stats.Add(S);
+		}
+	}
+	Changed();
+}
+
+void UMRMockInventory::SetKnownSpells(const TArray<FName>& InSpells, const TMap<FName, int32>& InPercents)
+{
+	KnownSpells = InSpells;
+	SpellPercents = InPercents;
+	Changed();
+}
+
+void UMRMockInventory::SetSkills(const TMap<FName, int32>& InSkills)
+{
+	Skills = InSkills;
 	Changed();
 }
 

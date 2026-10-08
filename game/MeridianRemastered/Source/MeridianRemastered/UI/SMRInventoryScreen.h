@@ -8,6 +8,7 @@
 class SScrollBox;
 class SUniformGridPanel;
 class SVerticalBox;
+class SMRTextField;
 class UMRUISubsystem;
 
 /** The inventory dialog's pages, in tab order (the original's stat buttons: statbtn_left_*). */
@@ -64,7 +65,9 @@ private:
  * The inventory dialog (docs/adr/0009-user-interface.md): one stone window with tabs.
  * - Inventory: the avatar between its equipment slots, weight and bulk, the scrollable bag, the hotbar row.
  * - Spells: known spells by school (click or drag one onto the spell bar; shift-click adds it).
- * - Skills: skills with their percentages.  - Stats: the six stats and the pools.  - Quests: none yet.
+ * - Skills: skills with their percentages. Both have a search bar and foldable schools.
+ * - Stats: the server's stats (online; the mock list offline) in data/ui/stat_layout.json's
+ *   sections, spendable points apart at the top.  - Quests: none yet.
  * Clicking outside the window drops what the mouse carries; Esc, E or I closes it; a number key
  * over a slot swaps it with that hotbar slot.
  */
@@ -77,6 +80,9 @@ public:
 	void Construct(const FArguments& InArgs, UMRUISubsystem* InUI);
 	void OnOpened();
 	void SetTab(EMRInventoryTab Tab);
+	/** Tests (-MRUIShots): type into the spell or skill search, fold a school. */
+	void DebugSearch(EMRInventoryTab Page, const FString& Text);
+	void DebugFoldSpellSchool(int32 School);
 
 	virtual bool SupportsKeyboardFocus() const override { return true; }
 	virtual FReply OnKeyDown(const FGeometry& Geo, const FKeyEvent& Event) override;
@@ -95,9 +101,19 @@ private:
 	TSharedPtr<SUniformGridPanel> BagGrid;
 	TSharedPtr<SVerticalBox> SpellList;
 	TSharedPtr<SVerticalBox> SkillList;
+	TSharedPtr<SVerticalBox> StatList;
+	TSharedPtr<SMRTextField> SpellSearch;
+	TSharedPtr<SMRTextField> SkillSearch;
 	int32 BagSlotsShown = 0;
-	int32 SpellsShown = -1;
-	int32 SkillsShown = -1;
+	/** What the lists last showed (rebuilt when it changes). */
+	FString SpellsKey;
+	FString SkillsKey;
+	int32 StatsShown = -1;
+	bool bStatsDirty = false;
+	/** Folded sections (school numbers, stat section titles). */
+	TSet<int32> CollapsedSpellSchools;
+	TSet<int32> CollapsedSkillSchools;
+	TSet<FString> CollapsedStatSections;
 
 	TSharedRef<SWidget> MakeInventoryPage();
 	TSharedRef<SWidget> MakeSpellsPage();
@@ -107,6 +123,11 @@ private:
 	void RebuildBag();
 	void RebuildSpells();
 	void RebuildSkills();
+	void RebuildStats(bool bForce);
+	/** A list page: the search bar, then the scrolling list. */
+	TSharedRef<SWidget> MakeListPage(TSharedPtr<SMRTextField>& OutSearch, TSharedPtr<SVerticalBox>& OutList, const FText& Hint);
+	/** A search bar has the keyboard. */
+	bool IsTyping() const;
 	FText TabTitle() const;
 	static FText TitleOf(EMRInventoryTab InTab);
 };

@@ -11,15 +11,19 @@ The client drew no UI apart from the first-person hands (`AMRHUD`). We want a mo
 
 ### Layout and behaviour (Minecraft's, with Meridian's art)
 - **Item hotbar**, bottom centre: nine *real storage* slots, as in Minecraft. Only items go there, no spells. Keys 1–9 and the mouse wheel select a slot. The selected slot is the right hand (the "Wielding" item in the dialog). The selected item's name shows above the bar for a moment after it changes.
-- **Vitals**: Health (left) and Mana (right) above the hotbar, where Minecraft has hearts and food. Vigor (the original's stamina) is a thin bar under them, where Minecraft has experience. These are the live GAS attributes from `UMRAttributeSet`, not mock data. A loss leaves a lighter trail and flashes.
+- **Vitals**: Health (left) and Mana (right) above the hotbar, where Minecraft has hearts and food. Vigor (the original's stamina) is a slimmer bar under them, where Minecraft has experience. All three show their values. Online they are the server's "Condition" stat group (`UMRUISubsystem::GetVital`); offline they are the local GAS attributes. A loss leaves a lighter trail and flashes.
 - **Spell bar**, bottom right: nine spell shortcuts in the numpad's layout (7 8 9 on top), cast with numpad 1–9. It sits at 45% opacity and becomes fully opaque on hover, while the dialog is open, or for a moment after a cast. `spellbar_row` in `ui_style.json` lays it out as a row instead.
 - **Inventory dialog** (E or I; Esc closes it). One stone window with the original's five tab buttons:
   - **Inventory**: equipment slots around the avatar (Head, Amulet, Torso, Hands, Legs; Ring 1, Ring 2, Left hand, Right hand), weight and bulk, the scrollable bag, and the hotbar row.
     - Hands (gauntlets) was added because the original has `ITEM_USE_GAUNTLET`.
     - The bag grows a row as it fills: the original limits by weight and bulk, not by slots.
-  - **Spells**: known spells by school.
-  - **Skills**: skills with their percentages.
-  - **Stats**: the six stats and the three pools.
+  - **Spells**: known spells by school. Online, the list is the server's (its Spells stat group, with each spell's percentage), matched to our data by name for school, level, mana and description.
+  - **Skills**: skills by school with their percentages. Online, the server's Skills group.
+  - Both have a **search bar** at the top that filters by name or school as you type (Escape clears it). While it has focus every key goes to it. Each **school is a section**: a divider, an arrow, its name and a count; a click folds it. A search shows every match, unfolded. Each row is **one hover region** with one tooltip for the icon and the text. Clicking the text acts on the slot (pick a spell up, shift-click it onto the bar).
+  - **Stats**: whatever the server sends (its Stats group), not a fixed list. Servers could send different stats. `data/ui/stat_layout.json` sorts them into sections per ruleset (`data/net/servers.json` `ruleset`), matching the server's names, with `*` as a wildcard.
+    - Server 104: Points to spend (Unbound Energy, Training Pts), boxed apart at the top; Attributes (the six stats); Character (Karma, Bulk Carried, Weight Carried, Offense, Defense, Armor); Resistances (everything else).
+    - Health, mana and vigor are left out: the HUD shows them.
+    - Sections fold like the schools. Offline, `mock_inventory.json` `stats` stands in for the server's list.
   - **Quests**: an empty state for now.
 - **Interactions** are Minecraft's:
   - left click picks up, places, merges or swaps a stack
@@ -71,7 +75,7 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
 - Alternatives not taken: the original's hand-drawn wall map only (it's still there in the `walls` and `parchment` styles); a Blender render of the blockout (it lacks the finished art); a global clip plane (it needs `r.AllowGlobalClipPlane`, which costs every frame, and Nanite ignores it).
 
 ## Consequences
-- Inventory, equipment, the spell bar and skills are **mock data**: local, not saved, not replicated. Spells don't cast; a "cast" plays the sprite's cast action and a cooldown sweep. The vitals and stats are real.
+- Inventory, equipment and the spell bar are still **mock data**: local, not saved, not replicated. Spells don't cast; a "cast" plays the sprite's cast action and a cooldown sweep. Online, the vitals, stats, spells and skills come from the server's stat groups (`docs/research/blakserv-protocol.md`, "Stats"). Offline they come from the attributes and the mock file.
 - Equipment doesn't change the avatar yet (no equipment layers on the sprite body).
 - Rebindable keys (Enhanced Input user settings, a Controls page) are the next step for "editable in the controller settings". The UI actions are already separate actions in their own context.
 - A real font and gamepad navigation are open.

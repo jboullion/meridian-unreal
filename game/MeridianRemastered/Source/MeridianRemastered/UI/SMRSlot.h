@@ -14,7 +14,7 @@ class UMRUISubsystem;
 class MERIDIANREMASTERED_API SMRSlot : public SLeafWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SMRSlot) : _Size(22.f), _bSelectable(false) {}
+	SLATE_BEGIN_ARGS(SMRSlot) : _Size(22.f), _bSelectable(false), _bToolTip(true) {}
 		/** Size in original pixels. */
 		SLATE_ARGUMENT(float, Size)
 		/** Small key label in the corner ("1", "7"...). */
@@ -23,6 +23,8 @@ public:
 		SLATE_ARGUMENT(bool, bSelectable)
 		/** Faint icon of what goes here when empty (equipment). */
 		SLATE_ARGUMENT(FName, HintIcon)
+		/** Show the content's tooltip (off inside a list row, which shows it for the whole row). */
+		SLATE_ARGUMENT(bool, bToolTip)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs, UMRUISubsystem* InUI, const FMRSlotRef& InSlot);
@@ -46,6 +48,7 @@ private:
 	float SizePx = 22.f;
 	FString KeyLabel;
 	bool bSelectable = false;
+	bool bToolTip = true;
 	FName HintIcon;
 	FName ToolTipFor;
 	TSharedPtr<IToolTip> CachedToolTip;

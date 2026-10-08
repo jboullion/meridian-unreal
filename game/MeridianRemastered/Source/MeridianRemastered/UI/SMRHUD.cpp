@@ -111,6 +111,7 @@ void SMRTextField::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 	MaxLength = InArgs._MaxLength;
 	OnSubmit = InArgs._OnSubmit;
 	OnCancel = InArgs._OnCancel;
+	OnChanged = InArgs._OnChanged;
 	UMRUIStyle* S = InUI->GetStyle();
 	const float Px = S->Px();
 	ChildSlot
@@ -133,6 +134,7 @@ void SMRTextField::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 					{
 						Edit->SetText(FText::FromString(T.ToString().Left(MaxLength)));
 					}
+					OnChanged.ExecuteIfBound();
 				})
 				.OnTextCommitted_Lambda([this](const FText&, ETextCommit::Type How)
 				{
@@ -490,12 +492,17 @@ TSharedRef<SWidget> SMRHUDRoot::MakeHotbarArea()
 			SNew(SMRSlot, Ui, FMRSlotRef(EMRSlotArea::Hotbar, i)).Size(SlotPx).KeyLabel(FString::FromInt(i + 1)).bSelectable(true)
 		];
 	}
-	auto Attr = [Ui](float (UMRAttributeSet::*Get)() const)
+	// the server's condition stats online, the local attributes offline (UMRUISubsystem::GetVital)
+	auto Vital = [Ui](int32 Index, bool bMax)
 	{
-		return TAttribute<float>::CreateLambda([Ui, Get]()
+		return TAttribute<float>::CreateLambda([Ui, Index, bMax]()
 		{
-			const UMRAttributeSet* A = Ui ? Ui->GetAttributes() : nullptr;
-			return A ? (A->*Get)() : 0.f;
+			float Value = 0.f, Max = 0.f;
+			if (Ui)
+			{
+				Ui->GetVital(Index, Value, Max);
+			}
+			return bMax ? Max : Value;
 		});
 	};
 	const float BarW = (RowW - Gap) * 0.5f;
@@ -512,21 +519,21 @@ TSharedRef<SWidget> SMRHUDRoot::MakeHotbarArea()
 			[
 				SNew(SMRBar, Ui).Width(BarW).Height(Style->Number(TEXT("bar_px"), 9.f))
 					.Color(Style->Color(TEXT("health"), FLinearColor(0.75f, 0.06f, 0.06f)))
-					.Value(Attr(&UMRAttributeSet::GetHealth)).Max(Attr(&UMRAttributeSet::GetMaxHealth))
+					.Value(Vital(0, false)).Max(Vital(0, true))
 			]
 			+ SHorizontalBox::Slot().AutoWidth()
 			[
 				SNew(SMRBar, Ui).Width(BarW).Height(Style->Number(TEXT("bar_px"), 9.f))
 					.Color(Style->Color(TEXT("mana"), FLinearColor(0.08f, 0.2f, 0.85f)))
-					.Value(Attr(&UMRAttributeSet::GetMana)).Max(Attr(&UMRAttributeSet::GetMaxMana))
+					.Value(Vital(1, false)).Max(Vital(1, true))
 			]
 		]
-		// vigor: a thin bar across the hotbar's width, where Minecraft has experience
+		// vigor: a slimmer bar across the hotbar's width, where Minecraft has experience, with its value too
 		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 0.f, 0.f, 3.f * Px)
 		[
-			SNew(SMRBar, Ui).Width(RowW).Height(Style->Number(TEXT("vigor_bar_px"), 5.f)).bShowText(false)
+			SNew(SMRBar, Ui).Width(RowW).Height(Style->Number(TEXT("vigor_bar_px"), 7.f))
 				.Color(Style->Color(TEXT("vigor"), FLinearColor(0.85f, 0.6f, 0.05f)))
-				.Value(Attr(&UMRAttributeSet::GetVigor)).Max(Attr(&UMRAttributeSet::GetMaxVigor))
+				.Value(Vital(2, false)).Max(Vital(2, true))
 		]
 		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 		[
