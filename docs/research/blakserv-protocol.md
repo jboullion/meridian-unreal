@@ -314,6 +314,28 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
   - The client answers `BP_CHANGED_STATS` (157) with the same 14 bytes (`module/stats`).
   - The server checks each stat is 1..50, each level 0..6, the stats total at most 220, and the levels against the points spent (`UserChangedStats`). It answers `BP_CHANGED_STATS_OK` (158) or `_NOT_OK` (159).
 
+## Trade (`clientd3d/buy.c`, `offer.c`, `gameuser.c`, `server.c`; Kod `user.kod` UserBuy, UserOffer, Offer, UserCounterOffer, UserAcceptOffer; `monster.kod`)
+- **Who trades** is Kod's `viAttributes` on each NPC: `MOB_BUYER` (0x40), `MOB_SELLER` (0x80), `MOB_BANKER` (0x100), `MOB_VAULTMAN` (0x80000). `tools/kod_extract` lists them by name in `data/net/npcs.json`.
+  - The client doesn't get these flags; the original just offered every command.
+  - In Raza, Tomas (blacksmith) and Ravi (apothecary) buy and sell, Marcus and Eric sell, Bentu keeps the vault and Gamos banks.
+- **Buying:** `BP_REQ_BUY` (124) with `u32 seller` is answered by `BP_BUY_LIST` (216).
+  - The list is the seller (an object), `u16 count`, then each item (an object) and its `u32` price.
+  - The original doesn't check the list's length.
+  - `BP_REQ_BUY_ITEMS` (125) sends `u32 seller` and an object list: `u16 count`, the ids, a number item tagged with how many.
+  - Tomas sells a helm (120), a torch (36), a mace (60), a short sword (300), a small round shield (192), chain armour (1,200) and more.
+- **An offer** (`BP_REQ_OFFER` 120: `u32 to`, object list):
+  - We see what we offered (`BP_OFFERED` 213: an object list).
+  - The other side sees `BP_OFFER` (211): who (an object), then an object list.
+  - **Their answer:** what they give back, `BP_REQ_COUNTEROFFER` (123: an object list). They get `BP_COUNTEROFFERED` (215); the offerer gets `BP_COUNTEROFFER` (214).
+  - **Then the offerer** accepts (`BP_ACCEPT_OFFER` 121, nothing comes back for it) or cancels (`BP_CANCEL_OFFER` 122). `BP_OFFER_CANCELED` (212) ends it for the other side, after an accept too.
+  - **Selling to an NPC buyer** is such an offer: Tomas answers a torch with 27 shillings (`BP_COUNTEROFFER`), and accepting swaps them.
+- **The vault:** `BP_REQ_DEPOSIT` (230: `u32 keeper`, object list) is an offer the keeper takes at once ("That will cost 60 shillings.").
+  - `BP_REQ_WITHDRAWAL` (232: `u32 keeper`) is answered by `BP_WITHDRAWAL_LIST` (231, laid out as a buy list, its prices the fees).
+  - `BP_REQ_WITHDRAWAL_ITEMS` (233) takes items out.
+  - A banker takes shillings by `BP_REQ_DEPOSIT` too (`user.kod UserDeposit`).
+- **The bank:** `BP_USERCOMMAND` with `UC_DEPOSIT` (35) or `UC_WITHDRAW` (36) and an `i32` amount, or `UC_BALANCE` (37). The room passes it to a banker there (`SomeoneTryUserCommand`), who answers aloud ("You have 10 shilling in your account."); else "can't deposit".
+- **Moving onto a door square:** a door square's middle is often in the door frame, outside every sector. The server snaps such a move back (`UserMove`, `LIR_SECTOR_INSIDE`), and "go" then finds no door. Stand on the room side of the square.
+
 ## Session (`blakserv/game.c`, Kod `user.kod`; the client side is `clientd3d/game.c`, `com.c`)
 - **Leaving the game but not the server:**
   - The client sends `BP_REQ_QUIT` (54). The server logs the character off and answers `BP_QUIT` (149) (`GameProtocolParse`, `GameClientExit`).

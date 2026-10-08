@@ -29,6 +29,7 @@
 #include "UI/SMRLoginScreen.h"
 #include "UI/SMRLookDialog.h"
 #include "UI/SMRStatChange.h"
+#include "UI/SMRTradeDialog.h"
 #include "Net/MRAssetCache.h"
 #include "Net/MRNetLook.h"
 #include "Net/MRNetObject.h"
@@ -74,6 +75,8 @@ void UMRUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		NetHitHandle = Net->OnHit.AddUObject(this, &UMRUISubsystem::OnNetHit);
 		NetAbilitiesHandle = Net->OnAbilitiesChanged.AddUObject(this, &UMRUISubsystem::RebuildAbilities);
 		NetStatChangeHandle = Net->OnStatChange.AddUObject(this, &UMRUISubsystem::OnNetStatChange);
+		NetShopHandle = Net->OnShop.AddUObject(this, &UMRUISubsystem::OnNetShop);
+		NetTradeHandle = Net->OnTradeChanged.AddUObject(this, &UMRUISubsystem::OnNetTrade);
 		NetStatChangeResultHandle = Net->OnStatChangeResult.AddUObject(this, &UMRUISubsystem::OnNetStatChangeResult);
 	}
 }
@@ -313,7 +316,109 @@ void UMRUISubsystem::DoObjectAction(EMRObjectAction Action, uint32 ObjectId)
 		Net->Activate(ObjectId);
 		CloseLook();
 		break;
+	case EMRObjectAction::Buy:
+		Net->RequestBuy(ObjectId);  // BP_BUY_LIST opens the shop (OnNetShop)
+		CloseLook();
+		break;
+	case EMRObjectAction::Withdraw:
+		Net->RequestWithdrawal(ObjectId);
+		CloseLook();
+		break;
+	case EMRObjectAction::Sell:
+	case EMRObjectAction::Give:
+	case EMRObjectAction::Offer:
+	case EMRObjectAction::Deposit:
+	case EMRObjectAction::Bank:
+	{
+		const FMRNetObject* O = Net->FindObject(ObjectId);
+		const FString Name = O ? O->Name : Net->GetDescription().Object.Name;
+		CloseLook();
+		if (HUD.IsValid() && HUD->GetTradeDialog().IsValid())
+		{
+			SMRTradeDialog& D = *HUD->GetTradeDialog();
+			if (Action == EMRObjectAction::Bank)
+			{
+				D.ShowBank(Name);
+			}
+			else
+			{
+				const FText Verb = Action == EMRObjectAction::Sell ? LOCTEXT("SellVerb", "Sell") : Action == EMRObjectAction::Give ? LOCTEXT("GiveVerb", "Give")
+					: Action == EMRObjectAction::Deposit ? LOCTEXT("DepositVerb", "Deposit") : LOCTEXT("OfferVerb", "Offer");
+				D.ShowPick(ObjectId, Name, Verb, Action == EMRObjectAction::Deposit);
+			}
+			SetTradeOpen(true);
+		}
+		break;
 	}
+	}
+}
+
+TSharedPtr<SMRTradeDialog> UMRUISubsystem::GetTradeDialog() const
+{
+	return HUD.IsValid() ? HUD->GetTradeDialog() : nullptr;
+}
+
+void UMRUISubsystem::SetTradeOpen(bool bOpen)
+{
+	if (!HUD.IsValid())
+	{
+		return;
+	}
+	if (bOpen)
+	{
+		SetInventoryOpen(false);
+		SetGameMenuOpen(false);
+		SetLookOpen(false);
+	}
+	bTradeOpen = bOpen;
+	HUD->SetTradeOpen(bOpen);
+	ApplyInputMode();
+}
+
+void UMRUISubsystem::CloseTrade()
+{
+	SetTradeOpen(false);
+}
+
+void UMRUISubsystem::OnNetShop()
+{
+	if (TSharedPtr<SMRTradeDialog> D = GetTradeDialog())
+	{
+		D->ShowShop();
+		SetTradeOpen(true);
+	}
+}
+
+void UMRUISubsystem::OnNetTrade()
+{
+	const UMRNetSubsystem* Net = GetNet();
+	TSharedPtr<SMRTradeDialog> D = GetTradeDialog();
+	if (!Net || !D.IsValid())
+	{
+		return;
+	}
+	if (Net->GetTrade().bOpen)
+	{
+		D->ShowTrade();
+		SetTradeOpen(true);
+	}
+	else if (D->GetMode() == EMRTradeMode::Trade)
+	{
+		SetTradeOpen(false);  // over: accepted or called off
+	}
+}
+
+const FSlateBrush* UMRUISubsystem::ItemIcon(const FString& Icon) const
+{
+	const FString Stem = FPaths::GetBaseFilename(Icon).ToLower();
+	if (const FMRItemDef* Item = GetData() ? GetData()->FindItemByIcon(Stem) : nullptr)
+	{
+		if (const FSlateBrush* B = GetStyle() ? GetStyle()->Icon(Item->Icon) : nullptr)
+		{
+			return B;
+		}
+	}
+	return Icon.IsEmpty() ? nullptr : BitmapIcon(Icon, 1);
 }
 
 void UMRUISubsystem::OnNetHit(const FMRNetHit& Hit)
@@ -470,6 +575,8 @@ void UMRUISubsystem::Deinitialize()
 		Net->OnHit.Remove(NetHitHandle);
 		Net->OnAbilitiesChanged.Remove(NetAbilitiesHandle);
 		Net->OnStatChange.Remove(NetStatChangeHandle);
+		Net->OnShop.Remove(NetShopHandle);
+		Net->OnTradeChanged.Remove(NetTradeHandle);
 		Net->OnStatChangeResult.Remove(NetStatChangeResultHandle);
 	}
 	Super::Deinitialize();
@@ -832,7 +939,7 @@ void UMRUISubsystem::ApplyInputMode()
 	{
 		return;  // the login screen owns the input (ShowLogin)
 	}
-	if ((bLookOpen || bStatChangeOpen) && !bGameMenuOpen)
+	if ((bLookOpen || bStatChangeOpen || bTradeOpen) && !bGameMenuOpen)
 	{
 		// reading (or writing one's description): the dialog has the keyboard and the mouse
 		FInputModeUIOnly Mode;

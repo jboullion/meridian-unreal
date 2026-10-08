@@ -26,6 +26,8 @@ public:
 	/** By the name the server uses (vrName, any case): a server's spell and skill lists name them. */
 	const FMRSpellDef* FindSpellByName(const FString& Name) const;
 	const FMRSkillDef* FindSkillByName(const FString& Name) const;
+	/** An NPC's trade roles by its name (MRNpcRole bits; 0: none known). */
+	uint8 NpcRoles(const FString& Name) const;
 
 	/** The equipment slot an item fits (Count if none). Rings fit Ring1 (and Ring2). */
 	EMREquipSlot EquipSlotFor(const FMRItemDef& Item) const;
@@ -43,4 +45,5 @@ private:
 	TMap<FString, FName> SpellByName;
 	TMap<FString, FName> ItemByIcon;
 	TMap<FString, FName> SkillByName;
+	TMap<FString, uint8> NpcRolesByName;
 };

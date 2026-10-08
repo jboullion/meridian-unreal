@@ -1,0 +1,576 @@
+{
+ "_doc": "Every NPC that buys, sells, banks or keeps a vault (tools/kod_extract, from Kod's viAttributes MOB_BUYER, MOB_SELLER, MOB_BANKER, MOB_VAULTMAN), by name. The online client shows the Look dialog's Buy, Sell, Vault and Bank buttons by these (docs/adr/0012-client-parity-and-world-coverage.md M6).",
+ "npcs": [
+  {
+   "name": "Amerantha",
+   "class": "Amerantha",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Bastiane d'Ile",
+   "class": "BergInnkeeper",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Beelzebub",
+   "class": "Beelzebub",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Bentu",
+   "class": "RazaVaultman",
+   "roles": [
+    "seller",
+    "vaultman"
+   ]
+  },
+  {
+   "name": "Captain Seaborn",
+   "class": "BoatCaptain",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Caramo",
+   "class": "BarloqueClerk",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Celegorm",
+   "class": "Celegorm",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Ceres of Qor",
+   "class": "CeresofQor",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Colhorr",
+   "class": "MarionBlacksmith",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "D'Franco",
+   "class": "CorNothInnkeeper",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Eric d'Jorn",
+   "class": "RazaBartender",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Esseldi",
+   "class": "FiveCouncilor",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Fehr'loi Qan",
+   "class": "BarloqueBlacksmith",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Fehr'loi Qan",
+   "class": "TosBlacksmith",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Fortuna",
+   "class": "Fortuna",
+   "roles": [
+    "seller",
+    "banker"
+   ]
+  },
+  {
+   "name": "Frisconar",
+   "class": "TosApothecary",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Gamos",
+   "class": "RazaBanker",
+   "roles": [
+    "banker"
+   ]
+  },
+  {
+   "name": "Hanla zax'Ta",
+   "class": "KocatanBowMaker",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Herbutte",
+   "class": "BarloqueMerchant",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Hester Gilk",
+   "class": "CorNothTailor",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Huital ko'Nosak",
+   "class": "KocatanBanker",
+   "roles": [
+    "seller",
+    "banker"
+   ]
+  },
+  {
+   "name": "interior design consultant",
+   "class": "Decorator",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Itzal cha'Nosak",
+   "class": "KocatanVaultman",
+   "roles": [
+    "seller",
+    "vaultman"
+   ]
+  },
+  {
+   "name": "Ixla cha'Totlak",
+   "class": "KocatanBlacksmith",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Izzio",
+   "class": "Izzio",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Joguer",
+   "class": "BarloqueApothecary",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Joline",
+   "class": "Joline",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Jorgan Yesjor",
+   "class": "JixaInnkeeper",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Kailor",
+   "class": "Kailor",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Keeper of Souls",
+   "class": "DeathBanker",
+   "roles": [
+    "seller",
+    "banker"
+   ]
+  },
+  {
+   "name": "Kochtal ko'Tulca",
+   "class": "KocatanWeaponsMaster",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Lady Aftyn",
+   "class": "MarionHealer",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Liam Magnus",
+   "class": "BergVaultman",
+   "roles": [
+    "seller",
+    "vaultman"
+   ]
+  },
+  {
+   "name": "Luisane d'Ile",
+   "class": "BergMerchant",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Madame Yaga",
+   "class": "DesertInnkeeper",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Madelia",
+   "class": "Barloquetailor",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Marcus",
+   "class": "RazaInnKeeper",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Meidei",
+   "class": "BarloqueBartender",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Michael d'Adue",
+   "class": "BergBanker",
+   "roles": [
+    "seller",
+    "banker"
+   ]
+  },
+  {
+   "name": "Monk of Riija",
+   "class": "RiijaMonk",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Morrigan",
+   "class": "MarionInnkeeper",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Moxal ix'Hanak",
+   "class": "KocatanInnkeeper",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Mychel",
+   "class": "CorNothMuseumGuard",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Obert Cair'bre",
+   "class": "BarloqueVaultman",
+   "roles": [
+    "seller",
+    "vaultman"
+   ]
+  },
+  {
+   "name": "Oxal ix'Tokak",
+   "class": "KocatanBartender",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Pacal ix'Anoak",
+   "class": "KocatanShopkeeper",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Paddock",
+   "class": "TosInnKeeper",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Parrin Aragone",
+   "class": "Minstrel",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Pietro",
+   "class": "JasperBartender",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Quartermaster",
+   "class": "QuarterMaster",
+   "roles": [
+    "seller",
+    "banker"
+   ]
+  },
+  {
+   "name": "Quetzal",
+   "class": "KocatanLanguageMaster",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Quintor",
+   "class": "JasperBlacksmith",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Ravi",
+   "class": "RazaApothecary",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Roderick Merk",
+   "class": "BergBlacksmith",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Rolan De'nair",
+   "class": "JasperVaultman",
+   "roles": [
+    "seller",
+    "vaultman"
+   ]
+  },
+  {
+   "name": "Rook",
+   "class": "CorNothSergeant",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Roq",
+   "class": "Assassin",
+   "roles": [
+    "buyer"
+   ]
+  },
+  {
+   "name": "Rosaline Marinus",
+   "class": "JixaDyeM",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Rycksher",
+   "class": "BasicInnKeeper",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Setag'lib",
+   "class": "BarloqueBanker",
+   "roles": [
+    "banker"
+   ]
+  },
+  {
+   "name": "Skivlat",
+   "class": "TosBanker",
+   "roles": [
+    "seller",
+    "banker"
+   ]
+  },
+  {
+   "name": "Solomon",
+   "class": "CornothGrocer",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Tendrath",
+   "class": "HunterGhost",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Tepal ix'Zonak",
+   "class": "KocatanTailor",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "The Bone Priestess",
+   "class": "KocatanBonePriestess",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Thief",
+   "class": "Thief",
+   "roles": [
+    "buyer"
+   ]
+  },
+  {
+   "name": "Tomas",
+   "class": "RazaBlacksmith",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Tova",
+   "class": "MarionBartender",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Tylo Barsis",
+   "class": "JixaBlacksmith",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Veydran Goldleaf",
+   "class": "Veydran",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Widow Qesino",
+   "class": "JasperInnKeeper",
+   "roles": [
+    "seller"
+   ]
+  },
+  {
+   "name": "Wulfgang zax'Ak",
+   "class": "kocatanTradeMaster",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Xoenta tree",
+   "class": "SwampTree",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Yevitan",
+   "class": "JasperBanker",
+   "roles": [
+    "banker"
+   ]
+  },
+  {
+   "name": "Zala ix'Mecya",
+   "class": "KocatanApothecary",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Zhieu B'hob",
+   "class": "JasperMerchant",
+   "roles": [
+    "buyer",
+    "seller"
+   ]
+  },
+  {
+   "name": "Zimmucas",
+   "class": "Zimmucas",
+   "roles": [
+    "seller"
+   ]
+  }
+ ]
+}

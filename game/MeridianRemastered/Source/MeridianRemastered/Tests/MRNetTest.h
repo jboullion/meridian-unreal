@@ -34,6 +34,11 @@ class APlayerController;
  *      room's enchantments came (the Inn is a safe room), the quests (stat group 5) are listed;
  *      appraise is cast on the mace, chosen as its target (BP_REQ_CAST with one target), then
  *      meditate (no target), each answered by the server; resting stops walking until we stand;
+ *   7c. trade: Tomas the blacksmith's list (BP_REQ_BUY, BP_BUY_LIST) and buying its cheapest thing
+ *      through the trade dialog (BP_REQ_BUY_ITEMS); selling it back (BP_REQ_OFFER, his price as
+ *      BP_COUNTEROFFER, BP_ACCEPT_OFFER); the mace into Bentu's vault and out again for its fee
+ *      (BP_REQ_DEPOSIT, BP_REQ_WITHDRAWAL, BP_WITHDRAWAL_LIST, BP_REQ_WITHDRAWAL_ITEMS); 10 shillings
+ *      into Gamos's bank and out again, and the balance (UC_DEPOSIT, UC_WITHDRAW, UC_BALANCE);
  *   8. combat: in the Outskirts of Raza it fights a bunny or a baby spider until it dies
  *      (BP_REQ_ATTACK): the server answers with hit or miss lines, swings our weapon in first person
  *      (BP_PLAYER_OVERLAY), a damage number rises over what we hit, and the creature is gone. With
@@ -63,7 +68,7 @@ public:
 	void Start(APlayerController* InController);
 
 private:
-	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Items, Spells, Combat, Travel, Death, Relog, Logoff, Done };
+	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Items, Spells, Trade, Combat, Travel, Death, Relog, Logoff, Done };
 
 	void Tick();
 	void Pass(const FString& What);
@@ -112,6 +117,9 @@ private:
 	bool bSaid = false;
 	/** Travel: the zone a hop left from (0: none under way), the runtime room's zone, what's done there. */
 	int32 HopFrom = 0;
+	/** When the hop under way started, and how many have failed (each retry takes the next exit square). */
+	double HopAt = 0.0;
+	int32 HopTry = 0;
 	int32 RuntimeRid = 0;
 	int32 TravelStage = 0;
 	double StageTime = 0.0;
@@ -133,6 +141,14 @@ private:
 	int32 SpellChat = 0;
 	/** -Render: the Quests page and the target hint pictures taken so far. */
 	int32 SpellShot = 0;
+	/** Trade: the stage, the thing bought, its price, the shillings before, and the chat read so far. */
+	int32 TradeStage = 0;
+	FString TradeItem;
+	uint32 TradePrice = 0;
+	uint32 TradeCoins = 0;
+	int32 TradeChat = 0;
+	/** -Render: when the shop or the offer was pictured (0: not yet). */
+	double TradeShotAt = 0.0;
 	/** Combat: the stage, the creature fought, attacks sent, the chat and first-person counts before, what was seen. */
 	int32 CombatStage = 0;
 	uint32 FoeId = 0;

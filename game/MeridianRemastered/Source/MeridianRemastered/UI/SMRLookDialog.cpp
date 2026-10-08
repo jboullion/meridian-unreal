@@ -5,6 +5,7 @@
 #include "Net/MRNetWorld.h"
 #include "Net/MRProtocol.h"
 #include "Net/MRResources.h"
+#include "UI/MRGameData.h"
 #include "UI/MRUIStyle.h"
 #include "UI/MRUISubsystem.h"
 #include "UI/SMRControls.h"
@@ -152,6 +153,14 @@ void SMRLookDialog::ShowDescription(const FMRNetDescription& D, const FSlateBrus
 		Text->AddSlot().AutoHeight().Padding(0.f, 2.f * Px, 0.f, 0.f)[Para(FString::Printf(TEXT("%u"), D.Object.Amount), Detail, 8.f)];
 	}
 
+	if (D.bPlayer && !D.bEditable && !SaveButton.IsValid())
+	{
+		// another player: a trade (the original's offer command, gameuser.c UserMakeOffer)
+		TWeakObjectPtr<UMRUISubsystem> Weak(Ui);
+		const uint32 Id = D.Object.Id;
+		SaveButton = SNew(SMRTextButton, Ui).Text(LOCTEXT("Offer", "Offer")).TextSize(10.f).MinWidth(50.f)
+			.OnClicked(FSimpleDelegate::CreateLambda([Weak, Id]() { if (Weak.IsValid()) Weak->DoObjectAction(EMRObjectAction::Offer, Id); }));
+	}
 	if (!D.bPlayer && !SaveButton.IsValid())
 	{
 		// a thing in the room: what can be done with it, as the original's look dialog offered (dialog.c)
@@ -177,6 +186,30 @@ void SMRLookDialog::ShowDescription(const FMRNetDescription& D, const FSlateBrus
 		if (D.Object.Flags & MRMsg::OF_ACTIVATABLE)
 		{
 			AddButton(LOCTEXT("Use", "Use"), EMRObjectAction::Activate);
+		}
+		// what an NPC trades in (data/net/npcs.json, Kod's MOB_* attributes), as the original's buy,
+		// offer, deposit and withdraw commands (gameuser.c)
+		const uint8 Roles = Ui->GetData() ? Ui->GetData()->NpcRoles(D.Object.Name) : 0;
+		if ((Roles & MRNpcRole::Seller) && !(Roles & MRNpcRole::Vaultman))
+		{
+			AddButton(LOCTEXT("Buy", "Buy"), EMRObjectAction::Buy);
+		}
+		if (Roles & MRNpcRole::Buyer)
+		{
+			AddButton(LOCTEXT("Sell", "Sell"), EMRObjectAction::Sell);
+		}
+		if (Roles & MRNpcRole::Vaultman)
+		{
+			AddButton(LOCTEXT("Withdraw", "Withdraw"), EMRObjectAction::Withdraw);
+			AddButton(LOCTEXT("Deposit", "Deposit"), EMRObjectAction::Deposit);
+		}
+		if (Roles & MRNpcRole::Banker)
+		{
+			AddButton(LOCTEXT("Bank", "Bank"), EMRObjectAction::Bank);
+		}
+		if (Roles == 0 && (D.Object.Flags & MRMsg::OF_OFFERABLE) && (D.Object.Flags & MRMsg::OF_NPC))
+		{
+			AddButton(LOCTEXT("Give", "Give"), EMRObjectAction::Give);
 		}
 		if (Buttons->NumSlots() > 0)
 		{

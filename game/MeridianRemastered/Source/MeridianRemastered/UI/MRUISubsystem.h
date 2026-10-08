@@ -158,6 +158,13 @@ public:
 	bool GetVital(int32 Index, float& OutValue, float& OutMax) const;
 	/** A text box in the dialog has the keyboard (the spell search): every key goes to it. */
 	void SetTextInput(bool bTyping);
+	// --- trade (SMRTradeDialog; docs/adr/0012 M6)
+	void CloseTrade();
+	bool IsTradeOpen() const { return bTradeOpen; }
+	TSharedPtr<class SMRTradeDialog> GetTradeDialog() const;
+	/** An item's icon by its bitmap: our prebuilt one for its class, else the bitmap itself (null until it arrives). */
+	const FSlateBrush* ItemIcon(const FString& Icon) const;
+
 	// --- retraining (SMRStatChange; the server's BP_STAT_CHANGE)
 	/** Send the six stats (BP_CHANGED_STATS); the dialog closes on the server's answer. */
 	void SubmitStatChange(const int32 (&Values)[6]);
@@ -235,6 +242,12 @@ private:
 	FDelegateHandle NetStatChangeHandle;
 	FDelegateHandle NetStatChangeResultHandle;
 	bool bStatChangeOpen = false;
+	bool bTradeOpen = false;
+	FDelegateHandle NetShopHandle;
+	FDelegateHandle NetTradeHandle;
+	void SetTradeOpen(bool bOpen);
+	void OnNetShop();
+	void OnNetTrade();
 	void SetStatChangeOpen(bool bOpen);
 	void OnNetStatChange();
 	void OnNetStatChangeResult(bool bOk);

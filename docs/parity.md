@@ -13,7 +13,7 @@ This file tracks what the Unreal client does compared with the original desktop 
 
 Protocol facts go in [research/blakserv-protocol.md](research/blakserv-protocol.md), each with the blakserv or clientd3d source it came from.
 
-Last survey: 2026-10-08. M0, M1, M2a and M2b done the same day.
+Last survey: 2026-10-08. M0 to M6 done the same day; what they left over is in "Left over from finished milestones" at the end.
 
 ## Session and account
 
@@ -69,7 +69,7 @@ Last survey: 2026-10-08. M0, M1, M2a and M2b done the same day.
 | Apply to a target, activate | `BP_REQ_APPLY`, `BP_REQ_ACTIVATE` | Done: F activates what the crosshair is on; U uses the selected (or hovered) item on what you choose next | Done | M3, M5 |
 | Get and drop (stack amounts) | `BP_REQ_GET`, `BP_REQ_DROP` | Done: G gets (a list for a pile); dropping out of the window drops it (right click: one of a stack; half picked up with right click) | Done | M3 |
 | Containers | `BP_SEND_OBJECT_CONTENTS`, `BP_REQ_PUT`, `BP_REQ_GET_FROM_CONTAINER` | Partial: F or Look's Inside lists the contents, picking one takes it; putting in is in the protocol, no UI yet | Done | M3 |
-| Give | an offer, `BP_REQ_OFFER` (`BP_REQ_GIVE` is unused) | Missing | Missing | M6 |
+| Give | an offer, `BP_REQ_OFFER` (`BP_REQ_GIVE` is unused) | Done: Look's Give for NPCs that take things, Offer for players | Missing | M6 |
 | Reorder | `BP_REQ_INVENTORY_MOVE` | Done: an item put on another in the bag takes its place | Missing | M3 |
 | Hotbar | — | Done online as a layout on this client (not saved between sessions yet) | Missing | M3 |
 | Equipment on the avatar preview | — | Done: the avatar wears the server's equipment (M2b) | — | M3 |
@@ -104,11 +104,11 @@ Last survey: 2026-10-08. M0, M1, M2a and M2b done the same day.
 
 | Feature | Messages | UE | Shards | M |
 |---|---|---|---|---|
-| Buy from an NPC | `BP_REQ_BUY`, `BP_BUY_LIST`, `BP_REQ_BUY_ITEMS` | Missing | Done | M6 |
-| Sell (offer) | `BP_REQ_OFFER`, `BP_OFFERED`, `BP_COUNTEROFFER`, ... | Missing | Done | M6 |
-| Trade with players | `BP_OFFER`, `BP_REQ_COUNTEROFFER`, `BP_COUNTEROFFERED` | Missing | Partial | M6 |
-| Vault | `BP_REQ_WITHDRAWAL`, `BP_WITHDRAWAL_LIST`, `BP_REQ_DEPOSIT` | Missing | Done | M6 |
-| Bank money | `UC_DEPOSIT`, `UC_WITHDRAW`, `UC_BALANCE` | Missing | Done | M6 |
+| Buy from an NPC | `BP_REQ_BUY`, `BP_BUY_LIST`, `BP_REQ_BUY_ITEMS` | Done: Look's Buy; a list with prices, amounts for number items, a total | Done | M6 |
+| Sell (offer) | `BP_REQ_OFFER`, `BP_OFFERED`, `BP_COUNTEROFFER`, ... | Done: Look's Sell; the NPC's price, Accept or Cancel | Done | M6 |
+| Trade with players | `BP_OFFER`, `BP_REQ_COUNTEROFFER`, `BP_COUNTEROFFERED` | Partial: Look's Offer; an offer to us shows with what to give back; not tried between two players yet | Partial | M6 |
+| Vault | `BP_REQ_WITHDRAWAL`, `BP_WITHDRAWAL_LIST`, `BP_REQ_DEPOSIT` | Done: Look's Withdraw and Deposit on a vault keeper | Done | M6 |
+| Bank money | `UC_DEPOSIT`, `UC_WITHDRAW`, `UC_BALANCE` | Done: Look's Bank on a banker: an amount in or out, the balance | Done | M6 |
 
 ## Communication
 
@@ -166,9 +166,35 @@ The server serves about 395 rooms. `ReferenceServers/Server-104/resource/rooms` 
 | M3 | Inventory and items (done 2026-10-08) |
 | M4 | Combat, death and effects (done 2026-10-08) |
 | M5 | Spells, skills, enchantments, stats (done 2026-10-08) |
-| M6 | NPCs, economy, player trade |
+| M6 | NPCs, economy, player trade (done 2026-10-08) |
 | M7 | Server-driven world: sound, light, room changes, texture animation |
 | M8 | Communication and social |
 | M9 | Settings, account, polish |
 | W2 | Baked tier for every room (runs alongside, after M1) |
 | W3 | Authored zones, one at a time |
+
+## Left over from finished milestones
+
+Things a finished milestone didn't do, or did without proof. Each lands in the milestone named in "Goes to", or "Any" when it fits in whenever it's convenient. Tick it and update its row above when it's done. Every milestone adds its own "Not yet" items here (ADR 0012, "Log").
+
+| ☐ | From | What | Why it waited | Goes to |
+|---|---|---|---|---|
+| ☐ | M1 | Package a build with the runtime-room code (the `GeometryFramework` plugin, the cook directory) and play it | A package build takes over an hour; only the editor build has run | M9 (or the next package) |
+| ☐ | M1 | Room geometry grouped by sector, so lifts and doors can move | Grouped by texture for now | M7 |
+| ☐ | M1 | Light beyond the sector light (sprites from bitmaps are full bright) | The server's light messages come with M7 | M7 |
+| ☐ | M2b | Items' own colour translations on worn pieces stored below their own pixels (a red-tinted shield) | Those pieces have no colour-ramp atlas | Any |
+| ☐ | M2b | The overlays on first-person pictures (the fist's glow) | Not drawn yet | Any |
+| ☐ | M3 | Putting things into a container | The request exists (`BP_REQ_PUT`); no UI to choose the container | Any (likely with M9 polish) |
+| ☐ | M3 | The hotbar layout and the spell bar layout saved between sessions | Kept on the client for the session only | Any (M9 at the latest) |
+| ☐ | M3 | Weight and bulk from the server instead of our item data | The client sums our `items.json` | Any |
+| ☐ | M4 | Check other players' and monsters' swings on screen | Only our own character's swing is tested | Any (needs a second client or a monster attacking in a rendered run) |
+| ☐ | M4 | See a projectile from a real spell, and test bow attacks with their ammunition | The test character has no attack spell or bow | Any (a test character with them) |
+| ☐ | M4 | Fireworks (`EFFECT_FIREWORKS`) | Not drawn | M7 |
+| ☐ | M4 | A true colour inversion for `EFFECT_INVERT` | UE grades colour before the tonemapper; ours mirrors about mid grey | Any (a post-process material) |
+| ☐ | M5 | Retraining that lowers school levels for points | The original module's points rules aren't ported | Any |
+| ☐ | M5 | Try retraining with a real elder (Jasper, Marion, Ko'catan) | Far from the demo | Any |
+| ☐ | M5 | See an enchantment on the player (icon top left) | The test's utility spells put none on the player | Any (a test character with a buff) |
+| ☐ | M5, M6 | Chat commands: "rest", "stand", "cast", "buy", "deposit 100", "withdraw", "balance" | Chat command parsing is M8 | M8 |
+| ☐ | M6 | Try a trade between two players | The test plays one character | Any (two test clients) |
+| ☐ | M6 | List a vault's items without opening Withdraw; check weight and bulk before buying | The server refuses instead | Any |
+| ☐ | Tests | `run_move_test.ps1`'s ledge checks read the height a fixed 1.6 s in, so a slow frame catches a fall mid-air (7/8 in about half the runs) | Test timing, not movement | Any |

@@ -127,7 +127,7 @@ On baked and authored zones this needs `roo2gltf` to emit sector-tagged movable 
 - **Runtime rooms don't have** Nanite, the remastered textures or hand-placed props. They use the original light model under our global mood and sky.
 - **Every message milestone adds** protocol notes and round-trip unit tests (`Meridian.Net`). A new `Meridian.World` test parses and meshes every cached room.
 - **The demo's local gameplay** (`AMRMonster` placeholder hits, the GAS skeleton) becomes offline-only. Decided in M4: GAS stays offline-only; online, the vitals, stats and every hit are the server's, and nothing mirrors them into GAS.
-- **Each milestone is its own change.** It ends with its `docs/parity.md` rows updated and the changed files listed for the maintainer to commit.
+- **Each milestone is its own change.** It ends with its `docs/parity.md` rows updated, its "Not yet" items added to that file's "Left over from finished milestones" list, and the changed files listed for the maintainer to commit.
 
 ## Verification
 
@@ -388,6 +388,36 @@ The existing movement, UI-shot and look-dev runs stay green. Look-dev compares r
   - resting stops walking and casting until we stand.
 - `-Render` adds `quests.png` and `choose_target.png`; the UI shots add `stat_change` (`build/ui/shots/m5/`). The other UI shots are unchanged.
 - `run_move_test.ps1` was 8/8 in one of four runs and 7/8 in the others, a different ledge check each time. Those checks read the height a fixed 1.6 s after the run starts, so a slow frame catches the character mid-fall. Nothing in M5 touches offline movement.
+
+### M6, NPCs, economy and player trade (2026-10-08)
+**What landed** (docs/research/blakserv-protocol.md, "Trade"):
+- **Who trades in what** comes from Kod: `tools/kod_extract` writes `data/net/npcs.json`, 77 NPCs by name with their roles (buyer, seller, banker, vault keeper; Kod's `viAttributes`).
+  - The Look dialog shows an NPC's Buy, Sell, Withdraw, Deposit or Bank buttons by these, and Give for an NPC that takes things.
+  - A player's Look has Offer.
+  - The original offered every command everywhere and let the server say no.
+- **One trade dialog** (`SMRTradeDialog`) in four modes:
+  - choosing carried items (with amounts for number items) to sell, give, offer or deposit;
+  - a shop's or vault's list with prices and a total;
+  - an offer under way: what each side gives, then Accept, an answer, or Cancel, which calls it off for both;
+  - a banker's counter: an amount in or out, and the balance.
+- **The session** (`UMRNetSubsystem`) keeps the last list and the offer under way (`FMRNetShop`, `FMRNetTrade`), and sends buy, offer, counteroffer, accept, cancel, deposit, withdrawal and the bank's user commands.
+
+**Not yet:**
+- a trade between two players hasn't been tried (the test plays one character);
+- a vault's items can't be listed without opening Withdraw;
+- the dialog doesn't check weight or bulk before buying (the server refuses);
+- chat commands ("buy", "deposit 100") come with M8.
+
+**Verification (local Shards stack):**
+- `Meridian.Net.Trade` (new): a buy list with a number item, and an offer. All 24 automation tests pass.
+- `run_net_test.ps1` reports **DONE 44/44** (45/45 with `-Create`, 47/47 with `-Create -Death`). The new Trade step, through the trade dialog when rendering:
+  - Tomas's list (10 things);
+  - a torch bought for 36 shillings;
+  - the torch offered back and Tomas's answer of 27 shillings, accepted;
+  - the mace into Bentu's vault ("That will cost 60 shillings.") and out again;
+  - 10 shillings into Gamos's bank and out, with the balance ("You have 10 shilling in your account.").
+- `-Render` adds `shop.png` and `offer.png` (`build/net/m6_trade_ui.png`).
+- **The test's hops now stand on the room side of a door square,** and try the door's next square when one fails. The blacksmith's door square (4, 3) is in the frame: the server snapped the move back and "go" found no door.
 
 ## Alternatives considered
 

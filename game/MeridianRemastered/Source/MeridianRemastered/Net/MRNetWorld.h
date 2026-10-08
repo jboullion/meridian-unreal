@@ -194,6 +194,49 @@ struct FMRNetDescription
 	FString Url;
 };
 
+/** Something a shop sells (BP_BUY_LIST) or a vault holds (BP_WITHDRAWAL_LIST): the item and its price or fee. */
+struct FMRNetForSale
+{
+	FMRNetObject Object;
+	uint32 Price = 0;
+};
+
+/** A shop's or a vault's list (clientd3d server.c HandleBuyList, HandleWithdrawalList). */
+struct FMRNetShop
+{
+	/** The seller (a shopkeeper, a vault keeper). */
+	FMRNetObject Seller;
+	TArray<FMRNetForSale> Items;
+	/** A vault's list: taking an item out costs its fee (BP_REQ_WITHDRAWAL_ITEMS), else buying it (BP_REQ_BUY_ITEMS). */
+	bool bWithdrawal = false;
+};
+
+/**
+ * An offer under way (clientd3d offer.c; Kod user.kod UserOffer, Offer, UserCounterOffer):
+ * - we offer something to someone (BP_REQ_OFFER): the server shows us what we offered (BP_OFFERED);
+ *   they answer with what they give for it (BP_COUNTEROFFER: an NPC's price in shillings); we accept
+ *   (BP_ACCEPT_OFFER) or cancel;
+ * - someone offers to us (BP_OFFER: who, and what): we answer with what we give (BP_REQ_COUNTEROFFER;
+ *   BP_COUNTEROFFERED shows it back), and they accept or cancel.
+ * BP_OFFER_CANCELED ends it either way (also after the other side accepted).
+ */
+struct FMRNetTrade
+{
+	bool bOpen = false;
+	/** We made the offer (else it was made to us). */
+	bool bOurs = false;
+	/** The other side: its object, name. */
+	uint32 WithId = 0;
+	FString WithName;
+	/** What we give and what they give, as the server listed them. */
+	TArray<FMRNetObject> Given;
+	TArray<FMRNetObject> Received;
+	/** They answered (BP_COUNTEROFFER): ours to accept. */
+	bool bAnswered = false;
+	/** We answered (BP_COUNTEROFFERED): theirs to accept. */
+	bool bCountered = false;
+};
+
 /** A spell the character knows (BP_SPELLS, BP_SPELL_ADD; merintr.c ExtractNewSpell). */
 struct FMRNetSpell
 {
@@ -318,6 +361,9 @@ struct FMRNetWorld
 	TArray<FMRNetObject> RoomEnchantments;
 	/** The last retraining offer (BP_STAT_CHANGE). */
 	FMRNetStatChange StatChange;
+	/** The last shop or vault list (BP_BUY_LIST, BP_WITHDRAWAL_LIST), and the offer under way. */
+	FMRNetShop Shop;
+	FMRNetTrade Trade;
 
 	const FMRNetSpell* FindSpell(uint32 Id) const { return Spells.FindByPredicate([Id](const FMRNetSpell& S) { return S.Object.Id == Id; }); }
 	/** Forget the spells, skills and the player's enchantments (logged off, or asked for again after a save). */
@@ -369,6 +415,8 @@ namespace MRNetRead
 	MERIDIANREMASTERED_API bool Spell(FMRReader& R, const FMRResourceTable& Res, FMRNetSpell& Out);
 	/** BP_SPELLS: u16 count, then spells. */
 	MERIDIANREMASTERED_API bool SpellList(FMRReader& R, const FMRResourceTable& Res, TArray<FMRNetSpell>& Out);
+	/** BP_BUY_LIST / BP_WITHDRAWAL_LIST: the seller, u16 count, then each item and its u32 price. */
+	MERIDIANREMASTERED_API bool BuyList(FMRReader& R, const FMRResourceTable& Res, FMRNetShop& Out);
 	/** BP_STAT_CHANGE's 14 bytes. */
 	MERIDIANREMASTERED_API bool StatChange(FMRReader& R, FMRNetStatChange& Out);
 	/** BP_SHOOT's body (bRadius false) or BP_RADIUS_SHOOT's, after the type byte. */

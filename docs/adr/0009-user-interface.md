@@ -152,6 +152,16 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
 - **The Quests page** lists the server's headings (gold) and quests (icon and name; a click looks at one).
 - **Retraining** (`SMRStatChange`): a centred stone panel with the six stats, − and + buttons, the points left, and Change (once every point is placed) or Cancel.
 
+## Trade (2026-10-08, M6 of ADR 0012)
+- **The Look dialog shows what an NPC does** (`data/net/npcs.json`): Buy, Sell, Withdraw and Deposit (a vault keeper), Bank (a banker), and Give for others that take things. A player's Look has Offer.
+- **One trade dialog** (`SMRTradeDialog`), a centred stone panel like Look's:
+  - rows with the item's icon (our prebuilt one, else its bitmap), name, price in a shop, and an amount box for number items;
+  - a click selects a row (gold);
+  - a shop shows the running total;
+  - an offer shows "You give" and "<name> gives", with Accept, Answer or "Waiting for <name>...";
+  - Cancel calls the offer off for both sides;
+  - the bank has an amount box with Deposit, Withdraw and Balance.
+
 ## Consequences
 - Inventory and equipment are still **mock data offline** and empty online (M3). Spells don't cast; a "cast" plays the sprite's cast action and a cooldown sweep. Online, the vitals, stats, spells and skills come from the server's stat groups (`docs/research/blakserv-protocol.md`, "Stats"). Offline they come from the attributes and the mock file.
 - Equipment doesn't change the avatar yet (no equipment layers on the sprite body).

@@ -419,4 +419,57 @@ bool FMRNetSpellsTest::RunTest(const FString& Parameters)
 	return true;
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMRNetTradeTest, "Meridian.Net.Trade",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMRNetTradeTest::RunTest(const FString& Parameters)
+{
+	TArray<uint8> Rsb = {'R', 'S', 'C', 1, 5, 0, 0, 0, 0, 0, 0, 0};
+	int32 Count = 0;
+	auto Add = [&Rsb, &Count](uint32 Id, const char* Text)
+	{
+		for (int32 i = 0; i < 4; ++i) Rsb.Add((Id >> (8 * i)) & 0xFF);
+		for (int32 i = 0; i < 4; ++i) Rsb.Add(0);
+		Rsb.Append(reinterpret_cast<const uint8*>(Text), FCStringAnsi::Strlen(Text) + 1);
+		Rsb[8] = static_cast<uint8>(++Count);
+	};
+	Add(10, "smith.bgf");
+	Add(11, "Tomas");
+	Add(12, "torch.bgf");
+	Add(13, "torch");
+	Add(14, "coin.bgf");
+	Add(15, "shilling");
+	FMRResourceTable Res;
+	TestTrue(TEXT("rsb parses"), Res.Load(Rsb));
+	auto Object = [](FMRWriter& W, uint32 Id, uint32 Icon, uint32 Name)
+	{
+		W.U32(Id).U32(Icon).U32(Name).U32(0).U8(0).U32(0).U32(0).U8(0).U8(0).U16(0).U8(MRMsg::ANIMATE_NONE).U16(1).U8(0);
+	};
+	// BP_BUY_LIST (server.c HandleBuyList): the seller, u16 count, each item and its u32 price
+	FMRWriter B(MRMsg::BP_BUY_LIST);
+	Object(B, 0x500, 10, 11);
+	B.U16(2);
+	Object(B, 0x501, 12, 13);
+	B.U32(36);
+	B.U32(MRMsg::NumberId(0x502)).U32(500).U32(14).U32(15).U32(0).U8(0).U32(0).U32(0).U8(0).U8(0).U16(0).U8(MRMsg::ANIMATE_NONE).U16(1).U8(0);
+	B.U32(1);
+	FMRReader BR(B.Bytes, 1);
+	FMRNetShop Shop;
+	TestTrue(TEXT("BP_BUY_LIST reads to its end"), MRNetRead::BuyList(BR, Res, Shop) && BR.AtEnd());
+	TestTrue(TEXT("Tomas sells a torch for 36"), Shop.Seller.Name == TEXT("Tomas") && Shop.Items.Num() == 2 && Shop.Items[0].Object.Name == TEXT("torch")
+		&& Shop.Items[0].Price == 36);
+	TestTrue(TEXT("and shillings as a number item"), Shop.Items.Num() == 2 && Shop.Items[1].Object.bNumber && Shop.Items[1].Object.Id == 0x502 && Shop.Items[1].Price == 1);
+	// BP_OFFER (server.c HandleOffer): who offers, then a list of objects
+	FMRWriter O(MRMsg::BP_OFFER);
+	Object(O, 0x600, 10, 11);
+	O.U16(1);
+	Object(O, 0x601, 12, 13);
+	FMRReader OR(O.Bytes, 1);
+	FMRNetObject Who;
+	TArray<FMRNetObject> Items;
+	TestTrue(TEXT("BP_OFFER reads to its end"), MRNetRead::Object(OR, Res, Who) && MRNetRead::ObjectList(OR, Res, Items) && OR.AtEnd()
+		&& Who.Id == 0x600 && Items.Num() == 1 && Items[0].Name == TEXT("torch"));
+	return true;
+}
+
 #endif

@@ -14,6 +14,7 @@
 #include "UI/SMRGameMenu.h"
 #include "UI/SMRLookDialog.h"
 #include "UI/SMRStatChange.h"
+#include "UI/SMRTradeDialog.h"
 #include "UI/SMRInventoryScreen.h"
 #include "UI/SMRMinimap.h"
 #include "UI/SMRSlot.h"
@@ -453,6 +454,8 @@ void SMRHUDRoot::Rebuild()
 	LookDialog->SetVisibility(Ui->IsLookOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 	StatChange = SNew(SMRStatChange, Ui);
 	StatChange->SetVisibility(Ui->IsStatChangeOpen() ? EVisibility::Visible : EVisibility::Collapsed);
+	TradeDialog = SNew(SMRTradeDialog, Ui);
+	TradeDialog->SetVisibility(Ui->IsTradeOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 	GameMenu->SetVisibility(Ui->IsGameMenuOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 
 	ChildSlot
@@ -515,6 +518,10 @@ void SMRHUDRoot::Rebuild()
 		+ SOverlay::Slot()
 		[
 			StatChange.ToSharedRef()
+		]
+		+ SOverlay::Slot()
+		[
+			TradeDialog.ToSharedRef()
 		]
 		+ SOverlay::Slot()
 		[
@@ -665,6 +672,14 @@ void SMRHUDRoot::SetLookOpen(bool bOpen)
 	if (LookDialog.IsValid())
 	{
 		LookDialog->SetVisibility(bOpen ? EVisibility::Visible : EVisibility::Collapsed);
+	}
+}
+
+void SMRHUDRoot::SetTradeOpen(bool bOpen)
+{
+	if (TradeDialog.IsValid())
+	{
+		TradeDialog->SetVisibility(bOpen ? EVisibility::Visible : EVisibility::Collapsed);
 	}
 }
 

@@ -181,6 +181,35 @@ public:
 	const TArray<FMRNetObject>& GetRoomEnchantments() const { return World.RoomEnchantments; }
 	const FMRNetStatChange& GetStatChange() const { return World.StatChange; }
 
+	// --- shops, offers, the vault and the bank (docs/research/blakserv-protocol.md "Trade")
+	/** An item and how many (number items: shillings, reagents; 0 = all of a carried stack). */
+	struct FItemCount
+	{
+		uint32 Id = 0;
+		uint32 Amount = 0;
+	};
+	/** Ask a seller what it sells (BP_REQ_BUY); the list comes as OnShop. */
+	void RequestBuy(uint32 SellerId);
+	/** Buy from the last list (BP_REQ_BUY_ITEMS), or take out of the vault (BP_REQ_WITHDRAWAL_ITEMS). */
+	void BuyItems(const TArray<FItemCount>& Items);
+	/** Ask a vault keeper what we have there (BP_REQ_WITHDRAWAL). */
+	void RequestWithdrawal(uint32 KeeperId);
+	/** Offer carried items to someone (BP_REQ_OFFER): selling to an NPC, or a trade with a player. */
+	void Offer(uint32 ToId, const TArray<FItemCount>& Items);
+	/** Put carried items into a vault (BP_REQ_DEPOSIT; a banker takes shillings this way too). */
+	void Deposit(uint32 ToId, const TArray<FItemCount>& Items);
+	/** Answer an offer made to us with what we give (BP_REQ_COUNTEROFFER; nothing is fine). */
+	void Counteroffer(const TArray<FItemCount>& Items);
+	/** Accept their answer to our offer (BP_ACCEPT_OFFER), or call the offer off (BP_CANCEL_OFFER). */
+	void AcceptOffer();
+	void CancelOffer();
+	/** A banker in the room: put in or take out shillings, ask the balance (UC_DEPOSIT, UC_WITHDRAW, UC_BALANCE). */
+	void BankDeposit(int32 Shillings);
+	void BankWithdraw(int32 Shillings);
+	void BankBalance();
+	const FMRNetShop& GetShop() const { return World.Shop; }
+	const FMRNetTrade& GetTrade() const { return World.Trade; }
+
 	/** A line of the client's own in the chat log, as the original's GameMessage (e.g. "You can't see your selected target."). */
 	void AddGameMessage(const FString& Text) { AddChat(Text, 0); }
 	/** The screen effects on the player and the room's weather (BP_EFFECT), counted down each tick. */
@@ -269,11 +298,17 @@ public:
 	FOnMRNetEvent OnStatChange;
 	/** The server's answer to ChangeStats: true BP_CHANGED_STATS_OK, false NOT_OK. */
 	FOnMRNetResult OnStatChangeResult;
+	/** A shop's or a vault's list arrived (GetShop). */
+	FOnMRNetEvent OnShop;
+	/** The offer under way changed, or ended (GetTrade().bOpen false). */
+	FOnMRNetEvent OnTradeChanged;
 
 private:
 	void LoadServers();
 	/** Send an item: its id, and for a number item the tagged id and an amount (clientd3d protocol.c PARAM_OBJECT). */
 	void WriteItem(class FMRWriter& W, uint32 ItemId, uint32 Amount) const;
+	/** PARAM_OBJECT_LIST (clientd3d protocol.c): u16 count, then each item (number items with their amount). */
+	void WriteItems(class FMRWriter& W, const TArray<FItemCount>& Items) const;
 	bool CanSend() const;
 	void SetPhase(EMRNetPhase InPhase, const FString& InStatus = FString());
 	bool Tick(float DeltaSeconds);

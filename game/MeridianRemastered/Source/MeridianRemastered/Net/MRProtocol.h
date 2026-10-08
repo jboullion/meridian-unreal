@@ -191,6 +191,9 @@ namespace MRMsg
 	constexpr uint8 UC_LOOK_PLAYER = 2;
 	constexpr uint8 UC_REST = 5;
 	constexpr uint8 UC_STAND = 6;
+	constexpr uint8 UC_DEPOSIT = 35;   // i32 shillings, to a banker in the room
+	constexpr uint8 UC_WITHDRAW = 36;  // i32 shillings
+	constexpr uint8 UC_BALANCE = 37;
 
 	// enchantment types (BP_ADD_ENCHANTMENT, BP_SEND_ENCHANTMENTS; proto.h ENCHANT_*)
 	constexpr uint8 ENCHANT_PLAYER = 1;

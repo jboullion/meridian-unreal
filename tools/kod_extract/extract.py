@@ -379,6 +379,21 @@ class Extractor:
             rec["for_sale"] = shop
         return rec
 
+    def npc_roles(self) -> list[dict]:
+        """Every monster that trades, banks or keeps a vault (monster.kod MobIsBuyer... read viAttributes),
+        by its name: the online client offers its Look dialog's Buy, Sell, Vault and Bank buttons by these."""
+        roles = {"MOB_BUYER": "buyer", "MOB_SELLER": "seller", "MOB_BANKER": "banker", "MOB_VAULTMAN": "vaultman"}
+        out = []
+        for cls in self.idx.subclasses("Monster"):
+            r = self.idx.resolved_vars(cls)
+            name, attrs = r.get("vrName"), r.get("viAttributes")
+            if not isinstance(name, str) or not isinstance(attrs, int):
+                continue
+            got = [roles[f] for f in self.idx.flag_names(attrs, "MOB_") if f in roles]
+            if got:
+                out.append({"name": name, "class": cls, "roles": got})
+        return sorted(out, key=lambda n: (n["name"].lower(), n["class"]))
+
     # spells / skills ----------------------------------------------------------
     SPELL_KEYS = ["vrName", "vrDesc", "vrIcon", "vrSpell_intro", "viSpell_num", "viSchool", "viSpell_level",
                   "viMana", "viSpellExertion", "viChance_To_Increase", "viMeditate_ratio", "viCast_time",
@@ -617,6 +632,11 @@ def main() -> None:
                                     "exits lead to. The online client uses it for rooms it builds at runtime "
                                     "(docs/adr/0012-client-parity-and-world-coverage.md).",
                             "rooms": ex.rooms()})
+    dump("net/npcs.json", {"_doc": "Every NPC that buys, sells, banks or keeps a vault (tools/kod_extract, from Kod's "
+                                   "viAttributes MOB_BUYER, MOB_SELLER, MOB_BANKER, MOB_VAULTMAN), by name. The online "
+                                   "client shows the Look dialog's Buy, Sell, Vault and Bank buttons by these "
+                                   "(docs/adr/0012-client-parity-and-world-coverage.md M6).",
+                           "npcs": ex.npc_roles()})
 
 
 if __name__ == "__main__":

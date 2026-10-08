@@ -22,6 +22,8 @@
 #include "TimerManager.h"
 #include "UI/MRUISubsystem.h"
 #include "UI/MRInventorySource.h"
+#include "UI/SMRLookDialog.h"
+#include "UI/SMRTradeDialog.h"
 #include "Engine/LocalPlayer.h"
 #include "UnrealClient.h"
 #include "Zones/MRZoneSubsystem.h"
@@ -204,6 +206,26 @@ void UMRNetTest::LogCreatures() const
 	UE_LOG(LogMeridian, Display, TEXT("MRNetTest: draws %d creatures: %s"), N, *List);
 }
 
+namespace
+{
+	/**
+	 * Where to stand on a door's square: a third of a square from its middle toward the room's, still on
+	 * the square (Kod's "go" takes the door on the square the player stands on). A door square's middle
+	 * is often in the frame, outside every sector, and the server snaps such a move back.
+	 */
+	FVector DoorStandPoint(UMRZoneSubsystem* Zones, const FMRZoneInfo& Zone, int32 Row, int32 Col, double HalfHeight)
+	{
+		const FVector Middle = Zones->GridToWorld(Zone.Rid, Row, Col, false);
+		const FVector RoomMiddle = Zone.Origin + MRUnits::RooToLocal(Zone.GridSizeRoo * 0.5);
+		FVector At = Middle + (RoomMiddle - Middle).GetSafeNormal2D() * (MRUnits::CmPerSquare / 3.0);
+		if (!Zones->TraceFloor(At))
+		{
+			At = Zones->GridToWorld(Zone.Rid, Row, Col, true);
+		}
+		return At + FVector(0.0, 0.0, HalfHeight + 2.0);
+	}
+}
+
 bool UMRNetTest::TakeExit()
 {
 	// stand on the first exit of this zone that leads to another zone we have built
@@ -220,7 +242,7 @@ bool UMRNetTest::TakeExit()
 	{
 		if (!E.bLocked && Zones->FindZone(E.DestRid))
 		{
-			const FVector At = Zones->GridToWorld(Zone->Rid, E.Row, E.Col, true) + FVector(0.0, 0.0, Pawn->GetSimpleCollisionHalfHeight() + 2.0);
+			const FVector At = DoorStandPoint(Zones, *Zone, E.Row, E.Col, Pawn->GetSimpleCollisionHalfHeight());
 			UE_LOG(LogMeridian, Display, TEXT("MRNetTest: stepping onto the exit (%d, %d) of zone %d toward %d"), E.Row, E.Col, Zone->Rid, E.DestRid);
 			if (!Pawn->TeleportTo(At, Pawn->GetActorRotation(), false, true))
 			{
@@ -340,11 +362,21 @@ bool UMRNetTest::HopToward(int32 TargetRid)
 		return false;
 	}
 	const FMRZoneInfo* Z = Zones->FindZone(From);
+	HopAt = FPlatformTime::Seconds();
+	// a door's squares in turn (one may be in the wall: the server snaps the move back and won't go)
+	TArray<const FMRZoneExit*> Doors;
 	for (const FMRZoneExit& E : Z->Exits)
 	{
 		if (!E.bLocked && E.DestRid == *Hop)
 		{
-			const FVector At = Zones->GridToWorld(From, E.Row, E.Col, true) + FVector(0.0, 0.0, Pawn->GetSimpleCollisionHalfHeight() + 2.0);
+			Doors.Add(&E);
+		}
+	}
+	if (Doors.Num() > 0)
+	{
+		const FMRZoneExit& E = *Doors[HopTry % Doors.Num()];
+		{
+			const FVector At = DoorStandPoint(Zones, *Z, E.Row, E.Col, Pawn->GetSimpleCollisionHalfHeight());
 			UE_LOG(LogMeridian, Display, TEXT("MRNetTest: travel: the exit (%d, %d) of zone %d toward %d"), E.Row, E.Col, From, *Hop);
 			Pawn->TeleportTo(At, Pawn->GetActorRotation(), false, true);
 			NetWorld->RequestGo();
@@ -1253,7 +1285,305 @@ void UMRNetTest::Tick()
 			{
 				Fail(FString::Printf(TEXT("spells: resting: still %d, cast refused %d, walks after %d"), bStill, bRefused, bWalks));
 			}
+			Advance(EStep::Trade);
+		}
+		break;
+	}
+
+	case EStep::Trade:
+	{
+		// Raza's blacksmith (303), vaults (332) and bank (333): their keepers by name (data/net/npcs.json)
+		const FMRNetWorld& W = Net->GetNetWorld();
+		UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+		TSharedPtr<SMRTradeDialog> Dialog = UI ? UI->GetTradeDialog() : nullptr;
+		const int32 Here = NetWorld->GetRid();
+		if (Now - StepStart > 90.0 || !UI)
+		{
+			Fail(FString::Printf(TEXT("trade: stuck at stage %d in zone %d (%s)"), TradeStage, Here, *TradeItem));
+			if (UI)
+			{
+				UI->CloseTrade();
+			}
 			Advance(EStep::Combat);
+			break;
+		}
+		if (HopFrom && Here == HopFrom && Now - HopAt > 5.0)
+		{
+			++HopTry;  // that door didn't take us: the next square of it
+			HopFrom = 0;
+		}
+		if (HopFrom && (Here == HopFrom || Here == 0))
+		{
+			break;
+		}
+		if (HopFrom)
+		{
+			HopFrom = 0;
+			StageTime = Now;
+		}
+		const auto Coins = [&W]()
+		{
+			const FMRNetObject* C = W.Inventory.FindByPredicate([](const FMRNetObject& O) { return O.bNumber && O.Icon.Equals(TEXT("coin.bgf"), ESearchCase::IgnoreCase); });
+			return C ? C->Amount : 0u;
+		};
+		const auto Carried = [&W](const FString& Name) { return W.Inventory.FindByPredicate([&Name](const FMRNetObject& O) { return O.Name == Name; }); };
+		// in the keeper's room, next to them (the original offers trade within 5 squares)
+		const auto Reach = [&](int32 Rid, const TCHAR* Name) -> uint32
+		{
+			if (Here != Rid)
+			{
+				if (Here && Now - StageTime > 1.0)
+				{
+					HopFrom = Here;
+					StageTime = Now;
+					if (!HopToward(Rid))
+					{
+						Fail(FString::Printf(TEXT("trade: no way from zone %d to %d"), Here, Rid));
+						Advance(EStep::Combat);
+					}
+				}
+				return 0;
+			}
+			for (const TPair<uint32, TWeakObjectPtr<AMRNetObject>>& Pair : NetWorld->GetActors())
+			{
+				const AMRNetObject* A = Pair.Value.Get();
+				if (A && A->GetObjectName() == Name && Now - StageTime > 1.0)
+				{
+					APawn* Pawn = PC->GetPawn();
+					const FVector Dir = (A->GetActorLocation() - Pawn->GetActorLocation()).GetSafeNormal2D();
+					FVector Near = A->GetActorLocation() - Dir * 150.0;
+					if (UMRZoneSubsystem* Zones = PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>(); Zones && Zones->TraceFloor(Near))
+					{
+						Pawn->TeleportTo(Near + FVector(0.0, 0.0, Pawn->GetSimpleCollisionHalfHeight() + 2.0), Dir.Rotation(), false, true);
+					}
+					return Pair.Key;
+				}
+			}
+			return 0;
+		};
+		const auto LastChat = [&]() { const TArray<FMRChatLine>& C = Net->GetChat(); return TradeChat < C.Num() ? C.Last().Text : FString(); };
+		// through the trade dialog when there is one (a window); -nullrhi has no HUD: the same requests straight
+		const auto PickAndSend = [&](EMRObjectAction Action, uint32 ToId, uint32 ItemId)
+		{
+			if (Dialog.IsValid())
+			{
+				UI->DoObjectAction(Action, ToId);
+				Dialog->Select(ItemId);
+				Dialog->Confirm();
+			}
+			else if (Action == EMRObjectAction::Deposit)
+			{
+				Net->Deposit(ToId, {{ItemId, 0}});
+			}
+			else
+			{
+				Net->Offer(ToId, {{ItemId, 0}});
+			}
+		};
+		const auto BuyOne = [&](uint32 ItemId)
+		{
+			if (Dialog.IsValid())
+			{
+				Dialog->Select(ItemId);
+				Dialog->Confirm();
+			}
+			else
+			{
+				Net->BuyItems({{ItemId, 1}});
+			}
+		};
+		const bool bShopShown = !Dialog.IsValid() || Dialog->GetMode() == EMRTradeMode::Shop;
+		// -Render: a picture of the dialog first, then a moment for the capture
+		const auto Pictured = [&](const TCHAR* Name)
+		{
+			if (!FApp::CanEverRender() || !Dialog.IsValid())
+			{
+				return true;
+			}
+			if (TradeShotAt == 0.0)
+			{
+				TradeShotAt = Now;
+				const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), FString::Printf(TEXT("%s.png"), Name));
+				FScreenshotRequest::RequestScreenshot(File, true, false);
+				UE_LOG(LogMeridian, Display, TEXT("MRNetTest: screenshot %s"), *File);
+				return false;
+			}
+			if (Now - TradeShotAt < 0.4)
+			{
+				return false;
+			}
+			TradeShotAt = 0.0;
+			return true;
+		};
+		switch (TradeStage)
+		{
+		case 0:
+			if (const uint32 Tomas = Reach(303, TEXT("Tomas")))
+			{
+				UI->DoObjectAction(EMRObjectAction::Buy, Tomas);
+				TradeStage = 1;
+			}
+			break;
+		case 1:
+			if (bShopShown && W.Shop.Items.Num() > 0 && !W.Shop.bWithdrawal && Pictured(TEXT("shop")))
+			{
+				// the cheapest thing that isn't a number item
+				const FMRNetForSale* Cheapest = nullptr;
+				for (const FMRNetForSale& E : W.Shop.Items)
+				{
+					if (!E.Object.bNumber && (!Cheapest || E.Price < Cheapest->Price))
+					{
+						Cheapest = &E;
+					}
+				}
+				if (!Cheapest)
+				{
+					Fail(TEXT("trade: Tomas sells nothing to buy one of"));
+					Advance(EStep::Combat);
+					break;
+				}
+				TradeItem = Cheapest->Object.Name;
+				TradePrice = Cheapest->Price;
+				TradeCoins = Coins();
+				BuyOne(Cheapest->Object.Id);
+				TradeStage = 2;
+			}
+			break;
+		case 2:
+			if (Carried(TradeItem) && Coins() < TradeCoins)
+			{
+				Pass(FString::Printf(TEXT("bought a %s from %s for %u shillings (BP_BUY_LIST of %d, BP_REQ_BUY_ITEMS): %u left"),
+					*TradeItem, *W.Shop.Seller.Name, TradeCoins - Coins(), W.Shop.Items.Num(), Coins()));
+				// sell it back: the Look dialog's Sell picks it, the offer goes, Tomas answers with a price
+				TradeCoins = Coins();
+				PickAndSend(EMRObjectAction::Sell, W.Shop.Seller.Id, Carried(TradeItem)->Id);
+				TradeStage = 3;
+			}
+			break;
+		case 3:
+			if (W.Trade.bOpen && W.Trade.bAnswered && (!Dialog.IsValid() || Dialog->GetMode() == EMRTradeMode::Trade) && Pictured(TEXT("offer")))
+			{
+				const FMRNetObject* Price = W.Trade.Received.Num() ? &W.Trade.Received[0] : nullptr;
+				Pass(FString::Printf(TEXT("offered the %s to %s, who offers %s (BP_OFFERED, BP_COUNTEROFFER)"), *TradeItem, *W.Trade.WithName,
+					Price ? *FString::Printf(TEXT("%u %s"), Price->Amount, *Price->Name) : TEXT("nothing")));
+				if (Dialog.IsValid())
+				{
+					Dialog->Confirm();  // Accept
+				}
+				else
+				{
+					Net->AcceptOffer();
+				}
+				TradeStage = 4;
+			}
+			break;
+		case 4:
+			if (!Carried(TradeItem) && Coins() > TradeCoins)
+			{
+				Pass(FString::Printf(TEXT("sold the %s back (BP_ACCEPT_OFFER) for %u shillings"), *TradeItem, Coins() - TradeCoins));
+				TradeStage = 5;
+				StageTime = Now;
+			}
+			break;
+		case 5:
+		{
+			// the mace into the vault: not while wielded
+			const FMRNetObject* Mace = W.Inventory.FindByPredicate([](const FMRNetObject& O) { return O.Icon.Equals(TEXT("mace.bgf"), ESearchCase::IgnoreCase); });
+			if (!Mace)
+			{
+				Fail(TEXT("trade: no mace to put in the vault"));
+				Advance(EStep::Combat);
+				break;
+			}
+			if (Net->IsUsing(Mace->Id))
+			{
+				if (!bAsked)
+				{
+					Net->UnuseItem(Mace->Id);
+					bAsked = true;
+				}
+				break;
+			}
+			if (const uint32 Bentu = Reach(332, TEXT("Bentu")))
+			{
+				PickAndSend(EMRObjectAction::Deposit, Bentu, Mace->Id);
+				TradeChat = Net->GetChat().Num();
+				TradeStage = 6;
+			}
+			break;
+		}
+		case 6:
+			if (!W.Inventory.ContainsByPredicate([](const FMRNetObject& O) { return O.Icon.Equals(TEXT("mace.bgf"), ESearchCase::IgnoreCase); }))
+			{
+				Pass(FString::Printf(TEXT("put the mace in Bentu's vault (BP_REQ_DEPOSIT): \"%s\""), *LastChat()));
+				TradeCoins = Coins();
+				if (const uint32 Bentu = Reach(332, TEXT("Bentu")))
+				{
+					UI->DoObjectAction(EMRObjectAction::Withdraw, Bentu);  // (BP_REQ_WITHDRAWAL: no dialog needed to ask)
+				}
+				TradeStage = 7;
+			}
+			break;
+		case 7:
+			if (bShopShown && W.Shop.bWithdrawal)
+			{
+				const FMRNetForSale* Mace = W.Shop.Items.FindByPredicate([](const FMRNetForSale& E) { return E.Object.Icon.Equals(TEXT("mace.bgf"), ESearchCase::IgnoreCase); });
+				if (!Mace)
+				{
+					Fail(FString::Printf(TEXT("trade: the vault lists %d things, not the mace"), W.Shop.Items.Num()));
+					Advance(EStep::Combat);
+					break;
+				}
+				TradePrice = Mace->Price;
+				BuyOne(Mace->Object.Id);
+				TradeStage = 8;
+			}
+			break;
+		case 8:
+			if (W.Inventory.ContainsByPredicate([](const FMRNetObject& O) { return O.Icon.Equals(TEXT("mace.bgf"), ESearchCase::IgnoreCase); }))
+			{
+				Pass(FString::Printf(TEXT("took the mace out of the vault (BP_WITHDRAWAL_LIST of %d, BP_REQ_WITHDRAWAL_ITEMS) for %u shillings"),
+					W.Shop.Items.Num(), TradeCoins - Coins()));
+				TradeStage = 9;
+				StageTime = Now;
+			}
+			break;
+		case 9:
+			if (const uint32 Gamos = Reach(333, TEXT("Gamos")))
+			{
+				UI->DoObjectAction(EMRObjectAction::Bank, Gamos);
+				TradeCoins = Coins();
+				Net->BankDeposit(10);
+				TradeStage = 10;
+			}
+			break;
+		case 10:
+			if (Coins() == TradeCoins - 10)
+			{
+				TradeChat = Net->GetChat().Num();
+				Net->BankBalance();
+				TradeStage = 11;
+				StageTime = Now;
+			}
+			break;
+		case 11:
+			if (!LastChat().IsEmpty() && Now - StageTime > 0.5)
+			{
+				TradeItem = LastChat();
+				Net->BankWithdraw(10);
+				TradeStage = 12;
+			}
+			break;
+		case 12:
+			if (Coins() == TradeCoins)
+			{
+				Pass(FString::Printf(TEXT("10 shillings into Gamos's bank and out again (UC_DEPOSIT, UC_WITHDRAW); the balance (UC_BALANCE): \"%s\""), *TradeItem));
+				UI->CloseTrade();
+				Advance(EStep::Combat);
+			}
+			break;
+		default:
+			break;
 		}
 		break;
 	}
@@ -1642,6 +1972,11 @@ void UMRNetTest::Tick()
 			Fail(FString::Printf(TEXT("death: stuck at stage %d in %s (%d attacks)"), DeathStage, *Room, Attacks));
 			Advance(EStep::Relog);
 			break;
+		}
+		if (HopFrom && Here == HopFrom && Now - HopAt > 5.0)
+		{
+			++HopTry;  // that door didn't take us: the next square of it
+			HopFrom = 0;
 		}
 		if (HopFrom && (Here == HopFrom || Here == 0))
 		{

@@ -72,6 +72,8 @@ void FMRNetWorld::Reset()
 	ResetRoom();
 	ResetInventory();
 	ResetAbilities();
+	Shop = FMRNetShop();
+	Trade = FMRNetTrade();
 	Player = FMRNetPlayer();
 	StatGroups.Reset();
 	Effects.Reset();
@@ -257,6 +259,20 @@ bool MRNetRead::SpellList(FMRReader& R, const FMRResourceTable& Res, TArray<FMRN
 		{
 			return false;
 		}
+	}
+	return R.IsOk();
+}
+
+bool MRNetRead::BuyList(FMRReader& R, const FMRResourceTable& Res, FMRNetShop& Out)
+{
+	Out.Items.Reset();
+	Object(R, Res, Out.Seller);
+	const int32 N = R.U16();
+	for (int32 i = 0; i < N && R.IsOk(); ++i)
+	{
+		FMRNetForSale& E = Out.Items.AddDefaulted_GetRef();
+		Object(R, Res, E.Object);
+		E.Price = R.U32();
 	}
 	return R.IsOk();
 }

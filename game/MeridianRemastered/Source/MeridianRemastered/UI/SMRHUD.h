@@ -214,6 +214,8 @@ public:
 	/** The retraining dialog (SMRStatChange). */
 	TSharedPtr<class SMRStatChange> GetStatChange() const { return StatChange; }
 	void SetStatChangeOpen(bool bOpen);
+	TSharedPtr<class SMRTradeDialog> GetTradeDialog() const { return TradeDialog; }
+	void SetTradeOpen(bool bOpen);
 
 private:
 	TWeakObjectPtr<UMRUISubsystem> UI;
@@ -221,6 +223,7 @@ private:
 	TSharedPtr<SMRGameMenu> GameMenu;
 	TSharedPtr<SMRLookDialog> LookDialog;
 	TSharedPtr<class SMRStatChange> StatChange;
+	TSharedPtr<class SMRTradeDialog> TradeDialog;
 	TSharedPtr<SMRChatLog> ChatLog;
 	TSharedPtr<SWidget> SpellBar;
 	TSharedPtr<SWidget> HotbarArea;

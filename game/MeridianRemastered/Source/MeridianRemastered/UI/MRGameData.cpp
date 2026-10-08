@@ -64,9 +64,41 @@ namespace
 	}
 }
 
+uint8 UMRGameDataSubsystem::NpcRoles(const FString& Name) const
+{
+	const uint8* R = NpcRolesByName.Find(Name.ToLower());
+	return R ? *R : 0;
+}
+
 void UMRGameDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
+
+	// who trades, banks or keeps a vault (data/net/npcs.json, tools/kod_extract)
+	{
+		FString Text;
+		TSharedPtr<FJsonObject> Root;
+		if (FFileHelper::LoadFileToString(Text, *FPaths::Combine(UMRZoneSubsystem::GetDataDir(), TEXT("net"), TEXT("npcs.json")))
+			&& FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) && Root.IsValid())
+		{
+			const TArray<TSharedPtr<FJsonValue>>* Npcs = nullptr;
+			if (Root->TryGetArrayField(TEXT("npcs"), Npcs))
+			{
+				for (const TSharedPtr<FJsonValue>& V : *Npcs)
+				{
+					const TSharedPtr<FJsonObject> O = V->AsObject();
+					uint8 Roles = 0;
+					for (const TSharedPtr<FJsonValue>& R : O->GetArrayField(TEXT("roles")))
+					{
+						const FString Role = R->AsString();
+						Roles |= Role == TEXT("buyer") ? MRNpcRole::Buyer : Role == TEXT("seller") ? MRNpcRole::Seller
+							: Role == TEXT("banker") ? MRNpcRole::Banker : Role == TEXT("vaultman") ? MRNpcRole::Vaultman : 0;
+					}
+					NpcRolesByName.FindOrAdd(Str(*O, TEXT("name")).ToLower()) |= Roles;
+				}
+			}
+		}
+	}
 
 	for (const TSharedPtr<FJsonValue>& V : LoadArray(TEXT("items.json")))
 	{

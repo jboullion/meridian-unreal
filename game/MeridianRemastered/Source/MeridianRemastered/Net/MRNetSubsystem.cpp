@@ -367,6 +367,18 @@ void UMRNetSubsystem::WriteItem(FMRWriter& W, uint32 ItemId, uint32 Amount) cons
 	{
 		O = World.Objects.Find(ItemId);
 	}
+	if (!O)
+	{
+		// something a shop sells (a number item: as many as asked for, not the shop's stack)
+		if (const FMRNetForSale* S = World.Shop.Items.FindByPredicate([ItemId](const FMRNetForSale& E) { return E.Object.Id == ItemId; }))
+		{
+			if (S->Object.bNumber)
+			{
+				W.U32(MRMsg::NumberId(ItemId)).U32(FMath::Max(1u, Amount));
+				return;
+			}
+		}
+	}
 	if (O && O->bNumber)
 	{
 		W.U32(MRMsg::NumberId(ItemId)).U32(Amount > 0 ? FMath::Min(Amount, O->Amount) : O->Amount);
@@ -415,6 +427,133 @@ const TMap<uint32, int32>& UMRNetSubsystem::HitFormats()
 		HitFormatsRsb = LoadedRsbHash;
 	}
 	return HitFormatIds;
+}
+
+void UMRNetSubsystem::WriteItems(FMRWriter& W, const TArray<FItemCount>& Items) const
+{
+	W.U16(static_cast<uint16>(Items.Num()));
+	for (const FItemCount& I : Items)
+	{
+		WriteItem(W, I.Id, I.Amount);
+	}
+}
+
+void UMRNetSubsystem::RequestBuy(uint32 SellerId)
+{
+	if (CanSend() && SellerId)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_BUY).U32(SellerId));
+	}
+}
+
+void UMRNetSubsystem::RequestWithdrawal(uint32 KeeperId)
+{
+	if (CanSend() && KeeperId)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_WITHDRAWAL).U32(KeeperId));
+	}
+}
+
+void UMRNetSubsystem::BuyItems(const TArray<FItemCount>& Items)
+{
+	if (!CanSend() || !World.Shop.Seller.Id || Items.Num() == 0)
+	{
+		return;
+	}
+	FMRWriter W(World.Shop.bWithdrawal ? MRMsg::BP_REQ_WITHDRAWAL_ITEMS : MRMsg::BP_REQ_BUY_ITEMS);
+	W.U32(World.Shop.Seller.Id);
+	WriteItems(W, Items);
+	Connection->Send(W);
+}
+
+void UMRNetSubsystem::Offer(uint32 ToId, const TArray<FItemCount>& Items)
+{
+	if (!CanSend() || !ToId || Items.Num() == 0)
+	{
+		return;
+	}
+	FMRWriter W(MRMsg::BP_REQ_OFFER);
+	W.U32(ToId);
+	WriteItems(W, Items);
+	Connection->Send(W);
+	// the server shows what we offered (BP_OFFERED) once the other side takes the offer
+	World.Trade = FMRNetTrade();
+	World.Trade.bOurs = true;
+	World.Trade.WithId = ToId;
+	const FMRNetObject* To = World.Objects.Find(ToId);
+	World.Trade.WithName = To ? To->Name : FString();
+}
+
+void UMRNetSubsystem::Deposit(uint32 ToId, const TArray<FItemCount>& Items)
+{
+	if (!CanSend() || !ToId || Items.Num() == 0)
+	{
+		return;
+	}
+	FMRWriter W(MRMsg::BP_REQ_DEPOSIT);
+	W.U32(ToId);
+	WriteItems(W, Items);
+	Connection->Send(W);
+	World.Trade = FMRNetTrade();
+	World.Trade.bOurs = true;
+	World.Trade.WithId = ToId;
+	const FMRNetObject* To = World.Objects.Find(ToId);
+	World.Trade.WithName = To ? To->Name : FString();
+}
+
+void UMRNetSubsystem::Counteroffer(const TArray<FItemCount>& Items)
+{
+	if (CanSend() && World.Trade.bOpen && !World.Trade.bOurs)
+	{
+		FMRWriter W(MRMsg::BP_REQ_COUNTEROFFER);
+		WriteItems(W, Items);
+		Connection->Send(W);
+	}
+}
+
+void UMRNetSubsystem::AcceptOffer()
+{
+	if (CanSend() && World.Trade.bOpen && World.Trade.bAnswered)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_ACCEPT_OFFER));
+		// done (user.kod UserAcceptOffer: the items change hands; nothing more comes for this offer)
+		World.Trade = FMRNetTrade();
+		OnTradeChanged.Broadcast();
+	}
+}
+
+void UMRNetSubsystem::CancelOffer()
+{
+	if (CanSend() && World.Trade.bOpen)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_CANCEL_OFFER));
+	}
+	World.Trade = FMRNetTrade();
+	OnTradeChanged.Broadcast();
+}
+
+void UMRNetSubsystem::BankDeposit(int32 Shillings)
+{
+	if (CanSend() && Shillings > 0)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_USERCOMMAND).U8(MRMsg::UC_DEPOSIT).I32(Shillings));
+	}
+}
+
+void UMRNetSubsystem::BankWithdraw(int32 Shillings)
+{
+	if (CanSend() && Shillings > 0)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_USERCOMMAND).U8(MRMsg::UC_WITHDRAW).I32(Shillings));
+	}
+}
+
+void UMRNetSubsystem::BankBalance()
+{
+	if (CanSend())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_USERCOMMAND).U8(MRMsg::UC_BALANCE));
+	}
 }
 
 void UMRNetSubsystem::CastSpell(uint32 SpellId, const TArray<uint32>& Targets)
@@ -1276,6 +1415,64 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		}
 		break;
 	}
+	case MRMsg::BP_BUY_LIST:
+	case MRMsg::BP_WITHDRAWAL_LIST:
+		// (the original doesn't check a buy list's length: Server 104 may send more after it)
+		if (MRNetRead::BuyList(R, Resources, World.Shop))
+		{
+			World.Shop.bWithdrawal = Body[0] == MRMsg::BP_WITHDRAWAL_LIST;
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: %s %s: %d items"), *World.Shop.Seller.Name,
+				World.Shop.bWithdrawal ? TEXT("holds") : TEXT("sells"), World.Shop.Items.Num());
+			OnShop.Broadcast();
+		}
+		break;
+	case MRMsg::BP_OFFER:
+	{
+		// someone offers to us: who, and what (server.c HandleOffer)
+		FMRNetObject Who;
+		TArray<FMRNetObject> Items;
+		if (MRNetRead::Object(R, Resources, Who) && MRNetRead::ObjectList(R, Resources, Items))
+		{
+			World.Trade = FMRNetTrade();
+			World.Trade.bOpen = true;
+			World.Trade.WithId = Who.Id;
+			World.Trade.WithName = Who.Name;
+			World.Trade.Received = MoveTemp(Items);
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: %s offers %d items"), *Who.Name, World.Trade.Received.Num());
+			OnTradeChanged.Broadcast();
+		}
+		break;
+	}
+	case MRMsg::BP_OFFERED:
+	case MRMsg::BP_COUNTEROFFER:
+	case MRMsg::BP_COUNTEROFFERED:
+	{
+		TArray<FMRNetObject> Items;
+		if (MRNetRead::ObjectList(R, Resources, Items))
+		{
+			FMRNetTrade& T = World.Trade;
+			T.bOpen = true;
+			if (Body[0] == MRMsg::BP_COUNTEROFFER)
+			{
+				T.Received = MoveTemp(Items);  // their answer to our offer
+				T.bAnswered = true;
+			}
+			else
+			{
+				T.Given = MoveTemp(Items);     // what we offer, or answered with
+				T.bCountered = Body[0] == MRMsg::BP_COUNTEROFFERED;
+			}
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: offer with %s: we give %d, they give %d%s"), *T.WithName, T.Given.Num(), T.Received.Num(),
+				T.bAnswered ? TEXT(" (answered)") : TEXT(""));
+			OnTradeChanged.Broadcast();
+		}
+		break;
+	}
+	case MRMsg::BP_OFFER_CANCELED:
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: the offer is over"));
+		World.Trade = FMRNetTrade();
+		OnTradeChanged.Broadcast();
+		break;
 	case MRMsg::BP_REQ_STAT_CHANGE:
 		if (MRNetRead::StatChange(R, World.StatChange))
 		{

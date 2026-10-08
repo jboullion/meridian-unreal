@@ -119,6 +119,15 @@ struct FMRSpellDef
 	TArray<FMRReagent> Reagents;
 };
 
+/** What an NPC does with money and goods (data/net/npcs.json, from Kod's MOB_* attributes). */
+namespace MRNpcRole
+{
+	constexpr uint8 Buyer = 0x01;     // buys: Sell
+	constexpr uint8 Seller = 0x02;    // sells: Buy
+	constexpr uint8 Banker = 0x04;    // keeps shillings: Bank
+	constexpr uint8 Vaultman = 0x08;  // keeps items: Withdraw, Deposit
+}
+
 /** A line of the Quests page (the server's stat group 5): a heading (no object), or a quest. */
 struct FMRQuestView
 {

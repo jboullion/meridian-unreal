@@ -17,6 +17,13 @@ enum class EMRObjectAction : uint8
 	Get,       // BP_REQ_GET
 	Inside,    // BP_SEND_OBJECT_CONTENTS
 	Activate,  // BP_REQ_ACTIVATE
+	Buy,       // a shop's list (BP_REQ_BUY)
+	Sell,      // offer carried items to a buyer (BP_REQ_OFFER)
+	Give,      // offer carried items to someone who takes them (a quest item; BP_REQ_OFFER)
+	Offer,     // a trade with a player (BP_REQ_OFFER)
+	Withdraw,  // what we keep in a vault (BP_REQ_WITHDRAWAL)
+	Deposit,   // put carried items into a vault (BP_REQ_DEPOSIT)
+	Bank,      // a banker's counter (UC_DEPOSIT, UC_WITHDRAW, UC_BALANCE)
 };
 
 /** What picking a row of SMRLookDialog's list does. */
