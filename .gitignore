@@ -27,6 +27,8 @@ venv/
 game/**/Binaries/
 game/**/Intermediate/
 game/**/Saved/
+# synced copy of data/ for packaging (tools/ue/package.ps1)
+game/*/Data/
 game/**/DerivedDataCache/
 game/**/.vs/
 game/**/.idea/

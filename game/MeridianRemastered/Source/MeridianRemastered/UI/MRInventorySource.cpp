@@ -486,7 +486,7 @@ void UMRMockInventory::LoadFromJson()
 	const TSharedPtr<FJsonObject>* SkillObj = nullptr;
 	if (Root->TryGetObjectField(TEXT("skills"), SkillObj))
 	{
-		for (const TPair<FString, TSharedPtr<FJsonValue>>& P : (*SkillObj)->Values)
+		for (const TPair<FString, TSharedPtr<FJsonValue>> P : (*SkillObj)->Values)
 		{
 			Skills.Add(FName(*P.Key), static_cast<int32>(P.Value->AsNumber()));
 		}

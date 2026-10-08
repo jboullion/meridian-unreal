@@ -354,7 +354,7 @@ bool FMRSpriteLibrary::ParseParts(const TSharedPtr<FJsonObject>& Root)
 	{
 		return false;
 	}
-	for (const TPair<FString, TSharedPtr<FJsonValue>>& It : (*BgfsObj)->Values)
+	for (const TPair<FString, TSharedPtr<FJsonValue>> It : (*BgfsObj)->Values)
 	{
 		const TSharedPtr<FJsonObject> O = It.Value->AsObject();
 		FMRSpriteBgf& B = Bgfs.Add(It.Key);
@@ -370,7 +370,7 @@ bool FMRSpriteLibrary::ParseParts(const TSharedPtr<FJsonObject>& Root)
 		const TSharedPtr<FJsonObject>* TweenObj;
 		if (O->TryGetObjectField(TEXT("tweens"), TweenObj))
 		{
-			for (const TPair<FString, TSharedPtr<FJsonValue>>& T : (*TweenObj)->Values)
+			for (const TPair<FString, TSharedPtr<FJsonValue>> T : (*TweenObj)->Values)
 			{
 				FString A, Bs;
 				if (!T.Key.Split(TEXT(">"), &A, &Bs))
@@ -403,14 +403,14 @@ bool FMRSpriteLibrary::ParseParts(const TSharedPtr<FJsonObject>& Root)
 	const TSharedPtr<FJsonObject>* AtlasObj;
 	if (Root->TryGetObjectField(TEXT("atlases"), AtlasObj))
 	{
-		for (const TPair<FString, TSharedPtr<FJsonValue>>& It : (*AtlasObj)->Values)
+		for (const TPair<FString, TSharedPtr<FJsonValue>> It : (*AtlasObj)->Values)
 		{
 			const TSharedPtr<FJsonObject> O = It.Value->AsObject();
 			FMRSpriteAtlas& A = Atlases.Add(It.Key);
 			A.Texture = O->GetStringField(TEXT("texture"));
 			O->TryGetStringField(TEXT("ramp"), A.RampTexture);
 			A.Size = FIntPoint(O->GetIntegerField(TEXT("w")), O->GetIntegerField(TEXT("h")));
-			for (const TPair<FString, TSharedPtr<FJsonValue>>& C : O->GetObjectField(TEXT("cells"))->Values)
+			for (const TPair<FString, TSharedPtr<FJsonValue>> C : O->GetObjectField(TEXT("cells"))->Values)
 			{
 				const TArray<TSharedPtr<FJsonValue>>& R = C.Value->AsArray();
 				const FIntPoint Min(R[0]->AsNumber(), R[1]->AsNumber());
@@ -436,7 +436,7 @@ bool FMRSpriteLibrary::ParseParts(const TSharedPtr<FJsonObject>& Root)
 	const TSharedPtr<FJsonObject>* LooksObj;
 	if (Root->TryGetObjectField(TEXT("looks"), LooksObj))
 	{
-		for (const TPair<FString, TSharedPtr<FJsonValue>>& It : (*LooksObj)->Values)
+		for (const TPair<FString, TSharedPtr<FJsonValue>> It : (*LooksObj)->Values)
 		{
 			const TSharedPtr<FJsonObject> O = It.Value->AsObject();
 			FMRSpriteLook& L = Looks.Add(FName(*It.Key));
@@ -473,7 +473,7 @@ bool FMRSpriteLibrary::ParseParts(const TSharedPtr<FJsonObject>& Root)
 			if (O->TryGetObjectField(TEXT("actions"), Acts))
 			{
 				TMap<FName, FMRSpriteAction>& Own = LookActions.Add(L.Name);
-				for (const TPair<FString, TSharedPtr<FJsonValue>>& A : (*Acts)->Values)
+				for (const TPair<FString, TSharedPtr<FJsonValue>> A : (*Acts)->Values)
 				{
 					ParseAction(FName(*A.Key), A.Value->AsObject(), Own.Add(FName(*A.Key)));
 				}
@@ -484,7 +484,7 @@ bool FMRSpriteLibrary::ParseParts(const TSharedPtr<FJsonObject>& Root)
 	const TSharedPtr<FJsonObject>* MonstersObj;
 	if (Root->TryGetObjectField(TEXT("monsters"), MonstersObj))
 	{
-		for (const TPair<FString, TSharedPtr<FJsonValue>>& It : (*MonstersObj)->Values)
+		for (const TPair<FString, TSharedPtr<FJsonValue>> It : (*MonstersObj)->Values)
 		{
 			const TSharedPtr<FJsonObject> O = It.Value->AsObject();
 			FMRMonsterDef& M = Monsters.Add(FName(*It.Key));
@@ -501,7 +501,7 @@ bool FMRSpriteLibrary::ParseParts(const TSharedPtr<FJsonObject>& Root)
 			const TSharedPtr<FJsonObject>* Sounds;
 			if (O->TryGetObjectField(TEXT("sounds"), Sounds))
 			{
-				for (const TPair<FString, TSharedPtr<FJsonValue>>& Snd : (*Sounds)->Values)
+				for (const TPair<FString, TSharedPtr<FJsonValue>> Snd : (*Sounds)->Values)
 				{
 					M.Sounds.Add(FName(*Snd.Key), Snd.Value->AsString());
 				}
@@ -530,7 +530,7 @@ bool FMRSpriteLibrary::ParseActions(const TSharedPtr<FJsonObject>& Root)
 	const TSharedPtr<FJsonObject>* Fp;
 	if (Root->TryGetObjectField(TEXT("_first_person"), Fp))
 	{
-		for (const TPair<FString, TSharedPtr<FJsonValue>>& It : (*Fp)->Values)
+		for (const TPair<FString, TSharedPtr<FJsonValue>> It : (*Fp)->Values)
 		{
 			if (It.Key.StartsWith(TEXT("_")) || It.Value->Type != EJson::Object)
 			{
@@ -547,7 +547,7 @@ bool FMRSpriteLibrary::ParseActions(const TSharedPtr<FJsonObject>& Root)
 			}
 		}
 	}
-	for (const TPair<FString, TSharedPtr<FJsonValue>>& It : Root->Values)
+	for (const TPair<FString, TSharedPtr<FJsonValue>> It : Root->Values)
 	{
 		if (It.Key.StartsWith(TEXT("_")) || It.Value->Type != EJson::Object)
 		{
@@ -562,7 +562,7 @@ bool FMRSpriteLibrary::ParseActions(const TSharedPtr<FJsonObject>& Root)
 void FMRSpriteLibrary::ParseAction(FName Name, const TSharedPtr<FJsonObject>& O, FMRSpriteAction& A)
 {
 	A.Name = Name;
-	for (const TPair<FString, TSharedPtr<FJsonValue>>& T : O->Values)
+	for (const TPair<FString, TSharedPtr<FJsonValue>> T : O->Values)
 	{
 		FMRSpriteTrackDef& D = A.Tracks.Add(FName(*T.Key));
 		if (T.Value->Type == EJson::Number)

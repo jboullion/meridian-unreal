@@ -37,6 +37,7 @@ Load these before working in their area. Skills are the current *how-to*; ADRs a
 | In-game UI: HUD, hotbars, inventory dialog, minimap, `Source/.../UI/`, `tools/ui/`, `data/ui/*.json` | [ADR 0009](docs/adr/0009-user-interface.md) |
 | Playing on servers: login screen, chat, the protocol, `Source/.../Net/`, `data/net/servers.json` | [ADR 0010](docs/adr/0010-meridian-servers.md), [docs/research/blakserv-protocol.md](docs/research/blakserv-protocol.md) |
 | New content on our own server: rooms, spell schools, items, monsters; the server fork | [ADR 0011](docs/adr/0011-custom-server-content.md) (proposed) |
+| Linux and Mac builds, packaging, platform testing: `tools/ue/package.ps1`, `package_mac.sh`, `Config/DefaultDeviceProfiles.ini` | [ADR 0011](docs/adr/0011-linux-and-mac-builds.md) |
 | The original data (scale, coordinates, zone layout, missing assets) | [docs/findings.md](docs/findings.md) |
 | Monster, prop and character pipeline research | [docs/research/](docs/research/) |
 
