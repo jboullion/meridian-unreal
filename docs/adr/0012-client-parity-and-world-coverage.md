@@ -291,6 +291,23 @@ The existing movement, UI-shot and look-dev runs stay green. Look-dev compares r
 - Review sheets: `build/sprites/equipment/outfits.png` (every torso with a weapon, shield or helmet; original against upscaled) and `items.png` (every weapon, shield, bow and helmet under nearest, `scale4x` and `gtav_dither`).
 - `run_move_test.ps1` is 8/8, but the 3.9 m ledge jump failed 2 of 6 runs today. It sits near the original's ~4.1 m limit and was flaky before; no movement code changed.
 
+### M3, inventory and items (2026-10-08)
+**What landed:**
+- **The protocol** (docs/research/blakserv-protocol.md, "Items"): the inventory, the use list, use and unuse, get, drop, containers, apply, activate and inventory moves, with number items sent as a tagged id and an amount. The world model keeps the inventory, what is in use and the last container's contents; the inventory is asked for on entering and after a server save.
+- **The inventory screen online** (`UMRNetInventory`, ADR 0009 "Inventory online"):
+  - items in use show on their equipment slot (by their class's use type, matched from the icon in `data/items.json`), the wielded weapon in the right hand, which is its own slot online;
+  - the hotbar is a layout on this client, the rest of the bag is in the server's order;
+  - the click rules become requests; icons we haven't built come from the server's bitmaps at runtime.
+- **In the world:** G picks up what the crosshair is on (a list for a pile), F opens a container or works a lever, and the Look dialog offers Get, Inside and Use. A container's contents are a list; picking one takes it.
+
+**Not yet:** putting things into a container and applying an item to a target have no UI (the requests exist; apply comes with spell targets in M5); giving is an offer (M6); the hotbar layout isn't saved between sessions; the inventory's weight and bulk come from our item data, not the server's.
+
+**Verification (local Shards stack):**
+- `Meridian.Net.World` also reads an inventory with a number item, and a use list; all 21 automation tests pass.
+- `run_net_test.ps1` reports **DONE 28/28**. The new Items step: the inventory arrives (a mace, 980 shillings) and the inventory screen shows it; the mace is wielded (BP_USE; on the right-hand slot) and put away; it is dropped (it lies in the room) and picked up again; 10 shillings are dropped and picked up (the amount kept through `BP_CHANGE`).
+- `-Render` writes `inventory.png`: the mace in the right hand, on the avatar and in first person (the server's window overlay), the shillings with an icon from their bitmap.
+- UI shots offline (`build/ui/shots/m3/`) are unchanged.
+
 ## Alternatives considered
 
 - **Bake every room before allowing travel:** no runtime code, but hours of GPU texture work and hundreds of levels to import before anyone can leave Raza. A room changed on the server would also break until rebuilt.

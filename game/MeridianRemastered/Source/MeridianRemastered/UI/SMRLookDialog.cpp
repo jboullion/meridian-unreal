@@ -152,6 +152,38 @@ void SMRLookDialog::ShowDescription(const FMRNetDescription& D, const FSlateBrus
 		Text->AddSlot().AutoHeight().Padding(0.f, 2.f * Px, 0.f, 0.f)[Para(FString::Printf(TEXT("%u"), D.Object.Amount), Detail, 8.f)];
 	}
 
+	if (!D.bPlayer && !SaveButton.IsValid())
+	{
+		// a thing in the room: what can be done with it, as the original's look dialog offered (dialog.c)
+		TSharedRef<SHorizontalBox> Buttons = SNew(SHorizontalBox);
+		TWeakObjectPtr<UMRUISubsystem> Weak(Ui);
+		const uint32 Id = D.Object.Id;
+		auto AddButton = [&](const FText& Label, EMRObjectAction Action)
+		{
+			Buttons->AddSlot().AutoWidth().Padding(0.f, 0.f, 4.f * Px, 0.f)
+			[
+				SNew(SMRTextButton, Ui).Text(Label).TextSize(10.f).MinWidth(50.f)
+					.OnClicked(FSimpleDelegate::CreateLambda([Weak, Id, Action]() { if (Weak.IsValid()) Weak->DoObjectAction(Action, Id); }))
+			];
+		};
+		if (D.Object.Flags & MRMsg::OF_GETTABLE)
+		{
+			AddButton(LOCTEXT("Get", "Get"), EMRObjectAction::Get);
+		}
+		if (D.Object.Flags & MRMsg::OF_CONTAINER)
+		{
+			AddButton(LOCTEXT("Inside", "Inside"), EMRObjectAction::Inside);
+		}
+		if (D.Object.Flags & MRMsg::OF_ACTIVATABLE)
+		{
+			AddButton(LOCTEXT("Use", "Use"), EMRObjectAction::Activate);
+		}
+		if (Buttons->NumSlots() > 0)
+		{
+			SaveButton = Buttons;
+		}
+	}
+
 	const TSharedRef<SWidget> Row = SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(0.f, 0.f, 6.f * Px, 0.f)
 		[
@@ -176,7 +208,7 @@ void SMRLookDialog::ShowDescription(const FMRNetDescription& D, const FSlateBrus
 	Rebuild(Row, FText::FromString(D.Object.Name), NameColorOf(D.Object), SaveButton);
 }
 
-void SMRLookDialog::ShowPicker(const TArray<uint32>& Ids, const TArray<FText>& Names)
+void SMRLookDialog::ShowPicker(const TArray<uint32>& Ids, const TArray<FText>& Names, EMRPickAction Action, const FText& Title)
 {
 	UMRUISubsystem* Ui = UI.Get();
 	if (!Ui)
@@ -184,6 +216,7 @@ void SMRLookDialog::ShowPicker(const TArray<uint32>& Ids, const TArray<FText>& N
 		return;
 	}
 	PickIds = Ids;
+	PickAction = Action;
 	EditBox.Reset();
 	TWeakObjectPtr<UMRUISubsystem> Weak(Ui);
 	TWeakPtr<SMRLookDialog> WeakSelf = SharedThis(this);
@@ -193,11 +226,11 @@ void SMRLookDialog::ShowPicker(const TArray<uint32>& Ids, const TArray<FText>& N
 			const TSharedPtr<SMRLookDialog> Self = WeakSelf.Pin();
 			if (Weak.IsValid() && Self.IsValid() && Self->PickIds.IsValidIndex(Row))
 			{
-				Weak->LookAt(Self->PickIds[Row]);
+				Weak->PickChosen(Self->PickAction, Self->PickIds[Row]);
 			}
 		}));
 	List->SetItems(Names);
-	Rebuild(List, LOCTEXT("PickTitle", "Look at..."), FLinearColor(1.f, 0.93f, 0.7f), nullptr);
+	Rebuild(List, Title, FLinearColor(1.f, 0.93f, 0.7f), nullptr);
 }
 
 FString SMRLookDialog::GetEditedText() const

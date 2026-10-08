@@ -48,6 +48,8 @@ struct FMRNetObject
 	uint32 Id = 0;         // without the number tag
 	/** How many, for a number item (shillings, arrows); 0 for anything else. */
 	uint32 Amount = 0;
+	/** A number item (its id came with CLIENT_TAG_NUMBER): sent back with an amount. */
+	bool bNumber = false;
 	uint32 IconRsc = 0;
 	uint32 NameRsc = 0;
 	FString Icon;          // the bitmap's file name, e.g. "bunny2.bgf"
@@ -203,6 +205,21 @@ struct FMRNetWorld
 	uint32 PlayerOverlaySeq = 0;
 	/** Who is logged on, by object id. */
 	TMap<uint32, FMRNetUser> Users;
+	/**
+	 * What the player carries (BP_INVENTORY, _ADD, _REMOVE), in the server's order: the items in
+	 * use first, then the rest (user.kod ToCliInventory). Kept across rooms.
+	 */
+	TArray<FMRNetObject> Inventory;
+	bool bHasInventory = false;
+	/** The carried items in use: worn, wielded (BP_USE_LIST, BP_USE, BP_UNUSE). */
+	TSet<uint32> Using;
+	/** The last container looked into (BP_OBJECT_CONTENTS): its id and what it holds. */
+	uint32 ContentsOf = 0;
+	TArray<FMRNetObject> Contents;
+
+	const FMRNetObject* FindInventory(uint32 Id) const { return Inventory.FindByPredicate([Id](const FMRNetObject& O) { return O.Id == Id; }); }
+	/** Forget the inventory (logged off, or the server renumbered its objects). */
+	void ResetInventory();
 	TArray<FMRNetStatGroup> StatGroups;
 
 	/** Forget the room and its objects and who is on (the server sends them again on request). */
@@ -228,6 +245,10 @@ namespace MRNetRead
 	MERIDIANREMASTERED_API bool RoomObject(FMRReader& R, const FMRResourceTable& Res, FMRNetObject& Out);
 	/** An object without its light (ExtractObjectNoLight: BP_PLAYER_OVERLAY's). */
 	MERIDIANREMASTERED_API bool ObjectNoLight(FMRReader& R, const FMRResourceTable& Res, FMRNetObject& Out);
+	/** A list of objects (ExtractObjectList: u16 count, then each object): BP_INVENTORY, BP_OBJECT_CONTENTS. */
+	MERIDIANREMASTERED_API bool ObjectList(FMRReader& R, const FMRResourceTable& Res, TArray<FMRNetObject>& Out);
+	/** A list of ids (u16 count, then u32 each): BP_USE_LIST. */
+	MERIDIANREMASTERED_API bool IdList(FMRReader& R, TArray<uint32>& Out);
 	/** BP_LOOK's body after the type byte. */
 	MERIDIANREMASTERED_API bool Look(FMRReader& R, const FMRResourceTable& Res, FMRNetDescription& Out);
 	/** UC_LOOK_PLAYER's body after BP_USERCOMMAND's type bytes. */

@@ -124,6 +124,15 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
   - a list to pick from when several things are under the crosshair.
   - While it is open the UI has the keyboard and mouse.
 
+## Inventory online (2026-10-08, M3 of ADR 0012)
+`UMRNetInventory` shows the server's inventory with the same widgets and click rules; each interaction becomes a request, and the screen shows what the server then says.
+- **Where an item shows:** in use, on its equipment slot (its class from its icon in `data/items.json`; a second ring on the second ring slot, a second hand item in the free hand); else on the hotbar slot it was put on; else in the bag, in the server's order.
+- **The right hand is its own slot online:** the server wields one weapon, and won't swap a wielded weapon for another (it is put away first). Selecting a hotbar slot doesn't wield it.
+- **The hotbar** is a layout on this client: each slot names an item (found again by its icon and name after a server save renumbers objects). It isn't saved between sessions yet.
+- **Clicks:** onto an equipment slot uses the item; off one takes it off; onto another item in the bag takes its place (`BP_REQ_INVENTORY_MOVE`); out of the window drops it (right click: one; right-click picking up takes half of a stack, to drop some); shift click uses or takes off.
+- **Icons:** the prebuilt ones where the item's class is known; else the item's own bitmap from the server, made at runtime (nearest filtered).
+- **In the world:** G gets, F opens or activates, Look offers Get, Inside and Use; a container's contents use the Look dialog's list.
+
 ## Consequences
 - Inventory and equipment are still **mock data offline** and empty online (M3). Spells don't cast; a "cast" plays the sprite's cast action and a cooldown sweep. Online, the vitals, stats, spells and skills come from the server's stat groups (`docs/research/blakserv-protocol.md`, "Stats"). Offline they come from the attributes and the mock file.
 - Equipment doesn't change the avatar yet (no equipment layers on the sprite body).

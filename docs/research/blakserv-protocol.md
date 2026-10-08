@@ -245,6 +245,22 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
   - Helmets and hats: their own icon at `HS_TOUPEE` 13, group 1 (`helmet.kod`).
 - **Holding bends the arms:** a weapon at 22 puts the right arm on group 17; a shield, bow or token puts the left on group 7. That arm then doesn't swing while walking or dance, and one-shots (attack, wave, cast) end on it (`iRight_group`, `iLeft_group`).
 
+## Items (Kod `user.kod` ReceiveClientMsg / ToCliInventory; `clientd3d/protocol.c`, `server.c`; `blakserv/parsecli.c`)
+- **The inventory:**
+  - `BP_REQ_INVENTORY` (117, no body) is answered with `BP_INVENTORY` (208) then `BP_USE_LIST` (205). The original asks once on entering the game (`game.c:122`).
+  - `BP_INVENTORY`: `u16 count`, then that many objects in the room-contents object format without position (`ExtractObject`: id, amount for a number item, icon, name, flags, drawing effect, minimap flags, name colour, two type bytes, light, translation, animation, overlays). The items in use come first, then the rest from the newest (`ToCliInventory` walks `plPassive` backwards).
+  - `BP_USE_LIST`: `u16 count`, then `u32` ids. `BP_USE` (203) and `BP_UNUSE` (204): one `u32` id.
+  - `BP_INVENTORY_ADD` (209): one object. `BP_INVENTORY_REMOVE` (210): one `u32` id.
+  - **A number item's new amount** (after dropping some) comes as `BP_CHANGE` (`SomethingChanged`), the same message that changes a room object: an object plus its motion record.
+- **Number items** (shillings, reagents): the id's top 4 bits are `CLIENT_TAG_NUMBER` (1) and an `u32` amount follows the id, in both directions. Sending one, the client puts the tagged id and how many (`protocol.c PARAM_OBJECT`); blakserv reads the amount whenever an id carries the tag (`parsecli.c`) and Kod gets it as `number`.
+- **Requests** (each id `u32`; *item* = an id, or a tagged id and an amount):
+  - `BP_REQ_USE` (106) id, `BP_REQ_UNUSE` (107) id: wear, wield or use; take off. Kod refuses a second weapon while the hands are full (`player.kod CheckPosition`: armour and gauntlets swap themselves, weapons don't).
+  - `BP_REQ_GET` (113) id: pick up from the room. `BP_REQ_DROP` (118) *item*: a number item is split and the part dropped (`UserDrop`, `Split`).
+  - `BP_SEND_OBJECT_CONTENTS` (43) id: look into a container; answered with `BP_OBJECT_CONTENTS` (135): `u32` container, `u16 count`, objects. `BP_REQ_GET_FROM_CONTAINER` (240) *item*; `BP_REQ_PUT` (112) *item*, container id.
+  - `BP_REQ_APPLY` (108) item id, target id: use an item on something. `BP_REQ_ACTIVATE` (109) id: work something in the room. The original's double click opens a container, else activates (`gameuser.c`).
+  - `BP_REQ_INVENTORY_MOVE` (127) id, id: the first takes the second's place in `plPassive` (`UserMoveInventoryItem`); the server says nothing back.
+  - Giving to someone isn't `BP_REQ_GIVE` (unused): it is an offer (`BP_REQ_OFFER`), with trade (M6).
+
 ## Session (`blakserv/game.c`, Kod `user.kod`; the client side is `clientd3d/game.c`, `com.c`)
 - **Leaving the game but not the server:**
   - The client sends `BP_REQ_QUIT` (54). The server logs the character off and answers `BP_QUIT` (149) (`GameProtocolParse`, `GameClientExit`).

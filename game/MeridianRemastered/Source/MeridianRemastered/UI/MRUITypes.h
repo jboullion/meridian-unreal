@@ -62,19 +62,24 @@ struct FMRSlotRef
 	bool operator!=(const FMRSlotRef& O) const { return !(*this == O); }
 };
 
-/** What a slot holds: an item stack, or a spell (spell bar, spell book, cursor). */
+/**
+ * What a slot holds: an item stack, or a spell (spell bar, spell book, cursor). Online an item is a
+ * server object (ObjectId); Id is then its class in data/items.json when its icon is known there
+ * (UMRGameDataSubsystem::FindItemByIcon), else its icon.
+ */
 struct FMRSlotContent
 {
 	FName Id;
 	int32 Count = 0;
 	bool bSpell = false;
+	uint32 ObjectId = 0;
 
 	FMRSlotContent() = default;
 	FMRSlotContent(FName InId, int32 InCount, bool bInSpell = false) : Id(InId), Count(InCount), bSpell(bInSpell) {}
 	static FMRSlotContent Spell(FName InId) { return FMRSlotContent(InId, 1, true); }
 
 	bool IsEmpty() const { return Id.IsNone() || Count <= 0; }
-	bool SameThing(const FMRSlotContent& O) const { return Id == O.Id && bSpell == O.bSpell; }
+	bool SameThing(const FMRSlotContent& O) const { return ObjectId || O.ObjectId ? ObjectId == O.ObjectId : Id == O.Id && bSpell == O.bSpell; }
 };
 
 /** An item class from data/items.json (tools/kod_extract). */

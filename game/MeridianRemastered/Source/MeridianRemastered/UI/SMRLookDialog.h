@@ -11,6 +11,22 @@ class SVerticalBox;
 class UMRUISubsystem;
 struct FMRNetDescription;
 
+/** What a button on the Look dialog does to a thing in the room. */
+enum class EMRObjectAction : uint8
+{
+	Get,       // BP_REQ_GET
+	Inside,    // BP_SEND_OBJECT_CONTENTS
+	Activate,  // BP_REQ_ACTIVATE
+};
+
+/** What picking a row of SMRLookDialog's list does. */
+enum class EMRPickAction : uint8
+{
+	Look,              // look at it (several things under the crosshair)
+	Get,               // pick it up from the room (BP_REQ_GET)
+	GetFromContainer,  // take it out of the container looked into (BP_REQ_GET_FROM_CONTAINER)
+};
+
 /**
  * The Look dialog (docs/adr/0012 M2; the original's DisplayDescription): an object's or a player's
  * description from the server (BP_LOOK, UC_LOOK_PLAYER) with its picture, an inscription (signs,
@@ -27,8 +43,8 @@ public:
 	void Construct(const FArguments& InArgs, UMRUISubsystem* InUI);
 	/** Show a description; Picture is drawn in the box at the left (may be empty). */
 	void ShowDescription(const FMRNetDescription& D, const FSlateBrush* Picture);
-	/** List the objects to pick from (their ids and names); picking one asks for its description. */
-	void ShowPicker(const TArray<uint32>& Ids, const TArray<FText>& Names);
+	/** List the objects to pick from (their ids and names); picking one does Action to it (UMRUISubsystem::PickChosen). */
+	void ShowPicker(const TArray<uint32>& Ids, const TArray<FText>& Names, EMRPickAction Action, const FText& Title);
 	/** The edited description (one's own), for tests. */
 	FString GetEditedText() const;
 	void SetEditedText(const FString& Text);
@@ -44,4 +60,5 @@ private:
 	TSharedPtr<SMRTextBox> EditBox;
 	uint32 EditId = 0;
 	TArray<uint32> PickIds;
+	EMRPickAction PickAction = EMRPickAction::Look;
 };

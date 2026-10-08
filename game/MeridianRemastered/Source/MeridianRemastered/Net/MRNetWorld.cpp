@@ -14,6 +14,31 @@ bool FMRNetObject::IsCreature() const
 	return (Flags & (MRMsg::OF_PLAYER | MRMsg::OF_ATTACKABLE | MRMsg::OF_NPC)) != 0;
 }
 
+bool MRNetRead::ObjectList(FMRReader& R, const FMRResourceTable& Res, TArray<FMRNetObject>& Out)
+{
+	Out.Reset();
+	const int32 N = R.U16();
+	for (int32 i = 0; i < N && R.IsOk(); ++i)
+	{
+		if (!Object(R, Res, Out.AddDefaulted_GetRef()))
+		{
+			return false;
+		}
+	}
+	return R.IsOk();
+}
+
+bool MRNetRead::IdList(FMRReader& R, TArray<uint32>& Out)
+{
+	Out.Reset();
+	const int32 N = R.U16();
+	for (int32 i = 0; i < N && R.IsOk(); ++i)
+	{
+		Out.Add(MRMsg::PlainId(R.U32()));
+	}
+	return R.IsOk();
+}
+
 // ------------------------------------------------------------------------------ FMRNetWorld
 
 void FMRNetWorld::ResetRoom()
@@ -23,9 +48,19 @@ void FMRNetWorld::ResetRoom()
 	PlayerOverlays.Reset();
 }
 
+void FMRNetWorld::ResetInventory()
+{
+	Inventory.Reset();
+	bHasInventory = false;
+	Using.Reset();
+	ContentsOf = 0;
+	Contents.Reset();
+}
+
 void FMRNetWorld::Reset()
 {
 	ResetRoom();
+	ResetInventory();
 	Player = FMRNetPlayer();
 	StatGroups.Reset();
 }
@@ -115,7 +150,8 @@ bool MRNetRead::Object(FMRReader& R, const FMRResourceTable& Res, FMRNetObject& 
 {
 	const uint32 RawId = R.U32();
 	Out.Id = MRMsg::PlainId(RawId);
-	Out.Amount = MRMsg::IsNumberId(RawId) ? R.U32() : 0;
+	Out.bNumber = MRMsg::IsNumberId(RawId);
+	Out.Amount = Out.bNumber ? R.U32() : 0;
 	Out.IconRsc = R.U32();
 	Out.NameRsc = R.U32();
 	Out.Flags = R.U32();
@@ -143,7 +179,8 @@ bool MRNetRead::ObjectNoLight(FMRReader& R, const FMRResourceTable& Res, FMRNetO
 {
 	const uint32 RawId = R.U32();
 	Out.Id = MRMsg::PlainId(RawId);
-	Out.Amount = MRMsg::IsNumberId(RawId) ? R.U32() : 0;
+	Out.bNumber = MRMsg::IsNumberId(RawId);
+	Out.Amount = Out.bNumber ? R.U32() : 0;
 	Out.IconRsc = R.U32();
 	Out.NameRsc = R.U32();
 	Out.Flags = R.U32();

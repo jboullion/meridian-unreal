@@ -25,6 +25,9 @@ struct FSlateBrush;
  * AMRPlayerController feeds it the UI keys (1-9 and the wheel select the hotbar, numpad 1-9 cast,
  * E / I open the dialog, - / = zoom the map).
  */
+enum class EMRPickAction : uint8;
+enum class EMRObjectAction : uint8;
+
 UCLASS()
 class MERIDIANREMASTERED_API UMRUISubsystem : public ULocalPlayerSubsystem
 {
@@ -79,6 +82,12 @@ public:
 	// --- Look (SMRLookDialog; the server's descriptions: UMRNetSubsystem::OnDescription)
 	/** Several things under the crosshair: list them to pick one to look at. */
 	void ShowLookPicker(const TArray<uint32>& Ids);
+	/** Room objects to pick from, for an action (a pile to pick up from). */
+	void ShowPicker(const TArray<uint32>& Ids, EMRPickAction Action);
+	/** A row was picked: look at it, pick it up, or take it from the container. */
+	void PickChosen(EMRPickAction Action, uint32 ObjectId);
+	/** A Look dialog button: get, look inside, activate. */
+	void DoObjectAction(EMRObjectAction Action, uint32 ObjectId);
 	/** Ask the server for an object's description (it opens the dialog when it arrives). */
 	void LookAt(uint32 ObjectId);
 	/** Save one's own description and show it again. */
@@ -105,6 +114,11 @@ public:
 	UMRAttributeSet* GetAttributes() const;
 	APlayerController* GetPlayerController() const;
 	const FSlateBrush* IconFor(const FMRSlotContent& Content) const;
+	/**
+	 * A server object's picture from its own bitmap (its group, seen from the front), made when its
+	 * file arrives through the asset cache: items we have no prebuilt icon for. Null until then.
+	 */
+	const FSlateBrush* BitmapIcon(const FString& Bgf, int32 Group) const;
 	FText NameFor(const FMRSlotContent& Content) const;
 	TSharedPtr<IToolTip> MakeToolTip(const FMRSlotContent& Content);
 	/** A skill's tooltip: its name, school, percentage and description. */
@@ -174,13 +188,20 @@ private:
 	bool bChatOpen = false;
 	bool bGameMenuOpen = false;
 	bool bLookOpen = false;
+	/** BitmapIcon's pictures, by "bgf:group" (a null brush: asked for, not here yet). */
+	mutable TMap<FString, TSharedPtr<FSlateBrush>> BitmapIcons;
+	UPROPERTY(Transient)
+	mutable TMap<FString, TObjectPtr<class UTexture2D>> BitmapIconTextures;
 	/** The Look dialog's picture: an object's own bitmap, or a player's face portrait. */
 	FSlateBrush LookBrush;
 	UPROPERTY(Transient)
 	TObjectPtr<class UTexture2D> LookPicture;
 	uint32 LookPictureFor = 0;
 	FDelegateHandle NetDescriptionHandle;
+	FDelegateHandle NetContentsHandle;
 	void OnNetDescription();
+	/** A container's contents arrived (BP_OBJECT_CONTENTS): list them to take from. */
+	void OnNetContents();
 	void SetLookOpen(bool bOpen);
 	bool bTextInput = false;
 	int32 StatsVersion = 0;

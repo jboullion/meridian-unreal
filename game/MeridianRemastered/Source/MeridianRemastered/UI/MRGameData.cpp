@@ -80,6 +80,7 @@ void UMRGameDataSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		D.Name = Capitalised(Str(*O, TEXT("vrName")));
 		D.Desc = Desc(Str(*O, TEXT("vrDesc")));
 		D.Icon = IconName(Str(*O, TEXT("vrIcon")));
+		ItemByIcon.FindOrAdd(D.Icon.ToString().ToLower(), D.Class);
 		D.Kind = Str(*O, TEXT("kind"));
 		D.Weight = Int(*O, TEXT("viWeight"));
 		D.Bulk = Int(*O, TEXT("viBulk"));
@@ -163,6 +164,12 @@ const FMRSkillDef* UMRGameDataSubsystem::FindSkillByName(const FString& Name) co
 {
 	const FName* Class = SkillByName.Find(Name.ToLower());
 	return Class ? Skills.Find(*Class) : nullptr;
+}
+
+const FMRItemDef* UMRGameDataSubsystem::FindItemByIcon(const FString& IconStem) const
+{
+	const FName* Class = ItemByIcon.Find(IconStem.ToLower());
+	return Class ? Items.Find(*Class) : nullptr;
 }
 
 EMREquipSlot UMRGameDataSubsystem::EquipSlotFor(const FMRItemDef& Item) const

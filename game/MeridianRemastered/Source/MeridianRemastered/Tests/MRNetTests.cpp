@@ -245,6 +245,26 @@ bool FMRNetWorldTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("player overlay reads to its end"), MRNetRead::ObjectNoLight(OVR, Res2, Hand) && OVR.AtEnd());
 	TestEqual(TEXT("player overlay animation"), static_cast<int32>(Hand.Animation.Type), static_cast<int32>(MRMsg::ANIMATE_ONCE));
 
+	// BP_INVENTORY: a list of objects; a number item's id carries CLIENT_TAG_NUMBER and an amount
+	FMRWriter INV(MRMsg::BP_INVENTORY);
+	INV.U16(2);
+	INV.U32(0x200).U32(10).U32(0).U32(0).U8(0).U32(0).U32(0).U8(0).U8(0).U16(0).U8(MRMsg::ANIMATE_NONE).U16(1).U8(0);
+	INV.U32(MRMsg::NumberId(0x201)).U32(57).U32(10).U32(0).U32(0).U8(0).U32(0).U32(0).U8(0).U8(0).U16(0).U8(MRMsg::ANIMATE_NONE).U16(1).U8(0);
+	FMRReader INVR(INV.Bytes, 1);
+	TArray<FMRNetObject> Carried;
+	TestTrue(TEXT("inventory reads to its end"), MRNetRead::ObjectList(INVR, Res2, Carried) && INVR.AtEnd());
+	if (TestEqual(TEXT("two items"), Carried.Num(), 2))
+	{
+		TestTrue(TEXT("a plain item"), Carried[0].Id == 0x200 && !Carried[0].bNumber && Carried[0].Amount == 0);
+		TestTrue(TEXT("a number item: its plain id and amount"), Carried[1].Id == 0x201 && Carried[1].bNumber && Carried[1].Amount == 57);
+	}
+	TestEqual(TEXT("a number item is sent tagged"), MRMsg::NumberId(0x201), 0x10000201u);
+	FMRWriter USE(MRMsg::BP_USE_LIST);
+	USE.U16(2).U32(0x200).U32(0x202);
+	FMRReader USER(USE.Bytes, 1);
+	TArray<uint32> InUse;
+	TestTrue(TEXT("use list reads"), MRNetRead::IdList(USER, InUse) && USER.AtEnd() && InUse.Num() == 2 && InUse[1] == 0x202);
+
 	// the manifest's hash: the first 16 hex digits of SHA-1 ("abc": a9993e36 4706816a ...)
 	TestEqual(TEXT("manifest hash"), FMRAssetCache::HashBytes({'a', 'b', 'c'}), FString(TEXT("a9993e364706816a")));
 	return true;

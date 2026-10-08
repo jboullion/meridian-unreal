@@ -57,22 +57,22 @@ Last survey: 2026-10-08. M0, M1, M2a and M2b done the same day.
 | Name plates | — | Done: the original's rules (15 squares, signs, the target), not through walls | Done | M2 |
 | Armour, weapons and hats on players | overlays | Done: torsos, arms, legs, weapons, shields, bows and helmets from the server's overlays, all 165 bitmaps converted; arms bend as the original's | Done | M2b |
 | First-person weapon and shield | `BP_PLAYER_OVERLAY` | Done: the server's slots drawn in their screen corners and animated; the local swing shows first | Done | M2b |
-| Look / examine dialog | `BP_REQ_LOOK`, `BP_LOOK` | Done: right mouse button; picture, description, inscription; a picker for a pile; context buttons are M3 | Done | M2, M3 |
+| Look / examine dialog | `BP_REQ_LOOK`, `BP_LOOK` | Done: right mouse button; picture, description, inscription; a picker for a pile; Get, Inside and Use buttons for things in the room (M3) | Done | M2, M3 |
 | Player descriptions | `UC_LOOK_PLAYER`, `BP_CHANGE_DESCRIPTION` | Done: face portrait, extra lines, web page; edit and save one's own | Done | M2 |
 
 ## Inventory and items
 
 | Feature | Messages | UE | Shards | M |
 |---|---|---|---|---|
-| Inventory list | `BP_INVENTORY`, `BP_INVENTORY_ADD/REMOVE` | Missing online (an empty bag, no mock items); mock offline | Done | M3 |
-| Use and unuse, equipment slots | `BP_REQ_USE`, `BP_USE_LIST`, `BP_USE`, `BP_UNUSE` | Mock | Done | M3 |
-| Apply to a target, activate | `BP_REQ_APPLY`, `BP_REQ_ACTIVATE` | Missing | Done | M3 |
-| Get and drop (stack amounts) | `BP_REQ_GET`, `BP_REQ_DROP` | Mock | Done | M3 |
-| Containers | `BP_SEND_OBJECT_CONTENTS`, `BP_REQ_PUT`, `BP_REQ_GET_FROM_CONTAINER` | Missing | Done | M3 |
-| Give | `BP_REQ_GIVE` | Missing | Missing | M3 |
-| Reorder | `BP_REQ_INVENTORY_MOVE` | Mock | Missing | M3 |
-| Hotbar | — | Missing online; mock offline | Missing | M3 |
-| Equipment on the avatar preview | — | Missing | — | M3 |
+| Inventory list | `BP_INVENTORY`, `BP_INVENTORY_ADD/REMOVE` | Done online (the server's items; a number item's amount kept by `BP_CHANGE`); mock offline | Done | M3 |
+| Use and unuse, equipment slots | `BP_REQ_USE`, `BP_USE_LIST`, `BP_USE`, `BP_UNUSE` | Done: onto an equipment slot or shift click; in-use items show on their slot (the wielded weapon in the right hand) | Done | M3 |
+| Apply to a target, activate | `BP_REQ_APPLY`, `BP_REQ_ACTIVATE` | Partial: F activates what the crosshair is on; apply is in the protocol, no UI yet (with spell targets, M5) | Done | M3, M5 |
+| Get and drop (stack amounts) | `BP_REQ_GET`, `BP_REQ_DROP` | Done: G gets (a list for a pile); dropping out of the window drops it (right click: one of a stack; half picked up with right click) | Done | M3 |
+| Containers | `BP_SEND_OBJECT_CONTENTS`, `BP_REQ_PUT`, `BP_REQ_GET_FROM_CONTAINER` | Partial: F or Look's Inside lists the contents, picking one takes it; putting in is in the protocol, no UI yet | Done | M3 |
+| Give | an offer, `BP_REQ_OFFER` (`BP_REQ_GIVE` is unused) | Missing | Missing | M6 |
+| Reorder | `BP_REQ_INVENTORY_MOVE` | Done: an item put on another in the bag takes its place | Missing | M3 |
+| Hotbar | — | Done online as a layout on this client (not saved between sessions yet) | Missing | M3 |
+| Equipment on the avatar preview | — | Done: the avatar wears the server's equipment (M2b) | — | M3 |
 
 ## Combat and effects
 
@@ -163,7 +163,7 @@ The server serves about 395 rooms. `ReferenceServers/Server-104/resource/rooms` 
 | M0 | Foundations: client world model, session robustness, asset cache, Escape menu (done 2026-10-08) |
 | M1 | Whole-world travel: runtime rooms and runtime sprites (done 2026-10-08) |
 | M2 | See and select everything: all objects, name plates, targeting, Look (M2a, done 2026-10-08); equipment overlays (M2b, done 2026-10-08) |
-| M3 | Inventory and items |
+| M3 | Inventory and items (done 2026-10-08) |
 | M4 | Combat, death and effects |
 | M5 | Spells, skills, enchantments, stats |
 | M6 | NPCs, economy, player trade |

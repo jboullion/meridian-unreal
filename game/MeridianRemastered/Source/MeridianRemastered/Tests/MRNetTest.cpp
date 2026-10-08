@@ -20,6 +20,7 @@
 #include "Net/MRNetWorldSubsystem.h"
 #include "TimerManager.h"
 #include "UI/MRUISubsystem.h"
+#include "UI/MRInventorySource.h"
 #include "Engine/LocalPlayer.h"
 #include "UnrealClient.h"
 #include "Zones/MRZoneSubsystem.h"
@@ -712,7 +713,7 @@ void UMRNetTest::Tick()
 		if (bTimedOut)
 		{
 			Fail(FString::Printf(TEXT("look: stuck at stage %d"), LookStage));
-			Advance(EStep::Travel);
+			Advance(EStep::Items);
 			break;
 		}
 		// first to the Inn of Raza (zone 301), where Marcus the innkeeper stands
@@ -893,6 +894,205 @@ void UMRNetTest::Tick()
 			{
 				UI->CloseLook();
 			}
+			Advance(EStep::Items);
+		}
+		break;
+	}
+
+	case EStep::Items:
+	{
+		const FMRNetWorld& W = Net->GetNetWorld();
+		UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+		if (bTimedOut)
+		{
+			Fail(FString::Printf(TEXT("items: stuck at stage %d (%s)"), ItemStage, *ItemName));
+			Advance(EStep::Travel);
+			break;
+		}
+		const FMRNetObject* Item = ItemId ? Net->FindInventory(ItemId) : nullptr;
+		if (ItemStage == 0 && W.bHasInventory && Now - StepStart > 1.0)
+		{
+			TArray<FString> Lines;
+			for (const FMRNetObject& O : W.Inventory)
+			{
+				Lines.Add(FString::Printf(TEXT("%s%s (%s)%s"), O.bNumber ? *FString::Printf(TEXT("%u "), O.Amount) : TEXT(""), *O.Name,
+					*O.Icon, Net->IsUsing(O.Id) ? TEXT(", in use") : TEXT("")));
+			}
+			Pass(FString::Printf(TEXT("carrying %d items: %s"), W.Inventory.Num(), *FString::Join(Lines, TEXT("; "))));
+			// the inventory screen's source shows them: in use on equipment slots, the rest in the bag
+			if (UMRInventorySource* Src = UI ? UI->GetSource() : nullptr)
+			{
+				int32 Shown = 0, Worn = 0;
+				for (int32 i = 0; i < Src->NumSlots(EMRSlotArea::Bag); ++i)
+				{
+					Shown += Src->Get(FMRSlotRef(EMRSlotArea::Bag, i)).ObjectId ? 1 : 0;
+				}
+				for (int32 i = 0; i < static_cast<int32>(EMREquipSlot::Count); ++i)
+				{
+					Worn += Src->Get(FMRSlotRef::Equip(static_cast<EMREquipSlot>(i))).ObjectId ? 1 : 0;
+				}
+				for (int32 i = 0; i < 9; ++i)
+				{
+					Shown += Src->Get(FMRSlotRef(EMRSlotArea::Hotbar, i)).ObjectId ? 1 : 0;
+				}
+				if (Shown + Worn == W.Inventory.Num())
+				{
+					Pass(FString::Printf(TEXT("the inventory screen shows them: %d on equipment slots, %d in the bag"), Worn, Shown));
+				}
+				else
+				{
+					Fail(FString::Printf(TEXT("items: the inventory screen shows %d of %d"), Shown + Worn, W.Inventory.Num()));
+				}
+			}
+			// the item to try: something not counted (a weapon, clothes), in use or not
+			const FMRNetObject* Pick = W.Inventory.FindByPredicate([&](const FMRNetObject& O) { return !O.bNumber && Net->IsUsing(O.Id); });
+			Pick = Pick ? Pick : W.Inventory.FindByPredicate([](const FMRNetObject& O) { return !O.bNumber; });
+			if (!Pick)
+			{
+				Fail(TEXT("items: we carry nothing to try"));
+				Advance(EStep::Travel);
+				break;
+			}
+			ItemId = Pick->Id;
+			ItemName = Pick->Name;
+			bItemWasInUse = Net->IsUsing(ItemId);
+			if (bItemWasInUse)
+			{
+				Net->UnuseItem(ItemId);
+			}
+			else
+			{
+				Net->UseItem(ItemId);
+			}
+			ItemStage = 1;
+			StageTime = Now;
+		}
+		else if (ItemStage == 1 && Net->IsUsing(ItemId) != bItemWasInUse)
+		{
+			// in use: on its equipment slot in the inventory screen
+			FString Where;
+			if (UMRInventorySource* Src = UI ? UI->GetSource() : nullptr)
+			{
+				for (int32 i = 0; i < static_cast<int32>(EMREquipSlot::Count); ++i)
+				{
+					if (Src->Get(FMRSlotRef::Equip(static_cast<EMREquipSlot>(i))).ObjectId == ItemId)
+					{
+						Where = FString::Printf(TEXT(", shown on equipment slot %d"), i);
+					}
+				}
+			}
+			Pass(FString::Printf(TEXT("%s %s (%s)%s"), bItemWasInUse ? TEXT("took off") : TEXT("used"), *ItemName,
+				bItemWasInUse ? TEXT("BP_REQ_UNUSE, BP_UNUSE") : TEXT("BP_REQ_USE, BP_USE"), *Where));
+			if (FApp::CanEverRender() && UI && !bItemWasInUse)
+			{
+				// the inventory screen with it in hand (Saved/Screenshots/MRNet/inventory.png)
+				UI->SetInventoryOpen(true);
+				const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), TEXT("inventory.png"));
+				FTimerHandle T;
+				PC->GetWorldTimerManager().SetTimer(T, FTimerDelegate::CreateLambda([File]() { FScreenshotRequest::RequestScreenshot(File, true, false); }), 1.0f, false);
+				FTimerHandle T2;
+				TWeakObjectPtr<UMRUISubsystem> WeakUI(UI);
+				PC->GetWorldTimerManager().SetTimer(T2, FTimerDelegate::CreateLambda([WeakUI]() { if (WeakUI.IsValid()) WeakUI->SetInventoryOpen(false); }), 2.0f, false);
+				StageTime = Now;
+			}
+			ItemStage = 10;  // (a moment for the picture), then back as it was
+		}
+		else if (ItemStage == 10 && Now - StageTime > 2.5)
+		{
+			if (bItemWasInUse)
+			{
+				Net->UseItem(ItemId);
+			}
+			else
+			{
+				Net->UnuseItem(ItemId);
+			}
+			ItemStage = 2;
+		}
+		else if (ItemStage == 2 && Net->IsUsing(ItemId) == bItemWasInUse)
+		{
+			Pass(FString::Printf(TEXT("%s %s again"), bItemWasInUse ? TEXT("put on") : TEXT("put away"), *ItemName));
+			if (bItemWasInUse)
+			{
+				Net->UnuseItem(ItemId);  // (taken off to be dropped)
+			}
+			ItemStage = 3;
+		}
+		else if (ItemStage == 3 && Item && !Net->IsUsing(ItemId))
+		{
+			Net->Drop(ItemId);
+			ItemStage = 4;
+		}
+		else if (ItemStage == 4 && !Item)
+		{
+			// it lies in the room now: an object of its name that we don't carry
+			for (const TPair<uint32, FMRNetObject>& Pair : Net->GetObjects())
+			{
+				if (Pair.Value.Name == ItemName && (Pair.Value.Flags & MRMsg::OF_GETTABLE))
+				{
+					DroppedId = Pair.Key;
+				}
+			}
+			if (DroppedId)
+			{
+				Pass(FString::Printf(TEXT("dropped %s (BP_REQ_DROP): it left the inventory and lies in the room"), *ItemName));
+				Net->Pickup(DroppedId);
+				ItemStage = 5;
+			}
+		}
+		else if (ItemStage == 5)
+		{
+			const FMRNetObject* Back = W.Inventory.FindByPredicate([&](const FMRNetObject& O) { return O.Name == ItemName; });
+			if (Back && !Net->FindObject(DroppedId))
+			{
+				Pass(FString::Printf(TEXT("picked %s up again (BP_REQ_GET)"), *ItemName));
+				ItemId = Back->Id;
+				if (bItemWasInUse)
+				{
+					Net->UseItem(ItemId);  // as it was
+				}
+				// then some of a number item (the tagged id and an amount)
+				const FMRNetObject* Coins = W.Inventory.FindByPredicate([](const FMRNetObject& O) { return O.bNumber && O.Amount > 10; });
+				if (Coins)
+				{
+					ItemId = Coins->Id;
+					ItemName = Coins->Name;
+					CoinsBefore = Coins->Amount;
+					Net->Drop(ItemId, 10);
+					DroppedId = 0;
+					ItemStage = 7;
+				}
+				else
+				{
+					ItemStage = 6;
+				}
+				StageTime = Now;
+			}
+		}
+		else if (ItemStage == 7 && Item && Item->Amount == CoinsBefore - 10)
+		{
+			for (const TPair<uint32, FMRNetObject>& Pair : Net->GetObjects())
+			{
+				if (Pair.Value.bNumber && Pair.Value.Amount == 10 && Pair.Value.Name == ItemName)
+				{
+					DroppedId = Pair.Key;
+				}
+			}
+			if (DroppedId)
+			{
+				Pass(FString::Printf(TEXT("dropped 10 of %u %s (a number item: tagged id and amount); 10 lie in the room"), CoinsBefore, *ItemName));
+				Net->Pickup(DroppedId);
+				ItemStage = 8;
+			}
+		}
+		else if (ItemStage == 8 && Item && Item->Amount == CoinsBefore && !Net->FindObject(DroppedId))
+		{
+			Pass(FString::Printf(TEXT("picked the 10 %s up: %u again"), *ItemName, CoinsBefore));
+			ItemStage = 6;
+			StageTime = Now;
+		}
+		else if (ItemStage == 6 && Now - StageTime > 1.0)
+		{
 			Advance(EStep::Travel);
 		}
 		break;

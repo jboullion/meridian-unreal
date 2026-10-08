@@ -36,7 +36,7 @@ public:
 	/** The content of a slot. The right hand is the selected hotbar slot. */
 	FMRSlotContent Get(const FMRSlotRef& Slot) const;
 	/** Whether this content may go in this slot. */
-	bool Accepts(const FMRSlotRef& Slot, const FMRSlotContent& Content) const;
+	virtual bool Accepts(const FMRSlotRef& Slot, const FMRSlotContent& Content) const;
 	/** Most of one thing a slot holds. */
 	int32 MaxStack(const FMRSlotRef& Slot, const FMRSlotContent& Content) const;
 
@@ -79,8 +79,8 @@ protected:
 	/** Called when the carried stack is dropped in the world. */
 	virtual void OnDropped(const FMRSlotContent& Content);
 
-	/** The right hand -> the selected hotbar slot. */
-	FMRSlotRef Resolve(const FMRSlotRef& Slot) const;
+	/** The right hand -> the selected hotbar slot (offline; online the server's wielded weapon has its own slot). */
+	virtual FMRSlotRef Resolve(const FMRSlotRef& Slot) const;
 	/** Put content into the first slots of an area that take it (merging first); returns what didn't fit. */
 	FMRSlotContent Insert(EMRSlotArea Area, FMRSlotContent Content);
 	void Changed() { OnChanged.Broadcast(); }
@@ -125,10 +125,19 @@ private:
 };
 
 /**
- * The UI's source while playing on a server (docs/adr/0012-client-parity-and-world-coverage.md):
- * the character's spells and skills as the server lists them (its stat groups 3 and 4, by name into
- * our data), and a spell bar kept on this client. The bag, hotbar and equipment show nothing yet:
- * the server's inventory messages come with M3 (docs/parity.md), and no mock items are shown online.
+ * The UI's source while playing on a server (docs/adr/0012-client-parity-and-world-coverage.md M3):
+ * what the character carries (BP_INVENTORY), what it has in use (BP_USE_LIST), its spells and skills
+ * as the server lists them (stat groups 3 and 4, by name into our data), and a spell bar and hotbar
+ * layout kept on this client.
+ *
+ * Where an item shows: in use, on its equipment slot (by its class's use type: the wielded weapon in
+ * the right hand, which is a slot of its own online); else on the hotbar slot it was put on (the
+ * hotbar is a layout on this client); else in the bag, in the server's order.
+ *
+ * The click rules are Minecraft's, made into requests (the server decides; the UI shows what it
+ * then says): onto an equipment slot uses the item (BP_REQ_USE), off one takes it off
+ * (BP_REQ_UNUSE), onto a bag slot moves it there (BP_REQ_INVENTORY_MOVE), out of the window drops
+ * it (BP_REQ_DROP; right click: one of a number item), shift click uses or takes off.
  */
 UCLASS()
 class MERIDIANREMASTERED_API UMRNetInventory : public UMRInventorySource
@@ -142,15 +151,49 @@ public:
 
 	void SetKnownSpells(const TArray<FName>& InSpells, const TMap<FName, int32>& InPercents);
 	void SetSkills(const TMap<FName, int32>& InSkills);
+	/** Follow this session's inventory (UMRNetSubsystem::OnInventoryChanged). */
+	void SetNet(class UMRNetSubsystem* InNet);
+	/** The server object behind a slot's content, or null. */
+	const struct FMRNetObject* FindObject(const FMRSlotContent& Content) const;
+	bool IsInUse(const FMRSlotContent& Content) const;
+
+	virtual bool Accepts(const FMRSlotRef& Slot, const FMRSlotContent& Content) const override;
+	virtual void Click(const FMRSlotRef& Slot, bool bRight) override;
+	virtual void QuickMove(const FMRSlotRef& Slot) override;
+	virtual void SwapWithHotbar(const FMRSlotRef& Slot, int32 HotbarIndex) override;
+	virtual void DropCursor(bool bOne) override;
+	virtual void ReturnCursor() override;
 
 protected:
 	virtual FMRSlotContent GetRaw(const FMRSlotRef& Slot) const override;
 	virtual void SetRaw(const FMRSlotRef& Slot, const FMRSlotContent& Content) override;
+	virtual FMRSlotRef Resolve(const FMRSlotRef& Slot) const override { return Slot; }
 
 private:
+	/** Lay the server's inventory out into the bag, hotbar and equipment views. */
+	void Rebuild();
+	FMRSlotContent ContentOf(const struct FMRNetObject& O) const;
+	/** The equipment slot an item in use shows on (Count: none known). */
+	EMREquipSlot SlotFor(const FMRSlotContent& C) const;
+	void PlaceOnHotbar(uint32 ObjectId, int32 Index);
+	void RemoveFromHotbar(uint32 ObjectId);
+	void ClearCursor();
+
+	TWeakObjectPtr<class UMRNetSubsystem> Net;
+	FDelegateHandle InventoryHandle;
 	TArray<FName> KnownSpells;
 	TMap<FName, int32> SpellPercents;
 	TMap<FName, int32> Skills;
 	FMRSlotContent SpellBar[9];
 	FMRSlotContent Cursor;
+	/** The hotbar layout: an object id per slot, and its icon and name to find it again after a save renumbers objects. */
+	struct FHotbarRef
+	{
+		uint32 Id = 0;
+		FString Key;
+	};
+	FHotbarRef HotbarRefs[9];
+	TArray<FMRSlotContent> BagView;
+	FMRSlotContent HotbarView[9];
+	FMRSlotContent EquipView[static_cast<int32>(EMREquipSlot::Count)];
 };

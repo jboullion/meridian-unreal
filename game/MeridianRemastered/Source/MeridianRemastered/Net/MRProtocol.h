@@ -264,6 +264,8 @@ namespace MRMsg
 	/** An object id without its 4-bit tag (the top bits mark number items such as shillings). */
 	inline uint32 PlainId(uint32 Id) { return Id & 0x0FFFFFFF; }
 	inline bool IsNumberId(uint32 Id) { return (Id >> 28) == 1; }
+	/** A number item's id as the client sends it (CLIENT_TAG_NUMBER in the top bits); the amount follows. */
+	inline uint32 NumberId(uint32 Id) { return PlainId(Id) | (1u << 28); }
 }
 
 /** Appends little-endian fields to a message body. */

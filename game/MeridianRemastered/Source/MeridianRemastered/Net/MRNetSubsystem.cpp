@@ -335,6 +335,131 @@ void UMRNetSubsystem::RequestLook(uint32 ObjectId)
 	}
 }
 
+bool UMRNetSubsystem::CanSend() const
+{
+	return Connection.IsValid() && Phase == EMRNetPhase::InGame && !IsWaiting();
+}
+
+void UMRNetSubsystem::WriteItem(FMRWriter& W, uint32 ItemId, uint32 Amount) const
+{
+	// a number item goes with CLIENT_TAG_NUMBER and an amount (parsecli.c reads one after such an id)
+	const FMRNetObject* O = World.FindInventory(ItemId);
+	if (!O && World.ContentsOf)
+	{
+		O = World.Contents.FindByPredicate([ItemId](const FMRNetObject& C) { return C.Id == ItemId; });
+	}
+	if (!O)
+	{
+		O = World.Objects.Find(ItemId);
+	}
+	if (O && O->bNumber)
+	{
+		W.U32(MRMsg::NumberId(ItemId)).U32(Amount > 0 ? FMath::Min(Amount, O->Amount) : O->Amount);
+	}
+	else
+	{
+		W.U32(ItemId);
+	}
+}
+
+void UMRNetSubsystem::RequestInventory()
+{
+	if (CanSend())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_INVENTORY));
+	}
+}
+
+void UMRNetSubsystem::UseItem(uint32 ItemId)
+{
+	if (CanSend() && ItemId)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_USE).U32(ItemId));
+	}
+}
+
+void UMRNetSubsystem::UnuseItem(uint32 ItemId)
+{
+	if (CanSend() && ItemId)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_UNUSE).U32(ItemId));
+	}
+}
+
+void UMRNetSubsystem::Pickup(uint32 ObjectId)
+{
+	if (CanSend() && ObjectId)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_GET).U32(ObjectId));
+	}
+}
+
+void UMRNetSubsystem::PickupFromContainer(uint32 ItemId, uint32 Amount)
+{
+	if (CanSend() && ItemId)
+	{
+		FMRWriter W(MRMsg::BP_REQ_GET_FROM_CONTAINER);
+		WriteItem(W, ItemId, Amount);
+		Connection->Send(W);
+	}
+}
+
+void UMRNetSubsystem::Drop(uint32 ItemId, uint32 Amount)
+{
+	if (CanSend() && ItemId)
+	{
+		FMRWriter W(MRMsg::BP_REQ_DROP);
+		WriteItem(W, ItemId, Amount);
+		Connection->Send(W);
+	}
+}
+
+void UMRNetSubsystem::Put(uint32 ItemId, uint32 ContainerId, uint32 Amount)
+{
+	if (CanSend() && ItemId && ContainerId)
+	{
+		FMRWriter W(MRMsg::BP_REQ_PUT);
+		WriteItem(W, ItemId, Amount);
+		W.U32(ContainerId);
+		Connection->Send(W);
+	}
+}
+
+void UMRNetSubsystem::Apply(uint32 ItemId, uint32 TargetId)
+{
+	if (CanSend() && ItemId && TargetId)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_APPLY).U32(ItemId).U32(TargetId));
+	}
+}
+
+void UMRNetSubsystem::Activate(uint32 ObjectId)
+{
+	if (CanSend() && ObjectId)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_ACTIVATE).U32(ObjectId));
+	}
+}
+
+void UMRNetSubsystem::RequestContents(uint32 ContainerId)
+{
+	if (CanSend() && ContainerId)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_SEND_OBJECT_CONTENTS).U32(ContainerId));
+	}
+}
+
+void UMRNetSubsystem::MoveInventoryItem(uint32 ItemId, uint32 PlaceOfId)
+{
+	if (CanSend() && ItemId && PlaceOfId && ItemId != PlaceOfId)
+	{
+		// user.kod UserMoveInventoryItem: the item takes the other's place; the server doesn't say
+		// so, so ask for the list again rather than redo its list arithmetic here
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_INVENTORY_MOVE).U32(ItemId).U32(PlaceOfId));
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_INVENTORY));
+	}
+}
+
 void UMRNetSubsystem::ChangeDescription(uint32 ObjectId, const FString& Text)
 {
 	if (Connection.IsValid() && Phase == EMRNetPhase::InGame && ObjectId && !IsWaiting())
@@ -549,8 +674,11 @@ void UMRNetSubsystem::ReloadData()
 	Connection->Send(FMRWriter(MRMsg::BP_SEND_PLAYER));
 	Connection->Send(FMRWriter(MRMsg::BP_SEND_ROOM_CONTENTS));
 	Connection->Send(FMRWriter(MRMsg::BP_SEND_PLAYERS));
-	// a save renumbers objects, the spells and skills in the stat groups too
+	// a save renumbers objects, the spells and skills in the stat groups too, and what we carry
 	Connection->Send(FMRWriter(MRMsg::BP_SEND_STAT_GROUPS));
+	World.ResetInventory();
+	OnInventoryChanged.Broadcast();
+	Connection->Send(FMRWriter(MRMsg::BP_REQ_INVENTORY));
 }
 
 void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
@@ -663,6 +791,8 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 			// the stat groups' names first, then every group (merintr stats.c StatsGroupsInfo)
 			bRequestedStats = true;
 			Connection->Send(FMRWriter(MRMsg::BP_SEND_STAT_GROUPS));
+			// the inventory and what is in use (clientd3d game.c asks on entering the game)
+			Connection->Send(FMRWriter(MRMsg::BP_REQ_INVENTORY));
 		}
 		break;
 	}
@@ -749,6 +879,13 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		FMRNetObject O;
 		if (MRNetRead::Object(R, Resources, O) && MRNetRead::Motion(R, Resources, O))
 		{
+			// something we carry (user.kod SomethingChanged: a number item's new amount after a split)
+			if (FMRNetObject* Carried = World.Inventory.FindByPredicate([&O](const FMRNetObject& E) { return E.Id == O.Id; }))
+			{
+				UE_LOG(LogMeridian, Log, TEXT("MRNet: inventory ~ %s%s"), O.bNumber ? *FString::Printf(TEXT("%u "), O.Amount) : TEXT(""), *O.Name);
+				*Carried = O;
+				OnInventoryChanged.Broadcast();
+			}
 			if (FMRNetObject* Existing = World.Objects.Find(O.Id))
 			{
 				O.KodRow = Existing->KodRow;
@@ -903,6 +1040,84 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 			P.Object = MoveTemp(O);
 			P.Seq = ++World.PlayerOverlaySeq;
 			UE_LOG(LogMeridian, Verbose, TEXT("MRNet: first person slot %u: %s at %d"), P.Object.Id, *P.Object.Icon, Hotspot);
+		}
+		break;
+	}
+	case MRMsg::BP_INVENTORY:
+	{
+		TArray<FMRNetObject> List;
+		if (MRNetRead::ObjectList(R, Resources, List))
+		{
+			World.Inventory = MoveTemp(List);
+			World.bHasInventory = true;
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: carrying %d items"), World.Inventory.Num());
+			OnInventoryChanged.Broadcast();
+		}
+		else
+		{
+			UE_LOG(LogMeridian, Warning, TEXT("MRNet: BP_INVENTORY cut short (%d bytes)"), Body.Num());
+		}
+		break;
+	}
+	case MRMsg::BP_INVENTORY_ADD:
+	{
+		FMRNetObject O;
+		if (MRNetRead::Object(R, Resources, O))
+		{
+			// (a number item that grew comes again with its new amount)
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: inventory + %s%s"), O.bNumber ? *FString::Printf(TEXT("%u "), O.Amount) : TEXT(""), *O.Name);
+			if (FMRNetObject* Had = World.Inventory.FindByPredicate([&O](const FMRNetObject& E) { return E.Id == O.Id; }))
+			{
+				*Had = MoveTemp(O);
+			}
+			else
+			{
+				World.Inventory.Add(MoveTemp(O));
+			}
+			OnInventoryChanged.Broadcast();
+		}
+		break;
+	}
+	case MRMsg::BP_INVENTORY_REMOVE:
+	{
+		const uint32 Id = MRMsg::PlainId(R.U32());
+		if (const FMRNetObject* Gone = World.FindInventory(Id))
+		{
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: inventory - %s"), *Gone->Name);
+		}
+		World.Inventory.RemoveAll([Id](const FMRNetObject& E) { return E.Id == Id; });
+		World.Using.Remove(Id);
+		OnInventoryChanged.Broadcast();
+		break;
+	}
+	case MRMsg::BP_USE_LIST:
+	{
+		TArray<uint32> Ids;
+		if (MRNetRead::IdList(R, Ids))
+		{
+			World.Using = TSet<uint32>(Ids);
+			OnInventoryChanged.Broadcast();
+		}
+		break;
+	}
+	case MRMsg::BP_USE:
+		World.Using.Add(MRMsg::PlainId(R.U32()));
+		OnInventoryChanged.Broadcast();
+		break;
+	case MRMsg::BP_UNUSE:
+		World.Using.Remove(MRMsg::PlainId(R.U32()));
+		OnInventoryChanged.Broadcast();
+		break;
+	case MRMsg::BP_OBJECT_CONTENTS:
+	{
+		const uint32 Container = MRMsg::PlainId(R.U32());
+		TArray<FMRNetObject> List;
+		if (MRNetRead::ObjectList(R, Resources, List))
+		{
+			World.ContentsOf = Container;
+			World.Contents = MoveTemp(List);
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: %u holds %d things"), Container, World.Contents.Num());
+			OnContents.Broadcast();
 		}
 		break;
 	}

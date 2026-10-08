@@ -6,6 +6,8 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "UI/MRGameData.h"
+#include "Net/MRNetSubsystem.h"
+#include "Net/MRNetWorld.h"
 #include "Zones/MRZoneSubsystem.h"
 
 namespace
@@ -140,7 +142,10 @@ void UMRInventorySource::GetTotals(int32& OutWeight, int32& OutBulk) const
 	{
 		Add(GetRaw(FMRSlotRef(EMRSlotArea::Hotbar, i)));
 	}
-	for (int32 i = 0; i < static_cast<int32>(EMREquipSlot::RightHand); ++i)
+	// (offline the right hand is the selected hotbar slot, already counted; online it is a slot of its own)
+	const bool bOwnRightHand = Resolve(FMRSlotRef::Equip(EMREquipSlot::RightHand)).Area == EMRSlotArea::Equipment;
+	const int32 Slots = static_cast<int32>(bOwnRightHand ? EMREquipSlot::Count : EMREquipSlot::RightHand);
+	for (int32 i = 0; i < Slots; ++i)
 	{
 		Add(GetRaw(FMRSlotRef(EMRSlotArea::Equipment, i)));
 	}
@@ -616,13 +621,20 @@ FMRSlotContent UMRNetInventory::GetRaw(const FMRSlotRef& Slot) const
 		return Slot.Index >= 0 && Slot.Index < HotbarSlots ? SpellBar[Slot.Index] : FMRSlotContent();
 	case EMRSlotArea::Cursor:
 		return Cursor;
+	case EMRSlotArea::Bag:
+		return BagView.IsValidIndex(Slot.Index) ? BagView[Slot.Index] : FMRSlotContent();
+	case EMRSlotArea::Hotbar:
+		return Slot.Index >= 0 && Slot.Index < HotbarSlots ? HotbarView[Slot.Index] : FMRSlotContent();
+	case EMRSlotArea::Equipment:
+		return Slot.Index >= 0 && Slot.Index < static_cast<int32>(EMREquipSlot::Count) ? EquipView[Slot.Index] : FMRSlotContent();
 	default:
-		return FMRSlotContent();  // the server's inventory: M3
+		return FMRSlotContent();
 	}
 }
 
 void UMRNetInventory::SetRaw(const FMRSlotRef& Slot, const FMRSlotContent& Content)
 {
+	// only what lives on this client: the spell bar and the cursor (spells: the base class's rules)
 	const FMRSlotContent C = Content.IsEmpty() ? FMRSlotContent() : Content;
 	if (Slot.Area == EMRSlotArea::SpellBar && Slot.Index >= 0 && Slot.Index < HotbarSlots)
 	{
@@ -632,4 +644,333 @@ void UMRNetInventory::SetRaw(const FMRSlotRef& Slot, const FMRSlotContent& Conte
 	{
 		Cursor = C;
 	}
+}
+
+// ------------------------------------------------------------------------------ online items
+
+void UMRNetInventory::SetNet(UMRNetSubsystem* InNet)
+{
+	if (UMRNetSubsystem* Old = Net.Get())
+	{
+		Old->OnInventoryChanged.Remove(InventoryHandle);
+	}
+	Net = InNet;
+	if (InNet)
+	{
+		InventoryHandle = InNet->OnInventoryChanged.AddUObject(this, &UMRNetInventory::Rebuild);
+	}
+	Rebuild();
+}
+
+const FMRNetObject* UMRNetInventory::FindObject(const FMRSlotContent& Content) const
+{
+	const UMRNetSubsystem* N = Net.Get();
+	return N && Content.ObjectId ? N->FindInventory(Content.ObjectId) : nullptr;
+}
+
+bool UMRNetInventory::IsInUse(const FMRSlotContent& Content) const
+{
+	const UMRNetSubsystem* N = Net.Get();
+	return N && Content.ObjectId && N->IsUsing(Content.ObjectId);
+}
+
+FMRSlotContent UMRNetInventory::ContentOf(const FMRNetObject& O) const
+{
+	FMRSlotContent C;
+	const FString Stem = FPaths::GetBaseFilename(O.Icon).ToLower();
+	const FMRItemDef* Item = Data ? Data->FindItemByIcon(Stem) : nullptr;
+	C.Id = Item ? Item->Class : FName(*Stem);
+	C.Count = O.bNumber ? FMath::Max<int32>(1, O.Amount) : 1;
+	C.ObjectId = O.Id;
+	return C;
+}
+
+EMREquipSlot UMRNetInventory::SlotFor(const FMRSlotContent& C) const
+{
+	const FMRItemDef* Item = Data ? Data->FindItem(C.Id) : nullptr;
+	return Item ? Data->EquipSlotFor(*Item) : EMREquipSlot::Count;
+}
+
+void UMRNetInventory::Rebuild()
+{
+	const UMRNetSubsystem* N = Net.Get();
+	BagView.Reset();
+	for (FMRSlotContent& C : HotbarView)
+	{
+		C = FMRSlotContent();
+	}
+	for (FMRSlotContent& C : EquipView)
+	{
+		C = FMRSlotContent();
+	}
+	if (!N)
+	{
+		Changed();
+		return;
+	}
+	const TArray<FMRNetObject>& Inv = N->GetInventory();
+	TSet<uint32> Placed;
+	auto KeyOf = [](const FMRNetObject& O) { return O.Icon + TEXT("|") + O.Name; };
+	// the carried item (picked up whole) isn't shown where it was
+	if (!Cursor.IsEmpty() && Cursor.ObjectId)
+	{
+		const FMRNetObject* O = N->FindInventory(Cursor.ObjectId);
+		if (!O)
+		{
+			Cursor = FMRSlotContent();  // it's gone (dropped, used up)
+		}
+		else if (!O->bNumber || Cursor.Count >= static_cast<int32>(O->Amount))
+		{
+			Placed.Add(Cursor.ObjectId);
+		}
+	}
+	// in use: on its equipment slot (a second ring on Ring2, a second hand item in the free hand)
+	for (const FMRNetObject& O : Inv)
+	{
+		if (!N->IsUsing(O.Id) || Placed.Contains(O.Id))
+		{
+			continue;
+		}
+		const FMRSlotContent C = ContentOf(O);
+		EMREquipSlot E = SlotFor(C);
+		if (E == EMREquipSlot::Ring1 && !EquipView[static_cast<int32>(E)].IsEmpty())
+		{
+			E = EMREquipSlot::Ring2;
+		}
+		if ((E == EMREquipSlot::RightHand || E == EMREquipSlot::LeftHand) && !EquipView[static_cast<int32>(E)].IsEmpty())
+		{
+			E = E == EMREquipSlot::RightHand ? EMREquipSlot::LeftHand : EMREquipSlot::RightHand;
+		}
+		if (E != EMREquipSlot::Count && EquipView[static_cast<int32>(E)].IsEmpty())
+		{
+			EquipView[static_cast<int32>(E)] = C;
+			Placed.Add(O.Id);
+		}
+	}
+	// the hotbar layout; an id that went away (renumbered by a save) is found again by its icon and name
+	for (int32 i = 0; i < HotbarSlots; ++i)
+	{
+		FHotbarRef& Ref = HotbarRefs[i];
+		if (!Ref.Id)
+		{
+			continue;
+		}
+		const FMRNetObject* O = N->FindInventory(Ref.Id);
+		if (!O && N->GetNetWorld().bHasInventory)
+		{
+			O = Inv.FindByPredicate([&](const FMRNetObject& E) { return !Placed.Contains(E.Id) && KeyOf(E) == Ref.Key; });
+			Ref = O ? FHotbarRef{O->Id, KeyOf(*O)} : FHotbarRef();
+		}
+		if (O && !Placed.Contains(O->Id))
+		{
+			HotbarView[i] = ContentOf(*O);
+			Placed.Add(O->Id);
+		}
+	}
+	// the rest, in the server's order
+	for (const FMRNetObject& O : Inv)
+	{
+		if (!Placed.Contains(O.Id))
+		{
+			BagView.Add(ContentOf(O));
+		}
+	}
+	Changed();
+}
+
+void UMRNetInventory::PlaceOnHotbar(uint32 ObjectId, int32 Index)
+{
+	const UMRNetSubsystem* N = Net.Get();
+	const FMRNetObject* O = N ? N->FindInventory(ObjectId) : nullptr;
+	if (!O || Index < 0 || Index >= HotbarSlots)
+	{
+		return;
+	}
+	RemoveFromHotbar(ObjectId);
+	HotbarRefs[Index] = FHotbarRef{ObjectId, O->Icon + TEXT("|") + O->Name};
+}
+
+void UMRNetInventory::RemoveFromHotbar(uint32 ObjectId)
+{
+	for (FHotbarRef& Ref : HotbarRefs)
+	{
+		if (Ref.Id == ObjectId)
+		{
+			Ref = FHotbarRef();
+		}
+	}
+}
+
+void UMRNetInventory::ClearCursor()
+{
+	Cursor = FMRSlotContent();
+	CursorOrigin = FMRSlotRef();
+	Rebuild();
+}
+
+bool UMRNetInventory::Accepts(const FMRSlotRef& Slot, const FMRSlotContent& Content) const
+{
+	if (Slot.Area == EMRSlotArea::Equipment && !Content.IsEmpty() && !Content.bSpell)
+	{
+		// the item's own slot (a ring either ring slot); an item the client doesn't know: let the server say
+		const FMRItemDef* Item = Data ? Data->FindItem(Content.Id) : nullptr;
+		if (!Item)
+		{
+			return Content.ObjectId != 0;
+		}
+		const EMREquipSlot Fit = Data->EquipSlotFor(*Item);
+		const EMREquipSlot S = static_cast<EMREquipSlot>(Slot.Index);
+		return Fit == S || (Fit == EMREquipSlot::Ring1 && S == EMREquipSlot::Ring2)
+			|| ((Fit == EMREquipSlot::RightHand || Fit == EMREquipSlot::LeftHand) && (S == EMREquipSlot::RightHand || S == EMREquipSlot::LeftHand));
+	}
+	return Super::Accepts(Slot, Content);
+}
+
+void UMRNetInventory::Click(const FMRSlotRef& Slot, bool bRight)
+{
+	UMRNetSubsystem* N = Net.Get();
+	const FMRSlotContent In = GetRaw(Slot);
+	// spells: the base class's rules (the spell bar lives on this client)
+	if (Slot.Area == EMRSlotArea::SpellBar || Slot.Area == EMRSlotArea::SpellBook || Cursor.bSpell || (Cursor.IsEmpty() && In.bSpell))
+	{
+		Super::Click(Slot, bRight);
+		return;
+	}
+	if (!N)
+	{
+		return;
+	}
+	if (Cursor.IsEmpty())
+	{
+		if (In.IsEmpty() || !In.ObjectId)
+		{
+			return;
+		}
+		// pick it up (right click: half of a number item, for dropping some)
+		Cursor = In;
+		if (bRight && In.Count > 1)
+		{
+			Cursor.Count = (In.Count + 1) / 2;
+		}
+		CursorOrigin = Slot;
+		Rebuild();
+		return;
+	}
+	const uint32 Id = Cursor.ObjectId;
+	const bool bFromEquip = CursorOrigin.Area == EMRSlotArea::Equipment;
+	if (Slot == CursorOrigin)
+	{
+		ClearCursor();  // put back
+		return;
+	}
+	switch (Slot.Area)
+	{
+	case EMRSlotArea::Equipment:
+		if (Accepts(Slot, Cursor) && !bFromEquip)
+		{
+			N->UseItem(Id);
+			RemoveFromHotbar(Id);
+			ClearCursor();
+		}
+		return;
+	case EMRSlotArea::Hotbar:
+	{
+		if (bFromEquip)
+		{
+			N->UnuseItem(Id);
+		}
+		// the hotbar is a layout here: a different item already there goes where this one came from
+		const uint32 There = In.ObjectId;
+		const int32 From = CursorOrigin.Area == EMRSlotArea::Hotbar ? CursorOrigin.Index : INDEX_NONE;
+		PlaceOnHotbar(Id, Slot.Index);
+		if (There && There != Id && From != INDEX_NONE)
+		{
+			PlaceOnHotbar(There, From);
+		}
+		ClearCursor();
+		return;
+	}
+	case EMRSlotArea::Bag:
+		if (bFromEquip)
+		{
+			N->UnuseItem(Id);
+		}
+		RemoveFromHotbar(Id);
+		// onto another item in the bag: take its place in the server's list (not items in use)
+		if (In.ObjectId && In.ObjectId != Id && !bFromEquip && !N->IsUsing(In.ObjectId) && !N->IsUsing(Id))
+		{
+			N->MoveInventoryItem(Id, In.ObjectId);
+		}
+		ClearCursor();
+		return;
+	default:
+		return;
+	}
+}
+
+void UMRNetInventory::QuickMove(const FMRSlotRef& Slot)
+{
+	UMRNetSubsystem* N = Net.Get();
+	const FMRSlotContent In = GetRaw(Slot);
+	if (Slot.Area == EMRSlotArea::SpellBar || Slot.Area == EMRSlotArea::SpellBook)
+	{
+		Super::QuickMove(Slot);
+		return;
+	}
+	if (!N || In.IsEmpty() || !In.ObjectId)
+	{
+		return;
+	}
+	if (Slot.Area == EMRSlotArea::Equipment || N->IsUsing(In.ObjectId))
+	{
+		N->UnuseItem(In.ObjectId);  // take it off
+		return;
+	}
+	// use it: wear, wield, or whatever using does for it (eat, read): the server says
+	N->UseItem(In.ObjectId);
+}
+
+void UMRNetInventory::SwapWithHotbar(const FMRSlotRef& Slot, int32 HotbarIndex)
+{
+	const FMRSlotContent In = GetRaw(Slot);
+	if (!In.ObjectId || Slot.Area == EMRSlotArea::Equipment)
+	{
+		return;
+	}
+	const int32 H = FMath::Clamp(HotbarIndex, 0, HotbarSlots - 1);
+	const uint32 There = HotbarView[H].ObjectId;
+	const int32 From = Slot.Area == EMRSlotArea::Hotbar ? Slot.Index : INDEX_NONE;
+	PlaceOnHotbar(In.ObjectId, H);
+	if (There && There != In.ObjectId && From != INDEX_NONE)
+	{
+		PlaceOnHotbar(There, From);
+	}
+	Rebuild();
+}
+
+void UMRNetInventory::DropCursor(bool bOne)
+{
+	if (Cursor.bSpell || Cursor.IsEmpty())
+	{
+		Super::DropCursor(bOne);
+		return;
+	}
+	if (UMRNetSubsystem* N = Net.Get())
+	{
+		const FMRNetObject* O = N->FindInventory(Cursor.ObjectId);
+		// a number item: how many (right click: one); anything else goes whole
+		N->Drop(Cursor.ObjectId, O && O->bNumber ? static_cast<uint32>(bOne ? 1 : Cursor.Count) : 0);
+		RemoveFromHotbar(Cursor.ObjectId);
+	}
+	ClearCursor();
+}
+
+void UMRNetInventory::ReturnCursor()
+{
+	if (Cursor.bSpell)
+	{
+		Super::ReturnCursor();
+		return;
+	}
+	ClearCursor();
 }

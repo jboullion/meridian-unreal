@@ -770,6 +770,45 @@ void UMRNetWorldSubsystem::TargetNextOrPrevious(bool bNext)
 	SetTarget(InView[Next].Value);
 }
 
+TArray<uint32> UMRNetWorldSubsystem::GettableAtAim() const
+{
+	TArray<uint32> Out;
+	if (const UMRNetSubsystem* Net = GetNet())
+	{
+		for (const uint32 Id : AimStack)
+		{
+			const FMRNetObject* O = Net->FindObject(Id);
+			if (O && (O->Flags & MRMsg::OF_GETTABLE))
+			{
+				Out.Add(Id);
+			}
+		}
+	}
+	return Out;
+}
+
+bool UMRNetWorldSubsystem::UseAim()
+{
+	UMRNetSubsystem* Net = GetNet();
+	const uint32 Id = TargetId && TargetId != (Net ? Net->GetPlayer().Id : 0) ? TargetId : AimId;
+	const FMRNetObject* O = Net && Id ? Net->FindObject(Id) : nullptr;
+	if (!O)
+	{
+		return false;
+	}
+	if (O->Flags & MRMsg::OF_CONTAINER)
+	{
+		Net->RequestContents(Id);
+		return true;
+	}
+	if (O->Flags & MRMsg::OF_ACTIVATABLE)
+	{
+		Net->Activate(Id);
+		return true;
+	}
+	return false;
+}
+
 bool UMRNetWorldSubsystem::LookAtTarget()
 {
 	UMRNetSubsystem* Net = GetNet();

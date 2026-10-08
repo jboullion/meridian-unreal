@@ -9,6 +9,7 @@
 #include "InputMappingContext.h"
 #include "InputModifiers.h"
 #include "UI/MRUISubsystem.h"
+#include "UI/SMRLookDialog.h"
 #include "MeridianRemastered.h"
 #include "Net/MRNetWorldSubsystem.h"
 #include "Player/MRPlayerState.h"
@@ -155,6 +156,10 @@ void AMRPlayerController::BuildUIInput()
 	UIContext->MapKey(TargetAimAction, EKeys::T);
 	LookAction = MakeAction(TEXT("IA_Look"), EInputActionValueType::Boolean);
 	UIContext->MapKey(LookAction, EKeys::RightMouseButton);
+	GetAction = MakeAction(TEXT("IA_Get"), EInputActionValueType::Boolean);
+	UIContext->MapKey(GetAction, EKeys::G);
+	UseAction = MakeAction(TEXT("IA_Use"), EInputActionValueType::Boolean);
+	UIContext->MapKey(UseAction, EKeys::F);
 }
 
 void AMRPlayerController::SetupInputComponent()
@@ -181,6 +186,8 @@ void AMRPlayerController::SetupInputComponent()
 	Input->BindAction(TargetSelfAction, ETriggerEvent::Started, this, &AMRPlayerController::OnTargetSelf);
 	Input->BindAction(TargetAimAction, ETriggerEvent::Started, this, &AMRPlayerController::OnTargetAim);
 	Input->BindAction(LookAction, ETriggerEvent::Started, this, &AMRPlayerController::OnLookKey);
+	Input->BindAction(GetAction, ETriggerEvent::Started, this, &AMRPlayerController::OnGetKey);
+	Input->BindAction(UseAction, ETriggerEvent::Started, this, &AMRPlayerController::OnUseKey);
 }
 
 UMRUISubsystem* AMRPlayerController::GetUI() const
@@ -308,6 +315,33 @@ void AMRPlayerController::OnLookKey()
 		}
 	}
 	NetWorld->LookAtTarget();
+}
+
+void AMRPlayerController::OnGetKey()
+{
+	UMRNetWorldSubsystem* NetWorld = GetNetWorld();
+	UMRUISubsystem* UI = GetUI();
+	if (!NetWorld || !UI)
+	{
+		return;
+	}
+	const TArray<uint32> Gettable = NetWorld->GettableAtAim();
+	if (Gettable.Num() == 1)
+	{
+		UI->PickChosen(EMRPickAction::Get, Gettable[0]);
+	}
+	else if (Gettable.Num() > 1)
+	{
+		UI->ShowPicker(Gettable, EMRPickAction::Get);  // a pile: which one
+	}
+}
+
+void AMRPlayerController::OnUseKey()
+{
+	if (UMRNetWorldSubsystem* NetWorld = GetNetWorld())
+	{
+		NetWorld->UseAim();
+	}
 }
 
 void AMRPlayerController::OnMapZoom(const FInputActionValue& Value)

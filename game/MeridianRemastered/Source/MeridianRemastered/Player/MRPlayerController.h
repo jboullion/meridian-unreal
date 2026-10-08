@@ -59,6 +59,10 @@ private:
 	void OnTargetAim();
 	/** Right mouse button: look at the target, else what the crosshair is on (the original's look-mouse). */
 	void OnLookKey();
+	/** G: pick up what the crosshair is on (several: a list to pick from). */
+	void OnGetKey();
+	/** F: open the container or work the lever the target or crosshair is on. */
+	void OnUseKey();
 	class UMRNetWorldSubsystem* GetNetWorld() const;
 	void OnMapZoom(const FInputActionValue& Value);
 	class UMRUISubsystem* GetUI() const;
@@ -76,6 +80,8 @@ private:
 	UPROPERTY(Transient) TObjectPtr<UInputAction> TargetSelfAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> TargetAimAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> LookAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> GetAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> UseAction;
 
 	/** Zones requested by the server, with the time the request expires. */
 	TMap<int32, double> PreparedZones;

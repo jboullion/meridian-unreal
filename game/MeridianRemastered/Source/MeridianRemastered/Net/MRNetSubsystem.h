@@ -133,6 +133,32 @@ public:
 	/** The last description the server sent (OnDescription). */
 	const FMRNetDescription& GetDescription() const { return Description; }
 
+	// --- items (docs/research/blakserv-protocol.md "Items"; the answers come as BP_INVENTORY_ADD, _REMOVE, BP_USE...)
+	/** Ask for the inventory and what is in use again (BP_REQ_INVENTORY). */
+	void RequestInventory();
+	/** Wear, wield or use a carried item (BP_REQ_USE); take it off (BP_REQ_UNUSE). */
+	void UseItem(uint32 ItemId);
+	void UnuseItem(uint32 ItemId);
+	/** Pick something up from the room (BP_REQ_GET). */
+	void Pickup(uint32 ObjectId);
+	/** Take from the container last looked into (BP_REQ_GET_FROM_CONTAINER); Amount for a number item (0 = all). */
+	void PickupFromContainer(uint32 ItemId, uint32 Amount = 0);
+	/** Drop a carried item (BP_REQ_DROP); Amount for a number item (0 = all). */
+	void Drop(uint32 ItemId, uint32 Amount = 0);
+	/** Put a carried item into a container (BP_REQ_PUT). */
+	void Put(uint32 ItemId, uint32 ContainerId, uint32 Amount = 0);
+	/** Use an item on something (BP_REQ_APPLY: a key on a door, a scroll on a player). */
+	void Apply(uint32 ItemId, uint32 TargetId);
+	/** Work something in the room (BP_REQ_ACTIVATE: a lever, a fountain). */
+	void Activate(uint32 ObjectId);
+	/** Look into a container (BP_SEND_OBJECT_CONTENTS); the answer fires OnContents. */
+	void RequestContents(uint32 ContainerId);
+	/** Move a carried item to another's place in the list (BP_REQ_INVENTORY_MOVE; not items in use). */
+	void MoveInventoryItem(uint32 ItemId, uint32 PlaceOfId);
+	const TArray<FMRNetObject>& GetInventory() const { return World.Inventory; }
+	const FMRNetObject* FindInventory(uint32 Id) const { return World.FindInventory(Id); }
+	bool IsUsing(uint32 Id) const { return World.Using.Contains(Id); }
+
 	// --- state
 	EMRNetPhase GetPhase() const { return Phase; }
 	const FString& GetStatus() const { return Status; }
@@ -191,9 +217,16 @@ public:
 	FOnMRNetEvent OnWaitChanged;
 	/** A description arrived (BP_LOOK, UC_LOOK_PLAYER): GetDescription. */
 	FOnMRNetEvent OnDescription;
+	/** The inventory or what is in use changed. */
+	FOnMRNetEvent OnInventoryChanged;
+	/** A container's contents arrived (BP_OBJECT_CONTENTS): GetNetWorld().ContentsOf, Contents. */
+	FOnMRNetEvent OnContents;
 
 private:
 	void LoadServers();
+	/** Send an item: its id, and for a number item the tagged id and an amount (clientd3d protocol.c PARAM_OBJECT). */
+	void WriteItem(class FMRWriter& W, uint32 ItemId, uint32 Amount) const;
+	bool CanSend() const;
 	void SetPhase(EMRNetPhase InPhase, const FString& InStatus = FString());
 	bool Tick(float DeltaSeconds);
 

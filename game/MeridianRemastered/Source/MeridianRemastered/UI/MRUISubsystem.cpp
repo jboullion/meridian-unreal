@@ -65,6 +65,7 @@ void UMRUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		NetStatsHandle = Net->OnStatsChanged.AddUObject(this, &UMRUISubsystem::OnNetStats);
 		NetPhaseHandle = Net->OnPhaseChanged.AddUObject(this, &UMRUISubsystem::OnNetPhase);
 		NetDescriptionHandle = Net->OnDescription.AddUObject(this, &UMRUISubsystem::OnNetDescription);
+		NetContentsHandle = Net->OnContents.AddUObject(this, &UMRUISubsystem::OnNetContents);
 	}
 }
 
@@ -97,6 +98,7 @@ void UMRUISubsystem::OnNetPhase()
 		// a character entered a server's game: its own spell bar, its spells and skills as the server sends them
 		UMRNetInventory* NetInventory = NewObject<UMRNetInventory>(this);
 		NetInventory->SetData(GetData());
+		NetInventory->SetNet(GetNet());
 		UseSource(NetInventory);
 		OnNetStats(3);
 		OnNetStats(4);
@@ -163,6 +165,24 @@ void UMRUISubsystem::SaveDescription(uint32 ObjectId, const FString& Text)
 
 void UMRUISubsystem::ShowLookPicker(const TArray<uint32>& Ids)
 {
+	ShowPicker(Ids, EMRPickAction::Look);
+}
+
+namespace
+{
+	/** A thing's name in a list: a number item with its amount ("57 shillings"). */
+	FText ListName(const FMRNetObject* O, uint32 Id)
+	{
+		if (!O)
+		{
+			return FText::FromString(FString::Printf(TEXT("#%u"), Id));
+		}
+		return FText::FromString(O->bNumber ? FString::Printf(TEXT("%u %s"), O->Amount, *O->Name) : O->Name);
+	}
+}
+
+void UMRUISubsystem::ShowPicker(const TArray<uint32>& Ids, EMRPickAction Action)
+{
 	const UMRNetSubsystem* Net = GetNet();
 	TSharedPtr<SMRLookDialog> Dialog = GetLookDialog();
 	if (!Net || !Dialog.IsValid())
@@ -172,10 +192,87 @@ void UMRUISubsystem::ShowLookPicker(const TArray<uint32>& Ids)
 	TArray<FText> Names;
 	for (const uint32 Id : Ids)
 	{
-		const FMRNetObject* O = Net->FindObject(Id);
-		Names.Add(FText::FromString(O ? O->Name : FString::Printf(TEXT("#%u"), Id)));
+		Names.Add(ListName(Net->FindObject(Id), Id));
 	}
-	Dialog->ShowPicker(Ids, Names);
+	Dialog->ShowPicker(Ids, Names, Action, Action == EMRPickAction::Get ? NSLOCTEXT("MRLook", "PickGet", "Pick up...")
+		: NSLOCTEXT("MRLook", "PickTitle", "Look at..."));
+	SetLookOpen(true);
+}
+
+void UMRUISubsystem::PickChosen(EMRPickAction Action, uint32 ObjectId)
+{
+	UMRNetSubsystem* Net = GetNet();
+	if (!Net)
+	{
+		return;
+	}
+	switch (Action)
+	{
+	case EMRPickAction::Look:
+		LookAt(ObjectId);
+		break;
+	case EMRPickAction::Get:
+		Net->Pickup(ObjectId);
+		CloseLook();
+		break;
+	case EMRPickAction::GetFromContainer:
+	{
+		// all of it; then the container again, to show what's left
+		const uint32 Container = Net->GetNetWorld().ContentsOf;
+		Net->PickupFromContainer(ObjectId);
+		Net->RequestContents(Container);
+		break;
+	}
+	}
+}
+
+void UMRUISubsystem::DoObjectAction(EMRObjectAction Action, uint32 ObjectId)
+{
+	UMRNetSubsystem* Net = GetNet();
+	if (!Net)
+	{
+		return;
+	}
+	switch (Action)
+	{
+	case EMRObjectAction::Get:
+		Net->Pickup(ObjectId);
+		CloseLook();
+		break;
+	case EMRObjectAction::Inside:
+		Net->RequestContents(ObjectId);
+		break;
+	case EMRObjectAction::Activate:
+		Net->Activate(ObjectId);
+		CloseLook();
+		break;
+	}
+}
+
+void UMRUISubsystem::OnNetContents()
+{
+	const UMRNetSubsystem* Net = GetNet();
+	TSharedPtr<SMRLookDialog> Dialog = GetLookDialog();
+	if (!Net || !Dialog.IsValid())
+	{
+		return;
+	}
+	const FMRNetWorld& W = Net->GetNetWorld();
+	TArray<uint32> Ids;
+	TArray<FText> Names;
+	for (const FMRNetObject& O : W.Contents)
+	{
+		Ids.Add(O.Id);
+		Names.Add(ListName(&O, O.Id));
+	}
+	const FMRNetObject* Container = Net->FindObject(W.ContentsOf);
+	const FText Title = Container ? FText::FromString(Container->Name) : NSLOCTEXT("MRLook", "Inside", "Inside");
+	if (Ids.IsEmpty())
+	{
+		Names.Add(NSLOCTEXT("MRLook", "Empty", "(nothing)"));
+		Ids.Add(0);
+	}
+	Dialog->ShowPicker(Ids, Names, EMRPickAction::GetFromContainer, Title);
 	SetLookOpen(true);
 }
 
@@ -249,6 +346,7 @@ void UMRUISubsystem::Deinitialize()
 		Net->OnStatsChanged.Remove(NetStatsHandle);
 		Net->OnPhaseChanged.Remove(NetPhaseHandle);
 		Net->OnDescription.Remove(NetDescriptionHandle);
+		Net->OnContents.Remove(NetContentsHandle);
 	}
 	Super::Deinitialize();
 }
@@ -715,7 +813,61 @@ const FSlateBrush* UMRUISubsystem::IconFor(const FMRSlotContent& C) const
 		return Spell ? Style->Icon(Spell->Icon) : nullptr;
 	}
 	const FMRItemDef* Item = Data->FindItem(C.Id);
-	return Item ? Style->Icon(Item->Icon) : nullptr;
+	const FSlateBrush* Icon = Item ? Style->Icon(Item->Icon) : nullptr;
+	if (!Icon && C.ObjectId)
+	{
+		// a server item without a prebuilt icon: its own bitmap, in the group it shows in an inventory
+		if (const UMRNetInventory* NetInv = Cast<UMRNetInventory>(Source))
+		{
+			if (const FMRNetObject* O = NetInv->FindObject(C))
+			{
+				const int32 Group = O->Animation.Type == MRMsg::ANIMATE_NONE ? O->Animation.Group : O->Animation.GroupLow;
+				Icon = BitmapIcon(O->Icon, FMath::Max(1, Group));
+			}
+		}
+	}
+	return Icon;
+}
+
+const FSlateBrush* UMRUISubsystem::BitmapIcon(const FString& Bgf, int32 Group) const
+{
+	const FString Key = FString::Printf(TEXT("%s:%d"), *Bgf.ToLower(), Group);
+	if (const TSharedPtr<FSlateBrush>* Found = BitmapIcons.Find(Key))
+	{
+		return Found->Get();
+	}
+	BitmapIcons.Add(Key, nullptr);
+	UMRNetSubsystem* Net = GetNet();
+	FMRAssetCache* Cache = Net ? Net->GetAssets() : nullptr;
+	if (!Cache || !Cache->IsListed(Bgf))
+	{
+		return nullptr;
+	}
+	TWeakObjectPtr<const UMRUISubsystem> Weak(this);
+	Cache->Fetch(Bgf, [Weak, Key, Group](bool bOk, const TArray<uint8>& Bytes)
+	{
+		const UMRUISubsystem* Self = Weak.Get();
+		FMRBgf B;
+		FString Error;
+		if (!Self || !bOk || !B.Load(Bytes, Error))
+		{
+			return;
+		}
+		const int32 G = Group - 1;
+		const int32 Bitmap = B.Groups.IsValidIndex(G) && B.Groups[G].Num() > 0 ? B.Groups[G][0] : 0;
+		UTexture2D* Tex = B.MakeTexture(B.Bitmaps.IsValidIndex(Bitmap) ? Bitmap : 0, false);
+		if (!Tex)
+		{
+			return;
+		}
+		Tex->Filter = TF_Nearest;  // the original pixels, square (docs/adr/0008)
+		Tex->UpdateResource();
+		Self->BitmapIconTextures.Add(Key, Tex);
+		TSharedPtr<FSlateBrush> Brush = MakeShared<FSlateBrush>();
+		UMRUIStyle::SetImage(*Brush, Tex, FVector2f(Tex->GetSizeX(), Tex->GetSizeY()));
+		Self->BitmapIcons.Add(Key, Brush);
+	});
+	return nullptr;
 }
 
 FText UMRUISubsystem::NameFor(const FMRSlotContent& C) const
@@ -729,6 +881,13 @@ FText UMRUISubsystem::NameFor(const FMRSlotContent& C) const
 	{
 		const FMRSpellDef* Spell = Data->FindSpell(C.Id);
 		return Spell ? Spell->Name : FText::FromName(C.Id);
+	}
+	if (const UMRNetInventory* NetInv = C.ObjectId ? Cast<UMRNetInventory>(Source) : nullptr)
+	{
+		if (const FMRNetObject* O = NetInv->FindObject(C))
+		{
+			return FText::FromString(O->Name);  // the server's (an identified item's real name)
+		}
 	}
 	const FMRItemDef* Item = Data->FindItem(C.Id);
 	return Item ? Item->Name : FText::FromName(C.Id);
@@ -767,6 +926,13 @@ TSharedPtr<IToolTip> UMRUISubsystem::MakeToolTip(const FMRSlotContent& C)
 		}
 		Parts += FString::Printf(TEXT("Weight %d  ·  Bulk %d  ·  Value %d"), Item->Weight, Item->Bulk, Item->Value);
 		Line = FText::FromString(Parts);
+	}
+	if (const UMRNetInventory* NetInv = C.ObjectId ? Cast<UMRNetInventory>(Source) : nullptr)
+	{
+		if (NetInv->IsInUse(C))
+		{
+			Line = FText::FromString(Line.IsEmpty() ? TEXT("In use") : TEXT("In use  ·  ") + Line.ToString());
+		}
 	}
 	return FramedToolTip(NameFor(C), Line, Desc);
 }

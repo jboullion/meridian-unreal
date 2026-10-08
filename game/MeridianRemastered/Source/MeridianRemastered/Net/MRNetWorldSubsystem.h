@@ -61,6 +61,14 @@ public:
 	bool LookAtTarget();
 	/** Every object at the crosshair, nearest the middle first (the Look picker when there are several). */
 	TArray<uint32> ObjectsAtAim() const { return AimStack; }
+	/** The things at the crosshair that can be picked up (OF_GETTABLE), nearest the middle first. */
+	TArray<uint32> GettableAtAim() const;
+	/**
+	 * Work what the target or the crosshair is on, as the original's double click did (gameuser.c):
+	 * a container is looked into (BP_SEND_OBJECT_CONTENTS), anything else that can be activated is
+	 * (BP_REQ_ACTIVATE). False: nothing there to use.
+	 */
+	bool UseAim();
 	/** Every object actor here (the name plates and the minimap draw them). */
 	const TMap<uint32, TWeakObjectPtr<AMRNetObject>>& GetActors() const { return Actors; }
 	/** How far names show and the crosshair reaches: the original's 15 squares (object3d.h MAX_NAME_DISTANCE). */

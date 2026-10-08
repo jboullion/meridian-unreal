@@ -25,12 +25,17 @@ class APlayerController;
  *   6. look: every object in the room has an actor (our sprite, its bitmap, or a prop of the world
  *      build); BP_REQ_LOOK on a named object brings its description; on ourselves UC_LOOK_PLAYER,
  *      editable, and a new description (BP_CHANGE_DESCRIPTION) comes back in the next look;
- *   7. travel: it walks our zones' exits to Farol West and off its east edge into the Forest of Farol,
+ *   7. items: the inventory and what is in use come (BP_INVENTORY, BP_USE_LIST) and the inventory
+ *      screen shows them; an item is used and put away, or taken off and put on (BP_REQ_USE,
+ *      BP_REQ_UNUSE; in use, it shows on its equipment slot), dropped (BP_REQ_DROP: it leaves the
+ *      inventory and lies in the room) and picked up again (BP_REQ_GET); 10 of a number item are
+ *      dropped and picked up (the tagged id and an amount);
+ *   8. travel: it walks our zones' exits to Farol West and off its east edge into the Forest of Farol,
  *      a room we haven't built: it is built from the server's files (UMRRuntimeRooms), the pawn
  *      stands on its floor, chat works there, and walking off its west edge comes back;
- *   8. Log Off returns to the character list (BP_REQ_QUIT, BP_QUIT, the server's menu) and the
+ *   9. Log Off returns to the character list (BP_REQ_QUIT, BP_QUIT, the server's menu) and the
  *      character enters again;
- *   9. it logs off cleanly.
+ *   10. it logs off cleanly.
  * Entering a zone also checks that ours was built from the server's room (its security value).
  * Logs "MRNetTest: PASS/FAIL ..." per step and "MRNetTest: DONE <passed>/<steps>", then quits.
  * -MRNetHold=<seconds> stays that long after saying hello (for a look from another client): it
@@ -47,7 +52,7 @@ public:
 	void Start(APlayerController* InController);
 
 private:
-	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Travel, Relog, Logoff, Done };
+	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Items, Travel, Relog, Logoff, Done };
 
 	void Tick();
 	void Pass(const FString& What);
@@ -105,4 +110,11 @@ private:
 	int32 DescriptionsBefore = 0;
 	int32 LookStage = 0;
 	FString Marker;
+	/** Items: the stage, the item tried (its name, whether it was in use) and its id in the room once dropped. */
+	int32 ItemStage = 0;
+	uint32 ItemId = 0;
+	FString ItemName;
+	bool bItemWasInUse = false;
+	uint32 DroppedId = 0;
+	uint32 CoinsBefore = 0;
 };

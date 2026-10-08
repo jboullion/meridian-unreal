@@ -19,6 +19,8 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	const FMRItemDef* FindItem(FName Class) const { return Items.Find(Class); }
+	/** An item class by its icon (the bgf's stem, "scimitar"): a server object's class, as near as the client can tell. */
+	const FMRItemDef* FindItemByIcon(const FString& IconStem) const;
 	const FMRSpellDef* FindSpell(FName Class) const { return Spells.Find(Class); }
 	const FMRSkillDef* FindSkill(FName Class) const { return Skills.Find(Class); }
 	/** By the name the server uses (vrName, any case): a server's spell and skill lists name them. */
@@ -39,5 +41,6 @@ private:
 	TMap<FName, FMRSpellDef> Spells;
 	TMap<FName, FMRSkillDef> Skills;
 	TMap<FString, FName> SpellByName;
+	TMap<FString, FName> ItemByIcon;
 	TMap<FString, FName> SkillByName;
 };
