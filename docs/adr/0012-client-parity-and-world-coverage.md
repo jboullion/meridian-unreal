@@ -51,7 +51,7 @@ So when a server changes a room, players still get a correct room, just not the 
 - **Clean-room readers.** The C++ `.roo` and `.bgf` readers (`World/MRRooReader`, `World/MRBgfReader`) are written from our own format notes:
   - `docs/research/roo-format.md` and `docs/research/bgf-format.md`;
   - the notes come from reading clientd3d and blakserv, and cite their sources.
-  - **Never translate** `roomedit/roogen/roofile.py` (GPL) or Shards' `roo.ts` / `bgf.ts` (GPLv2).
+  - **Never translate** `roomedit/roogen/roofile.py` (from the Meridian 59 source) or Shards' `roo.ts` / `bgf.ts` (ports of `bspload.c` and `dibutil.c`). They're the original authors' GPL code, which our Unreal Engine linking exception can't cover (AGENTS.md, "Hard rules").
 - **The mesh builder** (`World/MRRoomMeshBuilder`) is a C++ port of **our own** `roo2gltf.py` functions `build_room_mesh`, `wall_uvs` and `SectorHeights`. It emits:
   - one section per texture;
   - sector light as vertex colour;
@@ -126,7 +126,7 @@ On baked and authored zones this needs `roo2gltf` to emit sector-tagged movable 
 - **Players can go anywhere** once M1 lands. Rooms just look plainer until they are baked or authored.
 - **Runtime rooms don't have** Nanite, the remastered textures or hand-placed props. They use the original light model under our global mood and sky.
 - **Every message milestone adds** protocol notes and round-trip unit tests (`Meridian.Net`). A new `Meridian.World` test parses and meshes every cached room.
-- **The demo's local gameplay** (`AMRMonster` placeholder hits, the GAS skeleton) becomes offline-only. Whether GAS stays as a client-side mirror is decided in M4.
+- **The demo's local gameplay** (`AMRMonster` placeholder hits, the GAS skeleton) becomes offline-only. Decided in M4: GAS stays offline-only; online, the vitals, stats and every hit are the server's, and nothing mirrors them into GAS.
 - **Each milestone is its own change.** It ends with its `docs/parity.md` rows updated and the changed files listed for the maintainer to commit.
 
 ## Verification
@@ -308,9 +308,58 @@ The existing movement, UI-shot and look-dev runs stay green. Look-dev compares r
 - `-Render` writes `inventory.png`: the mace in the right hand, on the avatar and in first person (the server's window overlay), the shillings with an icon from their bitmap.
 - UI shots offline (`build/ui/shots/m3/`) are unchanged.
 
+### M4, combat, death and effects (2026-10-08)
+**What landed:**
+- **Attacks** (docs/research/blakserv-protocol.md, "Combat"):
+  - Online, left mouse sends `BP_REQ_ATTACK`, at most every 250 ms. It takes the target if it is in view (else "You can't see your selected target."), else what the crosshair is on if it can be attacked, else the nearest attackable thing within 5 squares.
+  - Our position goes up first, so the server checks range from where we stand. The server decides the rest: range, line of sight, its one attack a second, the hit.
+  - The placeholder hit and local monsters stay offline only.
+- **The swing is the server's:**
+  - In first person, `BP_PLAYER_OVERLAY`'s one-off animation. The local swing no longer plays online.
+  - In third person, the one-off animation a `BP_CHANGE` carries plays the matching action on the sprite body (`UMRNetWorldSubsystem::PlayServerAction`): a player's weapon, fist or bow swing, or an arm's cast, point or wave; a monster's attack. This covers us, other players and monsters.
+- **Damage numbers** (ours) come from the hit messages: what we deal rises over what we hit, what we take over us (ADR 0009).
+- **Screen effects** (`BP_EFFECT`, `FMRNetEffects`, counted down as the original's `AnimateEffects`):
+  - the HUD draws pain, whiteout, colour flashes, the override and blindness;
+  - the camera shakes, sways (waver) and blurs (depth of field);
+  - paralysis stops walking;
+  - the room's rain, snow and sand replace the zone's storm roll (`UMREnvironmentSubsystem::SetServerWeather`).
+  - Invert is approximated: UE grades colour in linear light before the tonemapper, so the colour is mirrored about mid grey (0.36 − colour), since 1 − colour comes out nearly white.
+  - `MREffect <n> [ms] [xlat]` plays one, as if the server had sent it.
+- **Projectiles** (`AMRNetProjectile`): `BP_SHOOT` and `BP_RADIUS_SHOOT` fly the server's bitmap from source to target at its speed, with its light. They haven't been seen yet against a real caster (spells come in M5).
+- **Death is the server's room change** to the Underworld, built at runtime like any room we haven't made.
+- **Fixed on the way:**
+  - a creature's capsule stopped a floor trace, so a corpse made where its monster still stood lay on the monster's head (`TraceFloor` now ignores pawns);
+  - the name and damage number of a creature drawn with our sprite went at a player's height whatever its size (now the look's own height).
+
+**Decided:** GAS stays offline-only (see Consequences). ADR 0001's "a hit needs physical contact" is superseded online: the swing is presentation.
+
+**Not yet:**
+- other players' and monsters' swings are only checked on our own character;
+- projectiles haven't been seen from a real spell (M5);
+- fireworks aren't drawn;
+- invert is an approximation;
+- bow attacks and their ammunition are untested.
+
+**Verification (local Shards stack):**
+- `Meridian.Net.Combat` (new) covers:
+  - the hit messages: monster and player, dealt and taken, found in the rsb by their text;
+  - `BP_EFFECT`: durations, limits, the blur adding up, a flash's translation, paralysis, the weather;
+  - `BP_SHOOT` and `BP_RADIUS_SHOOT`.
+  - All 22 automation tests pass.
+- `run_net_test.ps1` reports **DONE 32/32** (33/33 with `-Create`; three runs in a row). The new Combat step:
+  - in the Outskirts of Raza, it wields the mace and fights a bunny or a baby spider until it dies;
+  - the server answers ("Your mace crushes the baby spider for 8 damage."), swings `povmace` in first person, and our sprite plays `weapon_attack` from the server's `BP_CHANGE`;
+  - a damage number rises over the creature.
+- `-Create -Death` (35/35): a fresh character dies bare-handed to the Forest of Farol's spiders (in 30–60 s). The server takes it to the Underworld, which is built at runtime (zone 100001), and its archway leads back to the Inn of Raza.
+- `-Render` pictures:
+  - `combat.png`: the spider, its damage number and ours under the crosshair, the mace;
+  - `combat_corpse.png`: the corpse on the ground;
+  - `effect_pain/flash/whiteout/invert/blur.png`.
+- `run_move_test.ps1` 8/8. The UI shots (`build/ui/shots/m4/`) are unchanged from M3.
+
 ## Alternatives considered
 
 - **Bake every room before allowing travel:** no runtime code, but hours of GPU texture work and hundreds of levels to import before anyone can leave Raza. A room changed on the server would also break until rebuilt.
 - **Runtime rooms only, no baked tier:** less pipeline, but every room outside the authored ones keeps the original's flat look forever.
-- **Port the Shards or roofile readers:** fastest, but both are GPL, and this repo is not.
+- **Port the Shards or roofile readers:** fastest, but both are the Meridian 59 authors' GPL code (roofile directly, Shards' readers as ports of the client), which this repo's Unreal Engine exception can't cover.
 - **Ship the original `.roo` and `.bgf` files in the package instead of downloading them:** works offline, but can drift from the server's build. The asset cache downloads only what is missing or changed, so it can still start from bundled files later.

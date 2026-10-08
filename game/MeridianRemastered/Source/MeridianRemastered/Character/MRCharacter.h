@@ -82,6 +82,13 @@ public:
 	void TakePhoto();
 
 	/**
+	 * The server's screen effects on the view (BP_EFFECT; the HUD sets them each frame): the eye
+	 * shaken off its place (cm), rolled side to side (waver, degrees), blurred (the original's 1..6
+	 * pixels; 0 = sharp) and the colours inverted.
+	 */
+	void SetViewEffects(const FVector& EyeOffset, float Roll, float BlurPixels, bool bInvert);
+
+	/**
 	 * Placeholder Vigor regeneration. The original regenerates through
 	 * exertion and resting (player.kod NewVigor / ExertionTimer); that port replaces this.
 	 */

@@ -161,6 +161,21 @@ public:
 	/** The minimap picture of a geometry zone (kept loaded), or null if it hasn't been captured. */
 	class UTexture2D* GetMapTexture(int32 GeometryRid);
 
+	/**
+	 * A damage number rising over what was hit and fading (ours: the original only printed the line;
+	 * docs/adr/0012 M4): the damage we deal over our target, what we take over ourselves. mr.UI.DamageNumbers 0 hides them.
+	 */
+	struct FFloater
+	{
+		uint32 ObjectId = 0;
+		FString Text;
+		FLinearColor Color = FLinearColor::White;
+		double Start = 0.0;
+	};
+	const TArray<FFloater>& GetFloaters() const { return Floaters; }
+	/** How long a damage number shows, in seconds. */
+	static constexpr double FloaterSeconds = 1.4;
+
 private:
 	/** What the widgets show: Mock offline, an UMRNetInventory while in a server's game. */
 	UPROPERTY(Transient)
@@ -199,6 +214,9 @@ private:
 	uint32 LookPictureFor = 0;
 	FDelegateHandle NetDescriptionHandle;
 	FDelegateHandle NetContentsHandle;
+	FDelegateHandle NetHitHandle;
+	TArray<FFloater> Floaters;
+	void OnNetHit(const struct FMRNetHit& Hit);
 	void OnNetDescription();
 	/** A container's contents arrived (BP_OBJECT_CONTENTS): list them to take from. */
 	void OnNetContents();

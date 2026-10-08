@@ -4,7 +4,7 @@ These are our own notes on the Meridian 59 client/server protocol, written from 
 
 The implementation is `game/MeridianRemastered/Source/MeridianRemastered/Net/`. Paths below are relative to `ReferenceServers/Server-104/`.
 
-Never copy or translate code from Server-104 or from Meridian Shards (both GPLv2). Read them, write the facts down here, and implement from this page.
+Never copy or translate code from Server-104: it's the Meridian 59 authors' GPL code, which our Unreal Engine linking exception can't cover. Read it, write the facts down here, and implement from this page. Meridian Shards' own protocol code (`packages/protocol`) may be reused (AGENTS.md, "Hard rules").
 
 ## Transport
 - **TCP to blakserv:** port 5959.
@@ -260,6 +260,36 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
   - `BP_REQ_APPLY` (108) item id, target id: use an item on something. `BP_REQ_ACTIVATE` (109) id: work something in the room. The original's double click opens a container, else activates (`gameuser.c`).
   - `BP_REQ_INVENTORY_MOVE` (127) id, id: the first takes the second's place in `plPassive` (`UserMoveInventoryItem`); the server says nothing back.
   - Giving to someone isn't `BP_REQ_GIVE` (unused): it is an offer (`BP_REQ_OFFER`), with trade (M6).
+
+## Combat (Kod `user.kod` UserAttack, `player.kod` TryAttack, `battler.kod` AssessHit; `clientd3d/gameuser.c`, `effect.c`, `project.c`)
+- **`BP_REQ_ATTACK` (103):** `u8 kind` (`ATTACK_NORMAL` 1), `u32 target`.
+  - The server decides everything. `player.kod TryAttack` checks, in order: the attack timer, the same room, line of sight, then the range from the weapon or the stroke. One attack a second (`IsOkayAttackTime`, 1000 ms); one sent sooner is dropped without a word.
+  - The original client sends its exact position first (`gameuser.c` `MoveUpdatePosition`), so the range is checked from where the player stands.
+  - The attack key (`UserAttackClosest`) takes the selected target if it is visible (else "You can't see your selected target.", `IDS_TARGETNOTVISIBLEFORATTACK`), or the nearest attackable object within `CLOSE_DISTANCE` (5 squares). It allows one attack every 250 ms (`ATTACK_DELAY`).
+  - Kod's own refusals come as messages: "You can't reach the rat with your punch.", "You can't see your selected target." (`player_attack_not_in_view`, line of sight).
+- **The swing comes back twice:**
+  - **In first person,** `BP_PLAYER_OVERLAY`: the weapon's window overlay with an `ANIMATE_ONCE` (`weapon.kod WeaponAttack` → `ChangeWindowOverlay`; fists `DoWindowOverlayFistAttack`, which hides the fist again with group 0).
+  - **In third person,** a `BP_CHANGE` of the attacker whose animation is `ANIMATE_ONCE` for that one message. Kod sets `piAnimation` and calls `SomethingChanged`, then sets it back.
+  - **Players** (`player.kod SendAnimation`): weapon 300 ms, groups 2–4, final 1; fist 600 ms, 3–4; bow 1200 ms, 5–5. A cast, point or wave animates an arm overlay instead.
+  - **Monsters:** their own attack groups.
+- **Hit messages** (`battler.kod AssessHit`). The damage is only in the text. The formats are Kod resources; find their ids in the rsb by their text:
+  - `battler_attacker_hit` `%sYour %s %s %s%q for ~k~B%i~B%s damage.`: colour, weapon, damage word, article, a player's name (string), damage, colour;
+  - `battler_attacker_hit_mob`: the same with `%s`, a monster's name resource;
+  - `battler_defender_hit` `%s%s%q's %s %s you for ~r~B%i~B%s damage.`: colour, article, name, weapon, damage word, damage, colour; `_mob` the same with a resource.
+  - Misses, kills and hits too weak to hurt use other formats.
+- **`BP_EFFECT` (70):** `u16 effect`, then its parameters (`effect.c PerformEffect`):
+  - `i32 ms` for invert (1), shake (2), pain (7, at most 10 s), blur (8, adds up to 200 s), waver (14, adds up) and whiteout (16, at most 10 s);
+  - `i32 ms, i32 xlat` for a colour flash (15). The xlat is an `XLAT_BLEND*` id: red 0x41–0x4A, white 0x70–0x79, 25/50/75% red 0x51/0x45/0x57, blue 0x52/0x55/0x58, green 0x53/0x56/0x59;
+  - `i32 xlat` for an override over the whole view until 0 (17: the phase spell's white 116+, the temple's red 0x4A);
+  - nothing for paralyze (3) and release (4), blind (5) and see (6), rain (9), snow (10), clear weather (11), sand (12), clear sand (13) and fireworks (18).
+  - **The weather is per room:** on entering a room (`user.kod WeatherChanged`) the server sends clear weather, clear sand (unless a sandstorm spell is on the room), then the room's weather (`room.kod GetRoomWeather`: snow before rain before sand before fireworks).
+  - **How the original draws it** (`d3drender.c`): pain is red fading from 80% (`min(ms, 2000) * 204 / 2000`); whiteout is white at 200/255 or more for its last half second; blind draws no world; paralysis stops walking (`move.c`).
+- **`BP_SHOOT` (202):** `u32 icon`, optional translation-or-effect, animation, `u32 source`, `u32 dest`, `u8 speed`, `u16 flags`, light (`u16 flags`, then `u8 intensity`, `u16 colour` when not 0).
+  - `BP_RADIUS_SHOOT` (229) has no `dest` and adds `u8 range`, `u8 number` after the flags: `number` projectiles out to `range * 1000` fine units, evenly round.
+  - **Flight** (`project.c`): from the source's position to the dest's, at `speed` squares a second, gone on arrival. `PROJ_FLAG_FOLLOWGROUND` (1) keeps it on the floor. Both ends must be in the room.
+- **Death** (`player.kod Killed`): the server takes the player to the Underworld, `uworld.roo` (RID 1). It is an ordinary room change (`BP_PLAYER`, room contents), after "You are dead, poor soul." and a pain effect.
+  - Its archway to Raza is the portal at row 11, col 3 (`uworld.kod`). The rip in space at (10, 6) leads to a random inn.
+  - **A portal (`portal.kod`) takes whoever moves within a square of it, but only on a move that starts there.** The room tells the portal before the mover's own position is updated (`room.kod SomethingMoved`), so a single jump onto it does nothing; the next step does. Walking does that anyway.
 
 ## Session (`blakserv/game.c`, Kod `user.kod`; the client side is `clientd3d/game.c`, `com.c`)
 - **Leaving the game but not the server:**

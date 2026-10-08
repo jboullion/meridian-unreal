@@ -782,6 +782,12 @@ void AMRCharacter::OnZoom(const FInputActionValue& Value)
 
 void AMRCharacter::OnAttack()
 {
+	// online the server decides: the attack goes up, the swing comes back (docs/adr/0012 M4)
+	if (UMRNetWorldSubsystem* NetWorld = GetWorld()->GetSubsystem<UMRNetWorldSubsystem>(); NetWorld && NetWorld->IsActive())
+	{
+		NetWorld->Attack();
+		return;
+	}
 	const double Now = GetWorld()->GetTimeSeconds();
 	if (Now - LastAttackTime < AttackIntervalSeconds)
 	{
@@ -790,6 +796,30 @@ void AMRCharacter::OnAttack()
 	LastAttackTime = Now;
 	const FMRSpriteLook* Look = FMRSpriteLibrary::Get().Looks.Find(SpriteAppearance.Look);
 	PlaySpriteAction(Look && Look->Find(TEXT("weapon")) ? TEXT("weapon_attack") : TEXT("fist_attack"));
+}
+
+void AMRCharacter::SetViewEffects(const FVector& EyeOffset, float Roll, float BlurPixels, bool bInvert)
+{
+	if (!Camera)
+	{
+		return;
+	}
+	Camera->SetRelativeLocationAndRotation(EyeOffset, FRotator(0.f, 0.f, Roll));
+	FPostProcessSettings& PP = Camera->PostProcessSettings;
+	// blur: everything past a hand's breadth out of focus, more as the original's blur swells
+	const bool bBlur = BlurPixels > 0.f;
+	PP.bOverride_DepthOfFieldFocalDistance = bBlur;
+	PP.bOverride_DepthOfFieldFstop = bBlur;
+	PP.bOverride_DepthOfFieldMinFstop = bBlur;
+	PP.DepthOfFieldFocalDistance = 10.f;
+	PP.DepthOfFieldFstop = FMath::Lerp(16.f, 4.f, FMath::Clamp(BlurPixels / 6.f, 0.f, 1.f));
+	PP.DepthOfFieldMinFstop = 0.f;
+	// invert: the grading comes before the tonemapper, in linear light, so mirror it about mid grey
+	// (0.18: 0.36 - colour) rather than 1 - colour, which tonemaps to near white
+	PP.bOverride_ColorGain = bInvert;
+	PP.bOverride_ColorOffset = bInvert;
+	PP.ColorGain = FVector4(-1.0, -1.0, -1.0, 1.0);
+	PP.ColorOffset = FVector4(0.36, 0.36, 0.36, 0.0);
 }
 
 void AMRCharacter::OnEmote(FName Action)

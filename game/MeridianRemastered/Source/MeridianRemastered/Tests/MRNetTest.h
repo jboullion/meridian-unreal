@@ -30,12 +30,19 @@ class APlayerController;
  *      BP_REQ_UNUSE; in use, it shows on its equipment slot), dropped (BP_REQ_DROP: it leaves the
  *      inventory and lies in the room) and picked up again (BP_REQ_GET); 10 of a number item are
  *      dropped and picked up (the tagged id and an amount);
- *   8. travel: it walks our zones' exits to Farol West and off its east edge into the Forest of Farol,
+ *   8. combat: in the Outskirts of Raza it fights a bunny or a baby spider until it dies
+ *      (BP_REQ_ATTACK): the server answers with hit or miss lines, swings our weapon in first person
+ *      (BP_PLAYER_OVERLAY), a damage number rises over what we hit, and the creature is gone. With
+ *      -Render: combat.png, and the screen effects as the server would send them (effect_*.png);
+ *   9. travel: it walks our zones' exits to Farol West and off its east edge into the Forest of Farol,
  *      a room we haven't built: it is built from the server's files (UMRRuntimeRooms), the pawn
  *      stands on its floor, chat works there, and walking off its west edge comes back;
- *   9. Log Off returns to the character list (BP_REQ_QUIT, BP_QUIT, the server's menu) and the
+ *   (-MRNetDeath, run_net_test.ps1 -Death: a fresh character dies bare handed to the Forest of Farol's spiders,
+ *      the server takes it to the Underworld (uworld.roo, built at runtime), and it walks into the
+ *      archway back to the Inn of Raza; the character loses what death costs, so not by default)
+ *   10. Log Off returns to the character list (BP_REQ_QUIT, BP_QUIT, the server's menu) and the
  *      character enters again;
- *   10. it logs off cleanly.
+ *   11. it logs off cleanly.
  * Entering a zone also checks that ours was built from the server's room (its security value).
  * Logs "MRNetTest: PASS/FAIL ..." per step and "MRNetTest: DONE <passed>/<steps>", then quits.
  * -MRNetHold=<seconds> stays that long after saying hello (for a look from another client): it
@@ -52,7 +59,7 @@ public:
 	void Start(APlayerController* InController);
 
 private:
-	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Items, Travel, Relog, Logoff, Done };
+	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Items, Combat, Travel, Death, Relog, Logoff, Done };
 
 	void Tick();
 	void Pass(const FString& What);
@@ -117,4 +124,30 @@ private:
 	bool bItemWasInUse = false;
 	uint32 DroppedId = 0;
 	uint32 CoinsBefore = 0;
+	/** Combat: the stage, the creature fought, attacks sent, the chat and first-person counts before, what was seen. */
+	int32 CombatStage = 0;
+	uint32 FoeId = 0;
+	FString FoeName;
+	int32 Attacks = 0;
+	int32 AimedAttacks = 0;
+	double LastAttackAt = 0.0;
+	int32 ChatBefore = 0;
+	uint32 OverlaySeqBefore = 0;
+	bool bCombatAnswered = false;
+	bool bSwingSeen = false;
+	bool bDamageShown = false;
+	double DamageShotAt = 0.0;
+	bool bOwnSwingSeen = false;
+	int32 EffectShot = 0;
+	/** Which side we strike from (a quarter turn each time the server can't see or reach it), and the chat read so far. */
+	int32 ApproachSide = 0;
+	int32 ChatSeen = 0;
+	/** Where we came into the Outskirts: travel goes on from there (its edge search starts where we stand). */
+	FVector CombatHome = FVector::ZeroVector;
+	/** -MRNetDeath: die and come back (its own time limit: dying takes a while). */
+	bool bDeath = false;
+	int32 DeathStage = 0;
+	double DeathStart = 0.0;
+	/** When each mummy was last struck: each only now and then, so they gang up rather than die. */
+	TMap<uint32, double> Struck;
 };

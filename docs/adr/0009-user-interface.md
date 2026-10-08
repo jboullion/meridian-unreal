@@ -133,6 +133,16 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
 - **Icons:** the prebuilt ones where the item's class is known; else the item's own bitmap from the server, made at runtime (nearest filtered).
 - **In the world:** G gets, F opens or activates, Look offers Get, Inside and Use; a container's contents use the Look dialog's list.
 
+## Combat on the screen (2026-10-08, M4 of ADR 0012)
+- **Damage numbers** (ours: the original only printed the line). They come from the server's hit messages:
+  - what we deal rises over what we hit, pale gold;
+  - what we take rises over us in red, or under the crosshair in first person;
+  - each shows 1.4 s; `mr.UI.DamageNumbers 0` hides them.
+- **A creature drawn with our sprite** has its name, brackets and numbers just over its own height (a bunny's knee height), not a player's.
+- **Screen effects** (`BP_EFFECT`) are drawn by the HUD under the Slate UI, as the original drew them over the view and not the interface:
+  - pain is red, whiteout white, and flashes and the override are the `XLAT_BLEND*` colours;
+  - blindness is black, with no names or brackets.
+
 ## Consequences
 - Inventory and equipment are still **mock data offline** and empty online (M3). Spells don't cast; a "cast" plays the sprite's cast action and a cooldown sweep. Online, the vitals, stats, spells and skills come from the server's stat groups (`docs/research/blakserv-protocol.md`, "Stats"). Offline they come from the attributes and the mock file.
 - Equipment doesn't change the avatar yet (no equipment layers on the sprite body).

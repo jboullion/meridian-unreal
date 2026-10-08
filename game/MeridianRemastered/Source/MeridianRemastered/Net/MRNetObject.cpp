@@ -105,6 +105,14 @@ void AMRNetObject::SetServerAnimation(const FMRNetAnimation& Standing, const FMR
 	}
 }
 
+void AMRNetObject::PlayAction(FName Action)
+{
+	if (SpriteBody)
+	{
+		SpriteBody->PlayAction(Action);
+	}
+}
+
 void AMRNetObject::SetStatic()
 {
 	bStatic = true;
@@ -151,7 +159,9 @@ FVector AMRNetObject::GetNameAnchor() const
 	}
 	if (SpriteBody)
 	{
-		return Feet + FVector(0.0, 0.0, 215.0);  // a player's height and a little (docs/sprites.md)
+		// over its head: a player's 1.84 m, a bunny's knee height (the look's box above the feet)
+		const float Height = SpriteBody->GetStandingHeightCm();
+		return Feet + FVector(0.0, 0.0, Height > 0.f ? FMath::Min(Height, 200.f) + 15.0 : 215.0);
 	}
 	return Feet + FVector(0.0, 0.0, 60.0);
 }

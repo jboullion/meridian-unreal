@@ -2,8 +2,9 @@
 # server through its WebSocket gateway (UMRNetTest): logs in (an unknown name makes the account),
 # plays or creates a character, enters a zone (built from the server's room), says a line and
 # hears it back, takes an exit into another zone, fetches the room through the asset cache, finds
-# itself in the players list, resynchronises, logs off to the character list and enters again, and
-# logs off (DONE 10/10; 11/11 with -Create).
+# itself in the players list, resynchronises, looks, uses and drops items, fights in the Outskirts,
+# travels into a room built at runtime, logs off to the character list and enters again, and logs off
+# (DONE 32/32; 33/33 with -Create). AGENTS.md "Testing and verification" lists every check.
 #
 # Needs the server running. For the local Shards stack, in E:\2026_Experiments\meridian-browser:
 #   npm run dev      (blakserv, the gateway on ws://localhost:8059, the game files on http://localhost:5173)
@@ -14,6 +15,8 @@
 #                                                               # screenshots (Saved/Screenshots/MRNet/)
 #   powershell -File tools/ue/run_net_test.ps1 -Create          # a fresh account: makes a character through
 #                                                               # the creator's path and checks its face
+#   powershell -File tools/ue/run_net_test.ps1 -Create -Death   # also dies (the Forest of Farol's spiders), checks
+#                                                               # the Underworld and walks back to Raza
 #
 # The default account is a test account that only exists on the local dev server. Exit code 0 on success.
 param(
@@ -22,11 +25,13 @@ param(
     [int]$Hold = 0,
     [switch]$Render,
     [switch]$Create,
+    [switch]$Death,
     [string]$User = "uenettest",
     [string]$Pass = "uenettest-local",
     [int]$TimeoutSeconds = 240
 )
 $TimeoutSeconds += $Hold
+if ($Death) { $TimeoutSeconds += 300 }
 if ($Create) {
     # an account the server hasn't seen: it is made at login, with no character yet
     $User = "uecreate" + (Get-Random -Minimum 10000 -Maximum 99999)
@@ -50,6 +55,7 @@ if ($Server -eq "Local") {
 }
 
 $common = "-MRNetTest -MRServer=$Server -MRNetUser=$User -MRNetPass=$Pass -MRNetHold=$Hold -abslog=`"$log`""
+if ($Death) { $common += " -MRNetDeath" }
 if ($Render) {
     $exe = Join-Path (Split-Path -Parent $Engine) "UnrealEditor.exe"
     $game = Start-Process -FilePath $exe -PassThru -ArgumentList `

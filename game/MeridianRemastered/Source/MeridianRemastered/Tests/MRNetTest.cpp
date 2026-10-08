@@ -10,6 +10,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Paths.h"
 #include "Character/MRCharacter.h"
+#include "Character/MRSpriteBodyComponent.h"
 #include "Net/MRAssetCache.h"
 #include "Net/MRCharInfo.h"
 #include "Net/MRProtocol.h"
@@ -66,6 +67,7 @@ void UMRNetTest::Start(APlayerController* InController)
 	FParse::Value(FCommandLine::Get(), TEXT("MRNetUser="), User);
 	FParse::Value(FCommandLine::Get(), TEXT("MRNetPass="), Pass);
 	FParse::Value(FCommandLine::Get(), TEXT("MRNetHold="), HoldSeconds);
+	bDeath = FParse::Param(FCommandLine::Get(), TEXT("MRNetDeath"));
 	int32 Server = INDEX_NONE;
 	for (int32 i = 0; Net && i < Net->GetServers().Num(); ++i)
 	{
@@ -1093,7 +1095,242 @@ void UMRNetTest::Tick()
 		}
 		else if (ItemStage == 6 && Now - StageTime > 1.0)
 		{
+			Advance(EStep::Combat);
+		}
+		break;
+	}
+
+	case EStep::Combat:
+	{
+		// the Outskirts of Raza: bunnies and baby spiders (data/zones.json 330 "spawning")
+		constexpr int32 Outskirts = 330;
+		const int32 Here = NetWorld->GetRid();
+		UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+		// back where we came in (a normal move), and on
+		const auto Leave = [&]()
+		{
+			if (APawn* Pawn = PC->GetPawn(); Pawn && !CombatHome.IsZero() && Here == Outskirts)
+			{
+				Pawn->TeleportTo(CombatHome, Pawn->GetActorRotation(), false, true);
+			}
 			Advance(EStep::Travel);
+		};
+		if (Now - StepStart > 90.0)  // (a fight takes longer than the other steps)
+		{
+			Fail(FString::Printf(TEXT("combat: stuck at stage %d in zone %d (%s, %d attacks)"), CombatStage, Here, *FoeName, Attacks));
+			Leave();
+			break;
+		}
+		if (HopFrom && (Here == HopFrom || Here == 0))
+		{
+			break;  // a hop under way
+		}
+		if (HopFrom)
+		{
+			HopFrom = 0;
+			StepStart = Now;
+			StageTime = Now;
+		}
+		if (CombatStage == 0)
+		{
+			if (Here != Outskirts)
+			{
+				if (Here && Now - StepStart > 1.0)
+				{
+					HopFrom = Here;
+					if (!HopToward(Outskirts))
+					{
+						Fail(FString::Printf(TEXT("combat: no way from zone %d to the Outskirts"), Here));
+						Advance(EStep::Travel);
+					}
+				}
+				break;
+			}
+			if (Now - StageTime < 1.5)
+			{
+				break;  // (its creatures arrive with the room)
+			}
+			// the mace in hand (the items step may have put it away)
+			if (const FMRNetObject* Mace = Net->GetInventory().FindByPredicate([](const FMRNetObject& O) { return O.Icon.Equals(TEXT("mace.bgf"), ESearchCase::IgnoreCase); });
+				Mace && !Net->IsUsing(Mace->Id))
+			{
+				if (!bAsked)
+				{
+					Net->UseItem(Mace->Id);
+					bAsked = true;
+				}
+				break;
+			}
+			// the nearest creature we can fight
+			const APawn* Me = PC->GetPawn();
+			const AMRNetObject* Foe = nullptr;
+			for (const TPair<uint32, TWeakObjectPtr<AMRNetObject>>& Pair : NetWorld->GetActors())
+			{
+				const AMRNetObject* A = Pair.Value.Get();
+				if (A && Me && (A->GetFlags() & MRMsg::OF_ATTACKABLE) && !(A->GetFlags() & MRMsg::OF_PLAYER)
+					&& (!Foe || FVector::Dist(A->GetActorLocation(), Me->GetActorLocation()) < FVector::Dist(Foe->GetActorLocation(), Me->GetActorLocation())))
+				{
+					Foe = A;
+				}
+			}
+			if (!Foe)
+			{
+				break;  // none yet: they spawn every 20 s
+			}
+			FoeId = Foe->GetServerId();
+			FoeName = Foe->GetObjectName();
+			CombatHome = Me->GetActorLocation();
+			ChatBefore = Net->GetChat().Num();
+			ChatSeen = ChatBefore;
+			OverlaySeqBefore = Net->GetNetWorld().PlayerOverlaySeq;
+			UE_LOG(LogMeridian, Display, TEXT("MRNetTest: fighting the %s (%u), %.0f m away"), *FoeName, FoeId,
+				FVector::Dist(Foe->GetActorLocation(), Me->GetActorLocation()) / 100.0);
+			CombatStage = 1;
+		}
+		else if (CombatStage == 1)
+		{
+			const FMRNetObject* Foe = Net->FindObject(FoeId);
+			// the server's answers
+			const TArray<FMRChatLine>& Chat = Net->GetChat();
+			for (int32 i = FMath::Max(0, FMath::Min(ChatBefore, Chat.Num())); i < Chat.Num() && !bCombatAnswered; ++i)
+			{
+				if (Chat[i].Text.StartsWith(TEXT("Your ")))
+				{
+					Pass(FString::Printf(TEXT("the server answered our attack (BP_REQ_ATTACK): \"%s\""), *Chat[i].Text));
+					bCombatAnswered = true;
+				}
+			}
+			const FMRNetPlayerOverlay* Hand = Net->GetNetWorld().PlayerOverlays.Find(MRMsg::PWO_RIGHT_HAND);
+			if (!bSwingSeen && Hand && Hand->Seq > OverlaySeqBefore && Hand->Object.Animation.Type == MRMsg::ANIMATE_ONCE)
+			{
+				Pass(FString::Printf(TEXT("the server swung our %s in first person (BP_PLAYER_OVERLAY, groups %d-%d)"), *Hand->Object.Icon,
+					Hand->Object.Animation.GroupLow, Hand->Object.Animation.GroupHigh));
+				bSwingSeen = true;
+			}
+			if (!bOwnSwingSeen)
+			{
+				const AMRCharacter* Pawn = Cast<AMRCharacter>(PC->GetPawn());
+				const FName Action = Pawn && Pawn->GetSpriteBody() ? Pawn->GetSpriteBody()->GetAction() : NAME_None;
+				if (Action.ToString().Contains(TEXT("attack")))
+				{
+					UE_LOG(LogMeridian, Display, TEXT("MRNetTest: our sprite plays %s, as the server's BP_CHANGE says"), *Action.ToString());
+					bOwnSwingSeen = true;
+				}
+			}
+			if (!bDamageShown && UI && UI->GetFloaters().ContainsByPredicate([this](const UMRUISubsystem::FFloater& F) { return F.ObjectId == FoeId; }))
+			{
+				const UMRUISubsystem::FFloater* F = UI->GetFloaters().FindByPredicate([this](const UMRUISubsystem::FFloater& E) { return E.ObjectId == FoeId; });
+				Pass(FString::Printf(TEXT("a damage number (%s) rose over the %s"), *F->Text, *FoeName));
+				bDamageShown = true;
+				DamageShotAt = FApp::CanEverRender() ? Now + 0.25 : 0.0;  // (once it has risen a little)
+			}
+			if (DamageShotAt > 0.0 && Now >= DamageShotAt)
+			{
+				const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), TEXT("combat.png"));
+				FScreenshotRequest::RequestScreenshot(File, true, false);
+				UE_LOG(LogMeridian, Display, TEXT("MRNetTest: screenshot %s"), *File);
+				DamageShotAt = 0.0;
+			}
+			if (!Foe || !(Foe->Flags & MRMsg::OF_ATTACKABLE))
+			{
+				if (bDamageShown)
+				{
+					Pass(FString::Printf(TEXT("the %s died after %d attacks (%d chosen by the attack key)"), *FoeName, Attacks, AimedAttacks));
+				}
+				else
+				{
+					Fail(FString::Printf(TEXT("combat: the %s is gone after %d attacks, but no damage was shown"), *FoeName, Attacks));
+				}
+				CombatStage = 2;
+				StageTime = Now;
+				break;
+			}
+			// close in and strike, a little over once a second (the server's IsOkayAttackTime); from
+			// another side when the server can't see or reach it from this one (a wall, a tree between)
+			for (; ChatSeen < Chat.Num(); ++ChatSeen)
+			{
+				if (Chat[ChatSeen].Text.StartsWith(TEXT("You can't see")) || Chat[ChatSeen].Text.StartsWith(TEXT("You can't reach")))
+				{
+					++ApproachSide;
+				}
+			}
+			if (Now - LastAttackAt > 1.1 && DamageShotAt == 0.0)
+			{
+				if (const AMRNetObject* A = NetWorld->FindActor(FoeId))
+				{
+					APawn* Pawn = PC->GetPawn();
+					const FVector Dir = (A->GetActorLocation() - Pawn->GetActorLocation()).GetSafeNormal2D().RotateAngleAxis(90.0 * (ApproachSide % 4), FVector::UpVector);
+					FVector Near = A->GetActorLocation() - Dir * 110.0;
+					if (UMRZoneSubsystem* Zones = PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>(); Zones && Zones->TraceFloor(Near)
+						&& FVector::Dist2D(Near, Pawn->GetActorLocation()) > 60.0)
+					{
+						Pawn->TeleportTo(Near + FVector(0.0, 0.0, Pawn->GetSimpleCollisionHalfHeight() + 2.0), Dir.Rotation(), false, true);
+					}
+					// look at it (it stands low: a bunny is knee high), so its damage number is in the picture
+					const FVector Eye = Pawn->GetPawnViewLocation();
+					PC->SetControlRotation(FRotator(FMath::Clamp((A->GetActorLocation() - Eye).Rotation().Pitch, -45.0, 0.0) + 8.0, Dir.Rotation().Yaw, 0.0));
+				}
+				NetWorld->SetTarget(FoeId);
+				// the attack key's choice (the target, in view); without a view (-nullrhi) straight to the server
+				if (NetWorld->Attack() == FoeId)
+				{
+					++AimedAttacks;
+				}
+				else
+				{
+					Net->Attack(FoeId);
+				}
+				++Attacks;
+				LastAttackAt = Now;
+			}
+		}
+		else if (CombatStage == 2)
+		{
+			// -Render: the screen effects, as the server would send them (BP_EFFECT), one picture each
+			// (each lasts 600 ms; the picture 300 ms in, the next a second later)
+			static const struct { uint16 Effect; int32 Ms; int32 Xlat; const TCHAR* Name; } EffectShots[] = {
+				{0, 0, 0, TEXT("corpse")},  // first: the fight's end in third person
+				{MRMsg::EFFECT_PAIN, 600, 0, TEXT("pain")},
+				{MRMsg::EFFECT_FLASHXLAT, 600, 0x56, TEXT("flash")},
+				{MRMsg::EFFECT_WHITEOUT, 600, 0, TEXT("whiteout")},
+				{MRMsg::EFFECT_INVERT, 600, 0, TEXT("invert")},
+				{MRMsg::EFFECT_BLUR, 600, 0, TEXT("blur")},
+			};
+			AMRCharacter* Pawn = Cast<AMRCharacter>(PC->GetPawn());
+			if (!FApp::CanEverRender() || !Pawn || EffectShot >= 2 * UE_ARRAY_COUNT(EffectShots))
+			{
+				if (Now - StageTime > 1.0)
+				{
+					if (Pawn)
+					{
+						Pawn->SetViewMode(EMRViewMode::FirstPerson);
+					}
+					Leave();
+				}
+				break;
+			}
+			if (Now - StageTime < (EffectShot % 2 == 0 ? 1.0 : 0.3))
+			{
+				break;
+			}
+			const auto& S = EffectShots[EffectShot / 2];
+			if (EffectShot % 2 == 0)
+			{
+				Pawn->SetViewMode(S.Effect ? EMRViewMode::FirstPerson : EMRViewMode::Chase);
+				if (S.Effect)
+				{
+					Net->DebugEffect(S.Effect, S.Ms, S.Xlat);
+				}
+			}
+			else
+			{
+				const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"),
+					FString::Printf(TEXT("%s%s.png"), S.Effect ? TEXT("effect_") : TEXT("combat_"), S.Name));
+				FScreenshotRequest::RequestScreenshot(File, true, false);
+				UE_LOG(LogMeridian, Display, TEXT("MRNetTest: screenshot %s"), *File);
+			}
+			++EffectShot;
+			StageTime = Now;
 		}
 		break;
 	}
@@ -1112,7 +1349,7 @@ void UMRNetTest::Tick()
 		if (bTimedOut)
 		{
 			Fail(FString::Printf(TEXT("travel: stuck in zone %d (stage %d, loading \"%s\")"), Here, TravelStage, *NetWorld->GetLoadingRoom()));
-			Advance(EStep::Relog);
+			Advance(bDeath ? EStep::Death : EStep::Relog);
 			break;
 		}
 		if (HopFrom && (Here == HopFrom || Here == 0))
@@ -1145,7 +1382,7 @@ void UMRNetTest::Tick()
 				if (!HopToward(FarolWest))
 				{
 					Fail(FString::Printf(TEXT("travel: no way from zone %d to Farol West"), Here));
-					Advance(EStep::Relog);
+					Advance(bDeath ? EStep::Death : EStep::Relog);
 				}
 			}
 		}
@@ -1225,6 +1462,125 @@ void UMRNetTest::Tick()
 			{
 				Fail(FString::Printf(TEXT("travel: the west edge led to zone %d, not Farol West"), Here));
 			}
+			Advance(bDeath ? EStep::Death : EStep::Relog);
+		}
+		break;
+	}
+
+	case EStep::Death:
+	{
+		// die to the Forest of Farol's spiders (off Farol West's east edge, built at runtime), bare
+		// handed so they outlast us; the Underworld; its archway back to Raza (uworld.kod: the portal
+		// at row 11, col 3, to the Inn of Raza)
+		constexpr int32 FarolWest = 331;
+		const int32 Here = NetWorld->GetRid();
+		const FString Room = Net->GetPlayer().RoomFile.ToLower();
+		if (DeathStart == 0.0)
+		{
+			DeathStart = Now;
+		}
+		if (Now - DeathStart > 300.0)
+		{
+			Fail(FString::Printf(TEXT("death: stuck at stage %d in %s (%d attacks)"), DeathStage, *Room, Attacks));
+			Advance(EStep::Relog);
+			break;
+		}
+		if (HopFrom && (Here == HopFrom || Here == 0))
+		{
+			break;
+		}
+		HopFrom = 0;
+		if (DeathStage == 0 && Room == TEXT("uworld.roo"))
+		{
+			DeathStage = 1;
+			StageTime = Now;
+		}
+		if (DeathStage == 0)
+		{
+			if (Here < UMRRuntimeRooms::RuntimeRidBase)
+			{
+				if (Here && Now - StageTime > 1.0)
+				{
+					HopFrom = Here;
+					StageTime = Now;
+					if (Here == FarolWest)
+					{
+						StepOffEdge(static_cast<uint8>(EMREdge::East));
+					}
+					else if (!HopToward(FarolWest))
+					{
+						Fail(FString::Printf(TEXT("death: no way from zone %d to Farol West"), Here));
+						Advance(EStep::Relog);
+					}
+				}
+				break;
+			}
+			// bare handed
+			if (const FMRNetObject* Weapon = Net->GetInventory().FindByPredicate([Net](const FMRNetObject& O) { return Net->IsUsing(O.Id) && O.Icon.Equals(TEXT("mace.bgf"), ESearchCase::IgnoreCase); }))
+			{
+				Net->UnuseItem(Weapon->Id);
+			}
+			// stir them up: strike the nearest one we haven't lately (each only every 8 s, so they gang
+			// up on us rather than die), until they kill us
+			if (Now - LastAttackAt > 1.1 && Now - StageTime > 1.5)
+			{
+				APawn* Pawn = PC->GetPawn();
+				const AMRNetObject* Foe = nullptr;
+				for (const TPair<uint32, TWeakObjectPtr<AMRNetObject>>& Pair : NetWorld->GetActors())
+				{
+					const AMRNetObject* A = Pair.Value.Get();
+					const double* When = Struck.Find(Pair.Key);
+					if (A && Pawn && (A->GetFlags() & MRMsg::OF_ATTACKABLE) && !(A->GetFlags() & MRMsg::OF_PLAYER) && (!When || Now - *When > 8.0)
+						&& (!Foe || FVector::Dist(A->GetActorLocation(), Pawn->GetActorLocation()) < FVector::Dist(Foe->GetActorLocation(), Pawn->GetActorLocation())))
+					{
+						Foe = A;
+					}
+				}
+				if (Foe)
+				{
+					Struck.Add(Foe->GetServerId(), Now);
+				}
+				if (Foe && Pawn)
+				{
+					const FVector Dir = (Foe->GetActorLocation() - Pawn->GetActorLocation()).GetSafeNormal2D();
+					FVector Near = Foe->GetActorLocation() - Dir * 110.0;
+					if (UMRZoneSubsystem* Zones = PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>(); Zones && Zones->TraceFloor(Near)
+						&& FVector::Dist2D(Near, Pawn->GetActorLocation()) > 60.0)
+					{
+						Pawn->TeleportTo(Near + FVector(0.0, 0.0, Pawn->GetSimpleCollisionHalfHeight() + 2.0), Dir.Rotation(), false, true);
+					}
+					PC->SetControlRotation(FRotator(0.0, Dir.Rotation().Yaw, 0.0));
+					Net->Attack(Foe->GetServerId());
+					++Attacks;
+				}
+				LastAttackAt = Now;
+			}
+		}
+		else if (DeathStage == 1 && Here && PC->GetPawn() && Now - StageTime > 2.0)
+		{
+			Pass(FString::Printf(TEXT("died after %.0f s: the server took us to %s (uworld.roo, built at runtime as zone %d)"),
+				Now - DeathStart, *Net->GetPlayer().RoomName, Here));
+			// onto the archway to Raza (a normal move: the portal takes whoever steps on its square)
+			if (UMRZoneSubsystem* Zones = PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>())
+			{
+				APawn* Pawn = PC->GetPawn();
+				const FVector Portal = Zones->KodToWorld(Here, 11 * MRMsg::KodFineness + 32, 3 * MRMsg::KodFineness + 32, true);
+				Pawn->TeleportTo(Portal + FVector(0.0, 0.0, Pawn->GetSimpleCollisionHalfHeight() + 2.0), Pawn->GetActorRotation(), false, true);
+			}
+			DeathStage = 2;
+			StageTime = Now;
+		}
+		else if (DeathStage == 2 && Room == TEXT("uworld.roo") && Now - StageTime > 1.0)
+		{
+			// a step on it: the room tells the portal of a move before the mover's own position changes
+			// (room.kod SomethingMoved), so it takes us on a move that starts inside its area, as walking does
+			APawn* Pawn = PC->GetPawn();
+			Pawn->TeleportTo(Pawn->GetActorLocation() + FVector(Shots++ % 2 ? -40.0 : 40.0, 0.0, 0.0), Pawn->GetActorRotation(), false, true);
+			StageTime = Now;
+		}
+		else if (DeathStage == 2 && Room != TEXT("uworld.roo") && Here)
+		{
+			Pass(FString::Printf(TEXT("stepped through the Underworld's archway to Raza and came back to %s (%s)"), *Net->GetPlayer().RoomName, *Room));
 			Advance(EStep::Relog);
 		}
 		break;

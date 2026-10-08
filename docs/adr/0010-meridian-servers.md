@@ -23,7 +23,7 @@ TODO.md already set the goal: the Unreal game should be "a full client build for
    - The UE dedicated-server path stays only until online play has replaced it (see Follow-up).
    - A standalone game started with `-MROffline` keeps local play for the visual tours (look-dev, UI shots, minimap captures, sprite and monster tours). The tours imply it automatically.
 2. **We implement the protocol ourselves, in C++.** It is written from reading `ReferenceServers/Server-104/blakserv` (allowed: read and re-implement) and from our own notes in [docs/research/blakserv-protocol.md](../research/blakserv-protocol.md).
-   - **Shards' TypeScript is GPLv2. Never copy or translate it into this repo.**
+   - ~~**Shards' TypeScript is GPLv2. Never copy or translate it into this repo.**~~ Changed 2026-10-08: this repo is now GPLv2 too, with an Unreal Engine linking exception ([LICENSE-EXCEPTION.md](../../LICENSE-EXCEPTION.md)). Shards' own code, its protocol code included, may be reused. Code Shards ported from the Meridian 59 source still may not, because the exception can't cover the original authors' code (AGENTS.md, "Hard rules").
    - The protocol facts (message ids, layouts, the security arithmetic) aren't code, and our notes cite blakserv for each.
 3. **Transport: WebSocket through the gateway**, using UE's `WebSockets` module with binary frames.
    - We send the Origin `app://meridian-remastered`. The VM's `GATEWAY_ORIGINS` has to list it; the local gateway allows any origin.
@@ -51,7 +51,7 @@ TODO.md already set the goal: the Unreal game should be "a full client build for
 8. **Servers are data:** `data/net/servers.json` holds the name, `ws`, `assets` and `secret_key` (blakserv's `[Login] SecretKey`, which isn't a secret: every client ships it).
 
 ## Consequences
-- **Gameplay is the original's:** Kod's rules, combat, spells, shops and saves. Action combat (ADR 0001 decision 7) is on hold, and so are seamless UE-side zone changes and Supabase accounts.
+- **Gameplay is the original's:** Kod's rules, combat, spells, shops and saves. Action combat (ADR 0001 decision 7) is dropped online: the server decides every hit and our swing is presentation ([ADR 0012](0012-client-parity-and-world-coverage.md) M4). Seamless UE-side zone changes and Supabase accounts are on hold.
   - The server runs on a grid. Our pawn can still move freely and look modern, but the server is the judge: it rejects positions outside a room's sectors and has the final say on fights.
 - **Art and rooms must match the server's build.** A room we haven't built (any RID outside the demo) leaves the player standing where they were, with a warning. A creature without a converted sprite isn't drawn yet.
 - **The UE dedicated server, Iris replication of players and the multiplayer PIE tests** become legacy. They are removed in a separate change once nothing depends on them.
@@ -73,7 +73,7 @@ TODO.md already set the goal: the Unreal game should be "a full client build for
 - **Keep our own UE server and Supabase (ADR 0001):** action combat and full freedom, but every rule, quest, shop and save of the original to rewrite first, and no players to share a world with.
 - **A UE server as a bridge to blakserv:** keeps UE replication for clients, but adds a second authority and a whole server to run. It gains nothing until UE-side gameplay exists.
 - **Raw TCP to blakserv (port 5959):** no gateway change, but the login's unsalted MD5 crosses the internet in the clear, and the VM's firewall would have to open the port.
-- **Port Shards' TypeScript protocol code:** fastest, but it is GPLv2 and this repo is not.
+- **Port Shards' TypeScript protocol code:** fastest, but it is GPLv2 and this repo was not. (Allowed since 2026-10-08; see decision 2.)
 
 ## Follow-up work
 - **The VM:** add `app://meridian-remastered` to `GATEWAY_ORIGINS` in the VM's `deploy/.env` and restart the gateway. Until then "Shards (online)" gets 403.
@@ -82,6 +82,6 @@ TODO.md already set the goal: the Unreal game should be "a full client build for
   - player looks from the server's overlays: done 2026-10-07 for the face, hair and colours. Armour torsos, weapons and hats aren't drawn from the server yet;
   - the full character creator: done 2026-10-07;
   - stats, inventory and spells from the server (the inventory dialog's `UMRInventorySource` seam);
-  - combat;
+  - combat: done 2026-10-08 (M4 of ADR 0012), with death, screen effects and projectiles;
   - sounds and lighting messages;
   - room checksums: done 2026-10-08 (M0 of ADR 0012). Every room's `.roo` security value is checked against `BP_PLAYER`'s.

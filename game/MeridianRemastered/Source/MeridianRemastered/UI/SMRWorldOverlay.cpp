@@ -1,5 +1,6 @@
 #include "UI/SMRWorldOverlay.h"
 
+#include "Character/MRCharacter.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Net/MRNetObject.h"
@@ -55,9 +56,9 @@ int32 SMRWorldOverlay::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, con
 	const UMRNetWorldSubsystem* NetWorld = World ? World->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
 	const UGameInstance* GI = World ? World->GetGameInstance() : nullptr;
 	const UMRNetSubsystem* Net = GI ? GI->GetSubsystem<UMRNetSubsystem>() : nullptr;
-	if (!S || !NetWorld || !Net || !NetWorld->IsActive() || !PC->GetPawn())
+	if (!S || !NetWorld || !Net || !NetWorld->IsActive() || !PC->GetPawn() || Net->GetEffects().bBlind)
 	{
-		return Layer;
+		return Layer;  // (blind: nothing of the world shows)
 	}
 	const float Px = S->Px();
 	// viewport pixels -> this widget (it covers the viewport)
@@ -116,6 +117,41 @@ int32 SMRWorldOverlay::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, con
 				: FLinearColor(1.f, 1.f, 1.f, 0.45f);
 			Brackets(Out, Layer + 1, Geo, Min, Max, Color, FMath::Min(8.f * Px, H * 0.25f), bTarget ? 1.5f * Px : 1.f * Px);
 		}
+	}
+
+	// damage numbers: rising from what was hit and fading (UMRUISubsystem::GetFloaters)
+	const double T = Ui->Now();
+	const AMRCharacter* MyChar = Cast<AMRCharacter>(Me);
+	for (const UMRUISubsystem::FFloater& F : Ui->GetFloaters())
+	{
+		const double Age = T - F.Start;
+		if (Age < 0.0 || Age > UMRUISubsystem::FloaterSeconds)
+		{
+			continue;
+		}
+		FVector2f At;
+		FVector2D Px2;
+		if (F.ObjectId == Net->GetPlayer().Id && MyChar && MyChar->IsFirstPerson())
+		{
+			At = FVector2f(Geo.GetLocalSize()) * 0.5f + FVector2f(0.f, 40.f * Px);  // under the crosshair
+		}
+		else
+		{
+			const AActor* A = F.ObjectId == Net->GetPlayer().Id ? static_cast<const AActor*>(Me) : NetWorld->FindActor(F.ObjectId);
+			const FVector Anchor = A == Me ? Me->GetActorLocation() + FVector(0.0, 0.0, Me->GetSimpleCollisionHalfHeight() + 40.0)
+				: A ? static_cast<const AMRNetObject*>(A)->GetNameAnchor() : FVector::ZeroVector;
+			if (!A || !PC->ProjectWorldLocationToScreen(Anchor, Px2, true))
+			{
+				continue;
+			}
+			At = FVector2f(Px2) * ToLocal - FVector2f(0.f, 12.f * Px);  // over its name
+		}
+		At.Y -= static_cast<float>(Age / UMRUISubsystem::FloaterSeconds) * 26.f * Px;
+		const FSlateFontInfo Font = S->Font(11.f, true);
+		const FVector2f M = MRPaint::MeasureText(F.Text, Font);
+		FLinearColor Color = F.Color;
+		Color.A = FMath::Clamp(static_cast<float>((UMRUISubsystem::FloaterSeconds - Age) / 0.5), 0.f, 1.f);
+		MRPaint::Text(Out, Layer + 2, Geo, F.Text, Font, At - FVector2f(M.X * 0.5f, M.Y), Color, Px * 0.6f);
 	}
 
 	// the crosshair while the mouse looks around (the aim picks targets)

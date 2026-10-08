@@ -8,7 +8,7 @@ This file tracks what the Unreal client does compared with the original desktop 
   - Partial: some of it works; the note says what.
   - Mock: the UI exists but runs on local data.
   - Missing: nothing yet.
-- **Shards:** the Meridian Shards client (`E:\2026_Experiments\meridian-browser`), which is our behaviour oracle. Its code is GPLv2: read it only to see what it does, never copy it.
+- **Shards:** the Meridian Shards client (`E:\2026_Experiments\meridian-browser`), which is our behaviour oracle. Its own code may be reused here, but not the parts it ported from the Meridian 59 source (AGENTS.md, "Hard rules").
 - **M:** the milestone that delivers the feature (see "Milestones" below).
 
 Protocol facts go in [research/blakserv-protocol.md](research/blakserv-protocol.md), each with the blakserv or clientd3d source it came from.
@@ -78,13 +78,13 @@ Last survey: 2026-10-08. M0, M1, M2a and M2b done the same day.
 
 | Feature | Messages | UE | Shards | M |
 |---|---|---|---|---|
-| Attack (aim picks the target) | `BP_REQ_ATTACK` | Missing: animation only | Done (click target) | M4 |
+| Attack (aim picks the target) | `BP_REQ_ATTACK` | Done: left mouse attacks the target (if in view), else what the crosshair is on, else the nearest attackable within 5 squares; the server's swing shows in first and third person | Done (click target) | M4 |
 | Targeting: aim, Tab, self, clear, halo | — | Done: the crosshair aims, T takes it, Tab / [ ] cycle, \ self, Esc clears; brackets | Done | M2 |
-| Projectiles | `BP_SHOOT`, `BP_RADIUS_SHOOT` | Missing | Done | M4 |
-| Screen effects: blind, paralyze, shake, invert, pain, whiteout, flash | `BP_EFFECT` | Missing | Done | M4 |
-| Blur, waver, rain, snow, sand | `BP_EFFECT` | Missing | Missing | M4 |
-| Death and the Underworld | `BP_PLAYER` | Untested | Done | M4 |
-| Damage numbers (our addition) | hit messages | Missing | Done | M4 |
+| Projectiles | `BP_SHOOT`, `BP_RADIUS_SHOOT` | Done: the server's bitmap flies at its speed, with its light (not yet seen against a real caster) | Done | M4 |
+| Screen effects: blind, paralyze, shake, invert, pain, whiteout, flash | `BP_EFFECT` | Done: tints and blindness over the view, paralysis stops walking, shake moves the eye; invert approximated (the grading is before the tonemapper) | Done | M4 |
+| Blur, waver, rain, snow, sand | `BP_EFFECT` | Done: blur as depth of field, waver as a sway; online the room's rain, snow and sand are the server's (fireworks not drawn) | Missing | M4 |
+| Death and the Underworld | `BP_PLAYER` | Done: the Underworld is built at runtime; its archway leads back to Raza (`run_net_test.ps1 -Create -Death`) | Done | M4 |
+| Damage numbers (our addition) | hit messages | Done: what we deal rises over what we hit, what we take over us (under the crosshair in first person); `mr.UI.DamageNumbers` | Done | M4 |
 
 ## Spells, skills and stats
 
@@ -164,7 +164,7 @@ The server serves about 395 rooms. `ReferenceServers/Server-104/resource/rooms` 
 | M1 | Whole-world travel: runtime rooms and runtime sprites (done 2026-10-08) |
 | M2 | See and select everything: all objects, name plates, targeting, Look (M2a, done 2026-10-08); equipment overlays (M2b, done 2026-10-08) |
 | M3 | Inventory and items (done 2026-10-08) |
-| M4 | Combat, death and effects |
+| M4 | Combat, death and effects (done 2026-10-08) |
 | M5 | Spells, skills, enchantments, stats |
 | M6 | NPCs, economy, player trade |
 | M7 | Server-driven world: sound, light, room changes, texture animation |

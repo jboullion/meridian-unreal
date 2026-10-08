@@ -26,6 +26,8 @@ public:
 	TArray<uint8> Bytes(uint32 Id) const;
 	/** The text, or "" for an unknown id. */
 	FString Get(uint32 Id) const;
+	/** The rsb's resources with exactly this text (Kod's message formats, to recognise a message). */
+	TArray<uint32> FindByText(const FString& Text) const;
 
 	void SetDynamic(uint32 Id, const FString& Text) { Dynamic.Add(Id, Text); }
 	void ClearDynamic() { Dynamic.Reset(); }

@@ -93,6 +93,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Meridian|Environment")
 	void Reload();
 
+	/**
+	 * Online the server says what falls in the room (BP_EFFECT EFFECT_RAINING, _SNOWING, _SAND, sent
+	 * on entering a room and when its weather changes; docs/adr/0012 M4): it replaces the zone's own
+	 * storm roll. bAlready: it was already falling (a room just entered), so it shows at once instead
+	 * of building up; None clears it.
+	 */
+	void SetServerWeather(EMRWeatherKind Kind, bool bAlready);
+
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Tick(float DeltaTime) override;
@@ -164,6 +172,11 @@ private:
 	int32 AmbientZone = -1;
 	TMap<FString, TWeakObjectPtr<UMaterialInterface>> ZoneMaterials;
 	FString KindOverride;
+	/** SetServerWeather: whether the server decides, what it said, the last kind that fell and since when. */
+	bool bServerWeather = false;
+	EMRWeatherKind ServerWeather = EMRWeatherKind::None;
+	EMRWeatherKind ServerWeatherLast = EMRWeatherKind::None;
+	int64 ServerWeatherSince = 0;
 
 	// sounds
 	TArray<double> ThunderAt;

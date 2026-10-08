@@ -30,6 +30,8 @@
 #include "UI/SMRLookDialog.h"
 #include "Net/MRAssetCache.h"
 #include "Net/MRNetLook.h"
+#include "Net/MRNetObject.h"
+#include "Net/MRNetWorldSubsystem.h"
 #include "Net/MRProtocol.h"
 #include "World/MRBgf.h"
 #include "UI/SMRMinimap.h"
@@ -43,6 +45,8 @@
 namespace
 {
 	constexpr float SpellCooldownSeconds = 1.5f;  // mock: the spell bar's sweep after a cast
+	TAutoConsoleVariable<int32> CVarDamageNumbers(TEXT("mr.UI.DamageNumbers"), 1,
+		TEXT("Damage numbers over what we hit and over ourselves when hit (ours; the original only printed the line). 0 hides them."));
 }
 
 void UMRUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -66,6 +70,7 @@ void UMRUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		NetPhaseHandle = Net->OnPhaseChanged.AddUObject(this, &UMRUISubsystem::OnNetPhase);
 		NetDescriptionHandle = Net->OnDescription.AddUObject(this, &UMRUISubsystem::OnNetDescription);
 		NetContentsHandle = Net->OnContents.AddUObject(this, &UMRUISubsystem::OnNetContents);
+		NetHitHandle = Net->OnHit.AddUObject(this, &UMRUISubsystem::OnNetHit);
 	}
 }
 
@@ -249,6 +254,59 @@ void UMRUISubsystem::DoObjectAction(EMRObjectAction Action, uint32 ObjectId)
 	}
 }
 
+void UMRUISubsystem::OnNetHit(const FMRNetHit& Hit)
+{
+	const double T = Now();
+	Floaters.RemoveAll([T](const FFloater& F) { return T - F.Start > FloaterSeconds; });
+	const UMRNetSubsystem* Net = GetNet();
+	const APlayerController* PC = GetPlayerController();
+	const UMRNetWorldSubsystem* NetWorld = PC && PC->GetWorld() ? PC->GetWorld()->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
+	if (!Net || !NetWorld || !PC->GetPawn() || CVarDamageNumbers.GetValueOnGameThread() == 0)
+	{
+		return;
+	}
+	FFloater F;
+	F.Text = FString::FromInt(Hit.Damage);
+	F.Start = T;
+	if (!Hit.bDealt)
+	{
+		F.ObjectId = Net->GetPlayer().Id;
+		F.Color = FLinearColor(1.f, 0.25f, 0.2f);
+	}
+	else
+	{
+		// over what we attacked when it is the one named, else the nearest of that name
+		const uint32 Last = NetWorld->GetLastAttackedId();
+		const FMRNetObject* O = Net->FindObject(Last);
+		if (O && O->Name.Equals(Hit.Name, ESearchCase::IgnoreCase))
+		{
+			F.ObjectId = Last;
+		}
+		else
+		{
+			double Best = TNumericLimits<double>::Max();
+			for (const TPair<uint32, TWeakObjectPtr<AMRNetObject>>& Pair : NetWorld->GetActors())
+			{
+				const AMRNetObject* A = Pair.Value.Get();
+				if (A && A->GetObjectName().Equals(Hit.Name, ESearchCase::IgnoreCase))
+				{
+					const double D = FVector::DistSquared(A->GetActorLocation(), PC->GetPawn()->GetActorLocation());
+					if (D < Best)
+					{
+						Best = D;
+						F.ObjectId = Pair.Key;
+					}
+				}
+			}
+		}
+		F.Color = FLinearColor(1.f, 0.92f, 0.55f);
+	}
+	if (F.ObjectId)
+	{
+		Floaters.Add(MoveTemp(F));
+	}
+}
+
 void UMRUISubsystem::OnNetContents()
 {
 	const UMRNetSubsystem* Net = GetNet();
@@ -347,6 +405,7 @@ void UMRUISubsystem::Deinitialize()
 		Net->OnPhaseChanged.Remove(NetPhaseHandle);
 		Net->OnDescription.Remove(NetDescriptionHandle);
 		Net->OnContents.Remove(NetContentsHandle);
+		Net->OnHit.Remove(NetHitHandle);
 	}
 	Super::Deinitialize();
 }

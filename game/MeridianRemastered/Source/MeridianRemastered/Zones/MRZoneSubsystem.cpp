@@ -456,16 +456,20 @@ bool UMRZoneSubsystem::TraceFloor(FVector& P, bool bLowest) const
 	// Ceilings, roofs and rafters (hit from above) have another surface right over them.
 	constexpr double HeadroomCm = 190.0;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(MRGridToWorld), true);
+	// only the world: a creature's capsule isn't the floor (a corpse made where its monster still
+	// stands landed on the monster's head), nor is it in the way of the headroom
+	FCollisionResponseParams WorldOnly;
+	WorldOnly.CollisionResponse.SetResponse(ECC_Pawn, ECR_Ignore);
 	FVector Start = P + FVector(0, 0, 5000.0);
 	const FVector End = P - FVector(0, 0, 5000.0);
 	FHitResult Hit, Above;
 	double Lowest = 0.0;
 	bool bFound = false;
-	for (int32 i = 0; i < (bLowest ? 16 : 8) && World->LineTraceSingleByChannel(Hit, Start, End, ECC_WorldStatic, Params); ++i)
+	for (int32 i = 0; i < (bLowest ? 16 : 8) && World->LineTraceSingleByChannel(Hit, Start, End, ECC_WorldStatic, Params, WorldOnly); ++i)
 	{
 		const FVector Floor = Hit.ImpactPoint;
 		const bool bRoom = !World->LineTraceSingleByChannel(Above, Floor + FVector(0, 0, 5.0), Floor + FVector(0, 0, HeadroomCm),
-			ECC_WorldStatic, Params);
+			ECC_WorldStatic, Params, WorldOnly);
 		UE_LOG(LogMeridian, Verbose, TEXT("TraceFloor (%.0f, %.0f): hit z=%.0f on %s / %s%s"), P.X, P.Y, Floor.Z,
 			*GetNameSafe(Hit.GetActor()), *GetNameSafe(Hit.GetComponent()), bRoom ? TEXT("") : TEXT(" (no headroom, looking lower)"));
 		P.Z = Floor.Z;

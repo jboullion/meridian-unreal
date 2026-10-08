@@ -38,7 +38,7 @@ The target is 100–200 concurrent players. The original code is GPLv2. The orig
 6. **Zones change instantly.**
    - The client pre-loads every zone one exit away and keeps it hidden.
    - Exits are handled by a server teleport plus a same-frame visibility switch.
-7. **Combat is full action.**
+7. **Combat is full action.** (Superseded online by [ADR 0010](0010-meridian-servers.md) and [ADR 0012](0012-client-parity-and-world-coverage.md) M4: the server decides every hit; our swing is presentation. Offline, the demo's placeholder still applies.)
    - A hit needs physical contact.
    - When it connects, the original Offense/Defense roll decides a full hit or a glancing blow.
    - Skills and spells improve on use, using the original `ImproveAbility` formulas.

@@ -1041,6 +1041,23 @@ bool UMREnvironmentSubsystem::IsOutdoor() const
 	return !(Profile.IsValid() && Profile->TryGetStringField(TEXT("kind"), Kind) && Kind != TEXT("outdoor"));
 }
 
+void UMREnvironmentSubsystem::SetServerWeather(EMRWeatherKind Kind, bool bAlready)
+{
+	const int64 Now = int64((FDateTime::UtcNow() - FDateTime(1970, 1, 1)).GetTotalSeconds());
+	if (!bServerWeather || Kind != ServerWeather || bAlready)
+	{
+		// already falling (or already clear): as if it changed long ago
+		ServerWeatherSince = bAlready ? Now - 100000 : Now;
+	}
+	bServerWeather = true;
+	ServerWeather = Kind;
+	if (Kind != EMRWeatherKind::None)
+	{
+		ServerWeatherLast = Kind;
+	}
+	bForce = true;
+}
+
 void UMREnvironmentSubsystem::UpdateWeather()
 {
 	const TSharedPtr<FJsonValue> ZoneValue = ProfileField(TEXT("weather_zone"));
@@ -1050,8 +1067,15 @@ void UMREnvironmentSubsystem::UpdateWeather()
 	WeatherMask = Mask;
 	const UMRGameTimeSubsystem* Time = GetWorld()->GetSubsystem<UMRGameTimeSubsystem>();
 	const AMRGameState* GameState = GetWorld()->GetGameState<AMRGameState>();
-	const FMRZoneWeather W = GameState && WeatherZone > 0 ? GameState->GetZoneWeather(WeatherZone) : FMRZoneWeather();
+	FMRZoneWeather W = GameState && WeatherZone > 0 ? GameState->GetZoneWeather(WeatherZone) : FMRZoneWeather();
 	WeatherKind = MRWeather::KindFor(Mask, Time ? Time->GetSeason() : 0);
+	if (bServerWeather)
+	{
+		// online: the room's weather as the server sends it (what clears keeps its kind while it fades)
+		W.bStorm = ServerWeather != EMRWeatherKind::None;
+		W.SinceUnix = ServerWeatherSince;
+		WeatherKind = ServerWeatherLast;
+	}
 	const FString Kind = !CVarKind.GetValueOnGameThread().IsEmpty() ? CVarKind.GetValueOnGameThread() : KindOverride;
 	if (WeatherKind != EMRWeatherKind::None && !Kind.IsEmpty())
 	{

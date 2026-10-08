@@ -63,6 +63,58 @@ void FMRNetWorld::Reset()
 	ResetInventory();
 	Player = FMRNetPlayer();
 	StatGroups.Reset();
+	Effects.Reset();
+}
+
+// ------------------------------------------------------------------------------ FMRNetEffects
+
+bool FMRNetEffects::Apply(FMRReader& R)
+{
+	// clientd3d effect.c PerformEffect: the limits are the original's
+	const uint16 Effect = R.U16();
+	const auto Ms = [&R](int32 Max, int32 Default) { const int32 V = R.I32(); return float(V > Max || V < 0 ? Default : V); };
+	switch (Effect)
+	{
+	case MRMsg::EFFECT_INVERT: InvertMs = float(FMath::Max(0, R.I32())); break;
+	case MRMsg::EFFECT_SHAKE: ShakeMs = float(FMath::Max(0, R.I32())); break;
+	case MRMsg::EFFECT_PARALYZE: bParalyzed = true; break;
+	case MRMsg::EFFECT_RELEASE: bParalyzed = false; break;
+	case MRMsg::EFFECT_BLIND: bBlind = true; break;
+	case MRMsg::EFFECT_SEE: bBlind = false; break;
+	case MRMsg::EFFECT_PAIN: PainMs = Ms(10000, 10000); break;
+	case MRMsg::EFFECT_WHITEOUT: WhiteoutMs = Ms(10000, 10000); break;
+	case MRMsg::EFFECT_BLUR: BlurMs = FMath::Min(BlurMs + Ms(INT32_MAX, 10000), 200000.f); break;
+	case MRMsg::EFFECT_WAVER: WaverMs = FMath::Min(WaverMs + Ms(INT32_MAX, 10000), 200000.f); break;
+	case MRMsg::EFFECT_FLASHXLAT:
+	{
+		FlashMs = Ms(10000, 1000);
+		const int32 Xlat = R.I32();
+		FlashXlat = Xlat < 0 || Xlat > 0xFF ? 0 : uint32(Xlat);
+		break;
+	}
+	case MRMsg::EFFECT_XLATOVERRIDE: XlatOverride = R.U32(); break;
+	case MRMsg::EFFECT_RAINING:
+	case MRMsg::EFFECT_SNOWING:
+	case MRMsg::EFFECT_FIREWORKS: Weather = Effect; break;
+	case MRMsg::EFFECT_CLEARWEATHER: Weather = 0; break;
+	case MRMsg::EFFECT_SAND: bSand = true; break;
+	case MRMsg::EFFECT_CLEARSAND: bSand = false; break;
+	default: return false;
+	}
+	++Seq;
+	return R.IsOk();
+}
+
+void FMRNetEffects::Tick(float Ms)
+{
+	for (float* T : { &PainMs, &WhiteoutMs, &InvertMs, &ShakeMs, &BlurMs, &WaverMs, &FlashMs })
+	{
+		*T = FMath::Max(0.f, *T - Ms);
+	}
+	if (FlashMs <= 0.f)
+	{
+		FlashXlat = 0;
+	}
 }
 
 FMRNetStatGroup& FMRNetWorld::StatGroup(uint8 Group)
@@ -173,6 +225,62 @@ bool MRNetRead::Object(FMRReader& R, const FMRResourceTable& Res, FMRNetObject& 
 	Out.Icon = Res.Get(Out.IconRsc);
 	Out.Name = Res.Get(Out.NameRsc);
 	return R.IsOk();
+}
+
+bool MRNetRead::Projectile(FMRReader& R, const FMRResourceTable& Res, bool bRadius, FMRNetProjectile& Out)
+{
+	// clientd3d server.c HandleShoot / HandleRadiusShoot
+	Out = FMRNetProjectile();
+	Out.bRadius = bRadius;
+	Out.IconRsc = R.U32();
+	Out.Icon = Res.Get(Out.IconRsc);
+	Palette(R, Out.Xlat, Out.Effect);
+	Animation(R, Out.Animation);
+	Out.Source = MRMsg::PlainId(R.U32());
+	if (!bRadius)
+	{
+		Out.Dest = MRMsg::PlainId(R.U32());
+	}
+	Out.Speed = R.U8();
+	Out.Flags = R.U16();
+	if (bRadius)
+	{
+		Out.Range = R.U8();
+		Out.Number = R.U8();
+	}
+	Out.Light.Flags = R.U16();
+	if (Out.Light.Flags != MRMsg::LIGHT_FLAG_NONE)
+	{
+		Out.Light.Intensity = R.U8();
+		Out.Light.Color = R.U16();
+	}
+	return R.IsOk();
+}
+
+bool MRNetRead::Hit(FMRReader R, const FMRResourceTable& Res, int32 Kind, FMRNetHit& Out)
+{
+	// battler.kod AssessHit's parameters, in order:
+	//   we hit:     colour, weapon, damage word, article, name, damage, colour
+	//   we're hit:  colour, article, name, weapon, damage word, damage, colour
+	// a player's name comes as a string (%q), a monster's as a resource (%s)
+	Out = FMRNetHit();
+	Out.bDealt = Kind == 1 || Kind == 2;
+	const bool bPlayer = Kind == 1 || Kind == 3;
+	R.U32();  // colour
+	if (Out.bDealt)
+	{
+		R.U32();  // weapon
+		R.U32();  // damage word
+	}
+	R.U32();  // article
+	Out.Name = bPlayer ? R.Str() : Res.Get(R.U32());
+	if (!Out.bDealt)
+	{
+		R.U32();
+		R.U32();
+	}
+	Out.Damage = R.I32();
+	return R.IsOk() && !Out.Name.IsEmpty() && Kind >= 1 && Kind <= 4;
 }
 
 bool MRNetRead::ObjectNoLight(FMRReader& R, const FMRResourceTable& Res, FMRNetObject& Out)

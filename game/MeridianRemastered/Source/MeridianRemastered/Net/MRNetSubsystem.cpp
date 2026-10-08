@@ -31,6 +31,20 @@ namespace
 {
 	const TCHAR* ConfigSection = TEXT("MR.Net");
 	constexpr int32 MaxChatLines = 200;
+
+	FAutoConsoleCommandWithWorldAndArgs CmdEffect(TEXT("MREffect"),
+		TEXT("MREffect <effect> [ms] [xlat]: a server screen effect, as if sent (BP_EFFECT; proto.h EFFECT_*: 1 invert, 2 shake, ")
+		TEXT("3 paralyze, 4 release, 5 blind, 6 see, 7 pain, 8 blur, 9 rain, 10 snow, 11 clear, 12 sand, 13 clear sand, 14 waver, ")
+		TEXT("15 flash, 16 whiteout, 17 override)."),
+		FConsoleCommandWithWorldAndArgsDelegate::CreateLambda([](const TArray<FString>& Args, UWorld* World)
+		{
+			UMRNetSubsystem* Net = World && World->GetGameInstance() ? World->GetGameInstance()->GetSubsystem<UMRNetSubsystem>() : nullptr;
+			if (Net && Args.Num() >= 1)
+			{
+				Net->DebugEffect(static_cast<uint16>(FCString::Atoi(*Args[0])), Args.Num() > 1 ? FCString::Atoi(*Args[1]) : 2000,
+					Args.Num() > 2 ? FCString::Atoi(*Args[2]) : 0x45);
+			}
+		}));
 }
 
 // ------------------------------------------------------------------------------ setup
@@ -128,6 +142,7 @@ bool UMRNetSubsystem::Tick(float DeltaSeconds)
 	{
 		Connection->Tick(DeltaSeconds);
 	}
+	World.Effects.Tick(DeltaSeconds * 1000.f);  // as the original's AnimateEffects
 	return true;
 }
 
@@ -368,6 +383,64 @@ void UMRNetSubsystem::RequestInventory()
 	{
 		Connection->Send(FMRWriter(MRMsg::BP_REQ_INVENTORY));
 	}
+}
+
+void UMRNetSubsystem::Attack(uint32 TargetId)
+{
+	if (CanSend() && TargetId)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_ATTACK).U8(MRMsg::ATTACK_NORMAL).U32(TargetId));
+	}
+}
+
+const TMap<uint32, int32>& UMRNetSubsystem::HitFormats()
+{
+	if (HitFormatsRsb != LoadedRsbHash || (HitFormatIds.Num() == 0 && Resources.IsLoaded()))
+	{
+		// battler.kod's resources, as Kod writes them (the rsb's ids depend on its build)
+		static const TCHAR* Texts[] = {
+			TEXT("%sYour %s %s %s%q for ~k~B%i~B%s damage."),
+			TEXT("%sYour %s %s %s%s for ~k~B%i~B%s damage."),
+			TEXT("%s%s%q's %s %s you for ~r~B%i~B%s damage."),
+			TEXT("%s%s%s's %s %s you for ~r~B%i~B%s damage."),
+		};
+		HitFormatIds.Reset();
+		for (int32 Kind = 1; Kind <= 4; ++Kind)
+		{
+			for (const uint32 Id : Resources.FindByText(Texts[Kind - 1]))
+			{
+				HitFormatIds.Add(Id, Kind);
+			}
+		}
+		HitFormatsRsb = LoadedRsbHash;
+	}
+	return HitFormatIds;
+}
+
+void UMRNetSubsystem::DebugEffect(uint16 Effect, int32 Ms, int32 Xlat)
+{
+	FMRWriter W(MRMsg::BP_EFFECT);
+	W.U16(Effect);
+	switch (Effect)
+	{
+	case MRMsg::EFFECT_INVERT:
+	case MRMsg::EFFECT_SHAKE:
+	case MRMsg::EFFECT_PAIN:
+	case MRMsg::EFFECT_BLUR:
+	case MRMsg::EFFECT_WAVER:
+	case MRMsg::EFFECT_WHITEOUT:
+		W.I32(Ms);
+		break;
+	case MRMsg::EFFECT_FLASHXLAT:
+		W.I32(Ms).I32(Xlat);
+		break;
+	case MRMsg::EFFECT_XLATOVERRIDE:
+		W.I32(Xlat);
+		break;
+	default:
+		break;
+	}
+	HandleMessage(W.Bytes);
 }
 
 void UMRNetSubsystem::UseItem(uint32 ItemId)
@@ -988,6 +1061,14 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 	case MRMsg::BP_SYS_MESSAGE:
 	{
 		const uint32 FormatId = R.U32();
+		if (const int32* Kind = Body[0] == MRMsg::BP_MESSAGE ? HitFormats().Find(FormatId) : nullptr)
+		{
+			FMRNetHit Hit;
+			if (MRNetRead::Hit(R, Resources, *Kind, Hit))
+			{
+				OnHit.Broadcast(Hit);
+			}
+		}
 		FString Text;
 		if (MRServerText::Format(Resources, FormatId, R, Text))
 		{
@@ -1040,6 +1121,26 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 			P.Object = MoveTemp(O);
 			P.Seq = ++World.PlayerOverlaySeq;
 			UE_LOG(LogMeridian, Verbose, TEXT("MRNet: first person slot %u: %s at %d"), P.Object.Id, *P.Object.Icon, Hotspot);
+		}
+		break;
+	}
+	case MRMsg::BP_EFFECT:
+		if (World.Effects.Apply(R))
+		{
+			OnEffect.Broadcast();
+		}
+		else
+		{
+			UE_LOG(LogMeridian, Warning, TEXT("MRNet: BP_EFFECT not understood (%d bytes)"), Body.Num());
+		}
+		break;
+	case MRMsg::BP_SHOOT:
+	case MRMsg::BP_RADIUS_SHOOT:
+	{
+		FMRNetProjectile P;
+		if (MRNetRead::Projectile(R, Resources, Body[0] == MRMsg::BP_RADIUS_SHOOT, P))
+		{
+			OnProjectile.Broadcast(P);
 		}
 		break;
 	}

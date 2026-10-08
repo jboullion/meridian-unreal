@@ -251,6 +251,32 @@ namespace MRMsg
 	constexpr uint8 HS_SE = 5;
 	constexpr uint8 HS_SW = 7;
 
+	// BP_REQ_ATTACK's kind (proto.h ATTACK_*)
+	constexpr uint8 ATTACK_NORMAL = 1;
+
+	// screen effects (BP_EFFECT; proto.h EFFECT_*, clientd3d effect.c PerformEffect)
+	constexpr uint16 EFFECT_INVERT = 1;        // i32 ms
+	constexpr uint16 EFFECT_SHAKE = 2;         // i32 ms
+	constexpr uint16 EFFECT_PARALYZE = 3;
+	constexpr uint16 EFFECT_RELEASE = 4;
+	constexpr uint16 EFFECT_BLIND = 5;
+	constexpr uint16 EFFECT_SEE = 6;
+	constexpr uint16 EFFECT_PAIN = 7;          // i32 ms
+	constexpr uint16 EFFECT_BLUR = 8;          // i32 ms
+	constexpr uint16 EFFECT_RAINING = 9;
+	constexpr uint16 EFFECT_SNOWING = 10;
+	constexpr uint16 EFFECT_CLEARWEATHER = 11;
+	constexpr uint16 EFFECT_SAND = 12;
+	constexpr uint16 EFFECT_CLEARSAND = 13;
+	constexpr uint16 EFFECT_WAVER = 14;        // i32 ms
+	constexpr uint16 EFFECT_FLASHXLAT = 15;    // i32 ms, i32 xlat
+	constexpr uint16 EFFECT_WHITEOUT = 16;     // i32 ms
+	constexpr uint16 EFFECT_XLATOVERRIDE = 17; // i32 xlat (0 = off)
+	constexpr uint16 EFFECT_FIREWORKS = 18;
+
+	// projectiles (BP_SHOOT, BP_RADIUS_SHOOT; clientd3d project.h)
+	constexpr uint16 PROJ_FLAG_FOLLOWGROUND = 0x0001;
+
 	// movement speeds sent with BP_REQ_MOVE (walk and run, as the original client)
 	constexpr uint8 SPEED_WALK = 25;
 	constexpr uint8 SPEED_RUN = 55;

@@ -194,6 +194,73 @@ struct FMRNetDescription
 	FString Url;
 };
 
+/**
+ * The screen effects the server has put on the player (BP_EFFECT; clientd3d effect.c PerformEffect).
+ * Times are the milliseconds left, counted down by Tick as the original's AnimateEffects did.
+ */
+struct FMRNetEffects
+{
+	float PainMs = 0.f;      // red over the view, fading (draw3d.c: 80% above 2 s, down to 10%)
+	float WhiteoutMs = 0.f;  // white, fading over its last half second
+	float InvertMs = 0.f;    // the view's colours inverted
+	float ShakeMs = 0.f;     // the eye jiggles (effect.c EffectShake)
+	float BlurMs = 0.f;      // added up, at most 200 s (drunk)
+	float WaverMs = 0.f;     // the view sways sideways (vertigo)
+	/** A colour flash (an XLAT_BLEND* translation) and how long it has left. */
+	uint32 FlashXlat = 0;
+	float FlashMs = 0.f;
+	/** A translation over the whole view until it is turned off (0 = none). */
+	uint32 XlatOverride = 0;
+	bool bBlind = false;     // nothing of the world is drawn
+	bool bParalyzed = false; // no walking or turning
+	/** The room's weather: EFFECT_RAINING, EFFECT_SNOWING or EFFECT_FIREWORKS; 0 = clear. Sent on every room change. */
+	uint16 Weather = 0;
+	bool bSand = false;
+	/** Bumped by every BP_EFFECT. */
+	uint32 Seq = 0;
+
+	/** Apply one BP_EFFECT (the u16 effect and its parameters); false if unknown or cut short. */
+	bool Apply(FMRReader& R);
+	void Tick(float Ms);
+	void Reset() { *this = FMRNetEffects(); }
+};
+
+/**
+ * Something thrown or cast across the room (BP_SHOOT: from one object to another; BP_RADIUS_SHOOT:
+ * Number of them out from an object to Range squares, evenly round). clientd3d server.c HandleShoot,
+ * project.c: it flies at Speed squares a second and is gone on arrival.
+ */
+struct FMRNetProjectile
+{
+	uint32 IconRsc = 0;
+	FString Icon;
+	int32 Xlat = -1;
+	int32 Effect = -1;
+	FMRNetAnimation Animation;
+	uint32 Source = 0;
+	uint32 Dest = 0;
+	uint8 Speed = 0;       // squares a second; 0 = arrives at once
+	uint16 Flags = 0;      // PROJ_FLAG_FOLLOWGROUND: it keeps to the floor
+	uint8 Range = 0;
+	uint8 Number = 0;
+	FMRNetLight Light;
+	bool bRadius = false;
+};
+
+/**
+ * Damage in a combat message: battler.kod AssessHit tells the attacker "Your mace wounds the rat
+ * for 4 damage." (battler_attacker_hit, _mob) and the one hit "The rat's bite wounds you for 2
+ * damage." (battler_defender_hit, _mob). Damage numbers are ours; the original only printed the line.
+ */
+struct FMRNetHit
+{
+	/** We hit something (else something hit us). */
+	bool bDealt = true;
+	/** The other one's name, without its article ("rat", or a player's name). */
+	FString Name;
+	int32 Damage = 0;
+};
+
 /** Everything the server has said about the session's game state. */
 struct FMRNetWorld
 {
@@ -216,6 +283,8 @@ struct FMRNetWorld
 	/** The last container looked into (BP_OBJECT_CONTENTS): its id and what it holds. */
 	uint32 ContentsOf = 0;
 	TArray<FMRNetObject> Contents;
+	/** The screen effects on the player and the room's weather (BP_EFFECT). Kept across rooms, as the original. */
+	FMRNetEffects Effects;
 
 	const FMRNetObject* FindInventory(uint32 Id) const { return Inventory.FindByPredicate([Id](const FMRNetObject& O) { return O.Id == Id; }); }
 	/** Forget the inventory (logged off, or the server renumbered its objects). */
@@ -259,6 +328,13 @@ namespace MRNetRead
 	MERIDIANREMASTERED_API bool User(FMRReader& R, FMRNetUser& Out);
 	/** A stat (merintr.c ExtractStatistic). */
 	MERIDIANREMASTERED_API bool Stat(FMRReader& R, const FMRResourceTable& Res, FMRNetStat& Out);
+	/** BP_SHOOT's body (bRadius false) or BP_RADIUS_SHOOT's, after the type byte. */
+	MERIDIANREMASTERED_API bool Projectile(FMRReader& R, const FMRResourceTable& Res, bool bRadius, FMRNetProjectile& Out);
+	/**
+	 * The damage in a BP_MESSAGE, when its format is one of the hit messages (Kind: 1 we hit a player,
+	 * 2 a monster, 3 a player hit us, 4 a monster did). R is at the parameters, after the format id.
+	 */
+	MERIDIANREMASTERED_API bool Hit(FMRReader R, const FMRResourceTable& Res, int32 Kind, FMRNetHit& Out);
 	/** A .roo file's security value (the u32 after its magic and version; clientd3d bspload.c), or 0. */
 	MERIDIANREMASTERED_API uint32 RooSecurity(const TArray<uint8>& RooBytes);
 	/** Whether a room's security matches the server's: the low 28 bits only (clientd3d game.c). */

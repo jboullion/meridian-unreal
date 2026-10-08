@@ -14,6 +14,7 @@
 #include "Net/MRProtocol.h"
 #include "UI/MRUISubsystem.h"
 #include "Character/MRCharacterMovementComponent.h"
+#include "Core/MRUnits.h"
 
 namespace
 {
@@ -22,6 +23,36 @@ namespace
 	TAutoConsoleVariable<float> CVarHandBob(TEXT("mr.Sprite.HandBob"), 1.f,
 		TEXT("First-person hand bob while walking (0 off, as the original)."));
 	constexpr float ClassicWidth = 452.f;  // clientd3d/drawdefs.h CLASSIC_WIDTH
+
+	/**
+	 * The colour a screen translation flashes or tints the view with (d3drender.c's XLAT_BLEND*
+	 * table; xlat.h ids). Anything else is black, as there.
+	 */
+	FLinearColor XlatTint(uint32 Xlat)
+	{
+		const auto A = [](int32 Alpha) { return Alpha / 255.f; };
+		if (Xlat >= 0x41 && Xlat <= 0x4A)
+		{
+			return FLinearColor(1.f, 0.f, 0.f, Xlat == 0x4A ? 1.f : A(25 * int32(Xlat - 0x40)));  // XLAT_BLEND10RED..100
+		}
+		if (Xlat >= 0x70 && Xlat <= 0x79)
+		{
+			return FLinearColor(1.f, 1.f, 1.f, Xlat == 0x79 ? 1.f : A(25 * int32(Xlat - 0x6F)));  // XLAT_BLEND10WHITE..100
+		}
+		switch (Xlat)
+		{
+		case 0x51: return FLinearColor(1.f, 0.f, 0.f, A(75));    // XLAT_BLEND25RED
+		case 0x57: return FLinearColor(1.f, 0.f, 0.f, A(200));   // XLAT_BLEND75RED
+		case 0x52: return FLinearColor(0.f, 0.f, 1.f, A(64));    // XLAT_BLEND25BLUE
+		case 0x55: return FLinearColor(0.f, 0.f, 1.f, A(128));
+		case 0x58: return FLinearColor(0.f, 0.f, 1.f, A(192));
+		case 0x53: return FLinearColor(0.f, 1.f, 0.f, A(64));    // XLAT_BLEND25GREEN
+		case 0x56: return FLinearColor(0.f, 1.f, 0.f, A(128));
+		case 0x59: return FLinearColor(0.f, 1.f, 0.f, A(192));
+		case 0x39: return FLinearColor(1.f, 1.f, 0.f, 0.25f);    // XLAT_BLEND25YELLOW (the software client's)
+		default: return FLinearColor(0.f, 0.f, 0.f, 1.f);
+		}
+	}
 }
 
 void AMRHUD::BeginPlay()
@@ -58,13 +89,22 @@ void AMRHUD::EndPlay(const EEndPlayReason::Type Reason)
 void AMRHUD::DrawHUD()
 {
 	Super::DrawHUD();
-	const AMRCharacter* Character = Cast<AMRCharacter>(GetOwningPawn());
+	AMRCharacter* Character = Cast<AMRCharacter>(GetOwningPawn());
 	UMRSpriteBodyComponent* Sprite = Character ? Character->GetSpriteBody() : nullptr;
-	if (!Canvas || !Sprite || !Character->IsFirstPerson())
+	if (!Canvas || !Sprite)
 	{
 		return;
 	}
+	DrawScreenEffects(Character, true);
+	if (Character->IsFirstPerson())
+	{
+		DrawHands(Character, Sprite);
+	}
+	DrawScreenEffects(Character, false);
+}
 
+void AMRHUD::DrawHands(AMRCharacter* Character, UMRSpriteBodyComponent* Sprite)
+{
 	// walk bob: one step per half cycle, faster when running
 	const double Now = GetWorld()->GetTimeSeconds();
 	const float Dt = LastTime > 0.0 ? static_cast<float>(Now - LastTime) : 0.f;
@@ -78,8 +118,6 @@ void AMRHUD::DrawHUD()
 	UTexture2D* Tex = nullptr;
 	FBox2f UV;
 	FIntPoint Size, Offset;
-	// the local swing, while it plays (online, ahead of the server's; offline the only one)
-	const bool bLocal = Sprite->IsFirstPersonAttacking();
 	const UMRNetWorldSubsystem* NetWorld = GetWorld()->GetSubsystem<UMRNetWorldSubsystem>();
 	const UMRNetSubsystem* Net = GetGameInstance() ? GetGameInstance()->GetSubsystem<UMRNetSubsystem>() : nullptr;
 	if (NetWorld && NetWorld->IsActive() && Net)
@@ -114,7 +152,7 @@ void AMRHUD::DrawHUD()
 			{
 				T.Track.Step(Dt * 1000.f);
 			}
-			if (P.Hotspot == 0 || T.Track.Group <= 0 || (bLocal && Pair.Key == MRMsg::PWO_RIGHT_HAND))
+			if (P.Hotspot == 0 || T.Track.Group <= 0)
 			{
 				continue;
 			}
@@ -124,14 +162,75 @@ void AMRHUD::DrawHUD()
 				DrawFirstPerson(Tex, UV, Size, Offset, P.Hotspot, Bob, Scale);
 			}
 		}
-		if (!bLocal)
-		{
-			return;
-		}
+		return;  // the swing too is the server's (BP_PLAYER_OVERLAY, docs/adr/0012 M4)
 	}
+	// offline: the hand or weapon, and the local swing
 	if (Sprite->GetFirstPersonFrame(Tex, UV, Size, Offset) && Tex->GetResource())
 	{
 		DrawFirstPerson(Tex, UV, Size, Offset, MRMsg::HS_SE, Bob, Scale);
+	}
+}
+
+void AMRHUD::DrawScreenEffects(AMRCharacter* Character, bool bBeforeHands)
+{
+	const UMRNetWorldSubsystem* NetWorld = GetWorld()->GetSubsystem<UMRNetWorldSubsystem>();
+	const UMRNetSubsystem* Net = GetGameInstance() ? GetGameInstance()->GetSubsystem<UMRNetSubsystem>() : nullptr;
+	if (!Net || !NetWorld || !NetWorld->IsActive())
+	{
+		return;
+	}
+	const FMRNetEffects& E = Net->GetEffects();
+	const auto Fill = [this](const FLinearColor& Color)
+	{
+		if (Color.A > 0.f)
+		{
+			FCanvasTileItem Tile(FVector2D::ZeroVector, FVector2D(Canvas->ClipX, Canvas->ClipY), Color);
+			Tile.BlendMode = SE_BLEND_Translucent;
+			Canvas->DrawItem(Tile);
+		}
+	};
+	if (bBeforeHands)
+	{
+		// on the view: clientd3d effect.c EffectShake (a random step of up to a quarter square each
+		// frame), the waver's sway, the blur swelling and shrinking (draw3d.c: 1..6 pixels, 150 ms a step)
+		FVector Eye = FVector::ZeroVector;
+		if (E.ShakeMs > 0.f)
+		{
+			const double Amp = (FMath::Min(256.0, E.ShakeMs / 3.0) + 1.0) * MRUnits::CmPerSquare / 1024.0;
+			Eye = FVector(FMath::FRandRange(-0.5, 0.5), FMath::FRandRange(-0.5, 0.5), FMath::FRandRange(-0.5, 0.5)) * Amp;
+		}
+		WaverPhase = E.WaverMs > 0.f ? WaverPhase + GetWorld()->GetDeltaSeconds() : 0.0;
+		const float Roll = E.WaverMs > 0.f ? 4.f * FMath::Sin(WaverPhase * 2.2) : 0.f;
+		float Blur = 0.f;
+		if (E.BlurMs > 0.f)
+		{
+			const int32 Step = static_cast<int32>(E.BlurMs / 150.f) % 12;
+			Blur = static_cast<float>((Step > 6 ? 12 - Step : Step) + 1);
+		}
+		Character->SetViewEffects(Eye, Roll, Blur, E.InvertMs > 0.f);
+		// blind: nothing of the world is drawn (d3drender.c), the hands still are
+		if (E.bBlind)
+		{
+			Fill(FLinearColor::Black);
+		}
+		return;
+	}
+	// over it, the original's order: a colour flash, the override, the whiteout, then pain last
+	if (E.FlashXlat && E.FlashMs > 0.f)
+	{
+		Fill(XlatTint(E.FlashXlat));
+	}
+	if (E.XlatOverride)
+	{
+		Fill(XlatTint(E.XlatOverride));
+	}
+	if (E.WhiteoutMs > 0.f)
+	{
+		Fill(FLinearColor(1.f, 1.f, 1.f, FMath::Max(200.f, FMath::Min(E.WhiteoutMs, 500.f) * 255.f / 500.f) / 255.f));
+	}
+	if (E.PainMs > 0.f)
+	{
+		Fill(FLinearColor(1.f, 0.f, 0.f, FMath::Min(E.PainMs, 2000.f) * 204.f / 2000.f / 255.f));
 	}
 }
 

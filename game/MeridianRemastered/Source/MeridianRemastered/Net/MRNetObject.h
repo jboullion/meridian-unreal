@@ -37,6 +37,9 @@ public:
 	 */
 	void SetBgfSprite(const FString& InBgfName, TSharedPtr<const FMRBgf> Bgf);
 	void SetServerAnimation(const FMRNetAnimation& Standing, const FMRNetAnimation& Moving);
+	/** Play a one-off action on its sprite body (a swing, a monster's bite: the server's ANIMATE_ONCE). */
+	void PlayAction(FName Action);
+	UMRSpriteBodyComponent* GetSpriteBody() const { return SpriteBody; }
 	/**
 	 * Not a creature: it never walks (a server move just puts it there), no movement ticks. The
 	 * server's items, signs, containers and ornaments.

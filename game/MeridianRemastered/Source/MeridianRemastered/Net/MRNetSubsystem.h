@@ -59,6 +59,8 @@ enum class EMRNetPhase : uint8
 DECLARE_MULTICAST_DELEGATE(FOnMRNetEvent);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetObjectEvent, uint32 /* Id */);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetChat, const FMRChatLine&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetProjectile, const FMRNetProjectile&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetHit, const FMRNetHit&);
 
 /**
  * The session with a Meridian server (docs/adr/0010-meridian-servers.md): the server list, the
@@ -156,6 +158,23 @@ public:
 	/** Move a carried item to another's place in the list (BP_REQ_INVENTORY_MOVE; not items in use). */
 	void MoveInventoryItem(uint32 ItemId, uint32 PlaceOfId);
 	const TArray<FMRNetObject>& GetInventory() const { return World.Inventory; }
+
+	// --- combat (docs/research/blakserv-protocol.md "Combat")
+	/**
+	 * Attack something (BP_REQ_ATTACK, ATTACK_NORMAL). The server decides everything: range, the
+	 * 1 s between attacks, the hit; it answers with messages (OnHit), the swing (BP_CHANGE on us,
+	 * BP_PLAYER_OVERLAY in first person) and sounds.
+	 */
+	void Attack(uint32 TargetId);
+	/** A line of the client's own in the chat log, as the original's GameMessage (e.g. "You can't see your selected target."). */
+	void AddGameMessage(const FString& Text) { AddChat(Text, 0); }
+	/** The screen effects on the player and the room's weather (BP_EFFECT), counted down each tick. */
+	const FMRNetEffects& GetEffects() const { return World.Effects; }
+	/**
+	 * Tests and the MREffect console command: handle a BP_EFFECT as if the server had sent it
+	 * (Ms: the duration where the effect has one; Xlat: the flash's or the override's translation).
+	 */
+	void DebugEffect(uint16 Effect, int32 Ms, int32 Xlat);
 	const FMRNetObject* FindInventory(uint32 Id) const { return World.FindInventory(Id); }
 	bool IsUsing(uint32 Id) const { return World.Using.Contains(Id); }
 
@@ -221,6 +240,12 @@ public:
 	FOnMRNetEvent OnInventoryChanged;
 	/** A container's contents arrived (BP_OBJECT_CONTENTS): GetNetWorld().ContentsOf, Contents. */
 	FOnMRNetEvent OnContents;
+	/** A BP_EFFECT changed GetEffects() (the weather too). */
+	FOnMRNetEvent OnEffect;
+	/** Something was shot across the room (BP_SHOOT, BP_RADIUS_SHOOT). */
+	FOnMRNetProjectile OnProjectile;
+	/** A combat message with damage in it: we hit something, or were hit. */
+	FOnMRNetHit OnHit;
 
 private:
 	void LoadServers();
@@ -243,6 +268,8 @@ private:
 	void HandleClosed(const FString& Error);
 	void AddChat(const FString& Text, uint8 Kind);
 	void SetWaiting(bool bInWaiting);
+	/** The hit messages' format ids in the loaded rsb, by MRNetRead::Hit's kind (found by their Kod text). */
+	const TMap<uint32, int32>& HitFormats();
 
 	TArray<FMRServerEntry> Servers;
 	int32 LastServer = 0;
@@ -256,6 +283,8 @@ private:
 	TArray<TSharedPtr<FMRConnection>> Retired;
 	FMRResourceTable Resources;
 	FString LoadedRsbHash;
+	TMap<uint32, int32> HitFormatIds;
+	FString HitFormatsRsb;
 
 	EMRNetPhase Phase = EMRNetPhase::Offline;
 	FString Status;

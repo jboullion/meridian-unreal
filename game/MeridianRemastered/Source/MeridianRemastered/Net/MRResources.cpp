@@ -53,6 +53,19 @@ bool FMRResourceTable::Load(const TArray<uint8>& Rsb)
 	return true;
 }
 
+TArray<uint32> FMRResourceTable::FindByText(const FString& Text) const
+{
+	TArray<uint32> Ids;
+	for (const TPair<uint32, FString>& Pair : Strings)
+	{
+		if (Pair.Value.Equals(Text, ESearchCase::CaseSensitive))
+		{
+			Ids.Add(Pair.Key);
+		}
+	}
+	return Ids;
+}
+
 const FString* FMRResourceTable::Find(uint32 Id) const
 {
 	if (const FString* D = Dynamic.Find(Id))

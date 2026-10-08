@@ -37,6 +37,11 @@ private:
 		FMRSpriteTrack Track;
 	};
 	TMap<uint32, FSlotTrack> SlotTracks;
+	/** Online, the server's screen effects (BP_EFFECT): on the view (shake, waver, blur, invert) and over it. */
+	void DrawScreenEffects(class AMRCharacter* Character, bool bBeforeHands);
+	/** The first-person hand or weapon: the server's slots online, the sprite body's offline. */
+	void DrawHands(class AMRCharacter* Character, class UMRSpriteBodyComponent* Sprite);
+	double WaverPhase = 0.0;
 	/** Draw one first-person bitmap at a screen hotspot (HS_NW 1 .. HS_CENTER 9). */
 	void DrawFirstPerson(class UTexture2D* Tex, const FBox2f& UV, FIntPoint Size, FIntPoint Offset, int32 Hotspot, const FVector2D& Bob, float Scale);
 };

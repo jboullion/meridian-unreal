@@ -301,6 +301,13 @@ The user played the build and reported four things, with screenshots in `Referen
 - **Restoring outdoors:** the outdoor base mood now names the sky light's `volumetric_scattering_intensity` (1.0). The director only sets the fields a mood names, so it restores the value on the way out.
 - **Sheets:** `build/lookdev/haze2.png` (bracket), `haze3.png` (crypt), `haze_final.png` (by day and by night in the cycle).
 
+## Online weather (2026-10-08, M4 of ADR 0012)
+On a Meridian server the room's weather is the server's (`BP_EFFECT`: rain, snow, sand, sent on every room change). `UMREnvironmentSubsystem::SetServerWeather` replaces the zone's storm roll with it:
+- weather already falling when a room is entered shows at once;
+- weather that starts or stops while we're there builds up or clears with the usual curves.
+
+Fireworks aren't drawn yet.
+
 ## Phase 4 built (2026-10-05): weather
 - **The original's rules** (`MRWeather`, unit-tested in `Meridian.Environment.Weather`):
   - Every game day each of the 15 weather zones rolls a storm at 15% (kod `RecalcWeatherConditions`, `piStormChance`).

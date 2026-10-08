@@ -9,6 +9,7 @@ class APlayerController;
 class UMRNetSubsystem;
 struct FMRBgf;
 struct FMRNetObject;
+struct FMRNetProjectile;
 
 /**
  * Puts a Meridian server's view of the world into this UE world (docs/adr/0010-meridian-servers.md).
@@ -69,6 +70,23 @@ public:
 	 * (BP_REQ_ACTIVATE). False: nothing there to use.
 	 */
 	bool UseAim();
+	// --- combat (docs/adr/0012 M4; the server decides every hit)
+	/**
+	 * The attack key, as the original's (gameuser.c UserAttackClosest): the target if it is in view,
+	 * else what the crosshair is on if it can be attacked, else the nearest attackable thing in view
+	 * within 5 squares (CLOSE_DISTANCE). Our position goes up first, so the server checks the range
+	 * from where we are. At most one every 250 ms (ATTACK_DELAY); the server allows one a second.
+	 * Returns what was attacked, 0 for nothing (a target out of view says so in the chat).
+	 */
+	uint32 Attack();
+	/** The last thing attacked (the damage we deal is drawn over it). */
+	uint32 GetLastAttackedId() const { return LastAttackedId; }
+	/**
+	 * The pawn's paralysis and the room's weather follow the server's effects (BP_EFFECT).
+	 * bEntered: a room was just entered, so its weather was already falling there.
+	 */
+	void ApplyEffects(bool bEntered = false);
+
 	/** Every object actor here (the name plates and the minimap draw them). */
 	const TMap<uint32, TWeakObjectPtr<AMRNetObject>>& GetActors() const { return Actors; }
 	/** How far names show and the crosshair reaches: the original's 15 squares (object3d.h MAX_NAME_DISTANCE). */
@@ -102,6 +120,16 @@ private:
 	void OnObjectChanged(uint32 Id);
 	void OnObjectMoved(uint32 Id);
 	void OnObjectRemoved(uint32 Id);
+	void OnEffect();
+	void OnProjectile(const FMRNetProjectile& P);
+	/** A one-off animation a BP_CHANGE carries (ANIMATE_ONCE: a swing, a cast, a bite) played on a sprite body. */
+	void PlayServerAction(const FMRNetObject& O);
+	/** The server's bitmap of a file (fetched through the asset cache, parsed once); Done runs with it, maybe later. */
+	void FetchBgf(const FString& File, TFunction<void(TSharedPtr<const FMRBgf>)> Done);
+	/** Where an object (or our pawn) stands: its feet. False if it isn't here. */
+	bool FeetOf(uint32 Id, FVector& Out) const;
+	/** Send where we stand now if it changed (before a go or an attack: the server checks from there). */
+	void SendPositionNow();
 
 	void SpawnObject(const FMRNetObject& Object);
 	/** The world build's visible props here (built zones: the server's lamps, signs, tables as meshes). */
@@ -142,4 +170,8 @@ private:
 	/** Parsed bitmaps of objects drawn from the server's files, by file name (lower case). */
 	TMap<FString, TSharedPtr<const FMRBgf>> Bgfs;
 	TArray<TWeakObjectPtr<AActor>> Props;
+	uint32 LastAttackedId = 0;
+	double LastAttackTime = 0.0;
+	double RoomEnteredTime = 0.0;
+	TArray<TWeakObjectPtr<AActor>> Projectiles;
 };

@@ -270,4 +270,86 @@ bool FMRNetWorldTest::RunTest(const FString& Parameters)
 	return true;
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMRNetCombatTest, "Meridian.Net.Combat",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMRNetCombatTest::RunTest(const FString& Parameters)
+{
+	// battler.kod's hit messages as Kod compiles them, and their parameters' resources
+	TArray<uint8> Rsb = {'R', 'S', 'C', 1, 5, 0, 0, 0, 0, 0, 0, 0};
+	int32 Count = 0;
+	auto Add = [&Rsb, &Count](uint32 Id, const char* Text)
+	{
+		for (int32 i = 0; i < 4; ++i) Rsb.Add((Id >> (8 * i)) & 0xFF);
+		for (int32 i = 0; i < 4; ++i) Rsb.Add(0);
+		Rsb.Append(reinterpret_cast<const uint8*>(Text), FCStringAnsi::Strlen(Text) + 1);
+		Rsb[8] = static_cast<uint8>(++Count);
+	};
+	Add(20, "%sYour %s %s %s%q for ~k~B%i~B%s damage.");
+	Add(21, "%sYour %s %s %s%s for ~k~B%i~B%s damage.");
+	Add(22, "%s%s%q's %s %s you for ~r~B%i~B%s damage.");
+	Add(23, "%s%s%s's %s %s you for ~r~B%i~B%s damage.");
+	Add(30, "~b");
+	Add(31, "mace");
+	Add(32, "wounds");
+	Add(33, "the ");
+	Add(34, "rat");
+	Add(35, "The ");
+	Add(36, "bite");
+	Add(40, "arrow.bgf");
+	FMRResourceTable Res;
+	TestTrue(TEXT("rsb parses"), Res.Load(Rsb));
+	TestTrue(TEXT("a format found by its text"), Res.FindByText(TEXT("%sYour %s %s %s%s for ~k~B%i~B%s damage.")) == TArray<uint32>({21}));
+
+	// "Your mace wounds the rat for 4 damage."
+	FMRWriter M(MRMsg::BP_MESSAGE);
+	M.U32(21).U32(30).U32(31).U32(32).U32(33).U32(34).I32(4).U32(30);
+	FMRReader MR(M.Bytes, 5);
+	FMRNetHit Hit;
+	TestTrue(TEXT("we hit a monster"), MRNetRead::Hit(MR, Res, 2, Hit) && Hit.bDealt && Hit.Name == TEXT("rat") && Hit.Damage == 4);
+	FString Text;
+	FMRReader MR2(M.Bytes, 5);
+	TestTrue(TEXT("and the line still reads"), MRServerText::Format(Res, 21, MR2, Text) && MRServerText::StripStyle(Text) == TEXT("Your mace wounds the rat for 4 damage."));
+	// "Your mace wounds Frenzy for 12 damage." (a player's name is a string)
+	FMRWriter P(MRMsg::BP_MESSAGE);
+	P.U32(20).U32(30).U32(31).U32(32).U32(0).Str(TEXT("Frenzy")).I32(12).U32(30);
+	TestTrue(TEXT("we hit a player"), MRNetRead::Hit(FMRReader(P.Bytes, 5), Res, 1, Hit) && Hit.bDealt && Hit.Name == TEXT("Frenzy") && Hit.Damage == 12);
+	// "The rat's bite wounds you for 2 damage."
+	FMRWriter D(MRMsg::BP_MESSAGE);
+	D.U32(23).U32(30).U32(35).U32(34).U32(36).U32(32).I32(2).U32(30);
+	TestTrue(TEXT("a monster hit us"), MRNetRead::Hit(FMRReader(D.Bytes, 5), Res, 4, Hit) && !Hit.bDealt && Hit.Name == TEXT("rat") && Hit.Damage == 2);
+
+	// BP_EFFECT (clientd3d effect.c): durations, a flash's translation, the blur adding up, the weather
+	FMRNetEffects E;
+	auto Effect = [&E](FMRWriter W) { FMRReader R(W.Bytes, 1); return E.Apply(R) && R.AtEnd(); };
+	TestTrue(TEXT("pain"), Effect(MoveTemp(FMRWriter(MRMsg::BP_EFFECT).U16(MRMsg::EFFECT_PAIN).I32(1500))) && E.PainMs == 1500.f);
+	TestTrue(TEXT("pain is at most 10 s"), Effect(MoveTemp(FMRWriter(MRMsg::BP_EFFECT).U16(MRMsg::EFFECT_PAIN).I32(99999))) && E.PainMs == 10000.f);
+	TestTrue(TEXT("a red flash"), Effect(MoveTemp(FMRWriter(MRMsg::BP_EFFECT).U16(MRMsg::EFFECT_FLASHXLAT).I32(300).I32(0x45))) && E.FlashXlat == 0x45 && E.FlashMs == 300.f);
+	Effect(MoveTemp(FMRWriter(MRMsg::BP_EFFECT).U16(MRMsg::EFFECT_BLUR).I32(150000)));
+	TestTrue(TEXT("blur adds up to 200 s"), Effect(MoveTemp(FMRWriter(MRMsg::BP_EFFECT).U16(MRMsg::EFFECT_BLUR).I32(150000))) && E.BlurMs == 200000.f);
+	TestTrue(TEXT("paralysis has no parameters"), Effect(MoveTemp(FMRWriter(MRMsg::BP_EFFECT).U16(MRMsg::EFFECT_PARALYZE))) && E.bParalyzed);
+	TestTrue(TEXT("rain"), Effect(MoveTemp(FMRWriter(MRMsg::BP_EFFECT).U16(MRMsg::EFFECT_RAINING))) && E.Weather == MRMsg::EFFECT_RAINING);
+	TestTrue(TEXT("cleared"), Effect(MoveTemp(FMRWriter(MRMsg::BP_EFFECT).U16(MRMsg::EFFECT_CLEARWEATHER))) && E.Weather == 0);
+	E.Tick(400.f);
+	TestTrue(TEXT("the flash is over, the pain fades"), E.FlashXlat == 0 && E.PainMs == 9600.f);
+	TestFalse(TEXT("an unknown effect"), Effect(MoveTemp(FMRWriter(MRMsg::BP_EFFECT).U16(99))));
+
+	// BP_SHOOT (server.c HandleShoot): icon, translation, animation, source, dest, speed, flags, light
+	FMRWriter S(MRMsg::BP_SHOOT);
+	S.U32(40).U8(MRMsg::ANIMATE_TRANSLATION).U8(7).U8(MRMsg::ANIMATE_CYCLE).U32(100).U16(1).U16(2);
+	S.U32(0x101).U32(0x102).U8(12).U16(MRMsg::PROJ_FLAG_FOLLOWGROUND).U16(3).U8(80).U16(0x7C00);
+	FMRReader SR(S.Bytes, 1);
+	FMRNetProjectile Shot;
+	TestTrue(TEXT("BP_SHOOT reads to its end"), MRNetRead::Projectile(SR, Res, false, Shot) && SR.AtEnd());
+	TestTrue(TEXT("an arrow from one to the other"), Shot.Icon == TEXT("arrow.bgf") && Shot.Xlat == 7 && Shot.Source == 0x101 && Shot.Dest == 0x102
+		&& Shot.Speed == 12 && Shot.Flags == MRMsg::PROJ_FLAG_FOLLOWGROUND && Shot.Light.Intensity == 80 && Shot.Light.Color == 0x7C00);
+	// BP_RADIUS_SHOOT: no dest; range and number after the flags; no light
+	FMRWriter RS(MRMsg::BP_RADIUS_SHOOT);
+	RS.U32(40).U8(MRMsg::ANIMATE_NONE).U16(1).U32(0x101).U8(8).U16(0).U8(5).U8(8).U16(0);
+	FMRReader RSR(RS.Bytes, 1);
+	TestTrue(TEXT("BP_RADIUS_SHOOT reads to its end"), MRNetRead::Projectile(RSR, Res, true, Shot) && RSR.AtEnd());
+	TestTrue(TEXT("eight out to 5 squares"), Shot.bRadius && Shot.Range == 5 && Shot.Number == 8 && Shot.Dest == 0);
+	return true;
+}
+
 #endif

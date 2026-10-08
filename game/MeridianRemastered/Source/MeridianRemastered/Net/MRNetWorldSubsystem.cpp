@@ -1,7 +1,9 @@
 #include "Net/MRNetWorldSubsystem.h"
 
 #include "Character/MRCharacter.h"
+#include "Character/MRSpriteBodyComponent.h"
 #include "Character/MRSpriteData.h"
+#include "Environment/MREnvironmentSubsystem.h"
 #include "Core/MRUnits.h"
 #include "Dom/JsonObject.h"
 #include "Engine/LocalPlayer.h"
@@ -14,6 +16,7 @@
 #include "Misc/Paths.h"
 #include "Net/MRNetLook.h"
 #include "Net/MRNetObject.h"
+#include "Net/MRNetProjectile.h"
 #include "Net/MRNetSubsystem.h"
 #include "Net/MRNetWorld.h"
 #include "World/MRRuntimeRooms.h"
@@ -37,6 +40,10 @@ namespace
 	double RunCms() { return 0.5 * (UMRCharacterMovementComponent::WalkCms() + UMRCharacterMovementComponent::RunCms()); }
 	constexpr int32 TurnThreshold = 128;       // 1/32 of a turn before a BP_REQ_TURN
 	constexpr double SnapBackCm = MRUnits::CmPerSquare;  // the server moved us this far: follow it
+	constexpr double AttackDelay = 0.25;       // gameuser.c ATTACK_DELAY
+	constexpr double CloseDistanceCm = 5.0 * MRUnits::CmPerSquare;  // gameuser.h CLOSE_DISTANCE
+	/** A room's weather sent this soon after entering it was already falling there. */
+	constexpr double WeatherOnEntrySeconds = 3.0;
 
 	int32 YawToKod(double Yaw)
 	{
@@ -100,6 +107,8 @@ void UMRNetWorldSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	Net->OnObjectChanged.AddUObject(this, &UMRNetWorldSubsystem::OnObjectChanged);
 	Net->OnObjectMoved.AddUObject(this, &UMRNetWorldSubsystem::OnObjectMoved);
 	Net->OnObjectRemoved.AddUObject(this, &UMRNetWorldSubsystem::OnObjectRemoved);
+	Net->OnEffect.AddUObject(this, &UMRNetWorldSubsystem::OnEffect);
+	Net->OnProjectile.AddUObject(this, &UMRNetWorldSubsystem::OnProjectile);
 	if (Net->GetPhase() == EMRNetPhase::InGame)
 	{
 		OnRoomEntered();  // a level reload while connected
@@ -114,7 +123,8 @@ void UMRNetWorldSubsystem::Deinitialize()
 {
 	if (UMRNetSubsystem* Net = GetNet())
 	{
-		FOnMRNetEvent* Events[] = {&Net->OnPhaseChanged, &Net->OnRoomEntered};
+		FOnMRNetEvent* Events[] = {&Net->OnPhaseChanged, &Net->OnRoomEntered, &Net->OnEffect};
+		Net->OnProjectile.RemoveAll(this);
 		FOnMRNetObjectEvent* ObjectEvents[] = {&Net->OnObjectAdded, &Net->OnObjectChanged, &Net->OnObjectMoved, &Net->OnObjectRemoved};
 		for (FOnMRNetEvent* E : Events)
 		{
@@ -230,6 +240,8 @@ void UMRNetWorldSubsystem::OnRoomEntered()
 		return;
 	}
 	ClearObjects();
+	RoomEnteredTime = FPlatformTime::Seconds();
+	ApplyEffects(true);  // (the room's weather may have come just before it)
 	const FMRNetPlayer& P = Net->GetPlayer();
 	const int32 PrevRid = Rid;
 	const int32 BuiltRid = Zones->RidForRoom(P.RoomFile);
@@ -314,7 +326,7 @@ void UMRNetWorldSubsystem::FinishEnterRoom(int32 PrevRid)
 	}
 	Net->SetStatus(FString());
 	PlacePlayer(PrevRid == Rid);
-	SetPawnFrozen(false);
+	SetPawnFrozen(Net->GetEffects().bParalyzed);
 	ApplySelfLook();
 	GatherProps();
 	for (const TPair<uint32, FMRNetObject>& Pair : Net->GetObjects())
@@ -508,19 +520,42 @@ void UMRNetWorldSubsystem::AttachBgfSprite(AMRNetObject* Actor, const FMRNetObje
 	}
 	const FMRNetAnimation Standing = Object.Animation;
 	const FMRNetAnimation Moving = Object.MotionAnimation;
+	TWeakObjectPtr<AMRNetObject> WeakActor(Actor);
+	FetchBgf(File, [WeakActor, File, Standing, Moving](TSharedPtr<const FMRBgf> Bgf)
+	{
+		if (AMRNetObject* A = WeakActor.Get())
+		{
+			A->SetBgfSprite(File, Bgf);
+			A->SetServerAnimation(Standing, Moving);
+		}
+	});
+}
+
+void UMRNetWorldSubsystem::FetchBgf(const FString& InFile, TFunction<void(TSharedPtr<const FMRBgf>)> Done)
+{
+	const FString File = InFile.ToLower();
 	if (const TSharedPtr<const FMRBgf>* Known = Bgfs.Find(File))
 	{
-		Actor->SetBgfSprite(File, *Known);
-		Actor->SetServerAnimation(Standing, Moving);
+		Done(*Known);
+		return;
+	}
+	UMRNetSubsystem* Net = GetNet();
+	FMRAssetCache* Cache = Net ? Net->GetAssets() : nullptr;
+	if (!Cache || File.IsEmpty() || !Cache->IsListed(File))
+	{
 		return;
 	}
 	TWeakObjectPtr<UMRNetWorldSubsystem> Weak(this);
-	TWeakObjectPtr<AMRNetObject> WeakActor(Actor);
-	Cache->Fetch(File, [Weak, WeakActor, File, Standing, Moving](bool bOk, const TArray<uint8>& Bytes)
+	Cache->Fetch(File, [Weak, File, Done = MoveTemp(Done)](bool bOk, const TArray<uint8>& Bytes)
 	{
 		UMRNetWorldSubsystem* Self = Weak.Get();
 		if (!Self)
 		{
+			return;
+		}
+		if (const TSharedPtr<const FMRBgf>* Known = Self->Bgfs.Find(File))
+		{
+			Done(*Known);  // (another request parsed it meanwhile)
 			return;
 		}
 		TSharedPtr<FMRBgf> Bgf = MakeShared<FMRBgf>();
@@ -531,16 +566,21 @@ void UMRNetWorldSubsystem::AttachBgfSprite(AMRNetObject* Actor, const FMRNetObje
 			return;
 		}
 		Self->Bgfs.Add(File, Bgf);
-		if (AMRNetObject* A = WeakActor.Get())
-		{
-			A->SetBgfSprite(File, Bgf);
-			A->SetServerAnimation(Standing, Moving);
-		}
+		Done(Bgf);
 	});
 }
 
 void UMRNetWorldSubsystem::ClearObjects()
 {
+	for (const TWeakObjectPtr<AActor>& P : Projectiles)
+	{
+		if (AActor* A = P.Get())
+		{
+			A->Destroy();
+		}
+	}
+	Projectiles.Reset();
+	LastAttackedId = 0;
 	ClearTarget();  // a new room (or the same one reloaded: its ids may have changed)
 	AimId = 0;
 	AimStack.Reset();
@@ -568,6 +608,10 @@ void UMRNetWorldSubsystem::OnObjectChanged(uint32 Id)
 	if (GetNet() && Id == GetNet()->GetPlayer().Id)
 	{
 		ApplySelfLook();
+		if (const FMRNetObject* Self = GetNet()->GetSelf())
+		{
+			PlayServerAction(*Self);  // our own swing, as the server saw it (first person: BP_PLAYER_OVERLAY)
+		}
 		return;
 	}
 	AMRNetObject* A = FindActor(Id);
@@ -597,6 +641,73 @@ void UMRNetWorldSubsystem::OnObjectChanged(uint32 Id)
 	else if (MRNetLook::AppearanceFromObject(*O, Look))
 	{
 		A->SetAppearance(Look);  // the same body: new face parts or colours
+	}
+	if (!Want.IsNone())
+	{
+		PlayServerAction(*O);
+	}
+}
+
+void UMRNetWorldSubsystem::PlayServerAction(const FMRNetObject& O)
+{
+	// one-offs: Kod sets them for a single SomethingChanged (player.kod DoAttackSwing, DoFistAttack,
+	// DoCast; monster.kod's attack), then the object is back to its usual animation
+	const FMRNetAnimation* Body = O.Animation.Type == MRMsg::ANIMATE_ONCE ? &O.Animation : nullptr;
+	const FMRNetOverlay* Arm = O.OverlayParts.FindByPredicate([](const FMRNetOverlay& Ov) { return Ov.Animation.Type == MRMsg::ANIMATE_ONCE; });
+	if (!Body && !Arm)
+	{
+		return;
+	}
+	UMRSpriteBodyComponent* Sprite = nullptr;
+	FName Look;
+	const APlayerController* PC = GetPC();
+	if (const AMRCharacter* Pawn = PC && GetNet() && O.Id == GetNet()->GetPlayer().Id ? Cast<AMRCharacter>(PC->GetPawn()) : nullptr)
+	{
+		Sprite = Pawn->GetSpriteBody();
+		Look = Pawn->GetSpriteAppearance().Look;
+	}
+	else if (const AMRNetObject* A = FindActor(O.Id))
+	{
+		Sprite = A->GetSpriteBody();
+		Look = A->GetLook();
+	}
+	if (!Sprite)
+	{
+		return;  // drawn from its own bitmap: its animation record plays it (SetServerAnimation)
+	}
+	const FMRSpriteLibrary& Lib = FMRSpriteLibrary::Get();
+	FName Action;
+	if (const TMap<FName, FMRSpriteAction>* Own = Lib.LookActions.Find(Look))
+	{
+		// a monster: its attack is its only one-off (PANM_MONSTER_ATTACK)
+		if (Body && Own->Contains(TEXT("attack")))
+		{
+			Action = TEXT("attack");
+		}
+	}
+	else
+	{
+		// a player: the action with the server's groups (player.kod SendAnimation: the body's for a
+		// swing, an arm's for a cast, a point or a wave)
+		const auto Same = [](const FMRSpriteTrackDef* T, const FMRNetAnimation& A)
+		{
+			return T && T->Mode == FMRSpriteTrackDef::EMode::Once && T->Low == A.GroupLow && T->High == A.GroupHigh;
+		};
+		for (const TPair<FName, FMRSpriteAction>& P : Lib.Actions)
+		{
+			const FMRSpriteTrackDef* BodyTrack = P.Value.Tracks.Find(TEXT("body"));
+			if (Body ? Same(BodyTrack, *Body)
+				: !BodyTrack && (Same(P.Value.Tracks.Find(TEXT("right_arm")), Arm->Animation) || Same(P.Value.Tracks.Find(TEXT("left_arm")), Arm->Animation)))
+			{
+				Action = P.Key;
+				break;
+			}
+		}
+	}
+	if (!Action.IsNone())
+	{
+		UE_LOG(LogMeridian, Verbose, TEXT("MRNet: %s plays %s"), *O.Name, *Action.ToString());
+		Sprite->PlayAction(Action);
 	}
 }
 
@@ -849,6 +960,22 @@ void UMRNetWorldSubsystem::RequestGo()
 		return;
 	}
 	// the server checks the square it last heard of: send where we are first (the move order is kept)
+	SendPositionNow();
+	const FIntPoint Kod = Zones->WorldToKod(Rid, Pawn->GetActorLocation());
+	UE_LOG(LogMeridian, Log, TEXT("MRNet: go at (%d, %d) of zone %d: BP_REQ_GO"), Kod.X / MRMsg::KodFineness, Kod.Y / MRMsg::KodFineness, Rid);
+	Net->RequestGo();
+}
+
+void UMRNetWorldSubsystem::SendPositionNow()
+{
+	UMRNetSubsystem* Net = GetNet();
+	UMRZoneSubsystem* Zones = GetWorld()->GetSubsystem<UMRZoneSubsystem>();
+	APlayerController* PC = GetPC();
+	APawn* Pawn = PC ? PC->GetPawn() : nullptr;
+	if (!Net || !Zones || !Pawn || !Rid)
+	{
+		return;
+	}
 	const FIntPoint Kod = Zones->WorldToKod(Rid, Pawn->GetActorLocation());
 	if (Kod != LastSentKod)
 	{
@@ -857,8 +984,170 @@ void UMRNetWorldSubsystem::RequestGo()
 		LastSentKod = Kod;
 		LastMoveTime = FPlatformTime::Seconds();
 	}
-	UE_LOG(LogMeridian, Log, TEXT("MRNet: go at (%d, %d) of zone %d: BP_REQ_GO"), Kod.X / MRMsg::KodFineness, Kod.Y / MRMsg::KodFineness, Rid);
-	Net->RequestGo();
+}
+
+// ------------------------------------------------------------------------------ combat
+
+uint32 UMRNetWorldSubsystem::Attack()
+{
+	UMRNetSubsystem* Net = GetNet();
+	if (!Net || Net->GetPhase() != EMRNetPhase::InGame || !Rid || Net->IsWaiting())
+	{
+		return 0;
+	}
+	const double Now = FPlatformTime::Seconds();
+	if (Now - LastAttackTime < AttackDelay)
+	{
+		return 0;
+	}
+	LastAttackTime = Now;
+	const uint32 SelfId = Net->GetPlayer().Id;
+	uint32 Id = 0;
+	FVector2D Screen;
+	double Dist = 0.0;
+	if (TargetId)
+	{
+		// the chosen target, if we can see it (ourselves too: the server answers that one)
+		const AMRNetObject* A = FindActor(TargetId);
+		if (TargetId != SelfId && !(A && IsInSight(A, Screen, Dist)))
+		{
+			Net->AddGameMessage(TEXT("You can't see your selected target."));  // IDS_TARGETNOTVISIBLEFORATTACK
+			return 0;
+		}
+		Id = TargetId;
+	}
+	else if (const AMRNetObject* A = FindActor(AimId); A && (A->GetFlags() & MRMsg::OF_ATTACKABLE))
+	{
+		Id = AimId;  // what the crosshair is on
+	}
+	else
+	{
+		// the nearest attackable thing in view, close by
+		double Best = CloseDistanceCm;
+		for (const TPair<uint32, TWeakObjectPtr<AMRNetObject>>& Pair : Actors)
+		{
+			const AMRNetObject* O = Pair.Value.Get();
+			if (O && (O->GetFlags() & MRMsg::OF_ATTACKABLE) && IsInSight(O, Screen, Dist) && Dist <= Best)
+			{
+				Best = Dist;
+				Id = Pair.Key;
+			}
+		}
+	}
+	if (!Id)
+	{
+		return 0;
+	}
+	SendPositionNow();  // gameuser.c MoveUpdatePosition: the range is checked from here
+	Net->Attack(Id);
+	LastAttackedId = Id;
+	const FMRNetObject* O = Net->FindObject(Id);
+	UE_LOG(LogMeridian, Log, TEXT("MRNet: attack %u (%s)"), Id, O ? *O->Name : TEXT("?"));
+	return Id;
+}
+
+bool UMRNetWorldSubsystem::FeetOf(uint32 Id, FVector& Out) const
+{
+	const UMRNetSubsystem* Net = GetNet();
+	const APlayerController* PC = GetPC();
+	if (const APawn* Pawn = PC && Net && Id == Net->GetPlayer().Id ? PC->GetPawn() : nullptr)
+	{
+		Out = Pawn->GetActorLocation() - FVector(0.0, 0.0, Pawn->GetSimpleCollisionHalfHeight());
+		return true;
+	}
+	if (const AMRNetObject* A = FindActor(Id))
+	{
+		Out = A->GetActorLocation() - FVector(0.0, 0.0, A->GetSimpleCollisionHalfHeight());
+		return true;
+	}
+	return false;
+}
+
+void UMRNetWorldSubsystem::OnProjectile(const FMRNetProjectile& P)
+{
+	FVector From;
+	if (!Rid || !FeetOf(P.Source, From))
+	{
+		return;  // project.c: both ends must be in the room
+	}
+	// to the target; a radius shot sends Number of them out to Range evenly round (Range * 1000 of
+	// the original's 1024 fine units a square)
+	TArray<FVector> Ends;
+	if (P.bRadius)
+	{
+		const double Reach = P.Range * 1000.0 / 1024.0 * MRUnits::CmPerSquare;
+		for (int32 i = 0; i < P.Number; ++i)
+		{
+			const double Angle = UE_TWO_PI * i / FMath::Max<int32>(1, P.Number);
+			Ends.Add(From + FVector(FMath::Cos(Angle), FMath::Sin(Angle), 0.0) * Reach);
+		}
+	}
+	else
+	{
+		FVector To;
+		if (P.Dest == P.Source || !FeetOf(P.Dest, To))
+		{
+			return;
+		}
+		Ends.Add(To);
+	}
+	const double SpeedCms = P.Speed * MRUnits::CmPerSquare;  // Speed squares a second
+	TArray<TWeakObjectPtr<AMRNetProjectile>> Made;
+	for (const FVector& To : Ends)
+	{
+		FActorSpawnParameters Params;
+		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		AMRNetProjectile* Shot = GetWorld()->SpawnActor<AMRNetProjectile>(From, FRotator::ZeroRotator, Params);
+		if (!Shot)
+		{
+			continue;
+		}
+		Shot->Launch(From, To, SpeedCms, (P.Flags & MRMsg::PROJ_FLAG_FOLLOWGROUND) != 0);
+		Shot->SetLight(P.Light);
+		Projectiles.Add(Shot);
+		Made.Add(Shot);
+	}
+	Projectiles.RemoveAll([](const TWeakObjectPtr<AActor>& A) { return !A.IsValid(); });
+	UE_LOG(LogMeridian, Log, TEXT("MRNet: %s shot from %u (%d)"), *P.Icon, P.Source, Made.Num());
+	const FMRNetAnimation Animation = P.Animation;
+	const int32 Effect = P.Effect;
+	FetchBgf(P.Icon, [Made, Animation, Effect](TSharedPtr<const FMRBgf> Bgf)
+	{
+		for (const TWeakObjectPtr<AMRNetProjectile>& Shot : Made)
+		{
+			if (AMRNetProjectile* S = Shot.Get())
+			{
+				S->SetBgf(Bgf, Animation, Effect);
+			}
+		}
+	});
+}
+
+void UMRNetWorldSubsystem::OnEffect()
+{
+	ApplyEffects();
+}
+
+void UMRNetWorldSubsystem::ApplyEffects(bool bEntered)
+{
+	const UMRNetSubsystem* Net = GetNet();
+	if (!Net)
+	{
+		return;
+	}
+	const FMRNetEffects& E = Net->GetEffects();
+	if (Rid && LoadingRoom.IsEmpty())
+	{
+		SetPawnFrozen(E.bParalyzed);  // move.c: no walking while paralyzed
+	}
+	if (UMREnvironmentSubsystem* Env = GetWorld()->GetSubsystem<UMREnvironmentSubsystem>())
+	{
+		// room.kod GetRoomWeather: snow before rain before a sandstorm (fireworks: not drawn yet)
+		const EMRWeatherKind Kind = E.Weather == MRMsg::EFFECT_SNOWING ? EMRWeatherKind::Snow
+			: E.Weather == MRMsg::EFFECT_RAINING ? EMRWeatherKind::Rain
+			: E.bSand ? EMRWeatherKind::Sand : EMRWeatherKind::None;
+		Env->SetServerWeather(Kind, bEntered || FPlatformTime::Seconds() - RoomEnteredTime < WeatherOnEntrySeconds);
+	}
 }
 
 void UMRNetWorldSubsystem::SendMovement(double Now)
