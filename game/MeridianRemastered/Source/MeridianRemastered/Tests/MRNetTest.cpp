@@ -9,6 +9,7 @@
 #include "Misc/App.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Paths.h"
+#include "Net/MRCharInfo.h"
 #include "Net/MRNetObject.h"
 #include "Net/MRNetSubsystem.h"
 #include "Net/MRNetWorldSubsystem.h"
@@ -74,6 +75,82 @@ void UMRNetTest::Start(APlayerController* InController)
 	Step = EStep::Login;
 	StepStart = FPlatformTime::Seconds();
 	InController->GetWorldTimerManager().SetTimer(Timer, FTimerDelegate::CreateUObject(this, &UMRNetTest::Tick), 0.25f, true);
+}
+
+void UMRNetTest::SendNewCharacter(UMRNetSubsystem* Net)
+{
+	const FMRCharInfo& Info = Net->GetCharInfo();
+	FMRNewCharacter C;
+	C.Name = RandomName();
+	C.Description = TEXT("Made by the Unreal client's online test.");
+	// not the defaults: the second of each part, the second skin, a hair colour from the list's end
+	C.bFemale = true;
+	C.Hair = 1;
+	C.Eyes = 1;
+	C.Nose = 1;
+	C.Mouth = 1;
+	C.Skin = 1;
+	C.HairColour = Info.HairXlats.Num() - 4;
+	MRCharInfo::ClampParts(C, Info);
+	const int32 Mage[] = {40, 50, 45, 15, 45, 25};  // the creator's Mage preset (data/ui/char_create.json)
+	FMemory::Memcpy(C.Stats, Mage, sizeof(Mage));
+	// one 10-point spell (not Shal'ille or Qor) and one 10-point skill
+	if (const FMRCharAbility* Sp = Info.Spells.FindByPredicate([](const FMRCharAbility& A) { return A.Cost == 10 && A.School > 2; }))
+	{
+		C.Spells.Add(Sp->Num);
+	}
+	if (const FMRCharAbility* Sk = Info.Skills.FindByPredicate([](const FMRCharAbility& A) { return A.Cost == 10; }))
+	{
+		C.Skills.Add(Sk->Num);
+	}
+	FString Why;
+	if (MRCharInfo::Validate(C, Info, Why) != MRCharInfo::EProblem::None)
+	{
+		Fail(FString::Printf(TEXT("the test character doesn't validate: %s"), *Why));
+	}
+	const FMRCharFaces& F = Info.Faces(true);
+	ExpectedParts = {{1, F.Head.Bgf}, {13, F.Hair[C.Hair].Bgf}, {11, F.Eyes[C.Eyes].Bgf}, {14, F.Noses[C.Nose].Bgf}, {12, F.Mouths[C.Mouth].Bgf}};
+	ExpectedSkinXlat = Info.SkinXlats[C.Skin];
+	ExpectedHairXlat = Info.HairXlats[C.HairColour];
+	UE_LOG(LogMeridian, Display, TEXT("MRNetTest: the server offers %d male / %d female hair, %d spells, %d skills; creating %s (female, %s %s %s %s, skin %d, hair colour %d, %d spell, %d skill)"),
+		Info.Male.Hair.Num(), Info.Female.Hair.Num(), Info.Spells.Num(), Info.Skills.Num(), *C.Name, *F.Hair[C.Hair].Bgf, *F.Eyes[C.Eyes].Bgf,
+		*F.Noses[C.Nose].Bgf, *F.Mouths[C.Mouth].Bgf, ExpectedSkinXlat, ExpectedHairXlat, C.Spells.Num(), C.Skills.Num());
+	Net->CreateCharacter(C);
+	bCreated = true;
+}
+
+void UMRNetTest::CheckLook(UMRNetSubsystem* Net)
+{
+	const FMRNetObject* Self = Net->GetSelf();
+	if (!bCreated || !Self)
+	{
+		return;
+	}
+	TArray<FString> Wrong;
+	for (const TPair<uint8, FString>& E : ExpectedParts)
+	{
+		const FMRNetOverlay* O = Self->OverlayParts.FindByPredicate([&E](const FMRNetOverlay& V) { return V.Hotspot == E.Key; });
+		if (!O || O->Bgf != E.Value)
+		{
+			Wrong.Add(FString::Printf(TEXT("hotspot %d: %s, not %s"), E.Key, O ? *O->Bgf : TEXT("none"), *E.Value));
+		}
+		else if (E.Key == 1 && O->Xlat != ExpectedSkinXlat)
+		{
+			Wrong.Add(FString::Printf(TEXT("skin %d, not %d"), O->Xlat, ExpectedSkinXlat));
+		}
+		else if (E.Key == 13 && O->Xlat != ExpectedHairXlat)
+		{
+			Wrong.Add(FString::Printf(TEXT("hair colour %d, not %d"), O->Xlat, ExpectedHairXlat));
+		}
+	}
+	if (Wrong.IsEmpty())
+	{
+		Pass(TEXT("the server shows the new character's chosen face, hair and colours"));
+	}
+	else
+	{
+		Fail(FString::Printf(TEXT("the new character's look: %s"), *FString::Join(Wrong, TEXT("; "))));
+	}
 }
 
 void UMRNetTest::Pass(const FString& What)
@@ -190,10 +267,23 @@ void UMRNetTest::Tick()
 			}
 			else if (Empty && CreateTries < 3)
 			{
-				const FString Name = RandomName();
-				UE_LOG(LogMeridian, Display, TEXT("MRNetTest: no characters yet; creating %s"), *Name);
+				// the creator's path: ask for the server's options first (SendNewCharacter below)
+				UE_LOG(LogMeridian, Display, TEXT("MRNetTest: no characters yet; asking the server for its character options"));
 				++CreateTries;
-				Net->CreateCharacter(Empty->Id, Name, false);
+				Net->RequestCharInfo(Empty->Id);
+			}
+			else
+			{
+				Fail(FString::Printf(TEXT("create a character: %s"), *Net->GetLastError()));
+				Finish();
+			}
+		}
+		else if (Net->GetPhase() == EMRNetPhase::Creating && Net->GetCharInfo().IsValid() && !Net->IsSubmittingCharacter())
+		{
+			// the options are in (or the server refused a name: try another)
+			if (CreateTries++ < 4)
+			{
+				SendNewCharacter(Net);
 			}
 			else
 			{
@@ -203,7 +293,7 @@ void UMRNetTest::Tick()
 		}
 		else if (Net->GetPhase() == EMRNetPhase::Entering || Net->GetPhase() == EMRNetPhase::InGame)
 		{
-			Pass(TEXT("logged in and created a character"));
+			Pass(TEXT("logged in and created a character through the creator's path"));
 			Advance(EStep::Enter);
 		}
 		else if ((Net->GetPhase() == EMRNetPhase::Offline && !Net->GetLastError().IsEmpty()) || bTimedOut)
@@ -220,6 +310,7 @@ void UMRNetTest::Tick()
 			const FMRNetObject* Self = Net->GetSelf();
 			Pass(FString::Printf(TEXT("entered %s (%s) as zone %d at (%d, %d), %d objects in the room"), *Net->GetPlayer().RoomFile,
 				*Net->GetPlayer().RoomName, StartRid, Self ? Self->KodRow : 0, Self ? Self->KodCol : 0, Net->GetObjects().Num()));
+			CheckLook(Net);
 			Advance(EStep::Say);
 		}
 		else if (bTimedOut || Net->GetPhase() == EMRNetPhase::Offline)

@@ -1,14 +1,17 @@
 """
 Phase 1 of docs/sprites.md: the runtime data for sprite players.
 
-    build/texai/.venv/Scripts/python tools/sprites/build_player_sprites.py
+    build/texai/.venv/Scripts/python tools/sprites/build_player_sprites.py [--with-ai]
 
 For every look in data/sprites/looks.json it gathers each bitmap the look can show (all actions,
-all angles), upscales it 4x (upscale_parts.py, cached) and packs one atlas per bgf + palette
-translation:
+all angles), plus every bitmap of every face part and hair the character creator offers
+(data/charinfo.json), upscales it 4x (upscale_parts.py: the method per part is
+data/sprites/upscale.json; cached) and packs one atlas per bgf:
 
     build/sprites/atlas/T_Spr_<bgf>.png              imported by tools/ue/import_sprites.py into
-                                                     /Game/Generated/Sprites
+                                                     /Game/Generated/Sprites; alpha = coverage
+    build/sprites/atlas/T_SprRamp_<bgf>.png          player parts: each original pixel's palette
+                                                     ramp (luts.ramp_cell), 1/4 the atlas's size
     build/sprites/lut/T_SprXlat.png, T_SprClass.png  palette lookups for the runtime colours (luts.py)
     data/sprites/player_parts.json                   read at runtime (UMRSpriteData): every bgf's
                                                      shrink, groups and bitmaps (size, offset,
@@ -18,9 +21,12 @@ translation:
 Each part is stored once, in its original untranslated colours: M_SpriteBody recolours it with the
 look's palette translation at runtime (luts.py), so any number of colour combinations share the
 same atlases. Atlases are rewritten only when their cells change.
+
+Looks marked "ai" (an AI-made part, tools/sprites/new_hair.py) are left out unless --with-ai.
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from collections import defaultdict
@@ -147,6 +153,67 @@ def cell_image(bgf: str, i: int, scale: float) -> Image.Image:
     return im if scale >= SCALE else im.resize((max(1, round(b.w * scale)), max(1, round(b.h * scale))), Image.LANCZOS)
 
 
+def coverage(im: Image.Image) -> Image.Image:
+    """The cell with PAD texels around it: alpha 0 or 255 (the canvas clips at 0.5 anyway), and the
+    colour of transparent texels near the part grown from it, into the padding too: filtering and
+    mips at the edges then blend only the part's own colours, never black or the key colour."""
+    a = np.zeros((im.height + 2 * PAD, im.width + 2 * PAD, 4), np.uint8)
+    a[PAD:PAD + im.height, PAD:PAD + im.width] = np.asarray(im.convert("RGBA"))
+    a[..., 3] = np.where(a[..., 3] >= 128, 255, 0)
+    return Image.fromarray(np.dstack([fill_near(a), a[..., 3]]), "RGBA")
+
+
+def fill_near(a: np.ndarray, rings: int = 2 * PAD) -> np.ndarray:
+    """RGB with transparent texels within `rings` of the part taken from their opaque neighbours;
+    farther ones get the part's mean colour (mips only ever reach them averaged)."""
+    rgb, known = a[..., :3].astype(np.float32), a[..., 3] >= 128
+    if not known.any():
+        return a[..., :3]
+    rgb[~known] = 0
+    h, w = known.shape
+    for _ in range(rings):
+        if known.all():
+            break
+        k = np.pad(known.astype(np.float32), 1)
+        c = np.pad(rgb, ((1, 1), (1, 1), (0, 0))) * k[..., None]
+        acc, cnt = np.zeros_like(rgb), np.zeros(known.shape, np.float32)
+        for dy in (0, 1, 2):
+            for dx in (0, 1, 2):
+                if dx != 1 or dy != 1:
+                    acc += c[dy:dy + h, dx:dx + w]
+                    cnt += k[dy:dy + h, dx:dx + w]
+        ring = (~known) & (cnt > 0)
+        if not ring.any():
+            break
+        rgb[ring] = acc[ring] / cnt[ring][:, None]
+        known |= ring
+    rgb[~known] = rgb[a[..., 3] >= 128].mean(axis=0)
+    return np.clip(rgb + 0.5, 0, 255).astype(np.uint8)
+
+
+def creator_bounds(look: ms.Look, actions: dict, box: list[float]) -> list[float]:
+    """bounds() of a look with each of its gender's creator hair styles, all together."""
+    f = ms.ROOT / "data" / "charinfo.json"
+    if not f.exists():
+        return box
+    import dataclasses
+    hairs = json.loads(f.read_text(encoding="utf-8"))["faces"].get(look.gender, {}).get("hair", [])
+    for h in hairs:
+        b = bounds(dataclasses.replace(look, hair=None if h == "blank" else h), actions)
+        box = [min(box[0], b[0]), min(box[1], b[1]), max(box[2], b[2]), max(box[3], b[3])]
+    return box
+
+
+def creator_parts() -> set[str]:
+    """Every face part and hair the creator offers (data/charinfo.json; "blank" is bald)."""
+    f = ms.ROOT / "data" / "charinfo.json"
+    if not f.exists():
+        print("  data/charinfo.json missing (run tools/kod_extract/extract.py): no creator parts")
+        return set()
+    faces = json.loads(f.read_text(encoding="utf-8"))["faces"]
+    return {b for g in faces.values() for lst in g.values() for b in lst if b != "blank"}
+
+
 def bgf_meta(name: str, tween_keys: list, xid: int) -> dict:
     """The bgf's bitmaps, then its in-betweens (tween_keys: (a, b, k) in index order)."""
     b = ms.load_bgf(name)
@@ -163,6 +230,9 @@ def bgf_meta(name: str, tween_keys: list, xid: int) -> dict:
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--with-ai", action="store_true", help='also the looks with an AI-made part (looks.json "ai")')
+    args = ap.parse_args()
     looks_src = ms.load_json("looks.json")
     actions = {k: v for k, v in ms.load_json("player_actions.json").items() if not k.startswith("_")}
     materials = ms.load_json("materials.json")
@@ -170,6 +240,9 @@ def main():
     looks = {}
     for name, d in looks_src.items():
         if name.startswith("_"):
+            continue
+        if d.get("ai") and not args.with_ai:
+            print(f"  skipping look {name}: an AI-made part (--with-ai to include it)")
             continue
         look = ms.Look.from_json(d)
         missing = [v for v in (look.body, look.legs, look.left_arm, look.right_arm, look.head, look.eyes, look.mouth,
@@ -182,11 +255,17 @@ def main():
             need[bgf].add(idx)
         looks[name] = {"gender": look.gender, "action_face": look.action_face, "parts": look_parts(look, materials),
                        "bounds": bounds(look, actions)}
+        if name.startswith("player_"):
+            # the bases players are drawn on wear any of the creator's hair: room for all of them
+            looks[name]["bounds"] = creator_bounds(look, actions, looks[name]["bounds"])
         # a look may also wear its parts in groups no action uses: add every bitmap of the face
         for part in ("eyes", "mouth"):
             p = looks[name]["parts"][part]
             need[p["bgf"]] |= {i for g in ms.load_bgf(p["bgf"]).groups for i in g if i >= 0}
     for bgf, _ in EXTRA:
+        need[bgf] |= set(range(len(ms.load_bgf(bgf).bitmaps)))
+    # the creator's face parts and hair: every bitmap (all views, all expressions)
+    for bgf in sorted(creator_parts()):
         need[bgf] |= set(range(len(ms.load_bgf(bgf).bitmaps)))
 
     # monsters and NPCs (monsters.py): one body bitmap, their own Kod animations; corpses
@@ -237,15 +316,17 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     atlases, total = {}, 0
     for bgf, idxs in sorted(need.items()):
-        # each texel's source ramp goes into its alpha (luts.ramp_alpha): from the original
-        # palette indices, or for AI parts (all grey) and in-betweens from their colours
+        # colour cells (alpha = coverage), and for player parts each original pixel's palette ramp
+        # (luts.ramp_cell): from the palette indices, or for AI parts (all grey) and in-betweens
+        # from their colours
         b = ms.load_bgf(bgf)
         sc = cell_scale(bgf, monster_bgfs)
         if ms.is_custom(bgf):
-            cells = {i: luts.ramp_alpha(up.get(bgf, i, 0), np.full((1, 1), 3, np.int8)) for i in sorted(idxs)}
+            cells = {i: up.get(bgf, i, 0) for i in sorted(idxs)}
+            ids = {i: np.full((cells[i].height // SCALE + 1, cells[i].width // SCALE + 1), 3, np.int8) for i in cells}
         else:
-            cells = {i: luts.ramp_alpha(cell_image(bgf, i, sc), luts.ramp_ids_from_indices(
-                b.bitmaps[i].pixels, b.bitmaps[i].w, b.bitmaps[i].h)) for i in sorted(idxs)}
+            cells = {i: cell_image(bgf, i, sc) for i in sorted(idxs)}
+            ids = {i: luts.ramp_ids_from_indices(b.bitmaps[i].pixels, b.bitmaps[i].w, b.bitmaps[i].h) for i in cells}
         base = len(b.bitmaps)
         tween_meta = bgf_meta(bgf, tween_keys.get(bgf, []), 0)["bitmaps"][base:] if tween_keys.get(bgf) else []
         for i, (a, bb, k) in enumerate(tween_keys.get(bgf, [])):
@@ -253,34 +334,49 @@ def main():
             if sc != SCALE:   # in-betweens are made at the 4x upscale
                 t = tween_meta[i]
                 im = im.resize((max(1, round(t["w"] * sc)), max(1, round(t["h"] * sc))), Image.LANCZOS)
-            cells[base + i] = luts.ramp_alpha(im, None)
+            cells[base + i] = im
+            ids[base + i] = None
         w, h, rects = pack(cells)
         while max(w, h) > MAX_ATLAS:   # too many frames for one texture: smaller cells
             cells = {i: im.resize((max(1, int(im.width * 0.8)), max(1, int(im.height * 0.8))), Image.LANCZOS)
                      for i, im in cells.items()}
             w, h, rects = pack(cells)
+        # player parts (4x, translated at runtime) get the ramp atlas; creatures are never translated
+        ramp = sc == SCALE and all(v % SCALE == 0 for r in rects.values() for v in r)
+        if sc == SCALE and not ramp:
+            print(f"  WARNING {bgf}: cells not on the {SCALE}x grid (shrunk to fit): no ramp atlas")
         key = bgf
         tex = f"T_Spr_{key}"
-        digest = hashlib.sha1(json.dumps([w, h, sorted(rects.items())]).encode()
+        rtex = f"T_SprRamp_{key}"
+        digest = hashlib.sha1(json.dumps([w, h, sorted(rects.items()), ramp, 3]).encode()
                               + b"".join(im.tobytes() for _, im in sorted(cells.items()))).hexdigest()[:16]
         path = OUT / f"{tex}.png"
+        rpath = OUT / f"{rtex}.png"
         stamp = OUT / f"{tex}.sha"
-        if not path.exists() or not stamp.exists() or stamp.read_text() != digest:
+        if not path.exists() or not stamp.exists() or stamp.read_text() != digest or (ramp and not rpath.exists()):
             atlas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+            ratlas = np.zeros((h // SCALE, w // SCALE, 4), np.uint8) if ramp else None
             for i, im in cells.items():
                 x, y, _, _ = rects[i]
-                atlas.paste(im, (x, y))
+                atlas.paste(coverage(im), (x - PAD, y - PAD))
+                if ramp:
+                    rc = luts.ramp_cell(im, ids[i], SCALE)
+                    ratlas[y // SCALE:y // SCALE + rc.shape[0], x // SCALE:x // SCALE + rc.shape[1]] = rc
             atlas.save(path)
+            if ramp:
+                Image.fromarray(ratlas, "RGBA").save(rpath)
             stamp.write_text(digest)
-            print(f"  wrote {path.name} {w}x{h} ({len(cells)} cells)")
+            print(f"  wrote {path.name} {w}x{h} ({len(cells)} cells){' + ramp' if ramp else ''}")
         atlases[key] = {"texture": tex, "bgf": bgf, "w": w, "h": h, "hash": digest,
                         "cells": {str(i): r for i, r in sorted(rects.items())}}
-        total += w * h * 4
+        if ramp:
+            atlases[key]["ramp"] = rtex
+        total += w * h * 4 + (w * h // (SCALE * SCALE) * 4 if ramp else 0)
     layout = {
         "_comment": "Generated by tools/sprites/build_player_sprites.py - do not edit. Sprite player data "
                     "(docs/sprites.md): bitmaps in original pixels, atlas cells in texture pixels "
                     f"({SCALE}x upscale). Kod groups are 1-based, 'groups' here are 0-based (client).",
-        "version": 2, "scale": SCALE, "model": up.MODEL, "texture_dir": "/Game/Generated/Sprites",
+        "version": 3, "scale": SCALE, "upscale": up.config(), "texture_dir": "/Game/Generated/Sprites",
         "square_cm": ms.SQUARE_M * 100.0, "fine_per_square": ms.FINE_PER_SQUARE,
         "bgfs": {b: bgf_meta(b, tween_keys.get(b, []), 0) for b in sorted(need)},
         "material_classes": materials["classes"],

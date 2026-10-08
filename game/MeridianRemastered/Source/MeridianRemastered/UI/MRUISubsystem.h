@@ -43,6 +43,8 @@ public:
 	void ShowLogin(APlayerController* PC);
 	void HideLogin();
 	bool IsLoginShown() const { return Login.IsValid(); }
+	/** The character creator on the login screen (tests), or null. */
+	TSharedPtr<class SMRCharCreator> GetCreator() const;
 
 	/** Start typing a chat line (Enter, online). */
 	void OpenChat();
@@ -97,6 +99,14 @@ public:
 	UObject* GetAvatarTarget() const;
 	/** Turn the avatar by a number of the original's eight angles. */
 	void TurnAvatar(int32 Steps);
+
+	// --- the character creator's previews (SMRCharCreator): the whole body and the face
+	void SetCreatorAppearance(const struct FMRSpriteAppearance& Appearance);
+	void SetCreatorCapturing(bool bCapture);
+	UObject* GetCreatorTarget(bool bPortrait) const;
+	void TurnCreatorBody(int32 Steps);
+	/** Turn the creator's face preview (the head from every side). */
+	void TurnCreatorPortrait(int32 Steps);
 	double Now() const;
 	/** Where each slot was last drawn (absolute / desktop pixels): -MRUIShots points the mouse at one. */
 	void NoteSlotDrawn(const FMRSlotRef& Slot, FVector2f AbsoluteCentre) { SlotCentres.Add(SlotKey(Slot), AbsoluteCentre); }
@@ -122,6 +132,12 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<AMRAvatarPreview> Avatar;
+
+	UPROPERTY(Transient)
+	TObjectPtr<AMRAvatarPreview> CreatorBody;
+
+	UPROPERTY(Transient)
+	TObjectPtr<AMRAvatarPreview> CreatorPortrait;
 
 	UPROPERTY(Transient)
 	TMap<int32, TObjectPtr<class UTexture2D>> MapTextures;
@@ -153,6 +169,8 @@ private:
 	void ApplyInputMode();
 	TSharedPtr<IToolTip> FramedToolTip(const FText& Title, const FText& Line, const FText& Desc);
 	void EnsureAvatar();
+	void EnsureCreatorPreviews();
+	AMRAvatarPreview* SpawnPreview(const FVector& Offset);
 	void OnStyleReloaded();
 	FDelegateHandle StyleHandle;
 };

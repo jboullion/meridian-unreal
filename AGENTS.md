@@ -136,6 +136,8 @@ WASD + mouse (running at the original's 12.9 m/s; `mr.Move.SpeedScale` scales ev
   powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_net_test.ps1
   ```
 
+  `-Create` uses a fresh account and makes its character through the creator's path (`DONE 6/6`, including "the server shows the new character's chosen face"). Run it after touching `Net/MRCharInfo`, the creator or `Net/MRNetLook`.
+
 - **Legacy network smoke test** (~2 min; starts a UE dedicated server and a headless client, walks the demo's exits, exits 0 on success). Run it after touching zones, streaming, spawning or replication while the UE-server path still exists:
 
   ```bash
@@ -174,8 +176,8 @@ WASD + mouse (running at the original's 12.9 m/s; `mr.Move.SpeedScale` scales ev
 | `Abilities/MRAttributeSet` | GAS attributes: the six stats plus Health, Mana, Vigor |
 | `Character/` | Player character (FP/TP camera, input in code), predicted run/walk (no sprint, crouch or jump), Space's "go"; the sprite body (`MRSpriteBodyComponent`, `MRSpriteData`) shared with monsters |
 | `Player/` | Player state (owns the ASC and zone ID), controller (client zone streaming, the UI keys' `IMC_UI`), `AMRHUD` (shows the UI or, online, the login screen first; draws the first-person hands) |
-| `UI/` | The Slate UI (ADR 0009): `UMRUISubsystem` (per local player), `UMRUIStyle` (`ui_style.json`, brushes, `MRPaint` frames), `UMRGameDataSubsystem` (items, spells, skills JSON), `UMRInventorySource` / `UMRMockInventory` (the seam; Minecraft's click rules), widgets `SMRHUDRoot`, `SMRSlot`, `SMRInventoryScreen`, `SMRMinimap`, `SMRLoginScreen`, `SMRChatLog`, the shared `MRUI::Label`, `SMRPanel`, `SMRTextButton`, `SMRTextField`, `AMRAvatarPreview` |
-| `Net/` | Playing on Meridian servers (ADR 0010): `MRProtocol` (frames, CRC, security word, redbook token), `MRResources` (the server's rsb, message formatting), `FMRConnection` (WebSocket, login, pings), `UMRNetSubsystem` (servers, game data download, characters, the room's objects, chat), `UMRNetWorldSubsystem` (zone, pawn, movement up, exits, `AMRNetObject` sprites) |
+| `UI/` | The Slate UI (ADR 0009): `UMRUISubsystem` (per local player), `UMRUIStyle` (`ui_style.json`, brushes, `MRPaint` frames), `UMRGameDataSubsystem` (items, spells, skills JSON), `UMRInventorySource` / `UMRMockInventory` (the seam; Minecraft's click rules), widgets `SMRHUDRoot`, `SMRSlot`, `SMRInventoryScreen`, `SMRMinimap`, `SMRLoginScreen`, `SMRCharCreator` (the character creator, `data/ui/char_create.json`), `SMRChatLog`, the shared `MRUI::Label`, `SMRPanel`, `SMRTextButton`, `SMRTextField`, `SMRControls` (`SMRSlider`, `SMRTextBox`, `SMRSelectList`), `AMRAvatarPreview` (the inventory avatar; the creator's body and face portrait) |
+| `Net/` | Playing on Meridian servers (ADR 0010): `MRProtocol` (frames, CRC, security word, redbook token), `MRResources` (the server's rsb, message formatting), `MRCharInfo` (character creation: `BP_CHARINFO`, `BP_NEW_CHARINFO`, the rules), `MRNetLook` (a player's sprite appearance from its overlays), `FMRConnection` (WebSocket, login, pings), `UMRNetSubsystem` (servers, game data download, characters and creation, the room's objects, chat), `UMRNetWorldSubsystem` (zone, pawn, movement up, exits, `AMRNetObject` sprites) |
 | `Zones/MRZoneSubsystem` | Zone data, tile and edge exits, shared-geometry zones, teleports, level streaming |
 | `Game/MRGameMode`, `Game/MRGameState` | Spawns at the Raza Inn (offline) or where the server puts the character (`SpawnOnlinePlayer`); replicated weather state |
 | `Environment/MRGameTimeSubsystem` | Meridian time from UTC (2-hour days), day phases, seasons |
@@ -185,7 +187,7 @@ WASD + mouse (running at the original's 12.9 m/s; `mr.Move.SpeedScale` scales ev
 | `Environment/MRScatterActor` | Instanced grass placed by the world build |
 | `Audio/MRAudioSubsystem` | The original's music, room loops and ambient sounds per zone |
 | `Monsters/` | `AMRMonster` (sprite body, stand-in AI) and `UMRMonsterSubsystem` (spawns from the zone data) |
-| `Tests/` | `MRNetTest` (online), `MRNetTests` (protocol unit tests), `MRZoneSmokeTest`, `MRMoveTest`, `MRScreenshotTour`, `MRProfileTour`, `MRLookDevTour`, `MRSpriteNetTest`, `MRSpriteClipTour`, `MRMonsterTour`, `MRUIShots`, `MRMapCapture` |
+| `Tests/` | `MRNetTest` (online), `MRNetTests` and `MRCharInfoTests` (protocol and creation unit tests), `MRZoneSmokeTest`, `MRMoveTest`, `MRScreenshotTour`, `MRProfileTour`, `MRLookDevTour`, `MRSpriteNetTest`, `MRSpriteClipTour`, `MRMonsterTour`, `MRUIShots`, `MRMapCapture` |
 
 ## Zones and streaming
 
@@ -198,7 +200,7 @@ WASD + mouse (running at the original's 12.9 m/s; `mr.Move.SpeedScale` scales ev
 
 ## Tools reference
 
-- `tools/kod_extract/` — `kodparse.py` (case-insensitive Kod reader with inheritance) and `extract.py` (zones, monsters, NPCs and shops, spells, skills, items, constants). Demo zones are `DEMO_RIDS`.
+- `tools/kod_extract/` — `kodparse.py` (case-insensitive Kod reader with inheritance) and `extract.py` (zones, monsters, NPCs and shops, spells, skills, items, constants, and `charinfo.json`: what the character creator offers). Demo zones are `DEMO_RIDS`.
 - `tools/roo2gltf/roo2gltf.py` — `.roo` to glTF blockouts (BSP floors/ceilings, Doom-style walls, slopes, the original client's UV rules) plus world positions of exits, objects, spawns and wading areas, and a collision blockout without the walls the original lets you walk through (`<rid>_<class>_collision.glb`). `--walls-only` writes just the minimap's wall lines (`build/zones/<rid>_<class>_walls.json`).
 - `tools/bgf2png/bgf2png.py` — BGF v10 decoder: sprite contact sheets, un-rotated textures, size catalog.
 - `tools/blender/` — `render_glb.py` (previews), `prop_glb.py` (AI prop previews and normalising), `build_zone_art.py` + `zone_detail.py` + `zone_grime.py` (rebuilt buildings; `art_src/environment/zones/<rid>/<Building>.blend` overrides, `--seed-override`), `build_grass_kit.py`, `build_tree_kit.py` (procedural trees, ADR 0007 "Trees"), `build_prop_kit.py` (rain and smoke quads), `check_overlaps.py`.
@@ -206,7 +208,7 @@ WASD + mouse (running at the original's 12.9 m/s; `mr.Move.SpeedScale` scales ev
 - `tools/textures/` — `make_placeholders.py` (upscale with `4xTextures_GTAV_rgt-s_dither`, Real-ESRGAN fallback; Marigold or rule-based normals; incremental), `make_tree_textures.py` (leaf atlas and bark from a tree sprite), `ai_maps.py` (runs in `build/texai/.venv`), `upscale.py`, `setup_ai.ps1`.
 - `tools/ue/` — `build_world.ps1/.py`, `build_cache.py`, `run_in_editor.py`, `environment_materials.py`, `zone_mood.py`, `build_audio.py`, `run_lookdev.ps1`, `run_net_test.ps1`, `run_move_test.ps1`, `run_zone_test.ps1`, `import_sprites.ps1`, `run_sprite_net_test.ps1`, `import_ui.ps1`, `run_ui_shots.ps1`, `run_map_capture.ps1`.
 - `tools/aigen/` — sprite → 3D assets, one manifest per asset (`data/aigen/<kind>/<name>.json`). `inventory.py` maps a zone's placed objects to sprites. `aigen.py` runs the steps over one asset, `a,b,c` or `all`: sprite, restyle, `batch-submit` / `batch-collect` (OpenAI Batch API), tripo-prepare, `bridge-collect`, choose, normalize, overview. It re-runs itself in `build/texai/.venv`. Also `sprite.py`, `restyle.py` (OpenAI, Vertex, Gemini, fal), `tripo.py`, `blender_link.py` (the open Blender via its MCP add-on socket, plus the Tripo DCC Bridge log), `review.py`, `style/style.md`. Blender side: `tools/blender/prop_glb.py` (preview, normalize).
-- `tools/sprites/` — player and monster sprites (docs/sprites.md): `build_player_sprites.py` (upscaled part atlases, in-betweens, palette lookups), `monsters.py`, `run_sprite_tour.ps1`, `run_sprite_clips.ps1`; imported by `tools/ue/import_sprites.ps1`.
+- `tools/sprites/` — player and monster sprites (docs/sprites.md): `build_player_sprites.py` (upscaled part atlases and ramp atlases, in-betweens, palette lookups; `--with-ai` adds the AI test looks), `upscale_parts.py` (the upscale methods, chosen per part in `data/sprites/upscale.json`), `face_sheet.py` (creator faces under each method), `monsters.py`, `run_sprite_tour.ps1`, `run_sprite_clips.ps1`; imported by `tools/ue/import_sprites.ps1`.
 - `tools/lookdev/` — `compare.py`, `profile_report.py`, `suggest_cameras.py`, `cycle_test.ps1`, `mood_test.ps1`, `upscaler_test.ps1`, `ai_maps_test.ps1`.
 - `tools/audio/` — `extract_audio.py` (sound data from Kod), `audio_report.py`.
 - `tools/ui/` — the in-game UI's art (ADR 0009): `build_ui_art.py` (the original interface bitmaps as frame pieces, per upscale variant), `build_icons.py` (item, spell and skill icons), `review_ui_art.py` (variant sheet), `minimap.py` (minimap styles from the captures), `shots_sheet.py`. Unreal side: `tools/ue/import_ui.ps1/.py`, `run_ui_shots.ps1`, `run_map_capture.ps1`.

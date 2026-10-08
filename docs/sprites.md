@@ -14,6 +14,10 @@
   - multiplayer sync
 - Adopted for every animated character ([ADR 0008](adr/0008-sprite-characters.md)). The 3D MPFB player and its pipeline were removed on 2026-10-06.
 - Monsters and NPCs use the same sprite body (see "Monsters"): every class in the demo zones, their Kod animations, corpses, spawning from the original spawn tables and a stand-in AI.
+- 2026-10-07:
+  - every face part and hair the character creator offers is converted, without AI;
+  - the face specks are fixed (see "Ramps per original pixel");
+  - players are drawn from what the server sends (see "Players online").
 
 Every `AMRCharacter` is drawn with the sprite body. The default look is `DefaultSpriteLook` under `[/Script/MeridianRemastered.MRCharacter]` in `DefaultGame.ini`; a test client picks its own with `-MRSpriteLook=<name>`.
 
@@ -95,6 +99,7 @@ Within a pass, parts go in Kod's order.
 | Test | Result | Evidence (`build/`, git-ignored) |
 |---|---|---|
 | Port fidelity | All 8 angles of every action match the original, as do weapons, hair, skin and clothes. The C++ port matches the Python one (`Meridian.Sprites.Placement`). | `sprites/preview/<look>/*.gif` |
+| Upscaler (2026-10-07) | `data/sprites/upscale.json` picks the method per part role. All are local: `nearest`, `scale4x` (Scale2x/EPX twice on the palette indices), `gtav_dither` (the texture model, the only one until now), `gtav`, `gtav_pinned` and `animesharp`. The model methods upscale each face patch on its own, so the patch's shading drifts from the head's and its outline shows. scale4x keeps the original's pixels and colours, with rounded outlines and no grain. The maintainer chose it for the head, eyes, nose, mouth and hair on 2026-10-08. The maintainer kept it for the torso, arms and legs too (2026-10-08): it keeps the original's shading with crisp outlines, where `gtav_dither` adds a fabric-like grain. Weapons and the first-person hand stay on `gtav_dither` (`other`). | `sprites/faces/compare.png`, `zooms.png`, `sheet_<method>.png` (`tools/sprites/face_sheet.py`); body: `sprites/faces/review_body.png` (`lookdev/body_gtav` against `lookdev/body_scale4x`) |
 | Upscale each part, or the composite? | Each part. Face parts (shrink 14) keep 3.5× the torso's detail, and the shrink-2 legs keep 2×. No seams. Upscaling the composite smears the face. | `sprites/upscale_test/` |
 | In the world | Quads parallel to the screen, as the original drew them, following the camera's pitch about the feet (`mr.Sprite.Billboard 1`), so nothing is stretched or squashed from any angle. Feet on the ground, right size, lit by the world and its moods. An upright card from the sun casts the shadow; in the shadow pass it is pushed along the light, so it doesn't shadow the sprite itself. | `sprites/tour/light_day_v2`, `light_inn_v2` |
 | Cost (50 extra characters, Raza, 1280×720, RTX 3070) | Sprites: game 3.5–3.9 ms, GPU 12.3–13.2 ms, 0.2 M primitives. The engine mannequin: game 6.6 ms, GPU 14.3 ms, 2.4 M primitives. (The MPFB bodies are Git LFS files not fetched in this worktree, so the comparison is with the mannequin.) | `sprites/tour/crowd_v2/crowd_50.png` |
@@ -113,9 +118,10 @@ Within a pass, parts go in Kod's order.
 - Each texel's source palette ramp, taken from the original's palette indices, is stored in the atlas alpha (`luts.ramp_alpha`: 0.6 none, 0.733 red, 0.867 dark blue, 1.0 grey).
 - The runtime recolours the way the original client did.
 
-**The two render passes:**
-1. A colour pass draws the parts alpha-tested (`SE_BLEND_Masked`, crisp like the original), so the ramp codes land in the render target unblended.
-2. A code pass writes each part's translation (R) and surface class (G) into a second target (`SE_BLEND_MaskedDistanceField`, exact values).
+**The three render passes** (`UMRSpriteBodyComponent::DrawItems`):
+1. A colour pass draws the parts alpha-tested (`SE_BLEND_Masked`, crisp like the original). Alpha is coverage.
+2. A code pass writes each part's translation (R) and surface class (G) into a second target (`SE_BLEND_MaskedDistanceField`, exact values, clipped where the colour pass is).
+3. A ramp pass draws each part's ramp atlas, unfiltered, into a third target: B is the ramp of the original pixel under each texel, R the part's translation (see "Ramps per original pixel").
 
 **The lookups** (`tools/sprites/luts.py`):
 - `T_SprClass` gives a colour's position on each ramp.
@@ -131,7 +137,30 @@ Within a pass, parts go in Kod's order.
 - Parts get their class by role (weapons are metal) or by bgf. List armour bgfs there to make them shiny.
 - Per-texel masks (an armour with cloth parts) would add a third atlas channel later.
 
-**Edge texels (fixed 2026-10-07):** the canvas samples the atlas with filtering, so a part's edge texels land in the render target with a blended alpha, not an exact ramp code. Just over the 0.5 clip, that rounds to "no ramp" and the texel showed untranslated: a thin red line round the arms, the torso and the belt (`ReferenceImages/sprites/lighting-examples/player-arm-seems.png`). `M_SpriteBody` now gives such a texel the colour and ramp of the nearest texel of the same part with an exact code (±6, to allow for BC7 noise inside parts). Where the colour filter's 2×2 footprint mixes two parts or two ramps, it uses the exact texel's colour. Sheet: `build/lookdev/seam_zoom.png`.
+**Edge texels (fixed 2026-10-07, first try):**
+- The canvas samples the atlas with filtering, so a part's edge texels landed in the render target with a blended alpha, not an exact ramp code.
+- Just over the 0.5 clip, that rounded to "no ramp" and the texel showed untranslated: a thin red line round the arms, the torso and the belt (`ReferenceImages/sprites/lighting-examples/player-arm-seems.png`).
+- `M_SpriteBody` then borrowed the nearest texel with an exact code (±6). That didn't cover the faces (next).
+
+**Ramps per original pixel (2026-10-07):**
+- **The problem:**
+  - Dark blue specks along the outlines of the eye, nose and mouth patches, and red ones in the hair (`ReferenceImages/issues/face-image-artifacts.png`).
+  - The ramp codes in the alpha were 34 apart (153, 187, 221, 255). Filtering and mips blended them, and a blend often landed exactly on another ramp's code: skin (221) at about 85 % coverage reads as red (187), and at about 70 % as "none" (153). Those passed the ±6 test, so the texel showed raw dark blue or red.
+  - Face parts are drawn about 3.5× smaller than their atlas, which made it common inside the parts too, and concave corners of the blurred mask had no ramp at all.
+- **The fix:**
+  - The colour atlas's alpha is plain coverage, and the texels round each part carry its own colours (`build_player_sprites.py` `coverage`).
+  - Each player atlas has a ramp atlas, `T_SprRamp_<bgf>`: one texel per original pixel at 1/4 the size; uncompressed, unfiltered, no mips (`luts.ramp_cell`; about +7 MB). The ramp pass draws it into the ramp target.
+  - `M_SpriteBody` takes a texel's ramp from the ramp target where the translation matches the code target's (the same part). Failing that, from the nearest texel that does; failing that, from the colour itself (`T_SprClass` alpha).
+  - An original "none" pixel that the upscaler blended a ramp colour into is translated with that ramp.
+- **Also:** the 4× alpha is the original's 1-bit mask, nearest (no blur), so the parts cover exactly the original pixels.
+- **Sheets:**
+  - `build/lookdev/face_fix/sprite_face.png`: fixed, the old upscaler;
+  - `build/lookdev/face_scale4x/sprite_face.png`: fixed, scale4x on the face;
+  - `build/sprites/tour/face_fix/`.
+
+**Close up (2026-10-07):**
+- The render target grows with the sprite's size on screen (`mr.Sprite.ScreenTexels`), in steps of 1.41×, up to `mr.Sprite.MaxTarget`. A face seen close keeps its upscaled detail instead of being blown up from about one target texel per face pixel.
+- Far away it stays at `mr.Sprite.TexelsPerCm`. Sheet: `build/lookdev/seam_zoom.png`.
 
 ## Lighting
 
@@ -147,16 +176,20 @@ Lit sprites (the default) take the world's lights, sun, moods, torches and futur
 | Step | Command | Output |
 |---|---|---|
 | Preview (no AI) | `python tools/sprites/composite.py --look test_male [--action walk]` | `build/sprites/preview/<look>/` |
+| Creator faces per upscaler | `build/texai/.venv/Scripts/python tools/sprites/face_sheet.py [--methods nearest scale4x ...]` | `build/sprites/faces/` |
 | Group catalogue | `python tools/sprites/composite.py --catalog bta bra bla bfa` | `build/sprites/catalog/` |
 | New hair (AI, paid: 6 images) | `build/texai/.venv/Scripts/python tools/sprites/new_hair.py --name ai_hair_02 --describe "..."` | `build/sprites/custom/<name>/` (a part like any bgf) |
-| Upscale, in-betweens, atlases, lookups | `build/texai/.venv/Scripts/python tools/sprites/build_player_sprites.py` | `build/sprites/atlas/`, `build/sprites/lut/`, `data/sprites/player_parts.json` |
+| Upscale, in-betweens, atlases, ramp atlases, lookups | `build/texai/.venv/Scripts/python tools/sprites/build_player_sprites.py [--with-ai]` | `build/sprites/atlas/`, `build/sprites/lut/`, `data/sprites/player_parts.json` |
 | Import into UE | `powershell -File tools/ue/import_sprites.ps1` | `/Game/Generated/Sprites` (atlases, lookups, `M_SpriteBody`, `M_SpriteBodyUnlit`) |
 | Visual tour / crowd / monsters | `powershell -File tools/sprites/run_sprite_tour.ps1 -Label x [-Crowd \| -Monsters] [-Look l] [-Zone 301] [-Hour h] [-Cvars "..."]` | `build/sprites/tour/<label>/` |
 | Smoothing clips | `powershell -File tools/sprites/run_sprite_clips.ps1 -Clip walk\|dance\|wave\|weapon_attack [-Look l] [-Variants a,b] [-View 0]` (`-View`: 90 the side, 0 from behind; variants `old_attack`, `new_attack` compare the one-shot changes) | `build/sprites/clips/<clip>.gif` |
 | Multiplayer check | `powershell -File tools/ue/run_sprite_net_test.ps1` | PASS / FAIL |
 
 Notes:
-- Test looks are in `data/sprites/looks.json`.
+- Test looks are in `data/sprites/looks.json`. `player_male` and `player_female` are the bases players are drawn on; their bounds hold every creator hair.
+- The build adds every face part and hair in `data/charinfo.json` (from `tools/kod_extract/extract.py`).
+- Looks marked `"ai": true` (the AI hair) are left out unless `--with-ai`.
+- The upscale cache is per method (`build/sprites/up/<model or method>/`). `nearest` and `scale4x` aren't cached.
 - `tools/setup.ps1` runs the atlas build and import when the AI venv exists.
 - A look whose AI part isn't on this machine is skipped.
 - `bgf2png.py`, the upscaler and `new_hair.py` find `Server-104/`, `build/texai/` and `tools/aigen/` in a parent folder, so they work from a git worktree.
@@ -198,7 +231,9 @@ Notes:
 | `mr.Sprite.NormalUp` | 0.4 | Lighting |
 | `mr.Sprite.Ambient` | 0.51 | Lighting |
 | `mr.Sprite.BackArmsUnder` | 1 | Seen from behind, arms under the torso (0 = the original's layering) |
-| `mr.Sprite.TexelsPerPixel` | 4 | Render target texels per torso pixel |
+| `mr.Sprite.TexelsPerCm` | 4.65 | Render target texels per cm of sprite far away (4 per torso pixel) |
+| `mr.Sprite.ScreenTexels` | 1.25 | Close up: target texels per screen pixel (0 = always `TexelsPerCm`) |
+| `mr.Sprite.MaxTarget` | 2048 | The largest target side close up |
 | `mr.Sprite.WalkRefSpeed` | -1 | Ground speed for the original walk rate; -1 = the player's run speed; 0 = always the original rate |
 | `mr.Sprite.UV` | `1 0 1` | `SwapUV FlipU FlipV` for the engine plane |
 | `mr.Sprite.HandScale` | 1 | First-person hand size |
@@ -216,6 +251,16 @@ Notes:
 - V view, P photo
 
 Start options for your own character (sent to the server): `-MRSpriteLook=<name>`, `-MRSpriteHeight=<scale>`, `-MRSpriteColours=skin,hair,shirt,pants`.
+
+## Players online
+- **Face parts:** `FMRSpriteAppearance` also carries `HeadBgf`, `HairBgf`, `EyesBgf`, `NoseBgf` and `MouthBgf`. None keeps the look's own part; `blank` is bald.
+- **Swapping parts:** `UMRSpriteBodyComponent::SetPartBgfs` swaps those parts in a copy of the look. Each part keeps its hotspot, class and translation.
+- **From the server:** `Net/MRNetLook` reads a player's server object into an appearance (docs/research/blakserv-protocol.md, "An object"):
+  - the base is `player_female` when the head is `phkx` (or the torso `btb`), else `player_male`;
+  - the parts come by hotspot;
+  - the skin comes from the face's translation, the hair colour from the hair's, and the shirt and pants from their two-colour translations.
+- **Where it's used:** `UMRNetWorldSubsystem` draws other players with it, and puts it on our own pawn when we enter a room or our object changes.
+- **The creator's previews** use the same body (`AMRAvatarPreview`). Its portrait mode draws only the head, face parts and hair (`SetOnlyParts`), front on, with a dense target (`SetDensityOverride`), as the original creator's face box did.
 
 ## Monsters
 
@@ -288,4 +333,4 @@ Monsters and NPCs are drawn by the same `UMRSpriteBodyComponent` as players. A m
    - Monsters in other zones need their spawn tables, once those zones are built.
    - Monster colour variants (`xlat` on some Kod classes) aren't read yet.
    - A spawn could still land somewhere a player can't reach, such as a closed courtyard. The original used the room's movement grid, which we don't have yet.
-7. **Next:** the creator UI on `FMRSpriteAppearance`.
+7. **The creator UI:** done 2026-10-07 (`UI/SMRCharCreator`, ADR 0009, ADR 0010). Armour torsos, weapons and hats from the server are next.

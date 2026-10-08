@@ -45,6 +45,7 @@ namespace MRMsg
 	constexpr uint8 BP_SEND_CHARACTERS = 45;
 	constexpr uint8 BP_USE_CHARACTER = 46;
 	constexpr uint8 BP_NEW_CHARINFO = 48;
+	constexpr uint8 BP_SEND_CHARINFO = 49;
 	constexpr uint8 BP_REQ_QUIT = 54;
 	constexpr uint8 BP_CHARINFO_OK = 56;
 	constexpr uint8 BP_CHARINFO_NOT_OK = 57;
@@ -63,6 +64,7 @@ namespace MRMsg
 	constexpr uint8 BP_PLAYER_ADD = 137;
 	constexpr uint8 BP_PLAYER_REMOVE = 138;
 	constexpr uint8 BP_CHARACTERS = 139;
+	constexpr uint8 BP_CHARINFO = 140;
 	constexpr uint8 BP_QUIT = 149;
 	constexpr uint8 BP_MOVE = 200;
 	constexpr uint8 BP_TURN = 201;

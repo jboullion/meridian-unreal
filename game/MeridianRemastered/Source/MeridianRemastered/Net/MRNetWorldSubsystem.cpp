@@ -11,6 +11,7 @@
 #include "MeridianRemastered.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Net/MRNetLook.h"
 #include "Net/MRNetObject.h"
 #include "Net/MRNetSubsystem.h"
 #include "Net/MRProtocol.h"
@@ -231,6 +232,7 @@ void UMRNetWorldSubsystem::OnRoomEntered()
 		return;
 	}
 	PlacePlayer();
+	ApplySelfLook();
 	for (const TPair<uint32, FMRNetObject>& Pair : Net->GetObjects())
 	{
 		SpawnObject(Pair.Value);
@@ -238,6 +240,25 @@ void UMRNetWorldSubsystem::OnRoomEntered()
 	LastSentKod = FIntPoint(-1, -1);
 	LastSentAngle = -1;
 	UpdateScreens();
+}
+
+void UMRNetWorldSubsystem::ApplySelfLook()
+{
+	UMRNetSubsystem* Net = GetNet();
+	APlayerController* PC = GetPC();
+	const FMRNetObject* Self = Net ? Net->GetSelf() : nullptr;
+	AMRCharacter* Pawn = PC ? Cast<AMRCharacter>(PC->GetPawn()) : nullptr;
+	FMRSpriteAppearance A;
+	if (!Self || !Pawn || !MRNetLook::AppearanceFromObject(*Self, A))
+	{
+		return;
+	}
+	A.HeightPct = Pawn->GetSpriteAppearance().HeightPct;  // (not the server's: ours)
+	if (A != Pawn->GetSpriteAppearance())
+	{
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: our character looks %s"), *A.ToString());
+		Pawn->SetSpriteAppearance(A);
+	}
 }
 
 void UMRNetWorldSubsystem::PlacePlayer()
@@ -275,9 +296,10 @@ FName UMRNetWorldSubsystem::LookFor(const FMRNetObject& Object) const
 	const FString Bgf = FPaths::GetBaseFilename(Object.Icon).ToLower();
 	if (Object.IsPlayer())
 	{
-		// the original's female bodies are btb; everyone else gets the default male look for now
-		const FName Female(TEXT("test_female"));
-		return Bgf.StartsWith(TEXT("btb")) && Lib.Looks.Contains(Female) ? Female : GetDefault<AMRCharacter>()->DefaultSpriteLook;
+		// player_male / player_female, worn with the server's face parts and colours (MRNetLook)
+		FMRSpriteAppearance A;
+		MRNetLook::AppearanceFromObject(Object, A);
+		return Lib.Looks.Contains(A.Look) ? A.Look : GetDefault<AMRCharacter>()->DefaultSpriteLook;
 	}
 	// by name first (NPCs share bodies), then by the body bitmap
 	for (const TPair<FName, FMRMonsterDef>& Pair : Lib.Monsters)
@@ -326,6 +348,11 @@ void UMRNetWorldSubsystem::SpawnObject(const FMRNetObject& Object)
 		return;
 	}
 	Actor->Init(Object.Id, Look, Object.Name);
+	FMRSpriteAppearance A;
+	if (MRNetLook::AppearanceFromObject(Object, A))
+	{
+		Actor->SetAppearance(A);
+	}
 	Actor->Place(Floor, Object.Angle);
 	Actors.Add(Object.Id, Actor);
 }
@@ -353,6 +380,11 @@ void UMRNetWorldSubsystem::OnObjectAdded(uint32 Id)
 void UMRNetWorldSubsystem::OnObjectChanged(uint32 Id)
 {
 	// a new look (e.g. a corpse) or a player who changed equipment: draw it again
+	if (GetNet() && Id == GetNet()->GetPlayer().Id)
+	{
+		ApplySelfLook();
+		return;
+	}
 	AMRNetObject* A = FindActor(Id);
 	const FMRNetObject* O = GetNet() ? GetNet()->FindObject(Id) : nullptr;
 	if (A && O && LookFor(*O) != A->GetLook())
@@ -360,6 +392,10 @@ void UMRNetWorldSubsystem::OnObjectChanged(uint32 Id)
 		A->Destroy();
 		Actors.Remove(Id);
 		SpawnObject(*O);
+	}
+	else if (FMRSpriteAppearance Look; A && O && MRNetLook::AppearanceFromObject(*O, Look))
+	{
+		A->SetAppearance(Look);  // the same body: new face parts or colours
 	}
 }
 

@@ -77,15 +77,64 @@ u16 length | u16 check | u16 length again | u8 epoch | body (length bytes)
   - `string motd`;
   - `u8 2`, then four ad strings.
 - **Playing a character:** `BP_USE_CHARACTER` (46) `u32 id`.
-- **Creating one:** `BP_SYSTEM` (6) followed by `BP_NEW_CHARINFO` (48) (`sprocket.c system_def_table`; `module/char/char.c` shows the client side). The fields:
-  - `u32 slot`;
-  - `string name`, `string description`;
-  - `u8 gender` (1 male, 2 female);
-  - `u16 n` + n × `i32` face-part resources (none: the defaults);
-  - `u8 hair colour`, `u8 skin colour`;
-  - `u16 6` + six `i32` stats (we send 35 each);
-  - `u16 n` + `i32` spells, `u16 n` + `i32` skills.
-- **The answer:** `BP_CHARINFO_OK` (56) `u32 id`, after which the client sends `BP_USE_CHARACTER`. Or `BP_CHARINFO_NOT_OK` (57), for example when the name is taken.
+  - Never for a slot with flag 1 (not created yet). blakserv logs it as illegal, blocks the address for a while and hangs up (`game.c`).
+
+## Character creation (`module/char/char.c`, `charmake.c`, `charface.c`; Kod `system.kod` `SendCharInfo`, `player.kod` `PlayerNewCharInfo`)
+The client is `Net/MRCharInfo` and the dialog is `UI/SMRCharCreator` (ADR 0010).
+
+**Asking for the options:** `BP_SYSTEM` (6) followed by `BP_SEND_CHARINFO` (49), with no fields. It changes nothing on the server, so the client can simply go back to the list.
+
+**`BP_CHARINFO` (140)**, built by `system.kod` `SendCharInfo` (`:2181-2263`) and read by `char.c` (`:148-267`). The list counts here are **u32**, except the colours:
+1. Hair colours: `u8 n` (14), then n × `u8` palette translation. Server 104 sends 0, `0x0A`, `0x12`, `0x1A`-`0x1E`, `0x30`, `0x22`, `0x2A`-`0x2C`, `0x2F` (`PT_GRAY_TO_*`).
+2. Skins: `u8 n` (4), then n × `u8` (`PT_BLUE_TO_SKIN1-4` = 1-4, light to dark).
+3. Two face blocks, male then female (`AddFaceIconsToPacket`). Each is:
+   - `u32 n` + n × `u32` hair resources (`blank.bgf` is bald);
+   - **one** `u32` head resource;
+   - `u32 n` + eyes, `u32 n` + noses, `u32 n` + mouths.
+4. Spells: `u32 n`, then n × (`u32 number`, `u32 name`, `u32 description`, `u32 cost`, `u8 school`). The cost is 25 for a level-2 spell, else 10. The list is the server's `plNewCharSpells`: spells whose `OfferToNewCharacters` says yes, schools 1-6.
+5. Skills: the same shape. Every skill of level 2 or lower.
+6. Nothing may be left over: the original client refuses the message if it is.
+
+Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
+
+| Part | Male | Female |
+|---|---|---|
+| Head | phax | phkx |
+| Hair | ptcd, ptac, ptba, ptad, ptbb, blank, ptxa | ptcd, ptbc, ptca, ptdb, ptbd, ptcb, ptdc, ptdr, ptxb, blank |
+| Eyes | peax, pebx, pecx, pedx | pekx, pelx, pemx |
+| Nose | pnax, pnbx, pncx | pnkx, pnlx, pnmx |
+| Mouth | pmax, pmbx, pmcx | pmkx, pmlx, pmmx |
+
+`tools/kod_extract/extract.py` writes the same lists to `data/charinfo.json`. The sprite build uses it, and the creator uses it as its offline stand-in. On 2026-10-07 the local server offered 33 spells and 11 skills.
+
+**Creating the character:** `BP_SYSTEM` (6) followed by `BP_NEW_CHARINFO` (48) (`charmake.c:174`, read by `sprocket.c:92`):
+- `u32 slot`;
+- `string name`, `string description`;
+- `u8 gender` (1 male, 2 female);
+- `u16 5` + 5 × `u32` face resources, in the order **head, hair, eyes, nose, mouth**;
+- `u8 hair translation`, `u8 skin translation`: the values themselves, not their indexes;
+- `u16 6` + six `i32` stats: Might, Intellect, Stamina, Agility, Mysticism, Aim;
+- `u16 n` + `u32` spell numbers, `u16 n` + `u32` skill numbers.
+
+**The rules** (client: `charname.c`, `charstat.c`, `charspel.c`; server: `system.kod` `ValidateUserName`, `player.kod` `PlayerNewCharInfo :2585-2881`):
+- Name: 3-30 characters, from letters, digits, `_ '!@$^&*()+=:[]{};/?|<>` and the Latin-1 letters `0xC0`-`0xFF` (not `×` or `÷`). It must not belong to another player, a monster, an NPC or a guild.
+- Description: up to 999 characters (the server allows 1000).
+- Stats: 1-50 each, starting at 25, 220 in all (70 points to spend).
+- Spells and skills: one 45-point pool.
+- Shal'ille and Qor spells can't be chosen together. **Only the client enforces this**: the server's check is commented out.
+
+**What the server does with bad values.** It never says why; it quietly replaces them:
+- Not exactly five face parts: the gender becomes male and the default male face is used. (Our first client sent none, so every new character was male.)
+- A part not in the gender's list: that list's first entry.
+- A hair translation not in the list: blond (`0x2F`). A skin outside 1-4: skin 3.
+- Stats out of range or over 220: the junk stats 3/1/4/1/5/9.
+- Spells and skills over 45 points: none at all.
+- The clothes are random (`SetDefaultClothes`).
+
+**The answer:**
+- `BP_CHARINFO_OK` (56) `u32 id`. The server may have given the character a new object id (`RecycleUser`); send `BP_USE_CHARACTER` with **that** id.
+- Or `BP_CHARINFO_NOT_OK` (57) with no fields: the name is taken or not allowed (the original client always says so).
+- A server bug: `system.kod:4593` overwrites the "is this slot still new" check with the name check, so it isn't enforced.
 
 ## In the game (`clientd3d/server.c` shows what the client expects)
 - **`BP_PLAYER` (130)** fields:
@@ -108,6 +157,7 @@ u16 length | u16 check | u16 length again | u8 epoch | body (length bytes)
     - `CYCLE` (2): `u32 period`, `u16 low`, `u16 high`.
     - `ONCE` (3): the same as CYCLE, plus `u16 final`.
   - Overlays: `u8 n`, then n × (`u32 icon`, `u8 hotspot`, palette prefix, animation).
+  - A player (`player.kod SendOverlays :11509`): the object's icon is the torso, its palette prefix the shirt's two-colour translation. The overlays are the arms (hotspots 31, 21), the legs (41, the pants' translation), the head (1), mouth (12), eyes (11) and nose (14), all three with the skin's translation (`ANIMATE_TRANSLATION` = 9, then the translation), and the hair (13, its colour). There's no hair overlay while a hat takes it off; a bald head sends `blank.bgf`. `Net/MRNetLook` turns this into a sprite appearance.
 - **A room object** (`ExtractNewRoomObject`) is an object followed by:
   - `u16 row`, `u16 col` (Kod position: `square * 64 + fine`, so the room's top-left edge is 64);
   - `u16 angle` (0–4095, 0 = east, increasing toward south);

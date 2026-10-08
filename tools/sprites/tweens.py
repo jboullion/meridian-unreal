@@ -216,7 +216,7 @@ def crop_box(bgf: str, a: int, b: int, t: float) -> tuple[int, int, int, int]:
 def get(bgf: str, a: int, b: int, k: int, n: int, xid: int) -> tuple[Image.Image, dict]:
     """In-between k of n (cached): the image, cropped to what it drew, and its bitmap entry
     (w, h in part px; offset in base px; hotspots interpolated)."""
-    f = CACHE / up.MODEL / METHOD / f"{bgf}_x{xid:02x}" / f"{a:03d}_{b:03d}_{k}of{n}.png"
+    f = CACHE / up.cache_dir(up.method_for(bgf)).name / METHOD / f"{bgf}_x{xid:02x}" / f"{a:03d}_{b:03d}_{k}of{n}.png"
     side = f.with_suffix(".json")
     if f.exists() and side.exists():
         return Image.open(f).convert("RGBA"), json.loads(side.read_text())

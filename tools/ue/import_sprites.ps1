@@ -12,10 +12,10 @@ param(
 # files while no editor has them loaded
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $layout = Get-Content (Join-Path $repo "data\sprites\player_parts.json") -Raw | ConvertFrom-Json
-$wanted = @($layout.atlases.PSObject.Properties | ForEach-Object { $_.Value.texture })
+$wanted = @($layout.atlases.PSObject.Properties | ForEach-Object { $_.Value.texture; if ($_.Value.ramp) { $_.Value.ramp } })
 $dir = Join-Path $repo "game\MeridianRemastered\Content\Generated\Sprites"
 if (Test-Path $dir) {
-    Get-ChildItem $dir -Filter "T_Spr_*.uasset" | Where-Object { $wanted -notcontains $_.BaseName } |
+    Get-ChildItem $dir -Filter "T_Spr*_*.uasset" | Where-Object { @("T_SprXlat", "T_SprClass") -notcontains $_.BaseName } | Where-Object { $wanted -notcontains $_.BaseName } |
         ForEach-Object { Remove-Item $_.FullName; Write-Host "removed old $($_.BaseName)" }
 }
 & (Join-Path $PSScriptRoot "build_world.ps1") -Script import_sprites.py -Headless:$Headless -Engine $Engine

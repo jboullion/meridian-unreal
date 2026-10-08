@@ -24,6 +24,20 @@ Every animated character (players, NPCs, monsters) is drawn with sprite sheets t
 - Tools: `tools/blender/mpfb_character.py`, `install_mpfb_packs.py`, `preview_character.py`, `retarget_ual.py`, `tools/blender/characters/`, `tools/ue/export_mannequin.py`, `import_character.*`, `import_animations.*`, and the mannequin copy step in `tools/setup.ps1`.
 - Docs: `docs/characters.md`. It and everything above are in git history before this ADR if they're ever needed again.
 
+## Update (2026-10-07): faces for the creator, no AI, no specks
+- **Every face part and hair the original creator offers is converted** (`data/charinfo.json` from Kod). Looks with an AI-made part are left out of the build unless asked for (`--with-ai`). No default part was ever AI-made; only the test hair `ai_hair_01` was.
+- **The upscaler is chosen per part role** in `data/sprites/upscale.json`; every method is local:
+  - `nearest`, `scale4x` (Scale2x twice on the palette indices), `gtav_dither` (the default until now), `gtav`, `gtav_pinned` and `animesharp`;
+  - the comparison sheets come from `tools/sprites/face_sheet.py` (`build/sprites/faces/compare.png`, `zooms.png`);
+  - the model methods upscale each face patch on its own, so its shading drifts from the head's and the patch outlines show;
+  - **chosen (2026-10-08):** `scale4x` for the head, eyes, nose, mouth and hair (crisp, the original's colours, no grain);
+  - **chosen (2026-10-08):** `scale4x` for the torso, arms and legs too (`build/sprites/faces/review_body.png`). Weapons and the first-person hand stay on `gtav_dither`;
+  - any method is one line away.
+  - (The first switch to the body did nothing: the role check wanted four-letter names, and the body bgfs have three. Fixed in `upscale_parts.role`.)
+- **The face specks are fixed** by keeping each original pixel's palette ramp in its own unfiltered atlas and render target, not in the colour atlas's alpha (docs/sprites.md, "Ramps per original pixel").
+- **Close up,** the render target grows with the sprite's size on screen (`mr.Sprite.ScreenTexels`).
+- **Players wear the server's face parts and colours** (`FMRSpriteAppearance` part fields, `Net/MRNetLook`). The creator's previews use the same sprite body.
+
 ## Consequences
 - Equipment, hair and faces are sprite overlays, as in the original. The character creator works on `FMRSpriteAppearance`.
 - Props and buildings stay 3D (ADR 0003, ADR 0007). Only animated characters are sprites.

@@ -4,19 +4,25 @@ tools/sprites/build_player_sprites.py and build the sprite body materials. Runs 
 Editor (tools/ue/import_sprites.ps1).
 
     /Game/Generated/Sprites/T_Spr_<bgf>       one atlas per bgf, in its untranslated colours
+    /Game/Generated/Sprites/T_SprRamp_<bgf>   player parts: each original pixel's palette ramp
     /Game/Generated/Sprites/T_SprXlat         palette translations (row = xlat id, column = index)
     /Game/Generated/Sprites/T_SprClass        colour classifier (tools/sprites/luts.py)
     /Game/Generated/Sprites/M_SpriteBody      lit, masked: a character's render targets
                                               (UMRSpriteBodyComponent) on its quad
     /Game/Generated/Sprites/M_SpriteBodyUnlit the same, unlit (closest to the original look)
+    /Game/Generated/Sprites/M_PreviewBackdrop the flat grey behind the character creator's previews
 
-M_SpriteBody reads two render targets:
-  Sprite      the parts in their untranslated colours, drawn alpha-tested; alpha = which palette
-              ramp the texel came from (tools/sprites/luts.py ramp_alpha: 0.6 none, 0.733 red,
-              0.867 dark blue, 1 grey; 0 transparent)
-  SpriteCode  per pixel the part's palette translation (R * 255) and surface class (G * 255)
+M_SpriteBody reads three render targets (UMRSpriteBodyComponent):
+  Sprite      the parts in their untranslated colours, drawn alpha-tested; alpha = coverage
+  SpriteCode  per pixel the part's palette translation (R * 255) and surface class (G * 255),
+              clipped like Sprite
+  SpriteRamp  per pixel the palette ramp of the original pixel under it (B * 3: 0 none, 1 red,
+              2 dark blue, 3 grey) and that part's translation (R * 255), drawn unfiltered from the
+              ramp atlases (tools/sprites/luts.py ramp_cell)
 and recolours like the original client: T_SprClass gives the colour's position on its ramp,
-T_SprXlat that ramp entry's colour under the part's translation. Surface classes
+T_SprXlat that ramp entry's colour under the part's translation. (Until 2026-10-07 the ramp was
+coded in the atlas alpha; the canvas filtered it into other ramps' codes at the parts' edges, which
+showed as dark blue and red specks round the eyes, nose, mouth and hair.) Surface classes
 (data/sprites/materials.json) give roughness, metallic and specular (Class0..7 parameters).
 Lighting: a mostly-up world normal (NormalUp) keeps the brightness steady as the camera orbits;
 Albedo scales the colour for the lit material; indoors the environment's ambient floor
@@ -78,7 +84,10 @@ def import_atlases(layout):
     stale = [a for _, a in sorted(layout["atlases"].items())
              if not (eal.does_asset_exist("%s/%s" % (DIR, a["texture"])) and cache.get(a["texture"]) == a["hash"])]
     _import([a["texture"] + ".png" for a in stale], ATLAS_DIR)
+    _import([a["ramp"] + ".png" for a in stale if a.get("ramp")], ATLAS_DIR)
     for a in stale:
+        if a.get("ramp"):
+            _ramp_settings(a["ramp"])
         tex = eal.load_asset("%s/%s" % (DIR, a["texture"]))
         if not tex:
             log("WARNING: %s did not import" % a["texture"])
@@ -97,6 +106,22 @@ def import_atlases(layout):
     json.dump(cache, open(CACHE, "w"), indent=1)
     # (atlases of earlier layouts are deleted by import_sprites.ps1 before the editor starts)
     log("%d atlases, %d imported" % (len(wanted), len(stale)))
+
+
+def _ramp_settings(name):
+    """Exact values, one texel per original pixel: uncompressed, linear, unfiltered, no mips."""
+    tex = eal.load_asset("%s/%s" % (DIR, name))
+    if not tex:
+        log("WARNING: %s did not import" % name)
+        return
+    tex.set_editor_property("srgb", False)
+    tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_VECTOR_DISPLACEMENTMAP)
+    tex.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
+    tex.set_editor_property("filter", unreal.TextureFilter.TF_NEAREST)
+    tex.set_editor_property("address_x", unreal.TextureAddress.TA_CLAMP)
+    tex.set_editor_property("address_y", unreal.TextureAddress.TA_CLAMP)
+    tex.set_editor_property("never_stream", True)
+    eal.save_loaded_asset(tex)
 
 
 def import_luts():
@@ -139,68 +164,73 @@ def _custom(mat, x, y, desc, out_type, code, inputs):
 
 
 RECOLOUR_HLSL = """
-// the parts, untranslated; alpha 0 = empty, 0.6 .. 1 = covered, coding the source ramp
+// the parts, untranslated; alpha = coverage (the texels round a part carry its own colours, so the
+// filtered colour at an edge is the part's, never black)
 float4 c = Texture2DSample(Sprite, SpriteSampler, UV);
-float cover = saturate(c.a / 0.6);
-float3 rgb = c.rgb / max(cover, 0.01);   // empty texels are black: undo their pull at the edges
+float cover = c.a;
+float3 rgb = c.rgb;
 uint w, h;
 Code.GetDimensions(w, h);
 int2 px = min(int2(UV * float2(w, h)), int2(w - 1, h - 1));
-// exact texels, no filtering: the part's translation (code R) and the texel's ramp (sprite alpha)
+const int2 offs[13] = {int2(0, 0), int2(1, 0), int2(-1, 0), int2(0, 1), int2(0, -1), int2(1, 1), int2(-1, -1),
+                       int2(1, -1), int2(-1, 1), int2(2, 0), int2(-2, 0), int2(0, 2), int2(0, -2)};
+// the part here: its translation (exact texels, no filtering)
 float4 code = Code.Load(int3(px, 0));
-float xl = round(code.r * 255.0);
-float4 c0 = Sprite.Load(int3(px, 0));
-// A part's edge texels: the canvas filtered the atlas there, so their alpha (the ramp code) is a
-// blend with the empty space around the part. Just over the 0.5 clip it rounds to "no ramp" and
-// showed untranslated (a red line round the arms, the belt and the legs). Take the colour and ramp
-// of the nearest texel of the same part with an exact code.
-float ac = c0.a * 255.0;
-// (+-6: BC7 leaves small errors on the codes inside a part, which keep their own colour)
-bool exact = abs(ac - 153.0) < 6.0 || abs(ac - 187.0) < 6.0 || abs(ac - 221.0) < 6.0 || ac > 249.0;
-const int2 offs[8] = {int2(1, 0), int2(-1, 0), int2(0, 1), int2(0, -1), int2(2, 0), int2(-2, 0), int2(0, 2), int2(0, -2)};
-if (c0.a > 0.5 && !exact)
+if (cover > 0.5 && code.a < 0.5)
 {
-    [unroll] for (int j = 0; j < 8; j++)
+    [unroll] for (int j = 1; j < 13; j++)
     {
-        int2 q = clamp(px + offs[j], int2(0, 0), int2(w - 1, h - 1));
-        float4 cq = Sprite.Load(int3(q, 0));
-        float aq = cq.a * 255.0;
-        bool eq = abs(aq - 153.0) < 6.0 || abs(aq - 187.0) < 6.0 || abs(aq - 221.0) < 6.0 || aq > 249.0;
-        if (eq && abs(Code.Load(int3(q, 0)).r * 255.0 - xl) < 0.5)
-        {
-            c0 = cq;
-            rgb = cq.rgb;
-            break;
-        }
+        float4 cq = Code.Load(int3(clamp(px + offs[j], int2(0, 0), int2(w - 1, h - 1)), 0));
+        if (cq.a > 0.5) { code = cq; break; }
     }
 }
-float a0 = c0.a;
-float rid = a0 > 0.5 ? round((a0 - 0.6) / 0.13333) : 0.0;
+float xl = round(code.r * 255.0);
+// The ramp of the original pixel under this texel: from the ramp target where it holds the same
+// part (the same translation), else the nearest texel that does (the ramp target covers whole
+// original pixels, the colour the upscaled outline), else the colour's likeliest ramp (T_SprClass).
+float rid = -1.0;
+[unroll] for (int k0 = 0; k0 < 13; k0++)
+{
+    float4 r = Ramp.Load(int3(clamp(px + offs[k0], int2(0, 0), int2(w - 1, h - 1)), 0));
+    if (r.a > 0.5 && abs(r.r * 255.0 - xl) < 0.5) { rid = round(r.b * 3.0); break; }
+}
 // Where the filter's 2x2 texels mix two parts (another translation) or two ramps, the blended
-// colour sits on neither ramp and can recolour to any shade of it: use the exact texel there. Empty texels don't count (the cover division handles them).
+// colour sits on neither ramp and can recolour to any shade of it: use the exact texel there.
 int2 p0 = int2(floor(UV * float2(w, h) - 0.5));
 [unroll] for (int i = 0; i < 4; i++)
 {
     int2 q = clamp(p0 + int2(i & 1, i >> 1), int2(0, 0), int2(w - 1, h - 1));
-    float qa = Sprite.Load(int3(q, 0)).a;
-    if (qa > 0.5 && (abs(qa - a0) > 0.05 || abs(Code.Load(int3(q, 0)).r * 255.0 - xl) > 0.5))
+    if (Sprite.Load(int3(q, 0)).a > 0.5)
     {
-        rgb = c0.rgb;
-        break;
+        float4 qc = Code.Load(int3(q, 0));
+        float4 qr = Ramp.Load(int3(q, 0));
+        bool other_part = qc.a > 0.5 && abs(qc.r * 255.0 - xl) > 0.5;
+        bool other_ramp = rid >= 0.0 && qr.a > 0.5 && abs(qr.r * 255.0 - xl) < 0.5 && abs(round(qr.b * 3.0) - rid) > 0.5;
+        if (other_part || other_ramp)
+        {
+            rgb = Sprite.Load(int3(px, 0)).rgb;
+            break;
+        }
     }
 }
-if (xl > 0.5 && rid > 0.5)
+if (xl > 0.5)
 {
-    // where the colour sits on its ramp (T_SprClass: 64^3 sRGB cells; R, G, B = red, blue, grey)
+    // where the colour sits on its ramp (T_SprClass: 64^3 sRGB cells; R, G, B = red, blue, grey; A = likeliest ramp)
     float3 s = pow(saturate(rgb), 1.0 / 2.2);
     int3 q = min(int3(s * 64.0), int3(63, 63, 63));
     float4 k = Cls.Load(int3((q.b % 8) * 64 + q.r, (q.b / 8) * 64 + q.g, 0));
-    float pos = rid < 1.5 ? k.r : (rid < 2.5 ? k.g : k.b);
-    float base = rid < 1.5 ? 16.0 : (rid < 2.5 ? 144.0 : 208.0);
-    rgb = Texture2DSampleLevel(Xlat, XlatSampler, float2((base + pos * 15.0 + 0.5) / 256.0, (xl + 0.5) / 256.0), 0).rgb;
+    // no ramp found, or the original pixel had none but the upscaler blended a ramp colour into it
+    if (rid < 0.5) rid = round(k.a * 3.0);
+    if (rid > 0.5)
+    {
+        float pos = rid < 1.5 ? k.r : (rid < 2.5 ? k.g : k.b);
+        float base = rid < 1.5 ? 16.0 : (rid < 2.5 ? 144.0 : 208.0);
+        rgb = Texture2DSampleLevel(Xlat, XlatSampler, float2((base + pos * 15.0 + 0.5) / 256.0, (xl + 0.5) / 256.0), 0).rgb;
+    }
 }
 return float4(rgb, cover);
 """
+
 
 CLASS_HLSL = """
 uint w, h;
@@ -231,13 +261,14 @@ def build_body_material(name, lit, classes):
                   {"UV": uv, "FU": flip["FlipU"], "FV": flip["FlipV"], "SW": flip["SwapUV"]})
     default = eal.load_asset("%s/T_SprClass" % DIR)
     tex = {}
-    for i, (n, t) in enumerate((("Sprite", default), ("SpriteCode", default), ("Xlat", eal.load_asset("%s/T_SprXlat" % DIR)),
-                                ("Cls", default))):
+    for i, (n, t) in enumerate((("Sprite", default), ("SpriteCode", default), ("SpriteRamp", default),
+                                ("Xlat", eal.load_asset("%s/T_SprXlat" % DIR)), ("Cls", default))):
         tex[n] = _expr(mat, unreal.MaterialExpressionTextureObjectParameter, -1350, 300 + i * 120, parameter_name=n, texture=t,
                        sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR if n == "Xlat"
                        else unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
     colour = _custom(mat, -1000, 100, "Recolour", unreal.CustomMaterialOutputType.CMOT_FLOAT4, RECOLOUR_HLSL.strip(),
-                     {"Sprite": tex["Sprite"], "Code": tex["SpriteCode"], "Xlat": tex["Xlat"], "Cls": tex["Cls"], "UV": uvs})
+                     {"Sprite": tex["Sprite"], "Code": tex["SpriteCode"], "Ramp": tex["SpriteRamp"], "Xlat": tex["Xlat"],
+                      "Cls": tex["Cls"], "UV": uvs})
     rgb = _expr(mat, unreal.MaterialExpressionComponentMask, -750, 50, r=True, g=True, b=True, a=False)
     mel.connect_material_expressions(colour, "", rgb, "")
     alpha = _expr(mat, unreal.MaterialExpressionComponentMask, -750, 150, r=False, g=False, b=False, a=True)
@@ -320,6 +351,19 @@ def build_body_material(name, lit, classes):
     log("built " + name)
 
 
+def build_backdrop_material():
+    """M_PreviewBackdrop: an unlit flat colour (Color) behind the character creator's previews."""
+    mat = _new_material("M_PreviewBackdrop")
+    mat.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    mat.set_editor_property("two_sided", True)
+    col = _expr(mat, unreal.MaterialExpressionVectorParameter, -400, 0, parameter_name="Color",
+                default_value=unreal.LinearColor(0.33, 0.33, 0.33, 1))
+    mel.connect_material_property(col, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    mel.recompile_material(mat)
+    eal.save_loaded_asset(mat)
+    log("built M_PreviewBackdrop")
+
+
 def main():
     layout = json.load(open(LAYOUT, encoding="utf-8"))
     import_luts()
@@ -327,6 +371,7 @@ def main():
     classes = layout.get("material_classes") or [{"roughness": 0.85, "metallic": 0.0, "specular": 0.2}]
     build_body_material("M_SpriteBody", True, classes)
     build_body_material("M_SpriteBodyUnlit", False, classes)
+    build_backdrop_material()
     log("done")
 
 

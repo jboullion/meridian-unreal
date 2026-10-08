@@ -24,6 +24,7 @@
 #include "UI/MRUIStyle.h"
 #include "UI/SMRHUD.h"
 #include "UI/SMRInventoryScreen.h"
+#include "UI/SMRCharCreator.h"
 #include "UI/SMRLoginScreen.h"
 #include "UI/SMRMinimap.h"
 #include "Widgets/Layout/SBox.h"
@@ -799,6 +800,89 @@ void UMRUISubsystem::EnsureAvatar()
 		{
 			Avatar->SetAppearance(Char->GetSpriteAppearance());
 		}
+	}
+}
+
+AMRAvatarPreview* UMRUISubsystem::SpawnPreview(const FVector& Offset)
+{
+	APlayerController* PC = GetPlayerController();
+	UWorld* World = PC ? PC->GetWorld() : nullptr;
+	if (!World)
+	{
+		return nullptr;
+	}
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	Params.ObjectFlags |= RF_Transient;
+	return World->SpawnActor<AMRAvatarPreview>(AMRAvatarPreview::StaticClass(), AMRAvatarPreview::Location() + Offset, FRotator::ZeroRotator, Params);
+}
+
+void UMRUISubsystem::EnsureCreatorPreviews()
+{
+	// (apart from the inventory's avatar and from each other: each capture shows only its own body)
+	const FLinearColor Bg = GetStyle() ? GetStyle()->Color(TEXT("creator_preview_bg"), FLinearColor(0.33f, 0.33f, 0.33f)) : FLinearColor(0.33f, 0.33f, 0.33f);
+	if (!CreatorPortrait)
+	{
+		CreatorPortrait = SpawnPreview(FVector(0.0, 4000.0, 0.0));
+		if (CreatorPortrait)
+		{
+			CreatorPortrait->SetPortrait(true);
+			CreatorPortrait->SetBackdrop(Bg);
+		}
+	}
+}
+
+void UMRUISubsystem::SetCreatorAppearance(const FMRSpriteAppearance& Appearance)
+{
+	EnsureCreatorPreviews();
+	for (AMRAvatarPreview* P : {CreatorBody.Get(), CreatorPortrait.Get()})
+	{
+		if (P)
+		{
+			P->SetAppearance(Appearance);
+		}
+	}
+}
+
+void UMRUISubsystem::SetCreatorCapturing(bool bCapture)
+{
+	if (bCapture)
+	{
+		EnsureCreatorPreviews();
+	}
+	for (AMRAvatarPreview* P : {CreatorBody.Get(), CreatorPortrait.Get()})
+	{
+		if (P)
+		{
+			P->SetCapturing(bCapture);
+		}
+	}
+}
+
+UObject* UMRUISubsystem::GetCreatorTarget(bool bPortrait) const
+{
+	const AMRAvatarPreview* P = bPortrait ? CreatorPortrait.Get() : CreatorBody.Get();
+	return P ? P->GetTarget() : nullptr;
+}
+
+void UMRUISubsystem::TurnCreatorBody(int32 Steps)
+{
+	if (CreatorBody)
+	{
+		CreatorBody->Turn(Steps);
+	}
+}
+
+TSharedPtr<SMRCharCreator> UMRUISubsystem::GetCreator() const
+{
+	return Login.IsValid() ? Login->GetCreator() : nullptr;
+}
+
+void UMRUISubsystem::TurnCreatorPortrait(int32 Steps)
+{
+	if (CreatorPortrait)
+	{
+		CreatorPortrait->Turn(Steps);
 	}
 }
 

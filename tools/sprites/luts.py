@@ -13,13 +13,18 @@ Two lookup textures make that possible on the GPU:
               (0 none, 1/3 red, 2/3 blue, 1 grey), only for in-between frames: the original
               bitmaps carry their ramp exactly, from their palette indices (ramp_alpha).
 
-Which ramp each atlas texel came from is stored in the atlas's alpha (ramp_alpha): 0 transparent,
-then 0.6 / 0.733 / 0.867 / 1.0 for no ramp / red / dark blue / grey. The colour pass draws parts
-alpha-tested at 0.5 (crisp, like the original), so the alpha survives into the render target.
+Which ramp each texel came from is kept per original pixel, not in the colour atlas (before
+2026-10-07 it was the atlas alpha, and the canvas's filtering blended those codes into other ramps'
+codes: blue and red specks round the face parts). Each player atlas T_Spr_<bgf> has a ramp atlas
+T_SprRamp_<bgf> at 1/SCALE its size, one texel per original pixel (ramp_cell), drawn unfiltered
+into the sprite's ramp target: R = 1, B = ramp * 85 (0 none, 1 red, 2 dark blue, 3 grey), A = 1
+where the part covers any of the pixel's texels. The colour atlas's alpha is plain coverage.
 
     python tools/sprites/luts.py      -> build/sprites/lut/T_SprXlat.png, T_SprClass.png
 """
 from __future__ import annotations
+
+from functools import lru_cache
 
 import numpy as np
 from PIL import Image
@@ -32,6 +37,7 @@ N = 64                                 # classifier cells per channel
 MAX_DIST = 40.0                        # sRGB units: farther than this from every ramp -> not translated
 
 
+@lru_cache(maxsize=1)
 def xlat_lut() -> Image.Image:
     pal = ms.palette()
     rows = [pal[np.array(ms.xlat(x), dtype=np.uint8)] for x in range(256)]
@@ -47,6 +53,7 @@ def _segment_project(p: np.ndarray, a: np.ndarray, b: np.ndarray):
     return d, t
 
 
+@lru_cache(maxsize=1)
 def class_lut() -> Image.Image:
     pal = ms.palette().astype(np.float32)
     g = (np.arange(N, dtype=np.float32) + 0.5) * 255.0 / N
@@ -94,7 +101,6 @@ def class_lut() -> Image.Image:
     return Image.fromarray(img, "RGBA")
 
 
-RAMP_ALPHA = np.array([153, 187, 221, 255], np.uint8)   # alpha per ramp id: none, red, blue, grey
 _class_cache = None
 
 
@@ -107,37 +113,84 @@ def ramp_ids_from_indices(pixels: bytes, w: int, h: int) -> np.ndarray:
     return out
 
 
-def ramp_alpha(img: Image.Image, ids: np.ndarray | None) -> Image.Image:
-    """Put the ramp ids into the alpha of an upscaled cell (ids at any resolution, nearest-scaled;
-    None = classify the colours, for in-between frames)."""
+def classify(img: Image.Image) -> np.ndarray:
+    """The ramp a colour most likely sits on (T_SprClass alpha), per texel: for in-between frames,
+    which have no palette indices."""
     global _class_cache
-    a = np.array(img.convert("RGBA"))
+    if _class_cache is None:
+        _class_cache = np.asarray(class_lut(), np.uint8)
+    a = np.asarray(img.convert("RGBA"))
+    q = np.clip((a[..., :3].astype(np.float32) / 255.0 * N).astype(int), 0, N - 1)
+    ty, tx = np.divmod(q[..., 2], 8)
+    return np.round(_class_cache[ty * N + q[..., 1], tx * N + q[..., 0], 3] / 255.0 * 3).astype(np.int8)
+
+
+def grow_ids(ids: np.ndarray, known: np.ndarray, want: np.ndarray) -> np.ndarray:
+    """ids where `want` but not `known` taken from the nearest known pixel (ring by ring)."""
+    ids, known = ids.copy(), known.copy()
+    h, w = ids.shape
+    for _ in range(8):
+        todo = want & ~known
+        if not todo.any():
+            break
+        p = np.pad(ids, 1)
+        k = np.pad(known, 1)
+        for dy, dx in ((0, 1), (2, 1), (1, 0), (1, 2), (0, 0), (0, 2), (2, 0), (2, 2)):
+            take = todo & k[dy:dy + h, dx:dx + w] & ~known
+            ids[take] = p[dy:dy + h, dx:dx + w][take]
+            known |= take
+            todo &= ~take
+    return ids
+
+
+def ramp_cell(cell: Image.Image, ids: np.ndarray | None, scale: int) -> np.ndarray:
+    """The ramp atlas texels (h/scale x w/scale x 4) of an atlas cell: a pixel is covered where the
+    cell covers any of its scale x scale texels; ids = the original's per pixel (None: classify
+    the cell's colours, the commonest ramp of each block)."""
+    a = np.asarray(cell.convert("RGBA"))
+    h, w = a.shape[0] // scale, a.shape[1] // scale
+    a = a[:h * scale, :w * scale]
+    cover = (a[..., 3] >= 128).reshape(h, scale, w, scale)
+    covered = cover.any(axis=(1, 3))
     if ids is None:
-        if _class_cache is None:
-            _class_cache = np.asarray(class_lut(), np.uint8)
-        q = np.clip((a[..., :3].astype(np.float32) / 255.0 * N).astype(int), 0, N - 1)
-        ty, tx = np.divmod(q[..., 2], 8)
-        ids = np.round(_class_cache[ty * N + q[..., 1], tx * N + q[..., 0], 3] / 255.0 * 3).astype(np.int16)
+        cls = classify(Image.fromarray(a)).reshape(h, scale, w, scale)
+        counts = np.stack([((cls == r) & cover).sum(axis=(1, 3)) for r in range(4)], -1)
+        ids, known = counts.argmax(-1).astype(np.int8), covered
     else:
-        ids = np.asarray(Image.fromarray(ids.astype(np.uint8)).resize((a.shape[1], a.shape[0]), Image.NEAREST), np.int16)
-    a[..., 3] = np.where(a[..., 3] > 127, RAMP_ALPHA[np.clip(ids, 0, 3)], 0)
-    return Image.fromarray(a, "RGBA")
+        ids = ids[:h, :w].astype(np.int8)
+        known = cover.sum(axis=(1, 3)) * 2 >= scale * scale   # (at least half: the original pixel)
+        known &= covered
+    ids = grow_ids(ids, known, covered)
+    out = np.zeros((h, w, 4), np.uint8)
+    out[covered] = np.stack([np.full(int(covered.sum()), 255), np.zeros(int(covered.sum())),
+                             ids[covered].astype(np.int32) * 85, np.full(int(covered.sum()), 255)], -1)
+    return out
 
 
-def translate(img: Image.Image, xid: int) -> Image.Image:
-    """CPU twin of M_SpriteBody's recolouring, for previews: img carries its ramp ids in alpha
-    (ramp_alpha); each texel's position on its ramp, then that entry under the translation."""
+def ids_at(ramp: np.ndarray, size: tuple[int, int]) -> np.ndarray:
+    """A ramp cell's ids (B / 85) scaled to an image size (w, h), nearest; -1 where uncovered."""
+    ids = np.where(ramp[..., 3] > 0, ramp[..., 2].astype(np.int16) // 85, -1).astype(np.int16)
+    return np.asarray(Image.fromarray(ids.astype(np.int32)).resize(size, Image.NEAREST), np.int16)
+
+
+@lru_cache(maxsize=1)
+def _luts():
+    return np.asarray(xlat_lut(), np.float32), np.asarray(class_lut(), np.float32)
+
+
+def translate(img: Image.Image, ids: np.ndarray, xid: int) -> Image.Image:
+    """CPU twin of the runtime's recolouring, for previews: ids = each texel's ramp (at img's size);
+    its position on that ramp, then that entry under the translation."""
     if xid == 0:
         return img
-    lut = np.asarray(xlat_lut(), np.float32)
-    cls = np.asarray(class_lut(), np.float32)
+    lut, cls = _luts()
     a = np.asarray(img.convert("RGBA"), np.float32)
     q = np.clip((a[..., :3] / 255.0 * N).astype(int), 0, N - 1)
     ty, tx = np.divmod(q[..., 2], 8)
     c = cls[ty * N + q[..., 1], tx * N + q[..., 0]]
-    rid = np.where(a[..., 3] > 127, np.round((a[..., 3] - 153) / 34.0), 0).astype(int)
+    rid = np.clip(ids, 0, 3).astype(int)
     pos = np.choose(np.clip(rid - 1, 0, 2), [c[..., 0], c[..., 1], c[..., 2]]) / 255.0
-    base = np.choose(np.clip(rid, 0, 3), [0, 0x10, 0x90, 0xD0])
+    base = np.choose(rid, [0, 0x10, 0x90, 0xD0])
     x = base + pos * 15
     lo = np.floor(x).astype(int)
     hi = np.minimum(lo + 1, 255)
@@ -145,8 +198,7 @@ def translate(img: Image.Image, xid: int) -> Image.Image:
     row = lut[xid]
     out = row[lo] * (1 - f) + row[hi] * f
     rgb = np.where((rid > 0)[..., None], out, a[..., :3])
-    alpha = np.where(a[..., 3] > 127, 255, 0)
-    return Image.fromarray(np.dstack([np.clip(rgb, 0, 255), alpha]).astype(np.uint8), "RGBA")
+    return Image.fromarray(np.dstack([np.clip(rgb, 0, 255), a[..., 3]]).astype(np.uint8), "RGBA")
 
 
 def main():

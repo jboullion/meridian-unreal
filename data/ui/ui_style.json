@@ -47,6 +47,10 @@
     "stat": "A08C64",
     "bar_empty": "080808D8",
     "avatar_bg": "030304",
+    "creator_preview_bg": "9C9C9C",
+    "graph_bar": "008000",
+    "graph_points": "800000",
+    "graph_empty": "300000",
     "stats_tint": "9A8E80",
     "dim": "00000059"
   }

@@ -67,6 +67,8 @@ private:
 	void SpawnObject(const FMRNetObject& Object);
 	void ClearObjects();
 	void PlacePlayer();
+	/** Our pawn wears what the server says our character looks like (MRNetLook). */
+	void ApplySelfLook();
 	void ShowBackdrop();
 	void SendMovement(double Now);
 

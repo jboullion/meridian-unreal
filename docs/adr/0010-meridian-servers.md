@@ -38,13 +38,13 @@ TODO.md already set the goal: the Unreal game should be "a full client build for
    - **Exits:** standing on an exit square sends `BP_REQ_GO`. Walking off a room's edge keeps asking to move off it (once a second, at walking speed). The server answers with the next room. If the server snaps us back, the pawn follows.
    - **Others:** other players, monsters and NPCs are `AMRNetObject` sprites.
      - Their look is matched by name, then by body bitmap, against `data/sprites` (`m_<KodClass>`).
-     - Players get the default look for now.
+     - Players (and our own pawn) wear what the server sends (since 2026-10-07, `Net/MRNetLook`): `player_male` or `player_female`, with the server's head, face parts and hair, the skin and hair colours, and the shirt and pants. A part we haven't converted keeps the base look's.
      - They walk to each `BP_MOVE` at the server's speed and never block the player.
    - **Off while online:** local monster and NPC spawning (`UMRMonsterSubsystem`) and local exits (`UMRZoneSubsystem::UpdatePawnZone`).
 6. **A login screen in the game's own UI** (`SMRLoginScreen`, styled like the inventory dialog of [ADR 0009](0009-user-interface.md)).
    - **Login:** the server, login name and password. An unknown name makes the account.
    - **Characters:** characters and empty slots, Play and Log Off. The server's message of the day sits in a "News" column to the right of the list, and the window widens for it, so a long message never squeezes the list.
-   - **Create:** name and gender only. The face, stats, spells and skills are the server's defaults. The full creator comes later.
+   - **Create:** the original's "Customize your character" (since 2026-10-07, `SMRCharCreator`): Name, Appearance, Statistics, Spells and Skills, over what the server offers (`BP_CHARINFO`). It is checked as the server would (`MRCharInfo::Validate`), because the server quietly replaces bad values, then sent as `BP_NEW_CHARINFO`. Cancel goes back to the list (the original quit the game). Details: [blakserv-protocol.md](../research/blakserv-protocol.md) "Character creation", [ADR 0009](0009-user-interface.md).
    - **Behind it:** the camera looks over Raza (the look-dev bookmark `square_overview`) and there is no pawn until the server puts the character in a room.
    - **Stored:** the last server and login name, in `GameUserSettings.ini` `[MR.Net]`. The password is never kept.
 7. **Chat:** a log in the HUD (`SMRChatLog`) shows the server's speech and messages, formatted from the rsb. Enter types a line, which is sent as `BP_SAY_TO`.
@@ -67,6 +67,7 @@ TODO.md already set the goal: the Unreal game should be "a full client build for
   5. log off.
 - **Cross-client:** a Shards browser character in the Inn saw the Unreal player appear, speak and walk. The Unreal client drew the browser player and Marcus the innkeeper from the server's objects (`build/net/shards_sees_unreal.jpg`, `build/net/unreal_in_inn.png`).
 - **Login screen pages:** `build/ui/shots/login/` (`run_ui_shots.ps1 -Label login`).
+- **Character creation (2026-10-07):** `run_net_test.ps1 -Create` (a fresh account) reports DONE 6/6. It asks for the options (7 male / 10 female hair, 33 spells, 11 skills), creates a female with chosen face parts, colours, the Mage stats, a spell and a skill, and checks that the server then shows that face on our object. `Meridian.Net.CharInfo`, `Meridian.Net.NewCharInfo` and `Meridian.Sprites.Overlays` pass. The creator's pages: `build/ui/shots/creator/` (`run_ui_shots.ps1 -Label creator`).
 
 ## Alternatives considered
 - **Keep our own UE server and Supabase (ADR 0001):** action combat and full freedom, but every rule, quest, shop and save of the original to rewrite first, and no players to share a world with.
@@ -78,8 +79,8 @@ TODO.md already set the goal: the Unreal game should be "a full client build for
 - **The VM:** add `app://meridian-remastered` to `GATEWAY_ORIGINS` in the VM's `deploy/.env` and restart the gateway. Until then "Shards (online)" gets 403.
 - **Retire the UE-server path:** remove the dedicated-server spawn wait, `ClientPrepareZone` and `IsZoneReadyFor`, `MRZoneSmokeTest` / `run_zone_test.ps1`, `MRSpriteNetTest` / `run_sprite_net_test.ps1`, and the "Play As Client" instructions.
 - **Next features:**
-  - player looks from the server's overlays (body, head, hair, colours);
-  - the full character creator;
+  - player looks from the server's overlays: done 2026-10-07 for the face, hair and colours. Armour torsos, weapons and hats aren't drawn from the server yet;
+  - the full character creator: done 2026-10-07;
   - stats, inventory and spells from the server (the inventory dialog's `UMRInventorySource` seam);
   - combat;
   - sounds and lighting messages;

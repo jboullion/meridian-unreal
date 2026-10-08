@@ -1,0 +1,14 @@
+{
+ "_doc": "How each player sprite part is upscaled 4x (tools/sprites/upscale_parts.py). Methods, all local: nearest, scale4x, gtav_dither, gtav, gtav_pinned, animesharp. 'roles' overrides the default per part: head, eyes, nose, mouth, hair, body, arms, legs, other (weapons, hands). Compare them with tools/sprites/face_sheet.py; the choice is recorded in docs/adr/0008-sprite-characters.md.",
+ "default": "gtav_dither",
+ "roles": {
+  "head": "scale4x",
+  "eyes": "scale4x",
+  "nose": "scale4x",
+  "mouth": "scale4x",
+  "hair": "scale4x",
+  "body": "scale4x",
+  "arms": "scale4x",
+  "legs": "scale4x"
+ }
+}

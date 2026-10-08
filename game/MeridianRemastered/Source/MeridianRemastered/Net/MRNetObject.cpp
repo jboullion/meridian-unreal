@@ -62,6 +62,20 @@ void AMRNetObject::Init(uint32 InId, FName InLook, const FString& InName)
 	SpriteBody->SetLook(Look);
 }
 
+void AMRNetObject::SetAppearance(const FMRSpriteAppearance& A)
+{
+	if (SpriteBody)
+	{
+		if (!A.Look.IsNone() && SpriteBody->GetLook() != A.Look)
+		{
+			Look = A.Look;
+			SpriteBody->SetLook(A.Look);
+		}
+		SpriteBody->SetPartBgfs(A.PartBgfs());
+		SpriteBody->SetColours(A.Skin, A.Hair, A.Shirt, A.Pants);
+	}
+}
+
 void AMRNetObject::Place(const FVector& World, int32 KodAngle)
 {
 	const FVector At = World + FVector(0.0, 0.0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 2.0);

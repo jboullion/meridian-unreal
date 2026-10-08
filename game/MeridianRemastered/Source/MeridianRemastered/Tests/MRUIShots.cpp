@@ -3,6 +3,7 @@
 #include "AbilitySystemComponent.h"
 #include "Abilities/MRAttributeSet.h"
 #include "Engine/GameViewportClient.h"
+#include "Framework/Application/SlateApplication.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
@@ -15,6 +16,7 @@
 #include "TimerManager.h"
 #include "UI/MRInventorySource.h"
 #include "UI/MRUISubsystem.h"
+#include "UI/SMRCharCreator.h"
 #include "UnrealClient.h"
 #include "Widgets/SViewport.h"
 
@@ -50,6 +52,35 @@ namespace
 		}
 		Net->SetPreview(Phase, Slots, Error);
 		UI->ShowLogin(PC);
+	}
+
+	/** The character creator without a server: the options from data/charinfo.json. */
+	void PreviewCreator(APlayerController* PC)
+	{
+		UMRNetSubsystem* Net = NetOf(PC);
+		UMRUISubsystem* UI = UIOf(PC);
+		FMRCharInfo Info;
+		if (!Net || !UI || !UMRNetSubsystem::LoadMockCharInfo(Info))
+		{
+			return;
+		}
+		Net->SetPreview(EMRNetPhase::Characters, {{3, FString(), true}});
+		UI->ShowLogin(PC);
+		Net->SetPreviewCharInfo(Info, 3);
+		if (TSharedPtr<SMRCharCreator> C = UI->GetCreator())
+		{
+			C->Begin(7);  // the same "random" start every run
+			C->SetNameAndDescription(TEXT("Aldera"), TEXT("A traveller from Marion, new to Raza."));
+		}
+	}
+
+	void WithCreator(APlayerController* PC, TFunction<void(SMRCharCreator&)> Do)
+	{
+		UMRUISubsystem* UI = UIOf(PC);
+		if (TSharedPtr<SMRCharCreator> C = UI ? UI->GetCreator() : nullptr)
+		{
+			Do(*C);
+		}
 	}
 
 	void SetHealth(APlayerController* PC, float Value)
@@ -128,6 +159,51 @@ void UMRUIShots::Start(APlayerController* InController)
 		{TEXT("login_error"), [](APlayerController* PC) { PreviewLogin(PC, EMRNetPhase::Offline, false, TEXT("Login failed. Check your password.")); }, 0.6f},
 		{TEXT("login_connecting"), [](APlayerController* PC) { PreviewLogin(PC, EMRNetPhase::Connecting); }, 0.6f},
 		{TEXT("login_characters"), [](APlayerController* PC) { PreviewLogin(PC, EMRNetPhase::Characters, true); }, 0.6f},
+		// the character creator, with the options the server would send (data/charinfo.json)
+		{TEXT(""), [](APlayerController* PC) { PreviewCreator(PC); }, 1.0f},
+		// typing into the description the way a player does: focus, then key characters through Slate
+		{TEXT("creator_name"), [](APlayerController* PC)
+			{
+				WithCreator(PC, [](SMRCharCreator& C)
+				{
+					C.SetNameAndDescription(TEXT("Aldera"), FString());
+					C.FocusDescription();
+					for (const TCHAR Ch : FString(TEXT("Typed: a traveller from Marion.")))
+					{
+						FSlateApplication::Get().ProcessKeyCharEvent(FCharacterEvent(Ch, FModifierKeysState(), 0, false));
+					}
+					UE_LOG(LogMeridian, Display, TEXT("MRUIShots: description after typing: \"%s\""), *C.GetDescriptionText());
+				});
+			}, 1.0f},
+		{TEXT("creator_appearance"), [](APlayerController* PC) { WithCreator(PC, [](SMRCharCreator& C) { C.SetTab(SMRCharCreator::ETab::Appearance); }); }, 2.f},
+		{TEXT("creator_appearance_male"), [](APlayerController* PC)
+			{
+				WithCreator(PC, [](SMRCharCreator& C)
+				{
+					FMRNewCharacter& S = C.GetCharacter();
+					S.bFemale = !S.bFemale;
+					S.Hair += 2;
+					S.Eyes += 1;
+					S.HairColour += 5;
+					S.Skin = 3;
+					C.Refresh();
+				});
+				if (UMRUISubsystem* UI = UIOf(PC))
+				{
+					UI->TurnCreatorPortrait(1);  // the head three-quarters on
+				}
+			}, 2.f},
+		{TEXT("creator_stats"), [](APlayerController* PC) { WithCreator(PC, [](SMRCharCreator& C) { C.SetTab(SMRCharCreator::ETab::Stats); C.ApplyPreset(0); }); }, 0.8f},
+		{TEXT("creator_spells"), [](APlayerController* PC)
+			{
+				WithCreator(PC, [](SMRCharCreator& C) { C.SetTab(SMRCharCreator::ETab::Spells); C.AddAbility(false, 0); C.AddAbility(false, 6); C.AddAbility(false, 9); });
+			}, 0.8f},
+		{TEXT("creator_skills"), [](APlayerController* PC) { WithCreator(PC, [](SMRCharCreator& C) { C.SetTab(SMRCharCreator::ETab::Skills); C.AddAbility(true, 1); }); }, 0.8f},
+		{TEXT("creator_error"), [](APlayerController* PC) { WithCreator(PC, [](SMRCharCreator& C) { C.SetNameAndDescription(TEXT("Al"), FString()); C.PressOk(); }); }, 0.8f},
+		{TEXT("creator_error_points"), [](APlayerController* PC)
+			{
+				WithCreator(PC, [](SMRCharCreator& C) { C.SetNameAndDescription(TEXT("Aldera"), FString()); C.GetCharacter().Stats[0] -= 3; C.PressOk(); });
+			}, 0.8f},
 		{TEXT(""), [](APlayerController* PC)
 			{
 				if (UMRUISubsystem* UI = UIOf(PC))

@@ -54,6 +54,7 @@ void SMRAvatar::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 {
 	UI = InUI;
 	Size = InArgs._Size;
+	Source = InArgs._Source;
 }
 
 int32 SMRAvatar::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
@@ -69,7 +70,8 @@ int32 SMRAvatar::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSl
 	const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
 	// a dark niche, like Minecraft's black box behind the player
 	MRPaint::Box(Out, Layer, Geo, Style->White(), FVector2f::ZeroVector, S, Tint * Style->Color(TEXT("avatar_bg"), FLinearColor(0.01f, 0.01f, 0.012f, 1.f)));
-	if (UObject* Target = Ui->GetAvatarTarget())
+	if (UObject* Target = Source == EMRAvatarSource::Inventory ? Ui->GetAvatarTarget()
+		: Ui->GetCreatorTarget(Source == EMRAvatarSource::CreatorPortrait))
 	{
 		if (Brush.GetResourceObject() != Target)
 		{
@@ -107,11 +109,18 @@ FReply SMRAvatar::OnMouseMove(const FGeometry& Geo, const FPointerEvent& Event)
 	}
 	// one of the original's eight angles per step of drag
 	DragAccum += Event.GetCursorDelta().X;
-	const float Step = Geo.GetLocalSize().X * 0.25f;
+	const float Step = Geo.GetLocalSize().X * 0.175f;
 	while (FMath::Abs(DragAccum) >= Step)
 	{
 		const int32 Dir = DragAccum > 0.f ? 1 : -1;
-		UI->TurnAvatar(Dir);
+		if (Source == EMRAvatarSource::Inventory)
+		{
+			UI->TurnAvatar(Dir);
+		}
+		else if (Source == EMRAvatarSource::CreatorPortrait)
+		{
+			UI->TurnCreatorPortrait(Dir);
+		}
 		DragAccum -= Dir * Step;
 	}
 	return FReply::Handled();

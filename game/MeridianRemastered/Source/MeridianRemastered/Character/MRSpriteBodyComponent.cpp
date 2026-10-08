@@ -6,6 +6,8 @@
 #include "Components/LightComponent.h"
 #include "Engine/Canvas.h"
 #include "Engine/DirectionalLight.h"
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/Texture2D.h"
 #include "Engine/TextureRenderTarget2D.h"
@@ -18,12 +20,18 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "MeridianRemastered.h"
 #include "UObject/ConstructorHelpers.h"
+#include "UnrealClient.h"
 #include "Character/MRCharacterMovementComponent.h"
 
 namespace
 {
 	TAutoConsoleVariable<float> CVarSpriteTexels(TEXT("mr.Sprite.TexelsPerCm"), 4.65f,
 		TEXT("Render target texels per cm of sprite (4.65 = 4 per original player torso pixel, as its atlas holds); capped at 1024 texels a side."));
+	TAutoConsoleVariable<float> CVarSpriteScreenTexels(TEXT("mr.Sprite.ScreenTexels"), 1.25f,
+		TEXT("Close up, render target texels per screen pixel: the target grows (in steps of 1.41x) as the sprite fills more of ")
+		TEXT("the screen, so a face seen close keeps its upscaled detail; 0 = always mr.Sprite.TexelsPerCm."));
+	TAutoConsoleVariable<int32> CVarSpriteMaxTarget(TEXT("mr.Sprite.MaxTarget"), 2048,
+		TEXT("Largest render target side when a sprite is seen close (texels)."));
 	TAutoConsoleVariable<float> CVarSpriteBillboard(TEXT("mr.Sprite.Billboard"), 1.f,
 		TEXT("How much of the camera's pitch the quad follows, pivoting at the feet: 1 = always parallel to the screen ")
 		TEXT("(never distorted, as the original looked: its pitch was limited to about 11 degrees), 0 = always upright."));
@@ -135,6 +143,8 @@ void UMRSpriteBodyComponent::SetLook(FName LookName)
 			Look = &It->Value;
 		}
 	}
+	BaseLook = Look;
+	PartOverrides.Reset();
 	LastDrawKey = 0;
 	Target = nullptr;
 	if (Look)
@@ -281,7 +291,11 @@ void UMRSpriteBodyComponent::EnsureTarget()
 	const FMRSpriteBgf* BodyBgf = Body ? FMRSpriteLibrary::Get().FindBgf(Body->Bgf) : nullptr;
 	LastShrink = BodyBgf ? BodyBgf->Shrink : 4;
 	const float CmPerPx = FMRSpriteLibrary::Get().CmPerBasePixel(LastShrink);
-	TexelsPerBasePixel = FMath::Min(CVarSpriteTexels.GetValueOnGameThread() * CmPerPx, 1024.f / FMath::Max(Size.X, Size.Y));
+	// the base density, or more for a sprite seen close (DensityStep, UpdateDensity) or a portrait
+	const float Base = FMath::Min(CVarSpriteTexels.GetValueOnGameThread() * CmPerPx, 1024.f / FMath::Max(Size.X, Size.Y));
+	const float Cap = FMath::Max(Base, CVarSpriteMaxTarget.GetValueOnGameThread() / FMath::Max(Size.X, Size.Y));
+	TexelsPerBasePixel = DensityOverride > 0.f ? FMath::Min(DensityOverride, Cap)
+		: FMath::Min(Base * FMath::Pow(UE_SQRT_2, static_cast<float>(DensityStep)), Cap);
 	Target = NewObject<UTextureRenderTarget2D>(this);
 	Target->RenderTargetFormat = RTF_RGBA8_SRGB;
 	Target->ClearColor = FLinearColor::Transparent;
@@ -300,7 +314,27 @@ void UMRSpriteBodyComponent::EnsureTarget()
 	CodeTarget->AddressX = TA_Clamp;
 	CodeTarget->AddressY = TA_Clamp;
 	CodeTarget->InitCustomFormat(Target->SizeX, Target->SizeY, PF_B8G8R8A8, true);
+	if (Material)
+	{
+		Material->SetTextureParameterValue(TEXT("Sprite"), Target);
+		Material->SetTextureParameterValue(TEXT("SpriteCode"), CodeTarget);
+	}
 	CodeTarget->UpdateResourceImmediate(true);
+	RampTarget = NewObject<UTextureRenderTarget2D>(this);
+	RampTarget->RenderTargetFormat = RTF_RGBA8;
+	RampTarget->bForceLinearGamma = true;
+	RampTarget->TargetGamma = 1.f;
+	RampTarget->ClearColor = FLinearColor::Transparent;
+	RampTarget->Filter = TF_Nearest;
+	RampTarget->AddressX = TA_Clamp;
+	RampTarget->AddressY = TA_Clamp;
+	RampTarget->InitCustomFormat(Target->SizeX, Target->SizeY, PF_B8G8R8A8, true);
+	RampTarget->UpdateResourceImmediate(true);
+	if (Material)
+	{
+		Material->SetTextureParameterValue(TEXT("SpriteRamp"), RampTarget);
+	}
+	LastDrawKey = 0;
 }
 
 void UMRSpriteBodyComponent::ApplyMaterial()
@@ -317,6 +351,7 @@ void UMRSpriteBodyComponent::ApplyMaterial()
 	Material = UMaterialInstanceDynamic::Create(Base, this);
 	Material->SetTextureParameterValue(TEXT("Sprite"), Target);
 	Material->SetTextureParameterValue(TEXT("SpriteCode"), CodeTarget);
+	Material->SetTextureParameterValue(TEXT("SpriteRamp"), RampTarget);
 	const TArray<FMRSpriteMaterialClass>& Classes = FMRSpriteLibrary::Get().MaterialClasses;
 	for (int32 i = 0; i < Classes.Num() && i < 8; ++i)
 	{
@@ -355,6 +390,52 @@ bool UMRSpriteBodyComponent::IsReady(const UTexture2D* Tex)
 	return true;
 }
 
+void UMRSpriteBodyComponent::SetPartBgfs(const TMap<FName, FName>& PartBgfs)
+{
+	if (!BaseLook || PartBgfs.OrderIndependentCompareEqual(PartOverrides))
+	{
+		return;
+	}
+	const FMRSpriteLibrary& Lib = FMRSpriteLibrary::Get();
+	PartOverrides = PartBgfs;
+	if (PartOverrides.IsEmpty())
+	{
+		Look = BaseLook;
+	}
+	else
+	{
+		CustomLook = *BaseLook;
+		for (const TPair<FName, FName>& O : PartOverrides)
+		{
+			const FString Bgf = O.Value.ToString().ToLower();
+			const int32 i = CustomLook.Parts.IndexOfByPredicate([&O](const FMRSpritePart& P) { return P.Name == O.Key; });
+			if (i == INDEX_NONE)
+			{
+				continue;  // (only parts the look has: their hotspot, class and translation)
+			}
+			if (Bgf == TEXT("blank"))
+			{
+				CustomLook.Parts.RemoveAt(i);  // bald
+			}
+			else if (Lib.Atlases.Contains(Bgf) && Lib.FindBgf(Bgf))
+			{
+				CustomLook.Parts[i].Bgf = Bgf;
+				CustomLook.Parts[i].Atlas = Bgf;
+				AtlasTexture(Bgf);
+				RampTexture(Bgf);
+			}
+			else
+			{
+				UE_LOG(LogMeridian, Warning, TEXT("Sprite part %s for %s not converted (tools/sprites/build_player_sprites.py)"),
+					*Bgf, *O.Key.ToString());
+			}
+		}
+		Look = &CustomLook;
+	}
+	LastDrawKey = 0;
+	Target = nullptr;  // (the same bounds, but redrawn from scratch)
+}
+
 void UMRSpriteBodyComponent::PrewarmLook(FName LookName)
 {
 	if (const FMRSpriteLook* L = FMRSpriteLibrary::Get().Looks.Find(LookName))
@@ -362,6 +443,7 @@ void UMRSpriteBodyComponent::PrewarmLook(FName LookName)
 		for (const FMRSpritePart& Part : L->Parts)
 		{
 			AtlasTexture(Part.Atlas);
+			RampTexture(Part.Atlas);
 		}
 	}
 }
@@ -384,6 +466,67 @@ UTexture2D* UMRSpriteBodyComponent::AtlasTexture(const FString& Key)
 	}
 	Textures.Add(Key, Tex);
 	return Tex;
+}
+
+UTexture2D* UMRSpriteBodyComponent::RampTexture(const FString& Key)
+{
+	const FString RampKey = TEXT("ramp:") + Key;
+	if (const TObjectPtr<UTexture2D>* Found = Textures.Find(RampKey))
+	{
+		return *Found;
+	}
+	const FMRSpriteLibrary& Lib = FMRSpriteLibrary::Get();
+	UTexture2D* Tex = nullptr;
+	const FMRSpriteAtlas* Atlas = Lib.Atlases.Find(Key);
+	if (Atlas && !Atlas->RampTexture.IsEmpty())
+	{
+		const FString& Name = Atlas->RampTexture;
+		Tex = LoadObject<UTexture2D>(nullptr, *FString::Printf(TEXT("%s/%s.%s"), *Lib.TextureDir, *Name, *Name));
+		if (!Tex)
+		{
+			UE_LOG(LogMeridian, Warning, TEXT("Sprite ramp atlas %s not imported (tools/ue/import_sprites.ps1)"), *Name);
+		}
+	}
+	Textures.Add(RampKey, Tex);
+	return Tex;
+}
+
+void UMRSpriteBodyComponent::SetDensityOverride(float InTexelsPerBasePixel)
+{
+	if (DensityOverride != InTexelsPerBasePixel)
+	{
+		DensityOverride = InTexelsPerBasePixel;
+		Target = nullptr;  // EnsureTarget makes it again at the new density
+	}
+}
+
+void UMRSpriteBodyComponent::UpdateDensity(const FVector& ViewLoc)
+{
+	// a sprite seen close: more target texels, so the upscaled detail (4 atlas texels per original
+	// pixel; a face part's pixels are 3.5x smaller than the torso's) isn't magnified from a small target
+	int32 Step = 0;
+	const float PerScreenPx = CVarSpriteScreenTexels.GetValueOnGameThread();
+	const APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (Look && PerScreenPx > 0.f && DensityOverride <= 0.f && !Viewer.IsValid() && PC && PC->PlayerCameraManager
+		&& GEngine && GEngine->GameViewport && GEngine->GameViewport->Viewport)
+	{
+		const FIntPoint VP = GEngine->GameViewport->Viewport->GetSizeXY();
+		const float Dist = FMath::Max(10.f, FVector::Dist(ViewLoc, GetComponentLocation()));
+		const float HalfTanV = FMath::Tan(FMath::DegreesToRadians(PC->PlayerCameraManager->GetFOVAngle() * 0.5f)) * VP.Y / FMath::Max(1, VP.X);
+		const float ScreenPxPerCm = VP.Y * 0.5f / (Dist * FMath::Max(HalfTanV, 0.01f));
+		const float CmPerPx = FMRSpriteLibrary::Get().CmPerBasePixel(LastShrink) * HeightScale;
+		const float Base = CVarSpriteTexels.GetValueOnGameThread() * FMRSpriteLibrary::Get().CmPerBasePixel(LastShrink);
+		const float Wanted = ScreenPxPerCm * CmPerPx * PerScreenPx;
+		// steps of 1.41x, with some slack before stepping back down (no churn at a boundary)
+		const float Ratio = Wanted / FMath::Max(Base, 0.01f);
+		Step = Ratio > 1.f ? FMath::FloorToInt(FMath::Loge(Ratio) / FMath::Loge(UE_SQRT_2) + (DensityStep > 0 ? 0.3f : 0.f)) : 0;
+		Step = FMath::Clamp(Step, 0, 8);
+	}
+	if (Step != DensityStep)
+	{
+		DensityStep = Step;
+		Target = nullptr;
+	}
 }
 
 // ------------------------------------------------------------------------------ animation
@@ -609,9 +752,15 @@ void UMRSpriteBodyComponent::Compose(int32 Angle, float DeltaTime)
 	DrawItems(Items);
 }
 
-void UMRSpriteBodyComponent::DrawItems(const TArray<FDrawItem>& Items)
+void UMRSpriteBodyComponent::DrawItems(const TArray<FDrawItem>& AllItems)
 {
 	const FMRSpriteLibrary& Lib = FMRSpriteLibrary::Get();
+	TArray<FDrawItem> Some;
+	if (!OnlyParts.IsEmpty())
+	{
+		Some = AllItems.FilterByPredicate([this](const FDrawItem& I) { return I.PartDef && OnlyParts.Contains(I.PartDef->Name); });
+	}
+	const TArray<FDrawItem>& Items = OnlyParts.IsEmpty() ? AllItems : Some;
 	uint32 Key = 1;
 	for (const FDrawItem& I : Items)
 	{
@@ -620,85 +769,81 @@ void UMRSpriteBodyComponent::DrawItems(const TArray<FDrawItem>& Items)
 		Key = HashCombine(Key, ::GetTypeHash(FMath::RoundToInt(I.Alpha * 64.f)));
 		Key = HashCombine(Key, ::GetTypeHash(PartXlat.FindRef(I.PartDef->Name)));
 	}
-	if (Key == LastDrawKey || !Target || !CodeTarget)
+	if (Key == LastDrawKey || !Target || !CodeTarget || !RampTarget)
 	{
 		return;
 	}
 	LastDrawKey = Key;
 
-	// the colour pass: the parts alpha-tested (crisp, like the original), so the atlas alpha - the
-	// texel's source palette ramp, for M_SpriteBody's recolouring - lands in the target unblended
-	UKismetRenderingLibrary::ClearRenderTarget2D(this, Target, FLinearColor::Transparent);
-	UCanvas* Canvas = nullptr;
-	FVector2D CanvasSize;
-	FDrawToRenderTargetContext Context;
-	UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(this, Target, Canvas, CanvasSize, Context);
-	if (!Canvas)
-	{
-		return;
-	}
+	// One pass per target, the parts in draw order (later over earlier):
+	//  colour  the parts in their untranslated colours, alpha-tested (crisp, like the original)
+	//  code    each part's translation (R) and surface class (G), clipped like the colour pass
+	//  ramp    each original pixel's palette ramp (B) with its part's translation (R), unfiltered,
+	//          from the ramp atlas (T_SprRamp_<bgf>): M_SpriteBody takes a texel's ramp from here
+	//          where the translations agree, so the ramp is never a filtered blend of two ramps
+	enum class EPass : uint8 { Colour, Code, Ramp };
 	const float T = TexelsPerBasePixel;
-	for (const FDrawItem& P : Items)
+	auto Pass = [&](UTextureRenderTarget2D* RT, EPass Kind)
 	{
-		const FVector2f Origin = P.Feet + Look->Bounds.Min;
-		const FMRSpriteAtlas* Atlas = Lib.Atlases.Find(P.PartDef->Atlas);
-		const FIntRect* Cell = Atlas ? Atlas->Cells.Find(P.Bitmap) : nullptr;
-		const FMRSpriteBgf* Bgf = Lib.FindBgf(P.PartDef->Bgf);
-		UTexture2D* Tex = Cell ? AtlasTexture(P.PartDef->Atlas) : nullptr;
-		if (!IsReady(Tex) || !Bgf)
+		UKismetRenderingLibrary::ClearRenderTarget2D(this, RT, FLinearColor::Transparent);
+		UCanvas* Canvas = nullptr;
+		FVector2D CanvasSize;
+		FDrawToRenderTargetContext Context;
+		UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(this, RT, Canvas, CanvasSize, Context);
+		if (!Canvas)
 		{
-			LastDrawKey = 0;  // a texture not ready yet (just loaded): draw again next frame
-			continue;
+			return;
 		}
-		const FMRSpriteBitmap& Bm = Bgf->Bitmaps[P.Bitmap];
-		const FVector2D Pos((P.Pos.X - Origin.X) * T, (P.Pos.Y - Origin.Y) * T);
-		const FVector2D Size(Bm.W * P.Scale * T, Bm.H * P.Scale * T);
-		const FVector2D AtlasSize(Atlas->Size.X, Atlas->Size.Y);
-		FCanvasTileItem Item(Pos, Tex->GetResource(), Size,
-			FVector2D(Cell->Min.X, Cell->Min.Y) / AtlasSize, FVector2D(Cell->Max.X, Cell->Max.Y) / AtlasSize, FLinearColor::White);
-		Item.BlendMode = SE_BLEND_Masked;  // clip at 0.5, write colour and alpha as they are
-		if (P.Alpha >= 0.5f)  // crossfades switch halfway (the parts can't blend alpha-tested)
+		for (const FDrawItem& P : Items)
 		{
+			if (P.Alpha < 0.5f)
+			{
+				continue;  // crossfades switch halfway (the parts can't blend alpha-tested)
+			}
+			const FVector2f Origin = P.Feet + Look->Bounds.Min;
+			const FMRSpriteAtlas* Atlas = Lib.Atlases.Find(P.PartDef->Atlas);
+			const FIntRect* Cell = Atlas ? Atlas->Cells.Find(P.Bitmap) : nullptr;
+			const FMRSpriteBgf* Bgf = Lib.FindBgf(P.PartDef->Bgf);
+			if (!Cell || !Bgf)
+			{
+				continue;
+			}
+			UTexture2D* Tex = Kind == EPass::Ramp ? RampTexture(P.PartDef->Atlas) : AtlasTexture(P.PartDef->Atlas);
+			if (Kind == EPass::Ramp && !Tex && Atlas->RampTexture.IsEmpty())
+			{
+				continue;  // a creature: never translated
+			}
+			if (!IsReady(Tex))
+			{
+				LastDrawKey = 0;  // a texture not ready yet (just loaded): draw again next frame
+				continue;
+			}
+			const FMRSpriteBitmap& Bm = Bgf->Bitmaps[P.Bitmap];
+			const FVector2D AtlasSize(Atlas->Size.X, Atlas->Size.Y);
+			const int32 Xlat = PartXlat.Contains(P.PartDef->Name) ? PartXlat[P.PartDef->Name] : P.PartDef->Xlat;
+			FLinearColor Colour = FLinearColor::White;
+			if (Kind == EPass::Code)
+			{
+				Colour = FLinearColor(Xlat / 255.f, P.PartDef->Class / 255.f, 0.f, 1.f);
+			}
+			else if (Kind == EPass::Ramp)
+			{
+				Colour = FLinearColor(Xlat / 255.f, 0.f, 1.f, 1.f);  // x the ramp texel (1, 0, ramp * 85, 1)
+			}
+			// (the ramp atlas has the same layout at 1/4 the size: the same UVs)
+			FCanvasTileItem Item(FVector2D((P.Pos.X - Origin.X) * T, (P.Pos.Y - Origin.Y) * T), Tex->GetResource(),
+				FVector2D(Bm.W * P.Scale * T, Bm.H * P.Scale * T),
+				FVector2D(Cell->Min.X, Cell->Min.Y) / AtlasSize, FVector2D(Cell->Max.X, Cell->Max.Y) / AtlasSize, Colour);
+			// colour and ramp: clip at 0.5, write texture x colour; code: write the colour where the
+			// atlas alpha > 0.5 (the same texels as the colour pass)
+			Item.BlendMode = Kind == EPass::Code ? SE_BLEND_MaskedDistanceField : SE_BLEND_Masked;
 			Canvas->DrawItem(Item);
 		}
-	}
-	UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(this, Context);
-
-	// the code pass: each part's translation and surface class, exact (alpha-tested at 0.5, no
-	// blending), later parts over earlier ones as in the colour pass
-	UKismetRenderingLibrary::ClearRenderTarget2D(this, CodeTarget, FLinearColor::Transparent);
-	UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(this, CodeTarget, Canvas, CanvasSize, Context);
-	if (!Canvas)
-	{
-		return;
-	}
-	for (const FDrawItem& P : Items)
-	{
-		if (P.Alpha < 0.5f)
-		{
-			continue;  // fading out (crossfades): the colour pass alone carries it
-		}
-		const FVector2f Origin = P.Feet + Look->Bounds.Min;
-		const FMRSpriteAtlas* Atlas = Lib.Atlases.Find(P.PartDef->Atlas);
-		const FIntRect* Cell = Atlas ? Atlas->Cells.Find(P.Bitmap) : nullptr;
-		const FMRSpriteBgf* Bgf = Lib.FindBgf(P.PartDef->Bgf);
-		UTexture2D* Tex = Cell ? AtlasTexture(P.PartDef->Atlas) : nullptr;
-		if (!IsReady(Tex) || !Bgf)
-		{
-			LastDrawKey = 0;  // a texture not ready yet (just loaded): draw again next frame
-			continue;
-		}
-		const FMRSpriteBitmap& Bm = Bgf->Bitmaps[P.Bitmap];
-		const FVector2D AtlasSize(Atlas->Size.X, Atlas->Size.Y);
-		const int32 Xlat = PartXlat.Contains(P.PartDef->Name) ? PartXlat[P.PartDef->Name] : P.PartDef->Xlat;
-		FCanvasTileItem Item(FVector2D((P.Pos.X - Origin.X) * T, (P.Pos.Y - Origin.Y) * T), Tex->GetResource(),
-			FVector2D(Bm.W * P.Scale * T, Bm.H * P.Scale * T),
-			FVector2D(Cell->Min.X, Cell->Min.Y) / AtlasSize, FVector2D(Cell->Max.X, Cell->Max.Y) / AtlasSize,
-			FLinearColor(Xlat / 255.f, P.PartDef->Class / 255.f, 0.f, 1.f));
-		Item.BlendMode = SE_BLEND_MaskedDistanceField;  // writes the colour where the atlas alpha > 0.5
-		Canvas->DrawItem(Item);
-	}
-	UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(this, Context);
+		UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(this, Context);
+	};
+	Pass(Target, EPass::Colour);
+	Pass(CodeTarget, EPass::Code);
+	Pass(RampTarget, EPass::Ramp);
 }
 
 void UMRSpriteBodyComponent::PlaceQuad(UStaticMeshComponent* Quad, float FaceYaw, float Lean)
@@ -881,6 +1026,7 @@ void UMRSpriteBodyComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	const int32 Angle = FMRSpriteLibrary::RelativeAngle(Owner->GetActorRotation().Yaw, ViewerYaw);
 	LastAngle = Angle;
 
+	UpdateDensity(ViewLoc);
 	EnsureTarget();
 	Compose(Angle, DeltaTime);
 	UpdateMotion(DeltaTime, bMoving);

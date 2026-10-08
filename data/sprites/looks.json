@@ -1,5 +1,37 @@
 {
- "_comment": "Test appearances for the sprite experiment. Parts are bgf names (kod/util/system.kod charinfo_*); colours use Kod names: skin = PT_BLUE_TO_SKIN1-4, hair_color = the character creator's list (m59sprites.HAIR), shirt/pants = XLAT_TO_* ramps encoded as two-colour xlats with the skin.",
+ "_comment": "Test appearances for the sprite experiment. Parts are bgf names (kod/util/system.kod charinfo_*); colours use Kod names: skin = PT_BLUE_TO_SKIN1-4, hair_color = the character creator's list (m59sprites.HAIR), shirt/pants = XLAT_TO_* ramps encoded as two-colour xlats with the skin. Looks marked ai: true wear an AI-made part (tools/sprites/new_hair.py): build_player_sprites.py skips them unless --with-ai. player_male / player_female are the bases players are drawn on (the server's or the creator's face parts and colours replace theirs).",
+ "player_male": {
+  "gender": "male",
+  "body": "bta",
+  "legs": "bfa",
+  "right_arm": "bra",
+  "left_arm": "bla",
+  "head": "phax",
+  "eyes": "peax",
+  "mouth": "pmax",
+  "nose": "pnax",
+  "hair": "ptcd",
+  "skin": "skin3",
+  "hair_color": "blond",
+  "shirt": "gray",
+  "pants": "skin1"
+ },
+ "player_female": {
+  "gender": "female",
+  "body": "btb",
+  "legs": "bfb",
+  "right_arm": "brb",
+  "left_arm": "blb",
+  "head": "phkx",
+  "eyes": "pekx",
+  "mouth": "pmkx",
+  "nose": "pnkx",
+  "hair": "ptcd",
+  "skin": "skin3",
+  "hair_color": "blond",
+  "shirt": "gray",
+  "pants": "skin1"
+ },
  "test_male": {
   "gender": "male",
   "body": "bta",
@@ -50,6 +82,7 @@
   "weapon": "swordov"
  },
  "test_ai_hair": {
+  "ai": true,
   "gender": "male",
   "body": "bta",
   "legs": "bfa",
@@ -66,6 +99,7 @@
   "pants": "skin2"
  },
  "test_ai_hair_blond": {
+  "ai": true,
   "gender": "male",
   "body": "bta",
   "legs": "bfa",

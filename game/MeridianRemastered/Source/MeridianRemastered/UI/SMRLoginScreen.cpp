@@ -6,6 +6,7 @@
 #include "Net/MRNetSubsystem.h"
 #include "UI/MRUIStyle.h"
 #include "UI/MRUISubsystem.h"
+#include "UI/SMRCharCreator.h"
 #include "UI/SMRHUD.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Images/SImage.h"
@@ -55,7 +56,6 @@ void SMRLoginScreen::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 		CharactersHandle = Net->OnCharactersChanged.AddSP(this, &SMRLoginScreen::RebuildCharacters);
 		PhaseHandle = Net->OnPhaseChanged.AddLambda([this]()
 		{
-			bCreating = false;
 			LocalError.Reset();
 			RebuildCharacters();
 			OnShown();
@@ -63,7 +63,7 @@ void SMRLoginScreen::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 	}
 
 	TSharedRef<SOverlay> Pages = SNew(SOverlay);
-	const TSharedRef<SWidget> PageWidgets[] = {MakeLoginPage(), MakeConnectingPage(), MakeCharactersPage(), MakeCreatePage()};
+	const TSharedRef<SWidget> PageWidgets[] = {MakeLoginPage(), MakeConnectingPage(), MakeCharactersPage()};
 	for (int32 i = 0; i < UE_ARRAY_COUNT(PageWidgets); ++i)
 	{
 		const EPage P = static_cast<EPage>(i);
@@ -86,9 +86,19 @@ void SMRLoginScreen::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 	ErrorText->SetAutoWrapText(true);
 	ErrorText->SetJustification(ETextJustify::Center);
 
-	ChildSlot.HAlign(HAlign_Center).VAlign(VAlign_Center)
+	ChildSlot
 	[
+		SNew(SOverlay)
+		// the creator replaces the window while a character is made
+		+ SOverlay::Slot()
+		[
+			SAssignNew(Creator, SMRCharCreator, InUI)
+			.Visibility_Lambda([this]() { return GetPage() == EPage::Create ? EVisibility::Visible : EVisibility::Collapsed; })
+		]
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
+		[
 		SNew(SMRPanel, InUI).Background(TEXT("bkgnd")).Frame(TEXT("edge")).bCorners(true).Padding(6.f)
+		.Visibility_Lambda([this]() { return GetPage() == EPage::Create ? EVisibility::Collapsed : EVisibility::Visible; })
 		[
 			SNew(SBox).WidthOverride_Lambda([this, Px]()
 			{
@@ -119,6 +129,7 @@ void SMRLoginScreen::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 					MakeButtons()
 				]
 			]
+		]
 		]
 	];
 	RebuildCharacters();
@@ -254,44 +265,6 @@ bool SMRLoginScreen::HasMotd() const
 	return !GetMotd().IsEmpty();
 }
 
-TSharedRef<SWidget> SMRLoginScreen::MakeCreatePage()
-{
-	UMRUISubsystem* Ui = UI.Get();
-	UMRUIStyle* S = Ui->GetStyle();
-	const float Px = S->Px();
-	TSharedRef<STextBlock> Hint = Label(S, LOCTEXT("CreateHint",
-		"Your face, statistics, spells and skills start at the server's defaults."), 8.f, false, Dim());
-	Hint->SetAutoWrapText(true);
-	return SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 0.f, 0.f, 2.f * Px)
-		[
-			Label(S, LOCTEXT("NewCharacter", "A new character"), 10.f, true, S->Color(TEXT("heading"), FLinearColor(1.f, 0.75f, 0.3f)))
-		]
-		+ SVerticalBox::Slot().AutoHeight()[Label(S, LOCTEXT("Name", "Name"), 9.f, false, Dim())]
-		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 1.f * Px, 0.f, 4.f * Px)
-		[
-			SAssignNew(CharNameField, SMRTextField, Ui).Width(WidthPx - 18.f).MaxLength(30)
-			.OnSubmit(FSimpleDelegate::CreateSP(this, &SMRLoginScreen::Create))
-			.OnCancel(FSimpleDelegate::CreateSP(this, &SMRLoginScreen::Back))
-		]
-		+ SVerticalBox::Slot().AutoHeight()[Label(S, LOCTEXT("Gender", "Gender"), 9.f, false, Dim())]
-		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 1.f * Px, 0.f, 4.f * Px)
-		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot().FillWidth(1.f)
-			[
-				SNew(SMRTextButton, Ui).Text(LOCTEXT("Male", "Male")).TextSize(9.f)
-					.bActive_Lambda([this]() { return !bFemale; }).OnClicked_Lambda([this]() { bFemale = false; })
-			]
-			+ SHorizontalBox::Slot().FillWidth(1.f).Padding(2.f * Px, 0.f, 0.f, 0.f)
-			[
-				SNew(SMRTextButton, Ui).Text(LOCTEXT("Female", "Female")).TextSize(9.f)
-					.bActive_Lambda([this]() { return bFemale; }).OnClicked_Lambda([this]() { bFemale = true; })
-			]
-		]
-		+ SVerticalBox::Slot().AutoHeight()[Hint];
-}
-
 TSharedRef<SWidget> SMRLoginScreen::MakeButtons()
 {
 	UMRUISubsystem* Ui = UI.Get();
@@ -304,7 +277,7 @@ TSharedRef<SWidget> SMRLoginScreen::MakeButtons()
 		case EPage::Connecting: return LOCTEXT("Cancel", "Cancel");
 		case EPage::Characters:
 			return Entries.IsValidIndex(Selected) && Entries[Selected].bEmpty ? LOCTEXT("Make", "Create...") : LOCTEXT("Play", "Play");
-		default: return LOCTEXT("Create", "Create");
+		default: return LOCTEXT("Cancel", "Cancel");
 		}
 	});
 	auto SecondaryText = TAttribute<FText>::CreateLambda([this]()
@@ -332,7 +305,7 @@ TSharedRef<SWidget> SMRLoginScreen::MakeButtons()
 					case EPage::Login: LogIn(); break;
 					case EPage::Connecting: LogOff(); break;
 					case EPage::Characters: Play(); break;
-					case EPage::Create: Create(); break;
+					default: break;
 					}
 				})
 		]
@@ -346,7 +319,6 @@ TSharedRef<SWidget> SMRLoginScreen::MakeButtons()
 					{
 					case EPage::Login: Quit(); break;
 					case EPage::Characters: LogOff(); break;
-					case EPage::Create: Back(); break;
 					default: break;
 					}
 				})
@@ -407,7 +379,9 @@ SMRLoginScreen::EPage SMRLoginScreen::GetPage() const
 	switch (Net ? Net->GetPhase() : EMRNetPhase::Offline)
 	{
 	case EMRNetPhase::Offline: return EPage::Login;
-	case EMRNetPhase::Characters: return bCreating ? EPage::Create : EPage::Characters;
+	case EMRNetPhase::Characters: return EPage::Characters;
+	// the creator once the server's options are in (until then: "Asking the server...")
+	case EMRNetPhase::Creating: return Net->GetCharInfo().IsValid() ? EPage::Create : EPage::Connecting;
 	default: return EPage::Connecting;
 	}
 }
@@ -418,7 +392,12 @@ void SMRLoginScreen::OnShown()
 	switch (GetPage())
 	{
 	case EPage::Login: Field = NameField.IsValid() && NameField->GetText().IsEmpty() ? NameField : PasswordField; break;
-	case EPage::Create: Field = CharNameField; break;
+	case EPage::Create:
+		if (Creator.IsValid())
+		{
+			Creator->OnShown();
+		}
+		return;
 	default: break;
 	}
 	if (Field.IsValid())
@@ -460,40 +439,13 @@ void SMRLoginScreen::Play()
 		return;
 	}
 	const FEntry& E = Entries[Selected];
+	LocalError.Reset();
 	if (E.bEmpty)
 	{
-		bCreating = true;
-		CreateSlot = E.Id;
-		LocalError.Reset();
-		CharNameField->SetText(FString());
-		CharNameField->Focus();
+		Net->RequestCharInfo(E.Id);  // the creator opens when the server's options arrive
 		return;
 	}
 	Net->UseCharacter(E.Id);
-}
-
-void SMRLoginScreen::Create()
-{
-	UMRNetSubsystem* Net = GetNet();
-	if (!Net || GetPage() != EPage::Create)
-	{
-		return;
-	}
-	const FString Name = CharNameField->GetText().TrimStartAndEnd();
-	if (Name.Len() < 3)
-	{
-		LocalError = TEXT("A name needs at least 3 letters.");
-		return;
-	}
-	LocalError.Reset();
-	bCreating = false;  // the server answers with the game, or a reason the name won't do
-	Net->CreateCharacter(CreateSlot, Name, bFemale);
-}
-
-void SMRLoginScreen::Back()
-{
-	bCreating = false;
-	LocalError.Reset();
 }
 
 void SMRLoginScreen::LogOff()
@@ -523,20 +475,18 @@ FReply SMRLoginScreen::OnKeyDown(const FGeometry& Geo, const FKeyEvent& Event)
 		{
 		case EPage::Login: LogIn(); break;
 		case EPage::Characters: Play(); break;
-		case EPage::Create: Create(); break;
-		default: break;
+		default: return FReply::Unhandled();
 		}
 		return FReply::Handled();
 	}
-	if (Key == EKeys::Up || Key == EKeys::Down)
+	if ((Key == EKeys::Up || Key == EKeys::Down) && GetPage() == EPage::Characters)
 	{
 		Selected = FMath::Clamp(Selected + (Key == EKeys::Up ? -1 : 1), 0, FMath::Max(0, Entries.Num() - 1));
 		return FReply::Handled();
 	}
-	if (Key == EKeys::Escape && GetPage() == EPage::Create)
+	if (Key == EKeys::Escape && GetPage() == EPage::Create && Creator.IsValid())
 	{
-		Back();
-		return FReply::Handled();
+		return Creator->OnKeyDown(Geo, Event);
 	}
 	return FReply::Unhandled();
 }

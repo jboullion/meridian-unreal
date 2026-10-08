@@ -10,6 +10,8 @@
 #   powershell -File tools/ue/run_net_test.ps1 -Server Shards   # the online one (needs our Origin allowed there)
 #   powershell -File tools/ue/run_net_test.ps1 -Hold 40 -Render # stay 40 s in a game window, pacing, with
 #                                                               # screenshots (Saved/Screenshots/MRNet/)
+#   powershell -File tools/ue/run_net_test.ps1 -Create          # a fresh account: makes a character through
+#                                                               # the creator's path and checks its face
 #
 # The default account is a test account that only exists on the local dev server. Exit code 0 on success.
 param(
@@ -17,11 +19,17 @@ param(
     [string]$Server = "Local",
     [int]$Hold = 0,
     [switch]$Render,
+    [switch]$Create,
     [string]$User = "uenettest",
     [string]$Pass = "uenettest-local",
     [int]$TimeoutSeconds = 240
 )
 $TimeoutSeconds += $Hold
+if ($Create) {
+    # an account the server hasn't seen: it is made at login, with no character yet
+    $User = "uecreate" + (Get-Random -Minimum 10000 -Maximum 99999)
+    $Pass = "uecreate-local"
+}
 
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $proj = Join-Path $repo "game\MeridianRemastered\MeridianRemastered.uproject"

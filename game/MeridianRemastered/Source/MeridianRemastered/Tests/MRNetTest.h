@@ -11,6 +11,10 @@ class APlayerController;
  * a Meridian server (the local Shards stack): -MRNetTest -MRServer=<name part> -MRNetUser=<u>
  * -MRNetPass=<p>, standalone and -nullrhi. It logs in (an unknown name makes the account), plays a
  * character or creates one, and checks:
+ *   0. a new character (an account without one; run_net_test.ps1 -Create makes a fresh account) is
+ *      made through the creator's path: the server's options (BP_CHARINFO), then a female with
+ *      chosen face parts and colours, the Mage stats and a spell and a skill (BP_NEW_CHARINFO), and
+ *      the server then shows that face on our object;
  *   1. it enters a zone we have, with the pawn at the server's position;
  *   2. a line it says comes back from the server (BP_SAID);
  *   3. standing on an exit square takes it to another zone (BP_REQ_GO, a new room);
@@ -37,6 +41,9 @@ private:
 	void Fail(const FString& What);
 	void Finish();
 	bool TakeExit();
+	/** The new character the creator path sends (and what our object should then wear). */
+	void SendNewCharacter(class UMRNetSubsystem* Net);
+	void CheckLook(class UMRNetSubsystem* Net);
 	void LogCreatures() const;
 
 	TWeakObjectPtr<APlayerController> Controller;
@@ -45,6 +52,11 @@ private:
 	int32 Passed = 0;
 	int32 Steps = 0;
 	int32 CreateTries = 0;
+	bool bCreated = false;
+	/** hotspot -> bgf, and the skin and hair translations the new character asked for. */
+	TMap<uint8, FString> ExpectedParts;
+	int32 ExpectedSkinXlat = -1;
+	int32 ExpectedHairXlat = -1;
 	int32 StartRid = 0;
 	bool bAsked = false;
 	float HoldSeconds = 0.f;

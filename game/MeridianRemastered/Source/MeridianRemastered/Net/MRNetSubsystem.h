@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Containers/Ticker.h"
 #include "Interfaces/IHttpRequest.h"
+#include "Net/MRCharInfo.h"
 #include "Net/MRResources.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "MRNetSubsystem.generated.h"
@@ -36,6 +37,14 @@ struct FMRCharacterSlot
 	bool bNeedsCreation = false;
 };
 
+/** An overlay on an object (a player's head, face parts, hair, arms, weapon): proto.h's overlay record. */
+struct FMRNetOverlay
+{
+	FString Bgf;           // the bitmap without its extension, lower case ("phax")
+	uint8 Hotspot = 0;     // where it attaches (player.kod SendOverlays: 1 head, 11 eyes, 12 mouth, 13 hair, 14 nose...)
+	int32 Xlat = -1;       // its palette translation (ANIMATE_TRANSLATION), -1 = none
+};
+
 /** An object in the player's room, as the server describes it. */
 struct FMRNetObject
 {
@@ -57,6 +66,10 @@ struct FMRNetObject
 	uint8 Speed = 0;
 	/** Overlay bitmap names (a player's head, arms, weapon...). */
 	TArray<FString> Overlays;
+	/** The same overlays with their hotspots and translations. */
+	TArray<FMRNetOverlay> OverlayParts;
+	/** The object's own palette translation (a player's body: its shirt), -1 = none. */
+	int32 Xlat = -1;
 
 	bool IsPlayer() const;
 	/** Something alive to draw as a sprite: a player, a monster or an NPC. */
@@ -122,7 +135,8 @@ enum class EMRNetPhase : uint8
 {
 	Offline,      // not connected (the login screen)
 	Connecting,   // fetching game data, connecting, logging in
-	Characters,   // choosing or creating a character
+	Characters,   // choosing a character
+	Creating,     // the character creator (waiting for the server's options, editing, submitting)
 	Entering,     // waiting for the first room
 	InGame,
 };
@@ -166,8 +180,19 @@ public:
 	/** Leave the server (or stop connecting). */
 	void Logoff();
 	void UseCharacter(uint32 Id);
-	/** A new character in an empty slot with the server's default face, stats and no spells. */
-	void CreateCharacter(uint32 SlotId, const FString& Name, bool bFemale);
+	/** Open the creator for an empty slot: asks the server what it offers (BP_CHARINFO, OnCharInfo). */
+	void RequestCharInfo(uint32 SlotId);
+	/** Send the new character (Phase Creating). The server answers OK (then we enter) or not (LastError). */
+	void CreateCharacter(const FMRNewCharacter& Character);
+	/** Leave the creator for the character list (nothing is sent: asking for the options changed nothing). */
+	void CancelCreation();
+	/** What the server offers a new character (valid once OnCharInfo fired). */
+	const FMRCharInfo& GetCharInfo() const { return CharInfo; }
+	uint32 GetCreateSlot() const { return CreateSlot; }
+	/** True while a new character waits for the server's answer. */
+	bool IsSubmittingCharacter() const { return bSubmittingCharacter; }
+	/** data/charinfo.json (from Kod): the creator's options without a server. */
+	static bool LoadMockCharInfo(FMRCharInfo& Out);
 
 	// --- in game
 	void RequestMove(int32 KodRow, int32 KodCol, uint8 Speed);
@@ -195,11 +220,17 @@ public:
 
 	/** Tests and UI shots: show a character list without a server. */
 	void SetPreview(EMRNetPhase InPhase, const TArray<FMRCharacterSlot>& InCharacters, const FString& InError = FString());
+	/** Tests and UI shots: the creator with these options, without a server. */
+	void SetPreviewCharInfo(const FMRCharInfo& Info, uint32 SlotId);
 	/** What the login screen says while it waits (e.g. a room this client hasn't built). */
 	void SetStatus(const FString& InStatus) { Status = InStatus; }
 
 	FOnMRNetEvent OnPhaseChanged;
 	FOnMRNetEvent OnCharactersChanged;
+	/** BP_CHARINFO arrived: the creator can open. */
+	FOnMRNetEvent OnCharInfo;
+	/** The server refused the new character (BP_CHARINFO_NOT_OK): LastError says so. */
+	FOnMRNetEvent OnCreateFailed;
 	/** A new room's contents arrived (also the first room after entering). */
 	FOnMRNetEvent OnRoomEntered;
 	FOnMRNetObjectEvent OnObjectAdded;
@@ -229,8 +260,10 @@ private:
 	bool ReadObject(FMRReader& R, FMRNetObject& Out);
 	bool ReadRoomObject(FMRReader& R, FMRNetObject& Out);
 	static void SkipPalette(FMRReader& R);
+	/** The optional translation or effect prefix: the translation, or -1. */
+	static int32 ReadPalette(FMRReader& R);
 	static void SkipAnimation(FMRReader& R);
-	void ReadOverlays(FMRReader& R, TArray<FString>* Out);
+	void ReadOverlays(FMRReader& R, TArray<FString>* Out, TArray<FMRNetOverlay>* OutParts = nullptr);
 	void AddChat(const FString& Text, uint8 Kind);
 	bool ReadStat(FMRReader& R, FMRNetStat& Out);
 	FMRNetStatGroup& StatGroup(uint8 Group);
@@ -253,6 +286,9 @@ private:
 	FString LastError;
 	TArray<FMRCharacterSlot> Characters;
 	FString Motd;
+	FMRCharInfo CharInfo;
+	uint32 CreateSlot = 0;
+	bool bSubmittingCharacter = false;
 	FMRNetPlayer Player;
 	bool bAwaitingRoom = false;
 	TMap<uint32, FMRNetObject> Objects;

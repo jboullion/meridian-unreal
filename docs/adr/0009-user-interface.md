@@ -63,6 +63,32 @@ The client drew no UI apart from the first-person hands (`AMRHUD`). We want a mo
 - **Child windows** (bag, hotbar, tab pages, avatar) use the grey "inset" frame and the dark stone. "inset" is the inventory pane's bevel in grey; `build_ui_art.py` makes it from the brown original. The tab pages fill the dialog's height.
 - **Tooltips** use the dialog's dark stone and iron frame.
 
+## Character creator (2026-10-07)
+The original's "Customize your character" (`module/char`), as Shards shows it (`ReferenceImages/ui/shards-*.png`). It is `UI/SMRCharCreator`, shown by the login screen in place of its window while the network phase is `Creating` (ADR 0010).
+- **Pages:** Name, Appearance, Statistics, Spells, Skills, as text tabs (`SMRTextButton` with `bActive`) that share the window's width. Prev / Next go through them; OK and Cancel are at the bottom.
+  - **Name:** the name field, and a multi-line description (`SMRTextBox`). The text fills the box, so a click anywhere in it starts typing; before 2026-10-08 the text was one line inside a scroll box, and a click below it did nothing.
+  - **Appearance:**
+    - on the left, a large face as the original's creator showed it: the head with its face parts and hair, 176 original pixels square (`AMRAvatarPreview` in portrait mode, 44 cm across, centred on the head for each gender). It turns by dragging or with the `<` Turn `>` buttons under it, so the head can be seen from every side. (The whole-body window was there until 2026-10-08; the maintainer preferred the larger face. The inventory avatar still turns by dragging, one of the eight angles per 17.5 % of its width.);
+    - the face stands on a light grey (`creator_preview_bg`), where the sprite's edges read better than on black;
+    - Male / Female, a skin slider from Light to Dark (a gold line, a tick per skin and a thumb: `SMRSlider` `bTrack`), and `<` `>` pickers for hair, hair colour, eyes, nose and mouth;
+    - it starts random, as the original did.
+  - **Statistics:** six sliders (`SMRSlider`: the stat bar art, click or drag) from 1 to 50 that never spend more than the 70 points left, our own short descriptions, the original's four presets, and a points-left bar. The colours are the original client's (`clientd3d/color.c`, as Shards uses them): `COLOR_BAR1` green (0, 128, 0) for the stats, `COLOR_BAR2` red (128, 0, 0) for the points left, `COLOR_BAR3` (48, 0, 0) for the empty part (`graph_bar`, `graph_points`, `graph_empty` in `ui_style.json`).
+  - The skin slider's steps come from the server's list. It used to be built before the options arrived and had two steps instead of four.
+  - **Spells / Skills:**
+    - available and chosen lists (`SMRSelectList`, sorted, labelled "School level: name");
+    - Add / Remove, or click a selected row again;
+    - the description and cost of the selected row;
+    - one 45-point pool. Rows that cost too much, or that Shal'ille / Qor rule out, are dimmed.
+- **Text:** the information text (prompts, captions, list rows) is 30 % larger than the controls' (`InfoSize` in `SMRCharCreator.cpp`); the stat descriptions are not (two lines at that size crowded the page). The page is 360 × 214 original pixels.
+- **Points left** bars are as tall as the stat sliders. On the Statistics page they sit 10 px under the suggestions; on Spells and Skills, 13 px under the lists. The Shal'ille / Qor rule is under the available spells, left aligned.
+- **Every point spent:** OK refuses while stat points are left, or while spell and skill points are left and some spell or skill still fits them ("Spend all of your points first: ..."), and shows that page. With costs of 10 and 25 a few points can be left with nothing to buy (four 10-point picks leave 5), which is allowed. The original only warned; this is the maintainer's rule (2026-10-08). It lives in the creator, not in `MRCharInfo::Validate`: the server accepts unspent points.
+- **OK** runs `MRCharInfo::Validate`. On a problem it shows that page with the reason; otherwise it sends the character and waits. A refused name returns to the Name page.
+- **Data:**
+  - the options are the server's (`BP_CHARINFO`);
+  - the words and presets are in `data/ui/char_create.json`. The presets' numbers are the original's; the words are ours, because `char.rc` is GPL;
+  - offline (UI shots), the options come from `data/charinfo.json`.
+- **Shots:** `run_ui_shots.ps1 -Label creator` (`creator_*`), sheet `build/ui/shots/creator/sheet.png`.
+
 ## Minimap captures
 An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `tools/ue/run_map_capture.ps1`). A headless editor can't open `L_World`.
 - One picture per geometry zone covers every zone drawn from that geometry; Raza and the Outskirts share one. `MRMinimap::CaptureRect` (the `bounds_m` footprint, squared, plus a margin) is shared by the capture and the widget.

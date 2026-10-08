@@ -31,6 +31,13 @@ public:
 	void SetLook(FName LookName);
 	FName GetLook() const { return Look ? Look->Name : NAME_None; }
 
+	/**
+	 * Replace some of the look's parts by other bgfs (the character creator's head, hair, eyes,
+	 * nose and mouth: part name -> bgf; "blank" removes the part, a bald head). Parts not given
+	 * keep the look's own. An empty map restores the look. Kept until the next SetLook.
+	 */
+	void SetPartBgfs(const TMap<FName, FName>& PartBgfs);
+
 	/** Load a look's atlases ahead of SetLook (a monster's corpse), so it doesn't pop in late. */
 	void PrewarmLook(FName LookName);
 
@@ -58,6 +65,12 @@ public:
 	 */
 	void SetViewer(USceneComponent* InViewer) { Viewer = InViewer; }
 
+	/** Draw only these parts (a portrait: the head, face parts and hair); empty = all. */
+	void SetOnlyParts(const TArray<FName>& Parts) { OnlyParts = Parts; LastDrawKey = 0; }
+
+	/** Render target texels per base (torso) pixel, whatever the distance (a portrait); 0 = automatic. */
+	void SetDensityOverride(float InTexelsPerBasePixel);
+
 	/** Always use the unlit material (the inventory avatar), whatever mr.Sprite.Unlit says. */
 	void SetForceUnlit(bool bInForceUnlit);
 
@@ -72,11 +85,17 @@ protected:
 
 private:
 	const FMRSpriteLook* Look = nullptr;
+	/** The library's look, and Look's own copy with the parts SetPartBgfs replaced. */
+	const FMRSpriteLook* BaseLook = nullptr;
+	FMRSpriteLook CustomLook;
+	TMap<FName, FName> PartOverrides;
 	float HeightScale = 1.f;
 
 	UPROPERTY(Transient) TObjectPtr<UTextureRenderTarget2D> Target;
 	/** Per pixel the part's palette translation (R) and surface class (G): M_SpriteBody recolours with it. */
 	UPROPERTY(Transient) TObjectPtr<UTextureRenderTarget2D> CodeTarget;
+	/** Per pixel each original pixel's palette ramp (B = ramp * 85) and its part's translation (R), unfiltered. */
+	UPROPERTY(Transient) TObjectPtr<UTextureRenderTarget2D> RampTarget;
 	/** Each part's palette translation now (the look's, or SetColours'). */
 	TMap<FName, int32> PartXlat;
 	void ApplyLightingParams();
@@ -95,6 +114,11 @@ private:
 	bool bActionLoops = false;
 
 	float TexelsPerBasePixel = 4.f;
+	/** Close up: the target's density is the base x 1.41^DensityStep (mr.Sprite.ScreenTexels). */
+	int32 DensityStep = 0;
+	float DensityOverride = 0.f;
+	TArray<FName> OnlyParts;
+	void UpdateDensity(const FVector& ViewLoc);
 	int32 LastShrink = 4;
 	uint32 LastDrawKey = 0;
 	int32 LastAngle = 0;
@@ -147,6 +171,8 @@ private:
 	float SquashTimer = 0.f;
 	bool bWasFalling = false;
 	UTexture2D* AtlasTexture(const FString& Key);
+	/** The atlas's ramp atlas (T_SprRamp_<bgf>), or null (creatures). */
+	UTexture2D* RampTexture(const FString& Key);
 	static bool IsReady(const UTexture2D* Tex);
 	void PlaceQuad(UStaticMeshComponent* Quad, float FaceYaw, float Lean);
 	void UpdateSun(float DeltaTime);

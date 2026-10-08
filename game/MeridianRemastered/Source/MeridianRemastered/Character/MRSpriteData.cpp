@@ -408,6 +408,7 @@ bool FMRSpriteLibrary::ParseParts(const TSharedPtr<FJsonObject>& Root)
 			const TSharedPtr<FJsonObject> O = It.Value->AsObject();
 			FMRSpriteAtlas& A = Atlases.Add(It.Key);
 			A.Texture = O->GetStringField(TEXT("texture"));
+			O->TryGetStringField(TEXT("ramp"), A.RampTexture);
 			A.Size = FIntPoint(O->GetIntegerField(TEXT("w")), O->GetIntegerField(TEXT("h")));
 			for (const TPair<FString, TSharedPtr<FJsonValue>>& C : O->GetObjectField(TEXT("cells"))->Values)
 			{

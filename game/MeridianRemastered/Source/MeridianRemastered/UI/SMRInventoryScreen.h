@@ -14,12 +14,16 @@ class UMRUISubsystem;
 /** The inventory dialog's pages, in tab order (the original's stat buttons: statbtn_left_*). */
 enum class EMRInventoryTab : uint8 { Inventory, Spells, Skills, Stats, Quests, Count };
 
+/** Which preview an SMRAvatar shows (UMRUISubsystem's preview actors). */
+enum class EMRAvatarSource : uint8 { Inventory, CreatorBody, CreatorPortrait };
+
 /** The player in the dialog: the avatar render target, turned by dragging (the original's 8 angles). */
 class MERIDIANREMASTERED_API SMRAvatar : public SLeafWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SMRAvatar) {}
+	SLATE_BEGIN_ARGS(SMRAvatar) : _Source(EMRAvatarSource::Inventory) {}
 		SLATE_ARGUMENT(FVector2D, Size)
+		SLATE_ARGUMENT(EMRAvatarSource, Source)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs, UMRUISubsystem* InUI);
@@ -33,6 +37,7 @@ public:
 private:
 	TWeakObjectPtr<UMRUISubsystem> UI;
 	FVector2D Size;
+	EMRAvatarSource Source = EMRAvatarSource::Inventory;
 	mutable FSlateBrush Brush;
 	float DragAccum = 0.f;
 };

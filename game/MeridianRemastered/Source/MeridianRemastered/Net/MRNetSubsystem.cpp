@@ -139,8 +139,31 @@ void UMRNetSubsystem::SetPreview(EMRNetPhase InPhase, const TArray<FMRCharacterS
 {
 	Characters = InCharacters;
 	LastError = InError;
+	bSubmittingCharacter = false;
 	SetPhase(InPhase);
 	OnCharactersChanged.Broadcast();
+}
+
+void UMRNetSubsystem::SetPreviewCharInfo(const FMRCharInfo& Info, uint32 SlotId)
+{
+	CharInfo = Info;
+	CreateSlot = SlotId;
+	LastError.Reset();
+	bSubmittingCharacter = false;
+	SetPhase(EMRNetPhase::Creating);
+	OnCharInfo.Broadcast();
+}
+
+bool UMRNetSubsystem::LoadMockCharInfo(FMRCharInfo& Out)
+{
+	FString Json;
+	const FString File = FPaths::Combine(UMRZoneSubsystem::GetDataDir(), TEXT("charinfo.json"));
+	if (!FFileHelper::LoadFileToString(Json, *File) || !MRCharInfo::LoadMock(Json, Out))
+	{
+		UE_LOG(LogMeridian, Warning, TEXT("MRNet: %s missing or unreadable (tools/kod_extract/extract.py)"), *File);
+		return false;
+	}
+	return true;
 }
 
 // ------------------------------------------------------------------------------ session
@@ -192,6 +215,8 @@ void UMRNetSubsystem::HandleClosed(const FString& Error)
 	Objects.Reset();
 	Player = FMRNetPlayer();
 	Characters.Reset();
+	CharInfo = FMRCharInfo();
+	bSubmittingCharacter = false;
 	StatGroups.Reset();
 	bRequestedStats = false;
 	Resources.ClearDynamic();
@@ -204,39 +229,54 @@ void UMRNetSubsystem::HandleClosed(const FString& Error)
 
 void UMRNetSubsystem::UseCharacter(uint32 Id)
 {
-	if (Connection.IsValid() && Phase == EMRNetPhase::Characters)
+	// (never for a slot still to be created: blakserv hangs up and blocks the address for a while)
+	if (Connection.IsValid() && (Phase == EMRNetPhase::Characters || Phase == EMRNetPhase::Creating))
 	{
+		bSubmittingCharacter = false;
 		Connection->Send(FMRWriter(MRMsg::BP_USE_CHARACTER).U32(Id));
 		bAwaitingRoom = true;
 		SetPhase(EMRNetPhase::Entering, TEXT("Entering Meridian..."));
 	}
 }
 
-void UMRNetSubsystem::CreateCharacter(uint32 SlotId, const FString& Name, bool bFemale)
+void UMRNetSubsystem::RequestCharInfo(uint32 SlotId)
 {
 	if (!Connection.IsValid() || Phase != EMRNetPhase::Characters)
 	{
 		return;
 	}
-	// BP_SYSTEM + BP_NEW_CHARINFO (blakserv sprocket.c system_def_table): slot, name, description,
-	// gender, face parts, hair and skin colours, six stats, spells, skills. No face parts and no
-	// spells or skills: the server's defaults. 35 in every stat spends 210 of the 220 points.
-	FMRWriter W(MRMsg::BP_SYSTEM);
-	W.U8(MRMsg::BP_NEW_CHARINFO);
-	W.U32(SlotId).Str(Name.TrimStartAndEnd()).Str(FString());
-	W.U8(bFemale ? 2 : 1);
-	W.U16(0);                // face parts
-	W.U8(0).U8(3);           // hair, skin translation
-	W.U16(6);
-	for (int32 i = 0; i < 6; ++i)
+	// BP_SYSTEM + BP_SEND_CHARINFO: the System object answers with BP_CHARINFO (system.kod SendCharInfo)
+	CreateSlot = SlotId;
+	CharInfo = FMRCharInfo();
+	LastError.Reset();
+	Connection->Send(FMRWriter(MRMsg::BP_SYSTEM).U8(MRMsg::BP_SEND_CHARINFO));
+	SetPhase(EMRNetPhase::Creating, TEXT("Asking the server for its choices..."));
+}
+
+void UMRNetSubsystem::CreateCharacter(const FMRNewCharacter& Character)
+{
+	if (!Connection.IsValid() || Phase != EMRNetPhase::Creating || !CharInfo.IsValid() || bSubmittingCharacter)
 	{
-		W.I32(35);
+		return;
 	}
-	W.U16(0).U16(0);         // spells, skills
-	Connection->Send(W);
+	// BP_SYSTEM + BP_NEW_CHARINFO (blakserv sprocket.c system_def_table, MRCharInfo::Write)
+	FMRNewCharacter C = Character;
+	C.SlotId = CreateSlot;
+	Connection->Send(MRCharInfo::Write(C, CharInfo));
+	bSubmittingCharacter = true;
 	Status = TEXT("Creating your character...");
 	LastError.Reset();
 	OnCharactersChanged.Broadcast();
+}
+
+void UMRNetSubsystem::CancelCreation()
+{
+	if (Phase == EMRNetPhase::Creating && !bSubmittingCharacter)
+	{
+		LastError.Reset();
+		SetPhase(EMRNetPhase::Characters);
+		OnCharactersChanged.Broadcast();
+	}
 }
 
 void UMRNetSubsystem::RequestMove(int32 KodRow, int32 KodCol, uint8 Speed)
@@ -441,6 +481,21 @@ void UMRNetSubsystem::SkipPalette(FMRReader& R)
 	}
 }
 
+int32 UMRNetSubsystem::ReadPalette(FMRReader& R)
+{
+	const uint8 Next = R.Peek();
+	if (Next == MRMsg::ANIMATE_TRANSLATION)
+	{
+		R.U8();
+		return R.U8();
+	}
+	if (Next == MRMsg::ANIMATE_EFFECT)
+	{
+		R.Skip(2);
+	}
+	return -1;
+}
+
 void UMRNetSubsystem::SkipAnimation(FMRReader& R)
 {
 	switch (R.U8())
@@ -452,18 +507,22 @@ void UMRNetSubsystem::SkipAnimation(FMRReader& R)
 	}
 }
 
-void UMRNetSubsystem::ReadOverlays(FMRReader& R, TArray<FString>* Out)
+void UMRNetSubsystem::ReadOverlays(FMRReader& R, TArray<FString>* Out, TArray<FMRNetOverlay>* OutParts)
 {
 	const int32 N = R.U8();
 	for (int32 i = 0; i < N && R.IsOk(); ++i)
 	{
 		const uint32 Icon = R.U32();
-		R.U8();  // hotspot
-		SkipPalette(R);
+		const uint8 Hotspot = R.U8();
+		const int32 Xlat = ReadPalette(R);
 		SkipAnimation(R);
 		if (Out)
 		{
 			Out->Add(Resources.Get(Icon));
+		}
+		if (OutParts)
+		{
+			OutParts->Add(FMRNetOverlay{FPaths::GetBaseFilename(Resources.Get(Icon)).ToLower(), Hotspot, Xlat});
 		}
 	}
 }
@@ -488,10 +547,11 @@ bool UMRNetSubsystem::ReadObject(FMRReader& R, FMRNetObject& Out)
 	{
 		R.Skip(3);
 	}
-	SkipPalette(R);
+	Out.Xlat = ReadPalette(R);
 	SkipAnimation(R);
 	Out.Overlays.Reset();
-	ReadOverlays(R, &Out.Overlays);
+	Out.OverlayParts.Reset();
+	ReadOverlays(R, &Out.Overlays, &Out.OverlayParts);
 	Out.Icon = Resources.Get(Out.IconRsc);
 	Out.Name = Resources.Get(Out.NameRsc);
 	return R.IsOk();
@@ -617,14 +677,39 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		OnCharactersChanged.Broadcast();
 		break;
 	}
+	case MRMsg::BP_CHARINFO:
+		// the creator's options (MRCharInfo::Parse); only while we asked for them
+		if (Phase == EMRNetPhase::Creating)
+		{
+			FMRCharInfo Info;
+			if (MRCharInfo::Parse(R, Resources, Info) && Info.IsValid())
+			{
+				CharInfo = MoveTemp(Info);
+				UE_LOG(LogMeridian, Log, TEXT("MRNet: character options: %d hair, %d male eyes, %d spells, %d skills"),
+					CharInfo.Male.Hair.Num(), CharInfo.Male.Eyes.Num(), CharInfo.Spells.Num(), CharInfo.Skills.Num());
+				Status.Reset();
+				OnCharInfo.Broadcast();
+			}
+			else
+			{
+				LastError = TEXT("The server's character choices couldn't be read.");
+				SetPhase(EMRNetPhase::Characters);
+				OnCharactersChanged.Broadcast();
+			}
+		}
+		break;
 	case MRMsg::BP_CHARINFO_OK:
+		// the server may have given the character a new object id: enter with that one (charmake.c)
 		UE_LOG(LogMeridian, Log, TEXT("MRNet: character created"));
 		Status.Reset();
 		UseCharacter(R.U32());
 		break;
 	case MRMsg::BP_CHARINFO_NOT_OK:
+		// the server doesn't say why; the original client always blamed the name (charmake.c)
 		Status.Reset();
+		bSubmittingCharacter = false;
 		LastError = TEXT("That name can't be used. Try another.");
+		OnCreateFailed.Broadcast();
 		OnCharactersChanged.Broadcast();
 		break;
 	case MRMsg::BP_PLAYER:

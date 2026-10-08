@@ -6,14 +6,12 @@
 
 
 ### Props
-- Prop height ![Chandlier height](ReferenceImages/issues/chandalier-height.png)
-  - I suspect when we build our unreal maps we are not taking into account the height offset (or some similar property). Causing objects like the chandelier to be on the floor instead on the cieling.
+
 
 
 ### Movement
 
-- Remove crouching, jumping, and require a user to hit space bar to travel between levels.
-- "Run" should be the default movement, and walk should happen on shift.
+
 
 
 ### Server
@@ -23,10 +21,27 @@
 
 ### Character
 
-- The face and the right arm when viewed close up have some artifacts likely cause by edges / seams of the face parts ![face reference](ReferenceImages/issues/face-image-artifacts.png)
-  - We might just want to remove the AI image generation step and perhaps just see what things like like with the upscalers or maybe even the original images.
+- Creator Notes
+  - Dialog
+    - In stats, spells, and skills let's increase the remaining points bar to match the height of the green statistics bars
+    - Let's update the font size of all the information text by about 30% so they are easier to read
+  - Name
+    - 
+  - Appearance
+    - Let's keep the body turn code for the inventory (great idea), but let's remove it for the creator for now.
+    - Let's use the extra space to make the face window larger. Can we also add a "turn" / "Rotate" function on just the head area so the user can see all sides of the head.
+    - Let's change the skin from a gold bar to more of a slider mechanic with a gold line and four tick marks
+  - Statistics
+    - Let's add 10px spacing between the suggestions and the stat points left bar
+  - Spells
+    - Let's move the "Shal'lle and qor..." text to be left aligned / located under the available spells window.
+    - Let's move the points left down about 10 pixels to give it a little more space.
 
-- The mummy (the only monster I have seen) seems to bounce back and forth a bit as their walk animation plays. I think perhaps there is an offset between sheets with the sprites being different sizes making it flipbook cause this strnage jitter effect.
+
+
+### Animations
+
+- The mummy (the only monster I have seen) seems to bounce back and forth a bit as their walk animation plays. I think perhaps there is an offset between sheets with the sprites being different sizes making its flipbook cause this strnage jitter effect.
 
 ## Admins and Guides
 

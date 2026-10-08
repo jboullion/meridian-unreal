@@ -44,6 +44,7 @@
     {"name": "sprite_inn_table", "location_cm": [201000, 560, 220], "rotation": [-10.0, 180.0], "fov": 60},
     {"name": "sprite_square", "location_cm": [4100, 4000, 205], "rotation": [-4.0, 180.0], "fov": 60, "pawn_cm": [3750, 4000, 41], "pawn_yaw": 0},
     {"name": "sprite_close", "location_cm": [3930, 4000, 170], "rotation": [-6.0, 180.0], "fov": 50, "pawn_cm": [3750, 4000, 41], "pawn_yaw": 0},
+    {"name": "sprite_face", "location_cm": [3840, 4000, 212], "rotation": [0.0, 180.0], "fov": 30, "pawn_cm": [3750, 4000, 41], "pawn_yaw": 0},
     {"name": "int_smith", "location_cm": [600727, 617, 170], "rotation": [-6.0, 45.0], "fov": 90},
     {"name": "int_apoth", "location_cm": [830, 200730, 239], "rotation": [-6.0, 45.0], "fov": 90},
     {"name": "int_hut", "location_cm": [200195, 200250, 170], "rotation": [-6.0, 45.0], "fov": 90},

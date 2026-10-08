@@ -1,0 +1,29 @@
+{
+ "_doc": "The character creator (UI/SMRCharCreator, docs/adr/0009-user-interface.md). The rules (stat range and points, the 45 spell/skill points, the legal name characters) are the server's and live in Net/MRCharInfo.h; what the server offers comes in its BP_CHARINFO. Here: the words on each page and the stat presets. The presets' numbers are the original creator's (module/char/charstat.c); the text is ours. Stats are in the order Might, Intellect, Stamina, Agility, Mysticism, Aim. MRUIReload re-reads it.",
+ "title": "Customize your character",
+ "tabs": ["Name", "Appearance", "Statistics", "Spells", "Skills"],
+ "prompts": {
+  "name": "Choose a name of 3 to 30 letters. Letters, numbers, spaces and these symbols are allowed: _ ' ! @ $ ^ & * ( ) + = : [ ] { } ; / ? | < >",
+  "description": "Describe your character (others see this when they look at you):",
+  "appearance": "Choose how your character looks.",
+  "stats": "",
+  "spells": "Pick the spells you start out knowing.",
+  "spells_rule": "Shal'ille and Qor spells can't be chosen together.",
+  "skills": "Pick the skills you start out with."
+ },
+ "stats": [
+  {"name": "Might", "desc": "How much you can carry and how hard you hit."},
+  {"name": "Intellect", "desc": "How fast you learn spells and skills; the higher magics need it."},
+  {"name": "Stamina", "desc": "How well you hold up when hurt or tired. Kraanan's spells draw on it."},
+  {"name": "Agility", "desc": "Dodging blows, and some fighting and defensive arts."},
+  {"name": "Mysticism", "desc": "Gaining and restoring mana. Faren, Shal'ille and Qor rely on it."},
+  {"name": "Aim", "desc": "Landing your attacks; essential for bows and other ranged weapons."}
+ ],
+ "presets": [
+  {"name": "Mage", "desc": "A pure spellcaster", "stats": [40, 50, 45, 15, 45, 25]},
+  {"name": "Warrior", "desc": "A pure fighter", "stats": [40, 10, 50, 50, 20, 50]},
+  {"name": "Hybrid", "desc": "An archer who casts from three schools", "stats": [35, 25, 40, 30, 45, 45]},
+  {"name": "Trickster", "desc": "A Riija fighter", "stats": [35, 35, 40, 30, 30, 50]}
+ ],
+ "parts": {"hair": "Hair", "hair_colour": "Hair colour", "eyes": "Eyes", "nose": "Nose", "mouth": "Mouth"}
+}

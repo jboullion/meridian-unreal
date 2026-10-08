@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Character/MRSpriteAppearance.h"
 #include "GameFramework/Character.h"
 #include "MRNetObject.generated.h"
 
@@ -25,6 +26,9 @@ public:
 
 	/** The server's object id and what to draw. */
 	void Init(uint32 InId, FName InLook, const FString& InName);
+	/** A player's face parts and colours (MRNetLook::AppearanceFromObject). */
+	void SetAppearance(const FMRSpriteAppearance& A);
+
 	/** A new target position (world) and the server's speed for it (0: standing). */
 	void MoveTo(const FVector& World, uint8 Speed);
 	/** Face a Kod angle when standing. */

@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
 
+class SMRCharCreator;
 class SMRTextField;
 class SVerticalBox;
 class UMRNetSubsystem;
@@ -15,7 +16,8 @@ class UMRUISubsystem;
  * - Login: the server, login name and password (an unknown name makes a new account).
  * - Connecting: what is happening, and Cancel.
  * - Characters: the account's characters and empty slots; Play, Log off.
- * - Create: a name and male or female for an empty slot (the rest is the server's default).
+ * - Create: the character creator (SMRCharCreator) for an empty slot, in place of the window,
+ *   once the server has sent what it offers (until then the Connecting page says so).
  */
 class MERIDIANREMASTERED_API SMRLoginScreen : public SCompoundWidget
 {
@@ -30,6 +32,7 @@ public:
 	/** Shown: focus the first empty field. */
 	void OnShown();
 	EPage GetPage() const;
+	TSharedPtr<SMRCharCreator> GetCreator() const { return Creator; }
 
 	virtual bool SupportsKeyboardFocus() const override { return true; }
 	virtual FReply OnKeyDown(const FGeometry& Geo, const FKeyEvent& Event) override;
@@ -42,7 +45,6 @@ private:
 	TSharedRef<SWidget> MakeLoginPage();
 	TSharedRef<SWidget> MakeConnectingPage();
 	TSharedRef<SWidget> MakeCharactersPage();
-	TSharedRef<SWidget> MakeCreatePage();
 	TSharedRef<SWidget> MakeButtons();
 	void RebuildCharacters();
 	EVisibility PageVisibility(EPage Page) const;
@@ -52,8 +54,6 @@ private:
 
 	void LogIn();
 	void Play();
-	void Create();
-	void Back();
 	void LogOff();
 	void Quit();
 
@@ -67,15 +67,12 @@ private:
 	TArray<FEntry> Entries;
 	int32 Selected = 0;
 	int32 Server = 0;
-	bool bCreating = false;
-	bool bFemale = false;
-	uint32 CreateSlot = 0;
 	FString LocalError;
 
 	TWeakObjectPtr<UMRUISubsystem> UI;
 	TSharedPtr<SMRTextField> NameField;
 	TSharedPtr<SMRTextField> PasswordField;
-	TSharedPtr<SMRTextField> CharNameField;
+	TSharedPtr<SMRCharCreator> Creator;
 	TSharedPtr<SVerticalBox> CharacterList;
 	FDelegateHandle CharactersHandle;
 	FDelegateHandle PhaseHandle;

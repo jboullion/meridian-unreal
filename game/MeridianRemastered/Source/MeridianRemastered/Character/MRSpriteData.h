@@ -37,6 +37,8 @@ struct FMRSpriteBgf
 struct FMRSpriteAtlas
 {
 	FString Texture;     // asset name in /Game/Generated/Sprites
+	/** Player parts: each original pixel's palette ramp (T_SprRamp_<bgf>, tools/sprites/luts.py ramp_cell), 1/4 the size; empty: none. */
+	FString RampTexture;
 	FIntPoint Size = FIntPoint::ZeroValue;
 	TMap<int32, FIntRect> Cells;  // bitmap index -> texels (min inclusive, max exclusive)
 };

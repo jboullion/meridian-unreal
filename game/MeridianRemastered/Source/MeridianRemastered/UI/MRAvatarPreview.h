@@ -24,6 +24,13 @@ public:
 	AMRAvatarPreview();
 
 	void SetAppearance(const FMRSpriteAppearance& Appearance);
+	/**
+	 * The face only, from the front, as the original creator showed it (charface.c): the camera
+	 * close on the head and the sprite drawn with enough texels for the face parts' detail.
+	 */
+	void SetPortrait(bool bInPortrait);
+	/** A flat colour behind the character (the creator's previews: the sprite's edges read better on grey). */
+	void SetBackdrop(const FLinearColor& Colour);
 	void SetCapturing(bool bCapture);
 	void Turn(int32 Steps);
 	UTextureRenderTarget2D* GetTarget() const { return Target; }
@@ -47,6 +54,11 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<UTextureRenderTarget2D> Target;
 
+	UPROPERTY(Transient)
+	TObjectPtr<class UStaticMeshComponent> Backdrop;
+
 	FMRSpriteAppearance Shown;
 	bool bHasAppearance = false;
+	bool bPortrait = false;
+	void PlaceCamera();
 };

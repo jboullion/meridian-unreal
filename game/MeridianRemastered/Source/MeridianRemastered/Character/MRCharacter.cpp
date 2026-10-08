@@ -142,6 +142,15 @@ void AMRCharacter::ServerSetSpriteAppearance_Implementation(const FMRSpriteAppea
 	A.Shirt = FMath::Clamp(A.Shirt, -1, FMRSpriteColours::NumClothes - 1);
 	A.Pants = FMath::Clamp(A.Pants, -1, FMRSpriteColours::NumClothes - 1);
 	A.HeightPct = FMath::Clamp(A.HeightPct, 90, 110);  // variety, never a game advantage
+	// face parts: only bgfs the game has converted ("blank" = bald)
+	for (FName* Part : {&A.HeadBgf, &A.HairBgf, &A.EyesBgf, &A.NoseBgf, &A.MouthBgf})
+	{
+		const FString Bgf = Part->ToString().ToLower();
+		if (!Part->IsNone() && Bgf != TEXT("blank") && !FMRSpriteLibrary::Get().Atlases.Contains(Bgf))
+		{
+			*Part = NAME_None;
+		}
+	}
 	SpriteAppearance = A;
 	ApplySpriteAppearance();
 }
@@ -161,6 +170,7 @@ void AMRCharacter::ApplySpriteAppearance()
 			SpriteBody->SetLook(A.Look);
 			AppearanceDescription = FString::Printf(TEXT("sprite:%s"), *A.Look.ToString());
 		}
+		SpriteBody->SetPartBgfs(A.PartBgfs());
 		SpriteBody->SetColours(A.Skin, A.Hair, A.Shirt, A.Pants);
 	}
 	ApplySpriteHeight(A.HeightPct / 100.f);
