@@ -20,6 +20,8 @@ void UMRZoneSmokeTest::Start(APawn* InPawn)
 	// Positions are original (row, col) squares from data/zones.json.
 	Steps = {
 		{TEXT("spawned in the Raza Inn"),                 0,   0,  0, 301},
+		// doors wait for the space bar ("go"), as in the original
+		{TEXT("on the Inn door (9,6) without go -> stays in the Inn"), 301, 9, 6, 301, true, false, 0.f, 0, false},
 		{TEXT("Inn door (9,6) -> Raza town"),             301, 9,  6, 300},
 		{TEXT("Mausoleum door (27,24) -> Mausoleum"),     300, 27, 24, 306},
 		{TEXT("Mausoleum exit (11,17) -> Raza town"),     306, 11, 17, 300},
@@ -81,6 +83,11 @@ void UMRZoneSmokeTest::RunStep()
 		const bool bMoved = P->TeleportTo(Dest, P->GetActorRotation(), false, true);
 		UE_LOG(LogMeridian, Display, TEXT("MRZoneTest:   placed at zone %d (%d,%d) -> %s  ok=%d  now %s"),
 			S.PlaceZone, S.Row, S.Col, *Dest.ToCompactString(), bMoved, *P->GetActorLocation().ToCompactString());
+		// doors take the player's "go" (space bar); edge exits are walked through
+		if (S.bGo && Zones->TryGo(P))
+		{
+			UE_LOG(LogMeridian, Display, TEXT("MRZoneTest:   go: through the door"));
+		}
 	}
 	P->GetWorldTimerManager().SetTimer(Timer, FTimerDelegate::CreateUObject(this, &UMRZoneSmokeTest::CheckStep), 1.0f, false);
 }
@@ -110,7 +117,7 @@ void UMRZoneSmokeTest::CheckStep()
 		const double FeetM = (P->GetActorLocation().Z - P->GetSimpleCollisionHalfHeight() - Info->Origin.Z) / 100.0;
 		const int32 Depth = Zones->DepthAt(P->GetActorLocation());
 		const UMRCharacterMovementComponent* Move = P->FindComponentByClass<UMRCharacterMovementComponent>();
-		const float Factor = Move ? Move->GetMaxSpeed() / Move->RunSpeed : -1.f;
+		const float Factor = Move ? Move->GetMaxSpeed() / UMRCharacterMovementComponent::RunCms() : -1.f;
 		const bool bWading = Depth == S.ExpectDepth && FeetM < 0.7 && FMath::IsNearlyEqual(Factor, UMRZoneSubsystem::DepthSpeedFactor(Depth), 0.01f);
 		UE_LOG(LogMeridian, Display, TEXT("MRZoneTest:   wading: depth %d (expected %d), feet at %.2f m, speed x%.2f"),
 			Depth, S.ExpectDepth, FeetM, Factor);

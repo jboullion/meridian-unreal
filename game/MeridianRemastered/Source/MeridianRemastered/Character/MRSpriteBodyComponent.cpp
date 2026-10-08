@@ -18,6 +18,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "MeridianRemastered.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Character/MRCharacterMovementComponent.h"
 
 namespace
 {
@@ -30,8 +31,8 @@ namespace
 		TEXT("0: no shadow; 1: an upright card turned to the sun casts the sprite's silhouette."));
 	TAutoConsoleVariable<int32> CVarSpriteUnlit(TEXT("mr.Sprite.Unlit"), 0,
 		TEXT("1: unlit sprites (M_SpriteBodyUnlit), closest to the original; 0: lit by the world."));
-	TAutoConsoleVariable<float> CVarSpriteWalkRef(TEXT("mr.Sprite.WalkRefSpeed"), 450.f,
-		TEXT("Ground speed (cm/s) at which the walk cycle plays at the original rate (the run speed); 0 = always the ")
+	TAutoConsoleVariable<float> CVarSpriteWalkRef(TEXT("mr.Sprite.WalkRefSpeed"), -1.f,
+		TEXT("Ground speed (cm/s) at which the walk cycle plays at the original rate; -1 = the player's run speed; 0 = always the ")
 		TEXT("original rate (100 ms a leg pose), as the original client did whatever the speed."));
 	TAutoConsoleVariable<int32> CVarSmoothTweens(TEXT("mr.Sprite.Smooth.Tweens"), 1,
 		TEXT("Show the in-between frames (tools/sprites/tweens.py) between the original poses."));
@@ -839,7 +840,8 @@ void UMRSpriteBodyComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	}
 	const float DtMs = DeltaTime * 1000.f;
 	// monsters (their own Kod animations) walk at the original rate, as the original client did
-	const float WalkRef = CVarSpriteWalkRef.GetValueOnGameThread();
+	const float WalkRefSetting = CVarSpriteWalkRef.GetValueOnGameThread();
+	const float WalkRef = WalkRefSetting < 0.f ? UMRCharacterMovementComponent::RunCms() : WalkRefSetting;
 	const bool bOwnActions = FMRSpriteLibrary::Get().LookActions.Contains(Look->Name);
 	const float WalkRate = WalkRef > 0.f && !bOwnActions ? FMath::Clamp(Speed / WalkRef, 0.4f, 2.5f) : 1.f;
 	for (TPair<FName, FMRSpriteTrack>& T : BaseTracks)

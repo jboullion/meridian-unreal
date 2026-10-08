@@ -17,9 +17,10 @@ struct FMRNetObject;
  * - A room from the server (BP_PLAYER + BP_ROOM_CONTENTS): its zone by room file, the player's pawn
  *   spawned or moved to the server's position, a sprite (AMRNetObject) for every creature in it.
  * - The pawn moves locally (the original's movement is client-side too); its position goes up as
- *   BP_REQ_MOVE every 250 ms while it changes, its facing as BP_REQ_TURN. Standing on an exit square
- *   sends BP_REQ_GO; walking off the room's edge keeps asking to move off it (once a second), and
- *   the server answers with the next room. The server snapping the player back moves the pawn.
+ *   BP_REQ_MOVE every 250 ms while it changes, its facing as BP_REQ_TURN. Space sends BP_REQ_GO
+ *   (RequestGo), as the original's space bar: the server takes the door the player stands on.
+ *   Walking off the room's edge keeps asking to move off it (once a second), and the server answers
+ *   with the next room. The server snapping the player back moves the pawn.
  */
 UCLASS()
 class MERIDIANREMASTERED_API UMRNetWorldSubsystem : public UTickableWorldSubsystem
@@ -45,6 +46,12 @@ public:
 
 	/** Show the login screen or the HUD for the current phase. */
 	void UpdateScreens();
+
+	/**
+	 * The original's "go" (space bar): send where the player stands, then BP_REQ_GO. The server
+	 * (room.kod SomethingTryGo) takes the door on that square, or says it's locked.
+	 */
+	void RequestGo();
 
 private:
 	UMRNetSubsystem* GetNet() const;
@@ -72,7 +79,6 @@ private:
 	double LastOffRoomTime = 0.0;
 	int32 LastSentAngle = -1;
 	double LastTurnTime = 0.0;
-	FIntPoint ExitSquare = FIntPoint::ZeroValue;
 	/** bgf name (no extension, lower case) -> monster look, built on first use. */
 	mutable TMap<FString, FName> LookByBgf;
 };

@@ -165,8 +165,14 @@ public:
 	/** The zone whose grid rectangle contains World; the smallest wins where they overlap. 0 if none. */
 	int32 ZoneAtLocation(const FVector& World) const;
 
-	/** Server: re-evaluate the pawn's zone, take tile/edge exits. Called a few times a second. */
+	/** Server: re-evaluate the pawn's zone, take edge exits. Called a few times a second. */
 	void UpdatePawnZone(APawn* Pawn);
+
+	/**
+	 * Server: the original's "go" (space bar, BP_REQ_GO -> room.kod SomethingTryGo): take the tile
+	 * exit (door) on the pawn's square. False if it stands on none, or on a locked one.
+	 */
+	bool TryGo(APawn* Pawn);
 
 	/** Server: move the pawn into DestRid at (Row, Col), keeping its facing (ROTATE_NONE). */
 	bool TeleportPawn(APawn* Pawn, int32 DestRid, int32 Row, int32 Col);

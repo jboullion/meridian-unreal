@@ -381,6 +381,10 @@ From the user's second list.
 
 Sheet: `build/lookdev/props_round2_sheet.png` (labels `props3_day`, `props3_night` against `props_day`, `props_night`; new camera `sign_east`).
 
+## Hanging props (2026-10-07)
+The Hall's chandelier stood on the floor. The original pins `OF_HANGING` objects to the ceiling (docs/findings.md "Walking"). props.json `"hanging": true` on `Chandelier`: `build_world.py` `hanging_y` puts the mesh's top at the object's `ceiling_y` (4.4 m in the Hall), as the chandelier's sprite fills its frame to the top. Sheet: `build/lookdev/compare_props_day_hang_day.png`.
+- The Hall's room light (a DynamicLight on the chandelier's spot) stayed 1.8 m up and showed as a glowing ball under it. `"lights_at_m": 1.1` (the candles, above the mesh's origin) moves a DynamicLight within 0.5 m of a hanging prop up there (`build_world.py` `lights_to_hanging`). Sheet: `build/lookdev/compare_hang_day_hang_light.png`.
+
 ## Open
 - Trees: the Outskirts tree lines (ADR 0003 2g).
 - Emissive parts on AI meshes other than lamp glass (embers): props.json `"glow"` covers pale glass only.

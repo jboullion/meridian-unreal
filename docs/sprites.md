@@ -88,7 +88,7 @@ Within a pass, parts go in Kod's order.
 **Movement versus animation** (`move.c`):
 - The legs always cycle at 100 ms per pose, whatever the speed.
 - Players moved fast: walking was `MOVEUNITS` (256 fine units) per 85 ms, about 2.9 squares/s ≈ 6.5 m/s, and running was double that.
-- The remaster's run is 4.5 m/s, so feet slid less in the original's terms; `mr.Sprite.WalkRefSpeed 0` plays the original fixed rate.
+- The remaster's run is the original's 12.94 m/s (`mr.Move.SpeedScale`, docs/findings.md "Walking"); the cycle plays at the original rate at the run speed. `mr.Sprite.WalkRefSpeed 0` plays the original fixed rate.
 
 ## Results
 
@@ -199,7 +199,7 @@ Notes:
 | `mr.Sprite.Ambient` | 0.51 | Lighting |
 | `mr.Sprite.BackArmsUnder` | 1 | Seen from behind, arms under the torso (0 = the original's layering) |
 | `mr.Sprite.TexelsPerPixel` | 4 | Render target texels per torso pixel |
-| `mr.Sprite.WalkRefSpeed` | 450 | Ground speed for the original walk rate; 0 = always the original rate |
+| `mr.Sprite.WalkRefSpeed` | -1 | Ground speed for the original walk rate; -1 = the player's run speed; 0 = always the original rate |
 | `mr.Sprite.UV` | `1 0 1` | `SwapUV FlipU FlipV` for the engine plane |
 | `mr.Sprite.HandScale` | 1 | First-person hand size |
 | `mr.Sprite.HandBob` | 1 | First-person hand walk bob |
@@ -230,7 +230,7 @@ Monsters and NPCs are drawn by the same `UMRSpriteBodyComponent` as players. A m
   - For example, the giant rat walks 2–6 at 75 ms and attacks 7–11 at 100 ms. The mummy walks 2–5 and attacks 6–9, both at 200 ms.
 - Also read from Kod:
   - the corpse bgf (`m_<Class>_dead`)
-  - speed (`viSpeed` × 450/55 cm/s, scaled by `mr.Monster.SpeedScale`)
+  - speed (`viSpeed` × 450/55 cm/s in `player_parts.json`, scaled in game to the player's run: × run / 450, and by `mr.Monster.SpeedScale`)
   - vision (`viVisionDistance` squares)
   - `AI_FIGHT_AGGRESSIVE` (mummies), NPC / no-move flags
   - the aware, hit, miss and death sounds

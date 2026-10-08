@@ -13,6 +13,7 @@
 #include "Misc/App.h"
 #include "MeridianRemastered.h"
 #include "Net/UnrealNetwork.h"
+#include "Character/MRCharacterMovementComponent.h"
 
 namespace
 {
@@ -71,7 +72,9 @@ void AMRMonster::InitMonster(FName InClass, int32 InZone)
 		return;
 	}
 	Look = D->Look;
-	GetCharacterMovement()->MaxWalkSpeed = FMath::Max(40.f, D->SpeedCms * CVarSpeedScale.GetValueOnGameThread());
+	// speed_cms is viSpeed in a 4.5 m/s run's units (tools/sprites/monsters.py); scale it to the player's run
+	GetCharacterMovement()->MaxWalkSpeed = FMath::Max(40.f, D->SpeedCms * UMRCharacterMovementComponent::RunCms() / 450.f
+		* CVarSpeedScale.GetValueOnGameThread());
 	ApplyLook();
 }
 

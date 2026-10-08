@@ -43,7 +43,7 @@ TODO.md already set the goal: the Unreal game should be "a full client build for
    - **Off while online:** local monster and NPC spawning (`UMRMonsterSubsystem`) and local exits (`UMRZoneSubsystem::UpdatePawnZone`).
 6. **A login screen in the game's own UI** (`SMRLoginScreen`, styled like the inventory dialog of [ADR 0009](0009-user-interface.md)).
    - **Login:** the server, login name and password. An unknown name makes the account.
-   - **Characters:** characters and empty slots, Play and Log Off.
+   - **Characters:** characters and empty slots, Play and Log Off. The server's message of the day sits in a "News" column to the right of the list, and the window widens for it, so a long message never squeezes the list.
    - **Create:** name and gender only. The face, stats, spells and skills are the server's defaults. The full creator comes later.
    - **Behind it:** the camera looks over Raza (the look-dev bookmark `square_overview`) and there is no pawn until the server puts the character in a room.
    - **Stored:** the last server and login name, in `GameUserSettings.ini` `[MR.Net]`. The password is never kept.

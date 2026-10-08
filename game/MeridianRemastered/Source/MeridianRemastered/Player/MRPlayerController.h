@@ -108,4 +108,8 @@ private:
 	/** -MRNetTest: plays on a Meridian server. */
 	UPROPERTY()
 	TObjectPtr<class UMRNetTest> NetTest;
+
+	/** -MRMoveTest: the original's movement (speeds, ledge jumps, steps), checked in play. */
+	UPROPERTY(Transient)
+	TObjectPtr<class UMRMoveTest> MoveTest;
 };

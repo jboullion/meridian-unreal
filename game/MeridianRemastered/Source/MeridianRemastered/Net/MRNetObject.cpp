@@ -8,6 +8,7 @@
 #include "Core/MRUnits.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Misc/App.h"
+#include "Character/MRCharacterMovementComponent.h"
 
 namespace
 {
@@ -81,10 +82,11 @@ void AMRNetObject::MoveTo(const FVector& World, uint8 Speed)
 	}
 	Target = At;
 	bHasTarget = true;
-	// the server's speed is in the original's units (a player walks at 25, runs at 55):
-	// the remaster's run is 450 cm/s (docs/sprites.md "Monsters")
-	const float Cms = Speed > 0 ? Speed * 450.f / 55.f : 220.f;
-	GetCharacterMovement()->MaxWalkSpeed = FMath::Clamp(Cms, 60.f, 900.f);
+	// the server's speed is in the original's units (a player walks at 25, runs at 55): 55 is the
+	// player's run (UMRCharacterMovementComponent::RunCms)
+	const float Run = UMRCharacterMovementComponent::RunCms();
+	const float Cms = Speed > 0 ? Speed * Run / 55.f : UMRCharacterMovementComponent::WalkCms();
+	GetCharacterMovement()->MaxWalkSpeed = FMath::Clamp(Cms, 60.f, 2.f * Run);
 }
 
 void AMRNetObject::TurnTo(int32 KodAngle)

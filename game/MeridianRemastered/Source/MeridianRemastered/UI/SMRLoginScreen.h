@@ -46,6 +46,9 @@ private:
 	TSharedRef<SWidget> MakeButtons();
 	void RebuildCharacters();
 	EVisibility PageVisibility(EPage Page) const;
+	/** The server's message of the day, empty when it has none. */
+	FString GetMotd() const;
+	bool HasMotd() const;
 
 	void LogIn();
 	void Play();

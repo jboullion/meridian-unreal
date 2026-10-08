@@ -23,6 +23,8 @@
 #include "Misc/App.h"
 #include "EngineUtils.h"
 #include "Monsters/MRMonster.h"
+#include "Net/MRNetWorldSubsystem.h"
+#include "Zones/MRZoneSubsystem.h"
 #include "HAL/FileManager.h"
 #include "HighResScreenshot.h"
 #include "Misc/DateTime.h"
@@ -52,7 +54,6 @@ AMRCharacter::AMRCharacter(const FObjectInitializer& ObjectInitializer)
 	// ~1.8 m tall human; eye at ~1.65 m above the floor (the original's 0.75-square eye height)
 	GetCapsuleComponent()->InitCapsuleSize(34.f, 90.f);
 	BaseEyeHeight = 75.f;   // relative to the capsule centre (90 cm above the floor)
-	CrouchedEyeHeight = 35.f;
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetCapsuleComponent());
@@ -391,7 +392,7 @@ void AMRCharacter::ServerTickVigor(float DeltaSeconds)
 	{
 		return;
 	}
-	const float Delta = Move->IsSprinting() ? -SprintVigorPerSecond * DeltaSeconds : VigorRegenPerSecond * DeltaSeconds;
+	const float Delta = VigorRegenPerSecond * DeltaSeconds;
 	const float NewVigor = FMath::Clamp(Attr->GetVigor() + Delta, 0.f, Attr->GetMaxVigor());
 	if (!FMath::IsNearlyEqual(NewVigor, Attr->GetVigor()))
 	{
@@ -508,12 +509,10 @@ void AMRCharacter::BuildInput()
 	};
 	MoveAction = MakeAction(TEXT("IA_Move"), EInputActionValueType::Axis2D);
 	LookAction = MakeAction(TEXT("IA_Look"), EInputActionValueType::Axis2D);
-	JumpAction = MakeAction(TEXT("IA_Jump"), EInputActionValueType::Boolean);
-	SprintAction = MakeAction(TEXT("IA_Sprint"), EInputActionValueType::Boolean);
+	GoAction = MakeAction(TEXT("IA_Go"), EInputActionValueType::Boolean);
 	WalkAction = MakeAction(TEXT("IA_Walk"), EInputActionValueType::Boolean);
 	ViewAction = MakeAction(TEXT("IA_ToggleView"), EInputActionValueType::Boolean);
 	ZoomAction = MakeAction(TEXT("IA_Zoom"), EInputActionValueType::Axis1D);
-	CrouchAction = MakeAction(TEXT("IA_Crouch"), EInputActionValueType::Boolean);
 
 	DefaultContext = NewObject<UInputMappingContext>(this, TEXT("IMC_Default"));
 	UInputMappingContext* Ctx = DefaultContext;
@@ -545,15 +544,14 @@ void AMRCharacter::BuildInput()
 		NegG->bZ = false;
 		G.Modifiers.Add(NegG);
 	}
-	Ctx->MapKey(JumpAction, EKeys::SpaceBar);
-	Ctx->MapKey(JumpAction, EKeys::Gamepad_FaceButton_Bottom);
-	Ctx->MapKey(SprintAction, EKeys::LeftShift);
-	Ctx->MapKey(SprintAction, EKeys::Gamepad_LeftThumbstick);
-	Ctx->MapKey(WalkAction, EKeys::CapsLock);
+	Ctx->MapKey(GoAction, EKeys::SpaceBar);
+	Ctx->MapKey(GoAction, EKeys::Gamepad_FaceButton_Bottom);
+	Ctx->MapKey(WalkAction, EKeys::LeftShift);
+	Ctx->MapKey(WalkAction, EKeys::RightShift);
+	Ctx->MapKey(WalkAction, EKeys::Gamepad_LeftThumbstick);
 	Ctx->MapKey(ViewAction, EKeys::V);
 	Ctx->MapKey(ViewAction, EKeys::Gamepad_RightThumbstick);
 	Ctx->MapKey(ZoomAction, EKeys::MouseWheelAxis);
-	Ctx->MapKey(CrouchAction, EKeys::C);
 
 	// sprite actions (docs/sprites.md): attack, emotes, next look
 	AttackAction = MakeAction(TEXT("IA_Attack"), EInputActionValueType::Boolean);
@@ -590,14 +588,11 @@ void AMRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 	Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMRCharacter::OnMove);
 	Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMRCharacter::OnLook);
-	Input->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-	Input->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-	Input->BindAction(SprintAction, ETriggerEvent::Started, this, &AMRCharacter::OnSprintStarted);
-	Input->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMRCharacter::OnSprintStopped);
-	Input->BindAction(WalkAction, ETriggerEvent::Started, this, &AMRCharacter::OnToggleWalk);
+	Input->BindAction(GoAction, ETriggerEvent::Started, this, &AMRCharacter::OnGo);
+	Input->BindAction(WalkAction, ETriggerEvent::Started, this, &AMRCharacter::OnWalkStarted);
+	Input->BindAction(WalkAction, ETriggerEvent::Completed, this, &AMRCharacter::OnWalkStopped);
 	Input->BindAction(ViewAction, ETriggerEvent::Started, this, &AMRCharacter::OnToggleView);
 	Input->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &AMRCharacter::OnZoom);
-	Input->BindAction(CrouchAction, ETriggerEvent::Started, this, &AMRCharacter::OnCrouchToggle);
 	Input->BindAction(AttackAction, ETriggerEvent::Started, this, &AMRCharacter::OnAttack);
 	Input->BindAction(NextLookAction, ETriggerEvent::Started, this, &AMRCharacter::OnNextLook);
 	Input->BindAction(PhotoAction, ETriggerEvent::Started, this, &AMRCharacter::OnPhoto);
@@ -657,28 +652,38 @@ void AMRCharacter::ClampThirdPersonPitch()
 	}
 }
 
-void AMRCharacter::OnSprintStarted()
+void AMRCharacter::OnWalkStarted()
 {
 	if (UMRCharacterMovementComponent* Move = GetMRMovement())
 	{
-		Move->SetWantsToSprint(true);
+		Move->SetWantsToWalk(true);
 	}
 }
 
-void AMRCharacter::OnSprintStopped()
+void AMRCharacter::OnWalkStopped()
 {
 	if (UMRCharacterMovementComponent* Move = GetMRMovement())
 	{
-		Move->SetWantsToSprint(false);
+		Move->SetWantsToWalk(false);
 	}
 }
 
-void AMRCharacter::OnToggleWalk()
+void AMRCharacter::OnGo()
 {
-	bWalkToggled = !bWalkToggled;
-	if (UMRCharacterMovementComponent* Move = GetMRMovement())
+	// online the server decides whether we stand on a door (BP_REQ_GO), as the original's space bar
+	if (UMRNetWorldSubsystem* NetWorld = GetWorld()->GetSubsystem<UMRNetWorldSubsystem>(); NetWorld && NetWorld->IsActive())
 	{
-		Move->SetWantsToWalk(bWalkToggled);
+		NetWorld->RequestGo();
+		return;
+	}
+	ServerGo();
+}
+
+void AMRCharacter::ServerGo_Implementation()
+{
+	if (UMRZoneSubsystem* Zones = GetWorld()->GetSubsystem<UMRZoneSubsystem>())
+	{
+		Zones->TryGo(this);
 	}
 }
 
@@ -721,18 +726,6 @@ void AMRCharacter::OnZoom(const FInputActionValue& Value)
 		return;
 	}
 	CameraBoom->TargetArmLength = FMath::Min(NewLength, MaxArmLength);
-}
-
-void AMRCharacter::OnCrouchToggle()
-{
-	if (bIsCrouched)
-	{
-		UnCrouch();
-	}
-	else
-	{
-		Crouch();
-	}
 }
 
 // ---------------------------------------------------------------- sprite actions

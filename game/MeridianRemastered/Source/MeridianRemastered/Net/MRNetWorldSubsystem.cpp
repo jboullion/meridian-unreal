@@ -19,12 +19,14 @@
 #include "Serialization/JsonSerializer.h"
 #include "UI/MRUISubsystem.h"
 #include "Zones/MRZoneSubsystem.h"
+#include "Character/MRCharacterMovementComponent.h"
 
 namespace
 {
 	constexpr double MoveInterval = 0.25;      // the original client's MOVE_DELAY-ish update rate
 	constexpr double OffRoomInterval = 1.0;    // move.c MOVE_OFF_ROOM_INTERVAL
-	constexpr double RunCms = 300.0;           // faster than this counts as running
+	// faster than halfway between the walk and the run counts as running (BP_REQ_MOVE's speed)
+	double RunCms() { return 0.5 * (UMRCharacterMovementComponent::WalkCms() + UMRCharacterMovementComponent::RunCms()); }
 	constexpr int32 TurnThreshold = 128;       // 1/32 of a turn before a BP_REQ_TURN
 	constexpr double SnapBackCm = MRUnits::CmPerSquare;  // the server moved us this far: follow it
 
@@ -265,7 +267,6 @@ void UMRNetWorldSubsystem::PlacePlayer()
 		GM->SpawnOnlinePlayer(PC, FTransform(Facing, Floor + FVector(0.0, 0.0, 100.0)));
 	}
 	PC->SetControlRotation(Facing);
-	ExitSquare = Zones->WorldToGrid(Rid, Floor);  // don't take the exit we arrive on
 }
 
 FName UMRNetWorldSubsystem::LookFor(const FMRNetObject& Object) const
@@ -412,6 +413,29 @@ void UMRNetWorldSubsystem::Tick(float DeltaTime)
 	}
 }
 
+void UMRNetWorldSubsystem::RequestGo()
+{
+	UMRNetSubsystem* Net = GetNet();
+	UMRZoneSubsystem* Zones = GetWorld()->GetSubsystem<UMRZoneSubsystem>();
+	APlayerController* PC = GetPC();
+	APawn* Pawn = PC ? PC->GetPawn() : nullptr;
+	if (!Net || Net->GetPhase() != EMRNetPhase::InGame || !Rid || !Zones || !Pawn)
+	{
+		return;
+	}
+	// the server checks the square it last heard of: send where we are first (the move order is kept)
+	const FIntPoint Kod = Zones->WorldToKod(Rid, Pawn->GetActorLocation());
+	if (Kod != LastSentKod)
+	{
+		const bool bRunning = Pawn->GetVelocity().Size2D() > RunCms();
+		Net->RequestMove(Kod.X, Kod.Y, bRunning ? MRMsg::SPEED_RUN : MRMsg::SPEED_WALK);
+		LastSentKod = Kod;
+		LastMoveTime = FPlatformTime::Seconds();
+	}
+	UE_LOG(LogMeridian, Log, TEXT("MRNet: go at (%d, %d) of zone %d: BP_REQ_GO"), Kod.X / MRMsg::KodFineness, Kod.Y / MRMsg::KodFineness, Rid);
+	Net->RequestGo();
+}
+
 void UMRNetWorldSubsystem::SendMovement(double Now)
 {
 	UMRNetSubsystem* Net = GetNet();
@@ -440,31 +464,12 @@ void UMRNetWorldSubsystem::SendMovement(double Now)
 		return;
 	}
 
-	// standing on an exit square: go through it (once per visit)
-	const FIntPoint Square(Kod.X / MRMsg::KodFineness, Kod.Y / MRMsg::KodFineness);  // 1-based row, col
-	bool bOnExit = false;
-	for (const FMRZoneExit& E : Zone->Exits)
+	if (Kod != LastSentKod && Now - LastMoveTime >= MoveInterval)
 	{
-		bOnExit |= E.Row == Square.X && E.Col == Square.Y;
-	}
-	const bool bNewExit = bOnExit && Square != ExitSquare;
-	if (!bOnExit)
-	{
-		ExitSquare = FIntPoint::ZeroValue;
-	}
-
-	if (Kod != LastSentKod && (Now - LastMoveTime >= MoveInterval || bNewExit))
-	{
-		const bool bRunning = Pawn->GetVelocity().Size2D() > RunCms;
+		const bool bRunning = Pawn->GetVelocity().Size2D() > RunCms();
 		Net->RequestMove(Kod.X, Kod.Y, bRunning ? MRMsg::SPEED_RUN : MRMsg::SPEED_WALK);
 		LastSentKod = Kod;
 		LastMoveTime = Now;
-	}
-	if (bNewExit)
-	{
-		UE_LOG(LogMeridian, Log, TEXT("MRNet: on an exit square (%d, %d) of zone %d: BP_REQ_GO"), Square.X, Square.Y, Rid);
-		Net->RequestGo();
-		ExitSquare = Square;
 	}
 
 	const int32 Angle = YawToKod(PC->GetControlRotation().Yaw);

@@ -499,9 +499,14 @@ def zone_layout(zone: dict, room: Room) -> dict:
             fc = o.get("fine_col", 32) if isinstance(o.get("fine_col"), int) else 32
             item = {"class": o.get("class"), "params": o.get("params"), "pos": at(o["row"], o["col"], fr, fc),
                     "yaw_kod": o.get("angle")}
-            s = sector(*grid_to_roo(o["row"], o["col"], fr, fc))
+            xy = grid_to_roo(o["row"], o["col"], fr, fc)
+            s = sector(*xy)
             if s and room.sectors[s - 1].blak_flags & SF_FLICKER:
                 item["flicker"] = True  # in a flickering sector: its lights flicker (docs/adr/0005)
+            if s and room.sectors[s - 1].ceiling_type:
+                # the ceiling above it (glTF metres, up): the original pins OF_HANGING objects (the
+                # chandelier) to it, at ceiling - their sprite's height (clientd3d object.c RoomObjectSetHeight)
+                item["ceiling_y"] = round(SectorHeights(room.sectors).ceil(s, *xy) * M_PER_ROO, 3)
             objects.append(item)
     gens = []
     for g in (zone.get("spawning") or {}).get("generators", []):

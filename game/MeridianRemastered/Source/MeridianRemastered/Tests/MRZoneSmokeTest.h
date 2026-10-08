@@ -38,6 +38,8 @@ private:
 		 * stand at the wading floor (not on the raised wheat), and move slower (DepthSpeedFactor).
 		 */
 		int32 ExpectDepth = 0;
+		/** Press "go" (the space bar) after placing: doors need it. False checks a door stays shut. */
+		bool bGo = true;
 	};
 
 	void RunStep();

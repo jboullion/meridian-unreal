@@ -41,6 +41,7 @@ More detail, loaded when needed:
 | Lights | `props.json` `"light_scale"` 0.3 dims every added light; the environment carries the scene | ADR 0005 |
 | Lamp glass | A class's `"glow"` lights pale, unsaturated texels inside a height band and radius of the mesh at night (`M_PropTextured` `PROP_GLOW_HLSL`); a light inside a closed lantern wants `"shadows": false` | "Props polish" |
 | Blocking | Props are walked through, as in the original. A class's `"blocks"` (`true` = 26-sided hull, or `"box"` / `"capsule"` / `"sphere"`) makes it solid: `Lamp`, `Brazier`, `Table`, `WoodenBox`. `{"radius_m", "height_m"}` blocks with a hidden cylinder instead: sign posts, tree trunks | "Props polish", "Props round 2" |
+| Hanging | A class's `"hanging"` (Kod `OF_HANGING`: the chandelier) hangs the mesh's top from the ceiling above it (`zone_layout.json` `ceiling_y`); `lift_m` alone only lifts it off the floor | "Hanging props" |
 | Facing | Kod angle when the original gives one; else the class's `"facing"` (signs: east). `random_yaw` wins over the Kod angle (outdoors it's always 0). One object: `props.json` `"placed"` by actor label | "Props round 2" |
 | Side views without original angles | Tripo source `"openai@front"` reuses the front restyle for left, back and right (variant `MVF`). Done for the rocks and dung (kept as custom models): single-image models of round things come out as slabs | "Props round 2" |
 

@@ -8,6 +8,7 @@
 #include "UI/MRUISubsystem.h"
 #include "UI/SMRHUD.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/Images/SImage.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SOverlay.h"
@@ -19,6 +20,8 @@ namespace
 {
 	constexpr float WidthPx = 210.f;      // the window's inside, original pixels
 	constexpr float PageHeightPx = 132.f;
+	constexpr float CharListPx = 120.f;   // the character page: the list's column...
+	constexpr float MotdPx = 190.f;       // ...and the message of the day's, to its right (the window widens)
 
 	using MRUI::Label;
 
@@ -87,7 +90,10 @@ void SMRLoginScreen::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 	[
 		SNew(SMRPanel, InUI).Background(TEXT("bkgnd")).Frame(TEXT("edge")).bCorners(true).Padding(6.f)
 		[
-			SNew(SBox).WidthOverride(WidthPx * Px)
+			SNew(SBox).WidthOverride_Lambda([this, Px]()
+			{
+				return (GetPage() == EPage::Characters && HasMotd() ? CharListPx + MotdPx + 6.f : WidthPx) * Px;
+			})
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 0.f, 0.f, 4.f * Px)
@@ -190,25 +196,62 @@ TSharedRef<SWidget> SMRLoginScreen::MakeCharactersPage()
 {
 	UMRUIStyle* S = UI->GetStyle();
 	const float Px = S->Px();
-	auto Motd = TAttribute<FText>::CreateLambda([this]()
-	{
-		const UMRNetSubsystem* Net = GetNet();
-		const FString M = Net ? Net->GetMotd().TrimStartAndEnd() : FString();
-		return M.IsEmpty() || M == TEXT("<Default>") ? FText::GetEmpty() : FText::FromString(M);
-	});
-	TSharedRef<STextBlock> MotdText = Label(S, Motd, 8.f, false, Dim());
+	const FLinearColor Heading = S->Color(TEXT("heading"), FLinearColor(1.f, 0.75f, 0.3f));
+	TSharedRef<STextBlock> MotdText = Label(S, TAttribute<FText>::CreateLambda([this]() { return FText::FromString(GetMotd()); }), 8.f, false, Dim());
 	MotdText->SetAutoWrapText(true);
-	return SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 0.f, 0.f, 2.f * Px)
+	auto MotdVisibility = [this]() { return HasMotd() ? EVisibility::Visible : EVisibility::Collapsed; };
+	// a groove in the stone between the columns: a dark line beside a light one
+	auto Groove = [S, Px](const FLinearColor& C)
+	{
+		return SNew(SBox).WidthOverride(0.5f * Px)[SNew(SImage).Image(S->White()).ColorAndOpacity(C)];
+	};
+	// the list on the left and the message of the day on the right, so a long message doesn't squeeze the list
+	return SNew(SHorizontalBox)
+		// (proportional fills: a capped column's leftover width isn't given to the other one)
+		+ SHorizontalBox::Slot().FillWidth(TAttribute<float>::CreateLambda([this]() { return HasMotd() ? CharListPx : 1.f; }))
 		[
-			Label(S, LOCTEXT("Choose", "Choose a character"), 10.f, true, S->Color(TEXT("heading"), FLinearColor(1.f, 0.75f, 0.3f)))
+			SNew(SVerticalBox)
+			+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 0.f, 0.f, 2.f * Px)
+			[
+				Label(S, LOCTEXT("Choose", "Choose a character"), 10.f, true, Heading)
+			]
+			+ SVerticalBox::Slot().FillHeight(1.f)
+			[
+				SNew(SScrollBox).ScrollBarThickness(FVector2D(4.f * Px, 4.f * Px))
+				+ SScrollBox::Slot()[SAssignNew(CharacterList, SVerticalBox)]
+			]
 		]
-		+ SVerticalBox::Slot().FillHeight(1.f)
+		+ SHorizontalBox::Slot().AutoWidth().Padding(3.f * Px, 0.f, 0.f, 0.f)
 		[
-			SNew(SScrollBox).ScrollBarThickness(FVector2D(4.f * Px, 4.f * Px))
-			+ SScrollBox::Slot()[SAssignNew(CharacterList, SVerticalBox)]
+			SNew(SHorizontalBox).Visibility_Lambda(MotdVisibility)
+			+ SHorizontalBox::Slot().AutoWidth()[Groove(FLinearColor(0.f, 0.f, 0.f, 0.55f))]
+			+ SHorizontalBox::Slot().AutoWidth()[Groove(FLinearColor(1.f, 1.f, 1.f, 0.18f))]
 		]
-		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 2.f * Px, 0.f, 0.f)[MotdText];
+		+ SHorizontalBox::Slot().FillWidth(MotdPx).Padding(3.f * Px, 0.f, 0.f, 0.f)
+		[
+			SNew(SVerticalBox).Visibility_Lambda(MotdVisibility)
+			+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 0.f, 0.f, 2.f * Px)
+			[
+				Label(S, LOCTEXT("Motd", "News"), 10.f, true, Heading)
+			]
+			+ SVerticalBox::Slot().FillHeight(1.f)
+			[
+				SNew(SScrollBox).ScrollBarThickness(FVector2D(4.f * Px, 4.f * Px))
+				+ SScrollBox::Slot().Padding(0.f, 0.f, 3.f * Px, 0.f)[MotdText]
+			]
+		];
+}
+
+FString SMRLoginScreen::GetMotd() const
+{
+	const UMRNetSubsystem* Net = GetNet();
+	const FString M = Net ? Net->GetMotd().TrimStartAndEnd() : FString();
+	return M == TEXT("<Default>") ? FString() : M;
+}
+
+bool SMRLoginScreen::HasMotd() const
+{
+	return !GetMotd().IsEmpty();
 }
 
 TSharedRef<SWidget> SMRLoginScreen::MakeCreatePage()

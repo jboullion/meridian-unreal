@@ -24,6 +24,23 @@
   - **The fields are raised blocks**: their floor is 1.20 m against the grass's 0.34 m, edged with "Field Bottom" walls. Sinking 0.88 m puts you back at ground level with the wheat at your waist. A field without depth (the one north of the town, `grd08898`, depth 0) stays a block you can't enter.
   - `roo2gltf`: the collision blockout's floors are at the wading height (`SectorHeights(wading=True)`), and so are the positions in `data/zone_layout.json`. The render keeps the raised wheat. `depth_areas` in the layout drive `UMRCharacterMovementComponent`'s slowdown.
   - The smoke test's step "into the wheat field (11,62)" checks the depth, the feet at the wading floor and the halved speed.
+- **Doors and gaits.** Tile exits (doors) are taken with "go": the space bar sends `BP_REQ_GO` and `room.kod` `SomethingTryGo` takes the exit on the player's square, or says it's locked (Raza's tutorial: "approach doors and press space bar"). Edge exits are walked through (`room.kod` edge handling). The original has two speeds, walk and run (`move.c` `A_FORWARDFAST`: twice the distance), and no jumping or crouching. The remaster runs by default and walks with Shift held (2026-10-07).
+- **Speed, falling and steps** (`clientd3d/move.c`, `moveobj.c`, `move.h`, `game.c`; at 2.2 m a square):
+
+  | | Original | Metres |
+  |---|---|---|
+  | Walk | `MOVEUNITS` (1/4 square) per `MOVE_DELAY` (85 ms) | 6.47 m/s |
+  | Run | twice that ("wolfpack" enchantment: 65 ms) | 12.94 m/s |
+  | Gravity | `GRAVITY_ACCELERATION` 5 squares/s/s | 11.0 m/s/s |
+  | Fall start | `FALL_VELOCITY_0` 2/3 square/s down | 1.47 m/s |
+  | Step | `MAX_STEP_HEIGHT` 24 Kod units, measured from max(floor, your current height), so also while falling | 0.825 m |
+  | Wall distance | `min_distance` = `player.width` / 2 (31 x 64 / 4 / 2 ROO) | 0.53 m |
+
+  - Horizontal movement ignores falling: you keep full speed and steering in the air. So the original's "jumps" are running off a ledge and stepping onto the far side before you've dropped 0.825 m: up to about 4.1 m of gap running (3.58 m of flight plus the wall distance), half that walking.
+  - The server's speed is "big squares per 10 s" (`user.kod`: walk 25, run 55); its speed-hack bucket is commented out. Running (speed over 25) costs vigor on the server.
+  - The remaster (2026-10-07) moves the same way: `UMRCharacterMovementComponent` (the speeds times `mr.Move.SpeedScale`, 1 = the original; gravity; the step, also while falling; full air control). Other players, monsters, the walk cycle and the hand bob follow `mr.Move.SpeedScale`. Before, it ran at 4.5 m/s with a 0.45 m step and couldn't cross a gap; the Mausoleum has 73 walls with 0.45-0.825 m steps.
+  - `tools/ue/run_move_test.ps1` (`-MRMoveTest`) checks it in play: the speeds, a 0.72 m Mausoleum step, and ledge jumps across 2.5, 3.9, 4.5 and 5 m (running lands up to 3.9 m; walking 2.5 m and running 4.5 m fall in).
+- **Hanging objects.** Objects with `OF_HANGING` (the `Chandelier`; OrnamentalObjects with `pbHanging`: flowers, garlic, herbs, stalactites, none in the demo) hang from the ceiling: z = ceiling - the sprite's height (`clientd3d/object.c` `RoomObjectSetHeight`). `roo2gltf` writes each indoor object's `ceiling_y` into `data/zone_layout.json`; props.json `"hanging"` hangs the mesh's top there.
 - **Objects never block** in the original. props.json `"blocks"` makes a class solid in the remaster (lamps, braziers, tables, chests; sign posts and tree trunks as hidden cylinders; ADR 0007).
 
 ## Raza town and the Outskirts are one map

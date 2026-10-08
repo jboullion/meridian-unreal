@@ -36,8 +36,11 @@ enum class EMRViewMode : uint8
  *   the HUD into Saved/Screenshots/Photos.
  * - Input actions and the mapping context are created in code, so there are no binary input
  *   assets to keep in sync.
- * - Gaits: run (default), walk (Caps Lock), sprint (Shift, drains Vigor). They are predicted
- *   in UMRCharacterMovementComponent.
+ * - Gaits: run (default), walk while Shift is held, as the original's two speeds; predicted in
+ *   UMRCharacterMovementComponent. No crouching or jumping (the original has neither).
+ * - Space is the original's "go": through the door (tile exit) you stand on. Online it sends
+ *   BP_REQ_GO and the server decides (UMRNetWorldSubsystem::RequestGo); offline the zone
+ *   subsystem does (UMRZoneSubsystem::TryGo). Edge exits are still walked through.
  * - The Ability System Component lives on AMRPlayerState.
  * - Drawn like the original game: composited directional sprites (UMRSpriteBodyComponent,
  *   docs/sprites.md). The look, creator colours and height replicate (FMRSpriteAppearance); a
@@ -78,12 +81,8 @@ public:
 	/** Save a screenshot without the HUD (P): Saved/Screenshots/Photos/photo_<time>.png. */
 	void TakePhoto();
 
-	/** Vigor drained per second while sprinting. */
-	UPROPERTY(EditDefaultsOnly, Category = "Vigor")
-	float SprintVigorPerSecond = 12.f;
-
 	/**
-	 * Placeholder Vigor regeneration while not sprinting. The original regenerates through
+	 * Placeholder Vigor regeneration. The original regenerates through
 	 * exertion and resting (player.kod NewVigor / ExertionTimer); that port replaces this.
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Vigor")
@@ -190,6 +189,10 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerSetViewMode(EMRViewMode NewMode);
 
+	/** Offline / UE server: take the door under the pawn (UMRZoneSubsystem::TryGo). */
+	UFUNCTION(Server, Reliable)
+	void ServerGo();
+
 	void ApplyViewMode();
 	void InitAbilityActorInfo();
 	void ServerTickVigor(float DeltaSeconds);
@@ -199,12 +202,11 @@ protected:
 	void BuildInput();
 	void OnMove(const FInputActionValue& Value);
 	void OnLook(const FInputActionValue& Value);
-	void OnSprintStarted();
-	void OnSprintStopped();
-	void OnToggleWalk();
+	void OnWalkStarted();
+	void OnWalkStopped();
+	void OnGo();
 	void OnToggleView();
 	void OnZoom(const FInputActionValue& Value);
-	void OnCrouchToggle();
 	void OnAttack();
 	void OnEmote(FName Action);
 	void OnNextLook();
@@ -215,18 +217,15 @@ protected:
 	UPROPERTY(Transient) TObjectPtr<UInputMappingContext> DefaultContext;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> MoveAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> LookAction;
-	UPROPERTY(Transient) TObjectPtr<UInputAction> JumpAction;
-	UPROPERTY(Transient) TObjectPtr<UInputAction> SprintAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> GoAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> WalkAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> ViewAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> ZoomAction;
-	UPROPERTY(Transient) TObjectPtr<UInputAction> CrouchAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> AttackAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> NextLookAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> PhotoAction;
 	UPROPERTY(Transient) TArray<TObjectPtr<UInputAction>> EmoteActions;
 
-	bool bWalkToggled = false;
 	/** World time of the last attack: the owner's (input) and the server's (validation). */
 	double LastAttackTime = -1000.0;
 	double ServerLastAttackTime = -1000.0;

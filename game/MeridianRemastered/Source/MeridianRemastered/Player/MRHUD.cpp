@@ -10,6 +10,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Net/MRNetWorldSubsystem.h"
 #include "UI/MRUISubsystem.h"
+#include "Character/MRCharacterMovementComponent.h"
 
 namespace
 {
@@ -66,8 +67,8 @@ void AMRHUD::DrawHUD()
 	const float Dt = LastTime > 0.0 ? static_cast<float>(Now - LastTime) : 0.f;
 	LastTime = Now;
 	const float Speed = Character->GetVelocity().Size2D();
-	BobPhase += Dt * FMath::Clamp(Speed / 450.f, 0.f, 2.f) * UE_TWO_PI * 1.2f;
-	const float BobAmount = FMath::Clamp(Speed / 220.f, 0.f, 1.f) * CVarHandBob.GetValueOnGameThread();
+	BobPhase += Dt * FMath::Clamp(Speed / UMRCharacterMovementComponent::RunCms(), 0.f, 2.f) * UE_TWO_PI * 1.2f;
+	const float BobAmount = FMath::Clamp(Speed / UMRCharacterMovementComponent::WalkCms(), 0.f, 1.f) * CVarHandBob.GetValueOnGameThread();
 
 	UTexture2D* Tex = nullptr;
 	FBox2f UV;

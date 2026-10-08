@@ -3,7 +3,7 @@
 ## Current TODOs
 
 ### UI
-- Character listing is short and doen't list all characters. I think we can probably put the character list and the Message of the day side by side instead of on top of each other. That should look cleaner and prevent having the menu be too tall.
+
 
 ### Props
 - Prop height ![Chandlier height](ReferenceImages/issues/chandalier-height.png)

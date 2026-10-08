@@ -21,6 +21,7 @@
 #include "Tests/MRScreenshotTour.h"
 #include "Tests/MRSpriteClipTour.h"
 #include "Tests/MRSpriteNetTest.h"
+#include "Tests/MRMoveTest.h"
 #include "Tests/MRUIShots.h"
 #include "Tests/MRZoneSmokeTest.h"
 #include "Zones/MRZoneSubsystem.h"
@@ -75,7 +76,8 @@ bool UMRNetSubsystem::IsOfflineRequested()
 	return FParse::Param(FCommandLine::Get(), TEXT("MROffline"))
 		|| UMRScreenshotTour::IsRequested() || UMRProfileTour::IsRequested() || UMRLookDevTour::IsRequested()
 		|| UMRMapCapture::IsRequested() || UMRMonsterTour::IsRequested() || UMRSpriteClipTour::IsRequested()
-		|| UMRSpriteNetTest::IsRequested() || UMRUIShots::IsRequested() || UMRZoneSmokeTest::IsRequested();
+		|| UMRSpriteNetTest::IsRequested() || UMRUIShots::IsRequested() || UMRZoneSmokeTest::IsRequested()
+		|| UMRMoveTest::IsRequested();
 }
 
 bool UMRNetSubsystem::WantsOnline(const UWorld* World)

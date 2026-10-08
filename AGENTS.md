@@ -126,11 +126,11 @@ To play: open the project and press Play with Net Mode "Play Standalone". The lo
 - "Shards (online)" needs `app://meridian-remastered` in the VM's `GATEWAY_ORIGINS`.
 - A new name and password make an account. `-MROffline` (and every visual test tour) plays locally without a server, as before.
 
-WASD + mouse, Shift sprints (drains Vigor), Caps Lock walks, C crouches, Space jumps, V cycles the view, Ctrl + wheel zooms. 1–9 or the wheel select the hotbar slot, numpad 1–9 cast from the spell bar, E or I opens the inventory dialog, - and = zoom the minimap, Enter chats. Test emotes: F5, F6, F7, F9.
+WASD + mouse (running at the original's 12.9 m/s; `mr.Move.SpeedScale` scales every speed), hold Shift to walk, Space goes through the door you stand on (the original's "go"; edge exits are walked through), V cycles the view, Ctrl + wheel zooms. 1–9 or the wheel select the hotbar slot, numpad 1–9 cast from the spell bar, E or I opens the inventory dialog, - and = zoom the minimap, Enter chats. Test emotes: F5, F6, F7, F9.
 
 ## Testing and verification
 
-- **Online smoke test** (~1 min; needs the Shards dev stack, `npm run dev` in meridian-browser): a headless game logs in to the local server, enters a zone, chats, takes an exit and logs off (`MRNetTest: DONE 5/5`). Run it after touching `Source/.../Net/`, the login screen, zones or spawning. `-Render -Hold 40` stays in a game window with screenshots (`Saved/Screenshots/MRNet/`), for a look from the Shards client. Protocol unit tests: `-ExecCmds="Automation RunTests Meridian.Net;Quit"`.
+- **Online smoke test** (~1 min; needs the Shards dev stack, `npm run dev` in meridian-browser): a headless game logs in to the local server, enters a zone, chats, takes an exit and logs off (`MRNetTest: DONE 5/5`). Run it after touching `Source/.../Net/`, the login screen, zones or spawning. `-Render -Hold 40` stays in a game window with screenshots (`Saved/Screenshots/MRNet/`: the character page, the world, the dialog), for a look from the Shards client. Protocol unit tests: `-ExecCmds="Automation RunTests Meridian.Net;Quit"`.
 
   ```bash
   powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_net_test.ps1
@@ -143,6 +143,12 @@ WASD + mouse, Shift sprints (drains Vigor), Caps Lock walks, C crouches, Space j
   ```
 
   The client logs `MRStreaming: entered zone N, ready=1|0`; any `ready=0` fails the test.
+- **Movement** (~1 min, an offline game window): the original's speeds, steps and ledge jumps, checked in play (`MRMoveTest: DONE 8/8`). Run it after touching `Character/` movement or the collision blockout:
+
+  ```bash
+  powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_move_test.ps1
+  ```
+
 - **Environment look-dev** (~45 s): renders the camera bookmarks in `data/environment/lookdev_cameras.json` and compares against an earlier label. Judge every visual change this way and send the sheets to the user with a recommendation:
 
   ```bash
@@ -157,7 +163,7 @@ WASD + mouse, Shift sprints (drains Vigor), Caps Lock walks, C crouches, Space j
   ```
 
 - **Minimap pictures** (~2 min, a game window): `tools/ue/run_map_capture.ps1` captures every zone top-down and styles them (`build/minimap/review.png`); then `tools/ue/import_ui.ps1`. Recapture after changing a zone's art.
-- **In-game test modes** (command-line flags on the game): `-MRNetTest`, `-MRZoneTest`, `-MRScreenshots`, `-MRProfile`, `-MRLookDev`, `-MRUIShots`, `-MRMapCapture`, and `-MROffline` to play without a server. Console: `MRBookmark <name>`, `MREnvReload`, `MRUIReload`, `mr.GameHour <h>`.
+- **In-game test modes** (command-line flags on the game): `-MRNetTest`, `-MRZoneTest`, `-MRMoveTest`, `-MRScreenshots`, `-MRProfile`, `-MRLookDev`, `-MRUIShots`, `-MRMapCapture`, and `-MROffline` to play without a server. Console: `MRBookmark <name>`, `MREnvReload`, `MRUIReload`, `mr.GameHour <h>`.
 - **Visual work is decided by the user from images.** Show before/after sheets, recommend one option, keep the others reversible behind a data switch.
 
 ## C++ source map (`game/MeridianRemastered/Source/MeridianRemastered/`)
@@ -166,7 +172,7 @@ WASD + mouse, Shift sprints (drains Vigor), Caps Lock walks, C crouches, Space j
 |---|---|
 | `Core/MRUnits.h` | Original grid and angle conversions to UE (must match `roo2gltf`) |
 | `Abilities/MRAttributeSet` | GAS attributes: the six stats plus Health, Mana, Vigor |
-| `Character/` | Player character (FP/TP camera, input in code), predicted walk/run/sprint; the sprite body (`MRSpriteBodyComponent`, `MRSpriteData`) shared with monsters |
+| `Character/` | Player character (FP/TP camera, input in code), predicted run/walk (no sprint, crouch or jump), Space's "go"; the sprite body (`MRSpriteBodyComponent`, `MRSpriteData`) shared with monsters |
 | `Player/` | Player state (owns the ASC and zone ID), controller (client zone streaming, the UI keys' `IMC_UI`), `AMRHUD` (shows the UI or, online, the login screen first; draws the first-person hands) |
 | `UI/` | The Slate UI (ADR 0009): `UMRUISubsystem` (per local player), `UMRUIStyle` (`ui_style.json`, brushes, `MRPaint` frames), `UMRGameDataSubsystem` (items, spells, skills JSON), `UMRInventorySource` / `UMRMockInventory` (the seam; Minecraft's click rules), widgets `SMRHUDRoot`, `SMRSlot`, `SMRInventoryScreen`, `SMRMinimap`, `SMRLoginScreen`, `SMRChatLog`, the shared `MRUI::Label`, `SMRPanel`, `SMRTextButton`, `SMRTextField`, `AMRAvatarPreview` |
 | `Net/` | Playing on Meridian servers (ADR 0010): `MRProtocol` (frames, CRC, security word, redbook token), `MRResources` (the server's rsb, message formatting), `FMRConnection` (WebSocket, login, pings), `UMRNetSubsystem` (servers, game data download, characters, the room's objects, chat), `UMRNetWorldSubsystem` (zone, pawn, movement up, exits, `AMRNetObject` sprites) |
@@ -179,7 +185,7 @@ WASD + mouse, Shift sprints (drains Vigor), Caps Lock walks, C crouches, Space j
 | `Environment/MRScatterActor` | Instanced grass placed by the world build |
 | `Audio/MRAudioSubsystem` | The original's music, room loops and ambient sounds per zone |
 | `Monsters/` | `AMRMonster` (sprite body, stand-in AI) and `UMRMonsterSubsystem` (spawns from the zone data) |
-| `Tests/` | `MRNetTest` (online), `MRNetTests` (protocol unit tests), `MRZoneSmokeTest`, `MRScreenshotTour`, `MRProfileTour`, `MRLookDevTour`, `MRSpriteNetTest`, `MRSpriteClipTour`, `MRMonsterTour`, `MRUIShots`, `MRMapCapture` |
+| `Tests/` | `MRNetTest` (online), `MRNetTests` (protocol unit tests), `MRZoneSmokeTest`, `MRMoveTest`, `MRScreenshotTour`, `MRProfileTour`, `MRLookDevTour`, `MRSpriteNetTest`, `MRSpriteClipTour`, `MRMonsterTour`, `MRUIShots`, `MRMapCapture` |
 
 ## Zones and streaming
 
@@ -198,7 +204,7 @@ WASD + mouse, Shift sprints (drains Vigor), Caps Lock walks, C crouches, Space j
 - `tools/blender/` — `render_glb.py` (previews), `prop_glb.py` (AI prop previews and normalising), `build_zone_art.py` + `zone_detail.py` + `zone_grime.py` (rebuilt buildings; `art_src/environment/zones/<rid>/<Building>.blend` overrides, `--seed-override`), `build_grass_kit.py`, `build_tree_kit.py` (procedural trees, ADR 0007 "Trees"), `build_prop_kit.py` (rain and smoke quads), `check_overlaps.py`.
 - `tools/environment/` — pure-Python helpers: `blockout.py`, `facades.py` (opening review sheet), `scatter.py`, `shelter.py`, `fires.py`, `chimneys.py`.
 - `tools/textures/` — `make_placeholders.py` (upscale with `4xTextures_GTAV_rgt-s_dither`, Real-ESRGAN fallback; Marigold or rule-based normals; incremental), `make_tree_textures.py` (leaf atlas and bark from a tree sprite), `ai_maps.py` (runs in `build/texai/.venv`), `upscale.py`, `setup_ai.ps1`.
-- `tools/ue/` — `build_world.ps1/.py`, `build_cache.py`, `run_in_editor.py`, `environment_materials.py`, `zone_mood.py`, `build_audio.py`, `run_lookdev.ps1`, `run_net_test.ps1`, `run_zone_test.ps1`, `import_sprites.ps1`, `run_sprite_net_test.ps1`, `import_ui.ps1`, `run_ui_shots.ps1`, `run_map_capture.ps1`.
+- `tools/ue/` — `build_world.ps1/.py`, `build_cache.py`, `run_in_editor.py`, `environment_materials.py`, `zone_mood.py`, `build_audio.py`, `run_lookdev.ps1`, `run_net_test.ps1`, `run_move_test.ps1`, `run_zone_test.ps1`, `import_sprites.ps1`, `run_sprite_net_test.ps1`, `import_ui.ps1`, `run_ui_shots.ps1`, `run_map_capture.ps1`.
 - `tools/aigen/` — sprite → 3D assets, one manifest per asset (`data/aigen/<kind>/<name>.json`). `inventory.py` maps a zone's placed objects to sprites. `aigen.py` runs the steps over one asset, `a,b,c` or `all`: sprite, restyle, `batch-submit` / `batch-collect` (OpenAI Batch API), tripo-prepare, `bridge-collect`, choose, normalize, overview. It re-runs itself in `build/texai/.venv`. Also `sprite.py`, `restyle.py` (OpenAI, Vertex, Gemini, fal), `tripo.py`, `blender_link.py` (the open Blender via its MCP add-on socket, plus the Tripo DCC Bridge log), `review.py`, `style/style.md`. Blender side: `tools/blender/prop_glb.py` (preview, normalize).
 - `tools/sprites/` — player and monster sprites (docs/sprites.md): `build_player_sprites.py` (upscaled part atlases, in-betweens, palette lookups), `monsters.py`, `run_sprite_tour.ps1`, `run_sprite_clips.ps1`; imported by `tools/ue/import_sprites.ps1`.
 - `tools/lookdev/` — `compare.py`, `profile_report.py`, `suggest_cameras.py`, `cycle_test.ps1`, `mood_test.ps1`, `upscaler_test.ps1`, `ai_maps_test.ps1`.

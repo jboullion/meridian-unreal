@@ -1828,7 +1828,8 @@
       0.688,
       10.416
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 3.781
     },
     {
      "class": "RazaInnKeeper",
@@ -1838,7 +1839,8 @@
       0.688,
       14.025
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 3.781
     },
     {
      "class": "Sign",
@@ -1852,7 +1854,8 @@
       0.688,
       7.425
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 3.781
     },
     {
      "class": "Table",
@@ -1862,7 +1865,8 @@
       0.688,
       14.025
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 3.781
     },
     {
      "class": "Table",
@@ -1872,7 +1876,8 @@
       0.688,
       3.025
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 3.781
     },
     {
      "class": "Table",
@@ -1882,7 +1887,8 @@
       0.688,
       5.225
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 3.781
     },
     {
      "class": "BarStool",
@@ -1892,7 +1898,8 @@
       0.688,
       14.025
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 3.781
     },
     {
      "class": "BarStool",
@@ -1902,7 +1909,8 @@
       0.688,
       9.075
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 3.781
     },
     {
      "class": "BarStool",
@@ -1912,7 +1920,8 @@
       0.688,
       3.025
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 3.781
     },
     {
      "class": "DynamicLight",
@@ -1926,7 +1935,8 @@
       1.959
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.781
     },
     {
      "class": "DynamicLight",
@@ -1940,7 +1950,8 @@
       15.434
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.781
     },
     {
      "class": "DynamicLight",
@@ -1954,7 +1965,8 @@
       17.256
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.781
     },
     {
      "class": "DynamicLight",
@@ -1968,7 +1980,8 @@
       9.075
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.781
     }
    ],
    "generators": [],
@@ -2053,7 +2066,8 @@
       0.825,
       21.175
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 4.4
     },
     {
      "class": "Sign",
@@ -2067,7 +2081,8 @@
       0.0,
       21.588
      ],
-     "yaw_kod": 2560
+     "yaw_kod": 2560,
+     "ceiling_y": 4.4
     },
     {
      "class": "Stool",
@@ -2077,7 +2092,8 @@
       0.0,
       3.163
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 4.4
     },
     {
      "class": "Stool",
@@ -2087,7 +2103,8 @@
       0.0,
       3.163
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 4.4
     },
     {
      "class": "Stool",
@@ -2097,7 +2114,8 @@
       0.0,
       4.95
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 4.4
     },
     {
      "class": "Stool",
@@ -2107,7 +2125,8 @@
       0.0,
       4.95
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 4.4
     },
     {
      "class": "Stool",
@@ -2117,7 +2136,8 @@
       0.0,
       6.738
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 4.4
     },
     {
      "class": "Stool",
@@ -2127,7 +2147,8 @@
       0.0,
       6.738
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 4.4
     },
     {
      "class": "Chandelier",
@@ -2137,7 +2158,8 @@
       0.0,
       11.619
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 4.4
     },
     {
      "class": "DynamicLight",
@@ -2150,7 +2172,8 @@
       0.0,
       11.619
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 4.4
     }
    ],
    "generators": [],
@@ -2231,7 +2254,8 @@
       0.0,
       14.025
      ],
-     "yaw_kod": 1024
+     "yaw_kod": 1024,
+     "ceiling_y": 2.75
     },
     {
      "class": "Sign",
@@ -2245,7 +2269,8 @@
       0.0,
       14.025
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.75
     },
     {
      "class": "DynamicLight",
@@ -2258,7 +2283,8 @@
       0.859,
       18.15
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.75
     },
     {
      "class": "DynamicLight",
@@ -2272,7 +2298,8 @@
       15.022
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 2.75
     },
     {
      "class": "DynamicLight",
@@ -2286,7 +2313,8 @@
       6.806
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 2.75
     }
    ],
    "generators": [],
@@ -2356,7 +2384,8 @@
       2.475
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.438
     },
     {
      "class": "Sign",
@@ -2371,7 +2400,8 @@
       6.325
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.438
     },
     {
      "class": "OrnamentalObject",
@@ -2384,7 +2414,8 @@
       11.275
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.438
     },
     {
      "class": "OrnamentalObject",
@@ -2397,7 +2428,8 @@
       5.775
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.438
     },
     {
      "class": "OrnamentalObject",
@@ -2410,7 +2442,8 @@
       7.975
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.438
     },
     {
      "class": "OrnamentalObject",
@@ -2423,7 +2456,8 @@
       4.675
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.438
     },
     {
      "class": "OrnamentalObject",
@@ -2436,7 +2470,8 @@
       4.95
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.438
     },
     {
      "class": "DynamicLight",
@@ -2450,7 +2485,8 @@
       10.347
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.438
     }
    ],
    "generators": [],
@@ -2532,7 +2568,8 @@
       1.65
      ],
      "yaw_kod": 2048,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 2.75
     },
     {
      "class": "Sign",
@@ -2547,7 +2584,8 @@
       5.5
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 2.75
     },
     {
      "class": "OrnamentalObject",
@@ -2560,7 +2598,8 @@
       8.25
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 2.75
     },
     {
      "class": "OrnamentalObject",
@@ -2573,7 +2612,8 @@
       3.85
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 2.75
     },
     {
      "class": "OrnamentalObject",
@@ -2585,7 +2625,8 @@
       1.031,
       3.3
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.75
     },
     {
      "class": "OrnamentalObject",
@@ -2597,7 +2638,8 @@
       1.031,
       3.3
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.75
     },
     {
      "class": "DynamicLight",
@@ -2611,7 +2653,8 @@
       10.003
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 2.75
     }
    ],
    "generators": [],
@@ -2685,7 +2728,8 @@
       23.1
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 17.188
     },
     {
      "class": "Sign",
@@ -2699,7 +2743,8 @@
       17.875,
       23.1
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 20.625
     },
     {
      "class": "Sign",
@@ -2713,7 +2758,8 @@
       10.312,
       23.1
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 17.188
     },
     {
      "class": "Sign",
@@ -2727,7 +2773,8 @@
       7.288,
       61.6
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 9.488
     },
     {
      "class": "Sign",
@@ -2741,7 +2788,8 @@
       2.888,
       52.147
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 6.188
     },
     {
      "class": "Skull",
@@ -2751,7 +2799,8 @@
       12.513,
       23.1
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 13.509
     },
     {
      "class": "OrnamentalObject",
@@ -2763,7 +2812,8 @@
       13.613,
       4.4
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 14.609
     },
     {
      "class": "OrnamentalObject",
@@ -2775,7 +2825,8 @@
       13.613,
       4.4
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 14.609
     },
     {
      "class": "OrnamentalObject",
@@ -2787,7 +2838,8 @@
       12.513,
       9.9
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 13.509
     },
     {
      "class": "OrnamentalObject",
@@ -2799,7 +2851,8 @@
       13.613,
       39.6
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 14.609
     },
     {
      "class": "OrnamentalObject",
@@ -2811,7 +2864,8 @@
       12.513,
       47.025
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 13.509
     },
     {
      "class": "OrnamentalObject",
@@ -2823,7 +2877,8 @@
       3.713,
       49.775
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 4.709
     },
     {
      "class": "OrnamentalObject",
@@ -2835,7 +2890,8 @@
       9.213,
       52.8
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 10.209
     },
     {
      "class": "OrnamentalObject",
@@ -2847,7 +2903,8 @@
       9.213,
       68.2
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 10.209
     },
     {
      "class": "OrnamentalObject",
@@ -2859,7 +2916,8 @@
       9.213,
       63.8
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 10.209
     },
     {
      "class": "OrnamentalObject",
@@ -2871,7 +2929,8 @@
       7.769,
       58.575
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 9.109
     },
     {
      "class": "OrnamentalObject",
@@ -2883,7 +2942,8 @@
       9.213,
       40.975
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 10.209
     },
     {
      "class": "OrnamentalObject",
@@ -2895,7 +2955,8 @@
       9.213,
       35.2
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 10.209
     },
     {
      "class": "OrnamentalObject",
@@ -2907,7 +2968,8 @@
       10.312,
       26.4
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 11.309
     },
     {
      "class": "OrnamentalObject",
@@ -2919,7 +2981,8 @@
       11.413,
       17.6
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 12.409
     },
     {
      "class": "OrnamentalObject",
@@ -2931,7 +2994,8 @@
       11.413,
       7.975
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 12.409
     },
     {
      "class": "OrnamentalObject",
@@ -2943,7 +3007,8 @@
       11.413,
       2.2
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 12.409
     },
     {
      "class": "OrnamentalObject",
@@ -2955,7 +3020,8 @@
       10.312,
       2.2
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 11.309
     },
     {
      "class": "Brazier",
@@ -2966,7 +3032,8 @@
       17.6
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 20.625
     },
     {
      "class": "Brazier",
@@ -2977,7 +3044,8 @@
       28.6
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 20.625
     },
     {
      "class": "DynamicLight",
@@ -2991,7 +3059,8 @@
       23.1
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 17.188
     }
    ],
    "generators": [],
@@ -3094,7 +3163,8 @@
       0.0,
       3.575
      ],
-     "yaw_kod": 1536
+     "yaw_kod": 1536,
+     "ceiling_y": 2.956
     },
     {
      "class": "Sign",
@@ -3108,7 +3178,8 @@
       0.0,
       12.375
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.956
     },
     {
      "class": "Stool",
@@ -3118,7 +3189,8 @@
       0.0,
       7.975
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.956
     },
     {
      "class": "Stool",
@@ -3128,7 +3200,8 @@
       0.0,
       5.775
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.956
     },
     {
      "class": "Stool",
@@ -3138,7 +3211,8 @@
       0.0,
       10.175
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.956
     },
     {
      "class": "Stool",
@@ -3148,7 +3222,8 @@
       0.0,
       10.175
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.956
     },
     {
      "class": "Stool",
@@ -3158,7 +3233,8 @@
       0.0,
       13.475
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.956
     },
     {
      "class": "Stool",
@@ -3168,7 +3244,8 @@
       0.0,
       13.475
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.956
     },
     {
      "class": "OrnamentalObject",
@@ -3180,7 +3257,8 @@
       0.0,
       16.775
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.956
     },
     {
      "class": "OrnamentalObject",
@@ -3192,7 +3270,8 @@
       0.0,
       3.575
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.956
     },
     {
      "class": "OrnamentalObject",
@@ -3204,7 +3283,8 @@
       0.0,
       5.775
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.956
     },
     {
      "class": "OrnamentalObject",
@@ -3216,7 +3296,8 @@
       0.0,
       7.975
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 2.956
     },
     {
      "class": "Candle",
@@ -3227,7 +3308,8 @@
       15.125
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 2.956
     },
     {
      "class": "DynamicLight",
@@ -3241,7 +3323,8 @@
       17.325
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 2.956
     },
     {
      "class": "DynamicLight",
@@ -3255,7 +3338,8 @@
       2.819
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 2.956
     },
     {
      "class": "DynamicLight",
@@ -3269,7 +3353,8 @@
       2.784
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 2.956
     }
    ],
    "generators": [],
@@ -3367,7 +3452,8 @@
       17.6
      ],
      "yaw_kod": 1024,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "Sign",
@@ -3382,7 +3468,8 @@
       17.738
      ],
      "yaw_kod": 1024,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "Sign",
@@ -3397,7 +3484,8 @@
       4.4
      ],
      "yaw_kod": 1024,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "Sign",
@@ -3412,7 +3500,8 @@
       18.15
      ],
      "yaw_kod": 1024,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "Sign",
@@ -3426,7 +3515,8 @@
       0.825,
       11.55
      ],
-     "yaw_kod": 1024
+     "yaw_kod": 1024,
+     "ceiling_y": 5.5
     },
     {
      "class": "Sign",
@@ -3440,7 +3530,8 @@
       0.825,
       18.15
      ],
-     "yaw_kod": 1024
+     "yaw_kod": 1024,
+     "ceiling_y": 5.5
     },
     {
      "class": "Sign",
@@ -3454,7 +3545,8 @@
       0.825,
       4.675
      ],
-     "yaw_kod": 1024
+     "yaw_kod": 1024,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3466,7 +3558,8 @@
       1.925,
       15.95
      ],
-     "yaw_kod": 3072
+     "yaw_kod": 3072,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3479,7 +3572,8 @@
       13.75
      ],
      "yaw_kod": 3072,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3491,7 +3585,8 @@
       1.925,
       15.95
      ],
-     "yaw_kod": 1024
+     "yaw_kod": 1024,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3504,7 +3599,8 @@
       27.775
      ],
      "yaw_kod": 0,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3517,7 +3613,8 @@
       30.25
      ],
      "yaw_kod": 3072,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3530,7 +3627,8 @@
       30.25
      ],
      "yaw_kod": 1024,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3542,7 +3640,8 @@
       1.925,
       6.6
      ],
-     "yaw_kod": 0
+     "yaw_kod": 0,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3555,7 +3654,8 @@
       27.5
      ],
      "yaw_kod": 0,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3568,7 +3668,8 @@
       13.75
      ],
      "yaw_kod": 1024,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "ModelNode",
@@ -3579,7 +3680,8 @@
       6.6
      ],
      "yaw_kod": 2048,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3592,7 +3694,8 @@
       30.25
      ],
      "yaw_kod": 3072,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3605,7 +3708,8 @@
       30.25
      ],
      "yaw_kod": 3072,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3618,7 +3722,8 @@
       30.25
      ],
      "yaw_kod": 3584,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3630,7 +3735,8 @@
       1.925,
       15.95
      ],
-     "yaw_kod": 1024
+     "yaw_kod": 1024,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3642,7 +3748,8 @@
       1.925,
       15.95
      ],
-     "yaw_kod": 1024
+     "yaw_kod": 1024,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3655,7 +3762,8 @@
       13.75
      ],
      "yaw_kod": 1024,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3668,7 +3776,8 @@
       13.75
      ],
      "yaw_kod": 1024,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3680,7 +3789,8 @@
       1.925,
       8.8
      ],
-     "yaw_kod": 0
+     "yaw_kod": 0,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3692,7 +3802,8 @@
       1.925,
       4.4
      ],
-     "yaw_kod": 0
+     "yaw_kod": 0,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3705,7 +3816,8 @@
       30.25
      ],
      "yaw_kod": 1024,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3718,7 +3830,8 @@
       30.25
      ],
      "yaw_kod": 1024,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3731,7 +3844,8 @@
       30.25
      ],
      "yaw_kod": 512,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3743,7 +3857,8 @@
       1.925,
       15.95
      ],
-     "yaw_kod": 3072
+     "yaw_kod": 3072,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3755,7 +3870,8 @@
       1.925,
       15.95
      ],
-     "yaw_kod": 3072
+     "yaw_kod": 3072,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3768,7 +3884,8 @@
       13.75
      ],
      "yaw_kod": 1024,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3781,7 +3898,8 @@
       13.75
      ],
      "yaw_kod": 1024,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3794,7 +3912,8 @@
       4.4
      ],
      "yaw_kod": 2048,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3807,7 +3926,8 @@
       8.8
      ],
      "yaw_kod": 2048,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "DynamicLight",
@@ -3821,7 +3941,8 @@
       21.484
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "DynamicLight",
@@ -3835,7 +3956,8 @@
       7.975
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "DynamicLight",
@@ -3849,7 +3971,8 @@
       8.078
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "DynamicLight",
@@ -3863,7 +3986,8 @@
       21.519
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "DynamicLight",
@@ -3877,7 +4001,8 @@
       21.45
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "DynamicLight",
@@ -3891,7 +4016,8 @@
       11.859
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "DynamicLight",
@@ -3905,7 +4031,8 @@
       17.944
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "DynamicLight",
@@ -3919,7 +4046,8 @@
       25.85
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "DynamicLight",
@@ -3932,7 +4060,8 @@
       0.825,
       21.45
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 5.5
     },
     {
      "class": "DynamicLight",
@@ -3946,7 +4075,8 @@
       25.85
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     },
     {
      "class": "DynamicLight",
@@ -3959,7 +4089,8 @@
       0.825,
       17.875
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 5.5
     },
     {
      "class": "DynamicLight",
@@ -3972,7 +4103,8 @@
       0.825,
       11.825
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3984,7 +4116,8 @@
       1.1,
       30.525
      ],
-     "yaw_kod": 1024
+     "yaw_kod": 1024,
+     "ceiling_y": 5.5
     },
     {
      "class": "OrnamentalObject",
@@ -3996,7 +4129,8 @@
       1.1,
       30.525
      ],
-     "yaw_kod": 1024
+     "yaw_kod": 1024,
+     "ceiling_y": 5.5
     },
     {
      "class": "Sign",
@@ -4011,7 +4145,8 @@
       28.875
      ],
      "yaw_kod": 1024,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 5.5
     }
    ],
    "generators": [],
@@ -5477,7 +5612,8 @@
       0.275,
       11.688
      ],
-     "yaw_kod": 1536
+     "yaw_kod": 1536,
+     "ceiling_y": 3.231
     },
     {
      "class": "Sign",
@@ -5491,7 +5627,8 @@
       0.275,
       7.7
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 3.231
     },
     {
      "class": "DynamicLight",
@@ -5505,7 +5642,8 @@
       17.325
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.231
     },
     {
      "class": "DynamicLight",
@@ -5519,7 +5657,8 @@
       2.819
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.231
     },
     {
      "class": "DynamicLight",
@@ -5533,7 +5672,8 @@
       2.784
      ],
      "yaw_kod": null,
-     "flicker": true
+     "flicker": true,
+     "ceiling_y": 3.231
     }
    ],
    "generators": [],
@@ -5614,7 +5754,8 @@
       0.0,
       11.0
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 6.6
     },
     {
      "class": "Sign",
@@ -5628,7 +5769,8 @@
       0.0,
       7.7
      ],
-     "yaw_kod": null
+     "yaw_kod": null,
+     "ceiling_y": 6.6
     },
     {
      "class": "Brazier",
@@ -5638,7 +5780,8 @@
       0.0,
       17.119
      ],
-     "yaw_kod": 3072
+     "yaw_kod": 3072,
+     "ceiling_y": 6.6
     },
     {
      "class": "Table",
@@ -5648,7 +5791,8 @@
       0.0,
       16.5
      ],
-     "yaw_kod": 3072
+     "yaw_kod": 3072,
+     "ceiling_y": 6.6
     }
    ],
    "generators": [],

@@ -72,7 +72,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/setup.ps1
 
 This extracts the original data and art, builds the maps, compiles the game and generates the world. Pass `-EngineRoot "<path to UE_5.8>"` if Unreal is installed somewhere else.
 
-To play, open `game/MeridianRemastered/MeridianRemastered.uproject` and press Play (Net Mode "Play Standalone"). The login screen connects to a Meridian server: "Shards (online)", or "Local (dev)" when the Shards dev stack runs on your machine (`npm run dev` in the meridian-browser repo). Any new name and password make an account. Move with WASD and the mouse, Shift to sprint, Space to jump, V to switch between first and third person, and Enter to chat.
+To play, open `game/MeridianRemastered/MeridianRemastered.uproject` and press Play (Net Mode "Play Standalone"). The login screen connects to a Meridian server: "Shards (online)", or "Local (dev)" when the Shards dev stack runs on your machine (`npm run dev` in the meridian-browser repo). Any new name and password make an account. Move with WASD and the mouse (you run; hold Shift to walk), press Space on a door to go through it, V to switch between first and third person, and Enter to chat.
 
 More detail on building, testing and the tools is in [AGENTS.md](AGENTS.md).
 

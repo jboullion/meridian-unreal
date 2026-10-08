@@ -589,6 +589,13 @@ void UMRZoneSubsystem::UpdatePawnZone(APawn* Pawn)
 	const FIntPoint Grid = WorldToGrid(Current, Pos);
 	const FIntVector Square(Current, Grid.X, Grid.Y);
 
+	// A "go" through a door that is waiting for the client to stream the other side: keep trying
+	// while the pawn stands on the door (TeleportPawn gives up waiting after a timeout).
+	if (PendingTeleport.Contains(Pawn) && TryGo(Pawn))
+	{
+		return;
+	}
+
 	// Don't bounce straight back out through the exit next to the arrival point.
 	if (const FIntVector* Arrived = ArrivalSquare.Find(Pawn))
 	{
@@ -599,22 +606,8 @@ void UMRZoneSubsystem::UpdatePawnZone(APawn* Pawn)
 		ArrivalSquare.Remove(Pawn);
 	}
 
-	// 1) tile exits (doors)
-	for (const FMRZoneExit& E : Z.Exits)
-	{
-		if (E.Row == Grid.X && E.Col == Grid.Y)
-		{
-			if (E.bLocked)
-			{
-				// TODO(ui): show E.LockedMessage to the player once the chat/message UI exists
-				return;
-			}
-			TeleportPawn(Pawn, E.DestRid, E.DestRow, E.DestCol);
-			return;
-		}
-	}
-
-	// 2) edge exits: left the grid rectangle on a side that leads somewhere
+	// Tile exits (doors) wait for the player's "go" (TryGo), as in the original.
+	// Edge exits: left the grid rectangle on a side that leads somewhere
 	const FVector2D Roo = MRUnits::LocalToRoo(Pos - Z.Origin);
 	for (const FMREdgeExit& E : Z.EdgeExits)
 	{
@@ -637,6 +630,35 @@ void UMRZoneSubsystem::UpdatePawnZone(APawn* Pawn)
 		}
 		return;
 	}
+}
+
+bool UMRZoneSubsystem::TryGo(APawn* Pawn)
+{
+	if (!Pawn || !Pawn->HasAuthority() || bServerDriven)
+	{
+		return false;
+	}
+	const int32 Current = GetPawnZone(Pawn);
+	const FMRZoneInfo* Z = Zones.Find(Current);
+	if (!Z)
+	{
+		return false;
+	}
+	const FIntPoint Grid = WorldToGrid(Current, Pawn->GetActorLocation());
+	for (const FMRZoneExit& E : Z->Exits)
+	{
+		if (E.Row == Grid.X && E.Col == Grid.Y)
+		{
+			if (E.bLocked)
+			{
+				// TODO(ui): show E.LockedMessage to the player in the chat log
+				UE_LOG(LogMeridian, Log, TEXT("Go: the door at zone %d (%d,%d) is locked"), Current, Grid.X, Grid.Y);
+				return false;
+			}
+			return TeleportPawn(Pawn, E.DestRid, E.DestRow, E.DestCol);
+		}
+	}
+	return false;
 }
 
 bool UMRZoneSubsystem::TeleportPawn(APawn* Pawn, int32 DestRid, int32 Row, int32 Col)

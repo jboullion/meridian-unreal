@@ -532,6 +532,18 @@ def prop_mesh_choice(cfg, label, ordinal):
     return meshes[zlib.crc32(label.encode()) % len(meshes)]
 
 
+def hanging_y(mesh, scale, obj, y, label):
+    """A props.json "hanging" prop (Kod OF_HANGING: the chandelier) hangs from the ceiling: its mesh's
+    top at the ceiling above it (zone_layout.json "ceiling_y"), as the original pins the sprite's top
+    there (clientd3d object.c RoomObjectSetHeight: ceiling - the sprite's height; the chandelier's
+    drawing fills its frame to the top). Under open sky it stays where it is."""
+    if obj.get("ceiling_y") is None:
+        log("WARNING: %s is hanging but has no ceiling above it (run tools/roo2gltf/roo2gltf.py)" % label)
+        return y
+    top_m = eal.load_asset(mesh).get_bounding_box().max.z * scale / 100.0
+    return float(obj["ceiling_y"]) - top_m
+
+
 def zone_props(zone, materials, prop_materials):
     """-> [(label, mesh path or None, [x, y, z] cm, light config or None, fire or None, yaw deg, scale,
     sector light, blocks)] for the
@@ -547,6 +559,7 @@ def zone_props(zone, materials, prop_materials):
     props = json.load(open(PROPS, encoding="utf-8"))
     out = []
     ordinals = {}
+    anchors = []  # where the lights of hanging props (the chandelier's candles) are, cm
     for i, obj in enumerate(zone.get("objects", [])):
         cfg = prop_config(props, obj)
         if not cfg:
@@ -581,12 +594,36 @@ def zone_props(zone, materials, prop_materials):
         if not (mesh or light or fire):
             continue
         sector = round(blockout.floor_light(os.path.join(REPO, zone["mesh"]), x, z, y), 3) if mesh else 1.0
+        if mesh and cfg.get("hanging"):
+            y = hanging_y(mesh, scale, obj, y, label)
+            if cfg.get("lights_at_m") is not None:
+                anchors.append((x * 100.0, z * 100.0, (y + float(cfg["lights_at_m"]) * scale) * 100.0))
         out.append((label, mesh, [x * 100.0, z * 100.0, y * 100.0], light, fire, prop_yaw(cfg, obj, label, placed), scale, sector,
                     cfg.get("blocks") or False))
-    return out
+    return lights_to_hanging(out, anchors)
 
 
 TORCH_LIGHT_MERGE_CM = 100.0
+
+
+HANGING_LIGHT_MERGE_CM = 50.0
+
+
+def lights_to_hanging(props, anchors):
+    """The original lit its chandelier with a room light (DynamicLight) on the same spot, which the
+    build put 1.8 m up: under the hanging chandelier, a glowing ball in mid-air (2026-10-07). A
+    DynamicLight within HANGING_LIGHT_MERGE_CM (in plan) of a hanging prop with "lights_at_m" moves
+    up to that height (its candles)."""
+    out = []
+    for p in props:
+        label, mesh, pos, light = p[:4]
+        if light and not mesh and "_DynamicLight_" in label:
+            near = [a for a in anchors if ((a[0] - pos[0]) ** 2 + (a[1] - pos[1]) ** 2) ** 0.5 < HANGING_LIGHT_MERGE_CM]
+            if near:
+                log("%s moved up to its chandelier's candles" % label)
+                p = (label, mesh, [pos[0], pos[1], near[0][2]], dict(light, offset_m=0.0)) + tuple(p[4:])
+        out.append(p)
+    return out
 
 
 def merge_torch_lights(props, wall_fires):
@@ -819,6 +856,8 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
             # (spawn_blocker); else walked through, as every object in the original
             blocks = rest[2] if len(rest) > 2 else False
             comp.set_collision_profile_name("BlockAll" if blocks and not isinstance(blocks, dict) else "NoCollision")
+            # the original steps 0.825 m (UMRCharacterMovementComponent): not onto a chest or a table
+            comp.set_editor_property("can_character_step_up_on", unreal.CanBeCharacterBase.ECB_NO)
             if isinstance(blocks, dict):
                 spawn_blocker(label, loc, rest[0] if rest else 1.0, blocks, zone["rid"])
             # M_PropTextured's SectorLight; the property, not set_custom_primitive_data_float, which
@@ -892,6 +931,7 @@ def spawn_blocker(label, loc, scale, blocks, zone_rid):
     comp.set_visibility(False)
     comp.set_cast_shadow(False)
     comp.set_collision_profile_name("BlockAll")
+    comp.set_editor_property("can_character_step_up_on", unreal.CanBeCharacterBase.ECB_NO)
     a.tags = [unreal.Name("ZoneProp"), unreal.Name("ZoneBlocker"), unreal.Name("Zone%d" % zone_rid)]
 
 

@@ -19,6 +19,7 @@
 #include "Tests/MRSpriteNetTest.h"
 #include "Tests/MRMonsterTour.h"
 #include "Tests/MRMapCapture.h"
+#include "Tests/MRMoveTest.h"
 #include "Tests/MRNetTest.h"
 #include "Tests/MRUIShots.h"
 #include "Zones/MRZoneSubsystem.h"
@@ -92,6 +93,11 @@ void AMRPlayerController::BeginPlay()
 		{
 			NetTest = NewObject<UMRNetTest>(this);
 			NetTest->Start(this);
+		}
+		else if (UMRMoveTest::IsRequested())
+		{
+			MoveTest = NewObject<UMRMoveTest>(this);
+			MoveTest->Start(this);
 		}
 	}
 }

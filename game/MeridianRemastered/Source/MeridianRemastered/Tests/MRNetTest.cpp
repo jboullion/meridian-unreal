@@ -130,7 +130,12 @@ bool UMRNetTest::TakeExit()
 		{
 			const FVector At = Zones->GridToWorld(Zone->Rid, E.Row, E.Col, true) + FVector(0.0, 0.0, Pawn->GetSimpleCollisionHalfHeight() + 2.0);
 			UE_LOG(LogMeridian, Display, TEXT("MRNetTest: stepping onto the exit (%d, %d) of zone %d toward %d"), E.Row, E.Col, Zone->Rid, E.DestRid);
-			return Pawn->TeleportTo(At, Pawn->GetActorRotation(), false, true);
+			if (!Pawn->TeleportTo(At, Pawn->GetActorRotation(), false, true))
+			{
+				return false;
+			}
+			NetWorld->RequestGo();  // the space bar: doors wait for "go"
+			return true;
 		}
 	}
 	return false;
@@ -162,7 +167,22 @@ void UMRNetTest::Tick()
 			// (after a refused name the status clears and the error says why: try another)
 			const FMRCharacterSlot* Named = Net->GetCharacters().FindByPredicate([](const FMRCharacterSlot& C) { return !C.bNeedsCreation; });
 			const FMRCharacterSlot* Empty = Net->GetCharacters().FindByPredicate([](const FMRCharacterSlot& C) { return C.bNeedsCreation; });
-			if (Named)
+			if (Named && FApp::CanEverRender() && HoldSeconds > 0.f && (CharacterShotAt == 0.0 || Now - CharacterShotAt < 2.0))
+			{
+				// -Render -Hold: a picture of the character page first (once it has laid out), then a moment for the capture
+				if (CharacterShotAt == 0.0)
+				{
+					CharacterShotAt = Now;
+				}
+				else if (Now - CharacterShotAt > 1.0 && !bAsked)
+				{
+					bAsked = true;
+					const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), TEXT("characters.png"));
+					FScreenshotRequest::RequestScreenshot(File, true, false);
+					UE_LOG(LogMeridian, Display, TEXT("MRNetTest: screenshot %s"), *File);
+				}
+			}
+			else if (Named)
 			{
 				Pass(FString::Printf(TEXT("logged in: %d character slots, playing %s"), Net->GetCharacters().Num(), *Named->Name));
 				Net->UseCharacter(Named->Id);

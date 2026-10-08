@@ -50,6 +50,8 @@ private:
 	float HoldSeconds = 0.f;
 	int32 HoldMoves = 0;
 	int32 Shots = 0;
+	/** -Render -Hold: when the character page was captured (0: not yet). */
+	double CharacterShotAt = 0.0;
 	FString SayText;
 	FTimerHandle Timer;
 };
