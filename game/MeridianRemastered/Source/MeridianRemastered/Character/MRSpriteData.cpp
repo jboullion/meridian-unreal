@@ -442,6 +442,11 @@ bool FMRSpriteLibrary::ParseParts(const TSharedPtr<FJsonObject>& Root)
 			FMRSpriteLook& L = Looks.Add(FName(*It.Key));
 			L.Name = FName(*It.Key);
 			O->TryGetNumberField(TEXT("action_face"), L.ActionFace);
+			FString Gender;
+			if (O->TryGetStringField(TEXT("gender"), Gender))
+			{
+				L.Gender = FName(*Gender);
+			}
 			const TArray<TSharedPtr<FJsonValue>>* Bounds;
 			if (O->TryGetArrayField(TEXT("bounds"), Bounds) && Bounds->Num() == 4)
 			{
@@ -479,6 +484,36 @@ bool FMRSpriteLibrary::ParseParts(const TSharedPtr<FJsonObject>& Root)
 				}
 			}
 		}
+	}
+
+	const TSharedPtr<FJsonObject>* EquipmentObj;
+	if (Root->TryGetObjectField(TEXT("equipment"), EquipmentObj))
+	{
+		for (const TPair<FString, TSharedPtr<FJsonValue>> It : (*EquipmentObj)->Values)
+		{
+			const TSharedPtr<FJsonObject> O = It.Value->AsObject();
+			FMRSpriteEquipment& E = Equipment.Add(It.Key);
+			E.Kind = FName(*O->GetStringField(TEXT("kind")));
+			O->TryGetNumberField(TEXT("hotspot"), E.Hotspot);
+			O->TryGetNumberField(TEXT("class"), E.Class);
+			const TSharedPtr<FJsonObject>* BoundsObj;
+			if (O->TryGetObjectField(TEXT("bounds"), BoundsObj))
+			{
+				for (const TPair<FString, TSharedPtr<FJsonValue>> B : (*BoundsObj)->Values)
+				{
+					const TArray<TSharedPtr<FJsonValue>>& V = B.Value->AsArray();
+					if (V.Num() == 4)
+					{
+						E.Bounds.Add(FName(*B.Key), FBox2f(FVector2f(V[0]->AsNumber(), V[1]->AsNumber()), FVector2f(V[2]->AsNumber(), V[3]->AsNumber())));
+					}
+				}
+			}
+		}
+	}
+	const TSharedPtr<FJsonObject>* FirstPersonObj;
+	if (Root->TryGetObjectField(TEXT("first_person"), FirstPersonObj))
+	{
+		ParseFirstPerson(*FirstPersonObj);
 	}
 
 	const TSharedPtr<FJsonObject>* MonstersObj;
@@ -525,27 +560,32 @@ FMRSpriteTrackDef FMRSpriteLibrary::ParseTrack(const TSharedPtr<FJsonObject>& O)
 	return D;
 }
 
+void FMRSpriteLibrary::ParseFirstPerson(const TSharedPtr<FJsonObject>& Fp)
+{
+	for (const TPair<FString, TSharedPtr<FJsonValue>> It : Fp->Values)
+	{
+		if (It.Key.StartsWith(TEXT("_")) || It.Value->Type != EJson::Object)
+		{
+			continue;
+		}
+		const TSharedPtr<FJsonObject> O = It.Value->AsObject();
+		FMRFirstPersonOverlay& F = FirstPerson.Add(It.Key);  // (player_actions.json's come last: they win)
+		F.Bgf = O->GetStringField(TEXT("bgf"));
+		O->TryGetNumberField(TEXT("hold"), F.Hold);
+		const TSharedPtr<FJsonObject>* Attack;
+		if (O->TryGetObjectField(TEXT("attack"), Attack))
+		{
+			F.Attack = ParseTrack(*Attack);
+		}
+	}
+}
+
 bool FMRSpriteLibrary::ParseActions(const TSharedPtr<FJsonObject>& Root)
 {
 	const TSharedPtr<FJsonObject>* Fp;
 	if (Root->TryGetObjectField(TEXT("_first_person"), Fp))
 	{
-		for (const TPair<FString, TSharedPtr<FJsonValue>> It : (*Fp)->Values)
-		{
-			if (It.Key.StartsWith(TEXT("_")) || It.Value->Type != EJson::Object)
-			{
-				continue;
-			}
-			const TSharedPtr<FJsonObject> O = It.Value->AsObject();
-			FMRFirstPersonOverlay& F = FirstPerson.Add(It.Key);
-			F.Bgf = O->GetStringField(TEXT("bgf"));
-			O->TryGetNumberField(TEXT("hold"), F.Hold);
-			const TSharedPtr<FJsonObject>* Attack;
-			if (O->TryGetObjectField(TEXT("attack"), Attack))
-			{
-				F.Attack = ParseTrack(*Attack);
-			}
-		}
+		ParseFirstPerson(*Fp);
 	}
 	for (const TPair<FString, TSharedPtr<FJsonValue>> It : Root->Values)
 	{

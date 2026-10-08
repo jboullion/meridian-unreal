@@ -8,7 +8,10 @@
 #include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "Net/MRNetSubsystem.h"
+#include "Net/MRNetWorld.h"
 #include "Net/MRNetWorldSubsystem.h"
+#include "Net/MRProtocol.h"
 #include "UI/MRUISubsystem.h"
 #include "Character/MRCharacterMovementComponent.h"
 
@@ -70,17 +73,77 @@ void AMRHUD::DrawHUD()
 	BobPhase += Dt * FMath::Clamp(Speed / UMRCharacterMovementComponent::RunCms(), 0.f, 2.f) * UE_TWO_PI * 1.2f;
 	const float BobAmount = FMath::Clamp(Speed / UMRCharacterMovementComponent::WalkCms(), 0.f, 1.f) * CVarHandBob.GetValueOnGameThread();
 
+	const float Scale = Canvas->ClipX / ClassicWidth * 0.5f * CVarHandScale.GetValueOnGameThread();
+	const FVector2D Bob(FMath::Cos(BobPhase) * 6.f * Scale * BobAmount, FMath::Abs(FMath::Sin(BobPhase)) * 8.f * Scale * BobAmount);
 	UTexture2D* Tex = nullptr;
 	FBox2f UV;
 	FIntPoint Size, Offset;
-	if (!Sprite->GetFirstPersonFrame(Tex, UV, Size, Offset) || !Tex->GetResource())
+	// the local swing, while it plays (online, ahead of the server's; offline the only one)
+	const bool bLocal = Sprite->IsFirstPersonAttacking();
+	const UMRNetWorldSubsystem* NetWorld = GetWorld()->GetSubsystem<UMRNetWorldSubsystem>();
+	const UMRNetSubsystem* Net = GetGameInstance() ? GetGameInstance()->GetSubsystem<UMRNetSubsystem>() : nullptr;
+	if (NetWorld && NetWorld->IsActive() && Net)
 	{
-		return;
+		// online: what the server says is held (clientd3d overlay.c DrawPlayerOverlays)
+		const FMRNetWorld& W = Net->GetNetWorld();
+		for (auto It = SlotTracks.CreateIterator(); It; ++It)
+		{
+			if (!W.PlayerOverlays.Contains(It.Key()))
+			{
+				It.RemoveCurrent();
+			}
+		}
+		for (const TPair<uint32, FMRNetPlayerOverlay>& Pair : W.PlayerOverlays)
+		{
+			const FMRNetPlayerOverlay& P = Pair.Value;
+			FSlotTrack& T = SlotTracks.FindOrAdd(Pair.Key);
+			if (T.Seq != P.Seq)
+			{
+				const FMRNetAnimation& A = P.Object.Animation;
+				FMRSpriteTrackDef Def;
+				Def.Mode = A.Type == MRMsg::ANIMATE_CYCLE ? FMRSpriteTrackDef::EMode::Cycle
+					: A.Type == MRMsg::ANIMATE_ONCE ? FMRSpriteTrackDef::EMode::Once : FMRSpriteTrackDef::EMode::None;
+				Def.PeriodMs = static_cast<int32>(A.Period);
+				Def.Low = A.Type == MRMsg::ANIMATE_NONE ? A.Group : A.GroupLow;
+				Def.High = A.Type == MRMsg::ANIMATE_NONE ? A.Group : A.GroupHigh;
+				Def.Final = A.Type == MRMsg::ANIMATE_ONCE ? A.GroupFinal : Def.Low;
+				T.Track.Start(Def);
+				T.Seq = P.Seq;
+			}
+			else
+			{
+				T.Track.Step(Dt * 1000.f);
+			}
+			if (P.Hotspot == 0 || T.Track.Group <= 0 || (bLocal && Pair.Key == MRMsg::PWO_RIGHT_HAND))
+			{
+				continue;
+			}
+			const FString Bgf = FPaths::GetBaseFilename(P.Object.Icon).ToLower();
+			if (Sprite->GetBgfFrame(Bgf, T.Track.Group - 1, Tex, UV, Size, Offset) && Tex->GetResource())
+			{
+				DrawFirstPerson(Tex, UV, Size, Offset, P.Hotspot, Bob, Scale);
+			}
+		}
+		if (!bLocal)
+		{
+			return;
+		}
 	}
-	const float Scale = Canvas->ClipX / ClassicWidth * 0.5f * CVarHandScale.GetValueOnGameThread();
+	if (Sprite->GetFirstPersonFrame(Tex, UV, Size, Offset) && Tex->GetResource())
+	{
+		DrawFirstPerson(Tex, UV, Size, Offset, MRMsg::HS_SE, Bob, Scale);
+	}
+}
+
+void AMRHUD::DrawFirstPerson(UTexture2D* Tex, const FBox2f& UV, FIntPoint Size, FIntPoint Offset, int32 Hotspot, const FVector2D& Bob, float Scale)
+{
+	// clientd3d overlay.c ComputePlayerOverlayArea: a corner, an edge's middle or the centre
 	const FVector2D DrawSize(Size.X * Scale, Size.Y * Scale);
-	const FVector2D Bob(FMath::Cos(BobPhase) * 6.f * Scale * BobAmount, FMath::Abs(FMath::Sin(BobPhase)) * 8.f * Scale * BobAmount);
-	const FVector2D Pos = FVector2D(Canvas->ClipX - DrawSize.X + Offset.X * Scale, Canvas->ClipY - DrawSize.Y + Offset.Y * Scale) + Bob;
+	const int32 Col = (Hotspot == 1 || Hotspot == 8 || Hotspot == 7) ? 0 : (Hotspot == 3 || Hotspot == 4 || Hotspot == 5) ? 2 : 1;
+	const int32 Row = (Hotspot == 1 || Hotspot == 2 || Hotspot == 3) ? 0 : (Hotspot == 7 || Hotspot == 6 || Hotspot == 5) ? 2 : 1;
+	const double X = Col == 0 ? 0.0 : Col == 2 ? Canvas->ClipX - DrawSize.X : (Canvas->ClipX - DrawSize.X) * 0.5;
+	const double Y = Row == 0 ? 0.0 : Row == 2 ? Canvas->ClipY - DrawSize.Y : (Canvas->ClipY - DrawSize.Y) * 0.5;
+	const FVector2D Pos = FVector2D(X + Offset.X * Scale, Y + Offset.Y * Scale) + Bob;
 	FCanvasTileItem Item(Pos, Tex->GetResource(), DrawSize, FVector2D(UV.Min.X, UV.Min.Y), FVector2D(UV.Max.X, UV.Max.Y), FLinearColor::White);
 	Item.BlendMode = SE_BLEND_Translucent;
 	Canvas->DrawItem(Item);

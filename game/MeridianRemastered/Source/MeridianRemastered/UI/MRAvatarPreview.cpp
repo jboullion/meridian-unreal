@@ -152,12 +152,7 @@ void AMRAvatarPreview::SetAppearance(const FMRSpriteAppearance& A)
 	{
 		return;
 	}
-	if (!A.Look.IsNone() && Body->GetLook() != A.Look)
-	{
-		Body->SetLook(A.Look);
-	}
-	Body->SetPartBgfs(A.PartBgfs());
-	Body->SetColours(A.Skin, A.Hair, A.Shirt, A.Pants);
+	Body->SetAppearance(A);
 	Body->SetHeightScale(A.HeightPct > 0 ? A.HeightPct / 100.f : 1.f);
 	Shown = A;
 	PlaceCamera();

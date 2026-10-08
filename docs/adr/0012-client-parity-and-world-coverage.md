@@ -263,6 +263,34 @@ The existing movement, UI-shot and look-dev runs stay green. Look-dev compares r
   - `look_self.png`: one's own, editable, with the face portrait;
   - `runtime_room_1.png`: a target in a runtime room, its walls on the minimap.
 
+### M2b, equipment on players (2026-10-08)
+**What landed:**
+- **Every bitmap an item puts on a player is converted:** 165 of them, listed from Kod by `tools/kod_extract/extract.py` into `data/sprites/equipment.json`. They are torsos (shirts, robes, leather, scale, chain, plate, nerudite), arms (shirts, robes, gauntlets), legs (pants, robes, skirts), weapons, shields, bows, helmets, hats and masks (one per gender), and the first-person pictures.
+- **Players wear what the server sends** (`MRNetLook`, docs/research/blakserv-protocol.md "Equipment on players"):
+  - the torso is the object's icon, the arms and legs its overlays, each in the server's palette translation;
+  - the items' overlays are drawn on their hotspots: a weapon bends the right arm, a shield or bow the left, as `SendOverlays` does;
+  - a helmet that takes the hair off leaves none.
+- **First person online** draws the server's `BP_PLAYER_OVERLAY` slots: the weapon or shield in its screen corner, animated. The local swing shows first, until M4 sends attacks.
+- **Render boxes grow only for what is worn.** Each piece stores the box a player needs while wearing it; an unarmed player keeps the original 182 × 232 base pixels. (Taking the union of everything made every player's box 363 × 316.)
+
+**Pipeline choices:**
+- Worn pieces finer than the torso (weapons, shields, hats at shrink 12–100) are stored at the torso's density, at most 4×. A 400-pixel hat isn't upscaled 4×. Before this, a few took a 4096² atlas each.
+- A torso, arm or leg atlas too big for 4096² with its in-betweens is kept without them (robe and gauntlet arms), so it keeps the ramp atlas the runtime recolours with.
+- The red-nose masks (200 pixels at shrink 1, mostly empty) would make a player's box 1000 pixels wide; they're left out of the bounds and clipped.
+- **Cost:** 220 atlases. At the 4× upscale with in-betweens that was about 1.5 GB cooked (1,061 M texels), most of it the armour's in-betweens. The maintainer then chose the original pixels without in-betweens, worn pieces at their own pixels and 16-bit ramp atlases (ADR 0008, "Back to the original pixels"): about 636 MB.
+
+**Not yet:**
+- Items' own palette translations (a red-tinted shield) aren't applied to worn pieces stored below their own pixels: they have no ramp atlas.
+- Other players' attack animations come with M4.
+- The overlays on first-person pictures (the fist's glow) aren't drawn.
+
+**Verification (local Shards stack):**
+- `Meridian.Sprites.Equipment` (new): a plate-armoured player with a sword, shield and helmet maps from the server's overlays. The items start after the hair, or after the nose when a helmet took the hair. Weapon, shield and helmet are placed from all eight sides, and a long sword grows the box. All 21 automation tests pass.
+- `run_net_test.ps1` reports **DONE 20/20** (21/21 with `-Create`). The new check: our torso, arms and legs come from the server.
+- Offline, `-MRSpriteEquip=bte,swordov@22:4,metlshld@32:2,helm@13,nohair` renders plate, sword, shield and helmet lit from every side (`build/sprites/tour/m2b_plate/`, `build/sprites/tour/m2b_plate_sheet.png`).
+- Review sheets: `build/sprites/equipment/outfits.png` (every torso with a weapon, shield or helmet; original against upscaled) and `items.png` (every weapon, shield, bow and helmet under nearest, `scale4x` and `gtav_dither`).
+- `run_move_test.ps1` is 8/8, but the 3.9 m ledge jump failed 2 of 6 runs today. It sits near the original's ~4.1 m limit and was flaky before; no movement code changed.
+
 ## Alternatives considered
 
 - **Bake every room before allowing travel:** no runtime code, but hours of GPU texture work and hundreds of levels to import before anyone can leave Raza. A room changed on the server would also break until rebuilt.

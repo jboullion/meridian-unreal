@@ -892,18 +892,17 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 	}
 	case MRMsg::BP_PLAYER_OVERLAY:
 	{
+		// clientd3d overlay.c SetPlayerOverlay: the object's id is the slot (PWO_*), replaced each time;
+		// hotspot 0 hides it (an unused weapon), so does group 0 (the fist after its swing)
 		const uint8 Hotspot = R.U8();
 		FMRNetObject O;
 		if (MRNetRead::ObjectNoLight(R, Resources, O))
 		{
-			if (O.IconRsc)
-			{
-				World.PlayerOverlays.Add(Hotspot, MoveTemp(O));
-			}
-			else
-			{
-				World.PlayerOverlays.Remove(Hotspot);
-			}
+			FMRNetPlayerOverlay& P = World.PlayerOverlays.FindOrAdd(O.Id);
+			P.Hotspot = Hotspot;
+			P.Object = MoveTemp(O);
+			P.Seq = ++World.PlayerOverlaySeq;
+			UE_LOG(LogMeridian, Verbose, TEXT("MRNet: first person slot %u: %s at %d"), P.Object.Id, *P.Object.Icon, Hotspot);
 		}
 		break;
 	}

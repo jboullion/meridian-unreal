@@ -40,6 +40,9 @@ Everything here was ported from the Server-104 source and checked image by image
 | Nose | | 14 |
 | Hair | | 13 |
 | Weapon | | 22, on the right arm |
+| Shield (bow's top) | | 32, on the left arm |
+| Bow's bottom | | 33 |
+| Helmet or hat | | 13, after the hair or in its place |
 
 - Face and hair names: `kod/util/system.kod:130`.
 
@@ -93,6 +96,11 @@ Within a pass, parts go in Kod's order.
 - The legs always cycle at 100 ms per pose, whatever the speed.
 - Players moved fast: walking was `MOVEUNITS` (256 fine units) per 85 ms, about 2.9 squares/s ≈ 6.5 m/s, and running was double that.
 - The remaster's run is the original's 12.94 m/s (`mr.Move.SpeedScale`, docs/findings.md "Walking"); the cycle plays at the original rate at the run speed. `mr.Sprite.WalkRefSpeed 0` plays the original fixed rate.
+
+## Storage: the original pixels (2026-10-08)
+The atlases hold the original game's pixels, one texel each, filtered nearest; there are no in-betweens. Worn pieces (weapons, shields, hats, masks) are at their own pixels too (`worn_detail_shrink` 0). The ramp atlases are 16-bit (`TC_LQ`). `store` in `data/sprites/upscale.json` switches it: `scale` 4 brings back the upscale described below (the method per part role is still chosen in `default` and `roles`), `tweens` 3 the in-betweens. ADR 0008, "Back to the original pixels", has the comparison and the numbers: about 156 MB cooked against 1.5 GB.
+
+The sections below describe the upscale and the in-betweens as they were built and tested, and still work when switched on.
 
 ## Results
 
@@ -260,6 +268,15 @@ Start options for your own character (sent to the server): `-MRSpriteLook=<name>
   - the parts come by hotspot;
   - the skin comes from the face's translation, the hair colour from the hair's, and the shirt and pants from their two-colour translations.
 - **Where it's used:** `UMRNetWorldSubsystem` draws other players with it, and puts it on our own pawn when we enter a room or our object changes.
+- **Equipment** (docs/adr/0012 M2b; the server's side is in docs/research/blakserv-protocol.md, "Equipment on players"):
+  - `tools/kod_extract/extract.py` lists every bitmap an item puts on a player in `data/sprites/equipment.json`: torsos, arms, legs, weapons, shields, bows, helmets and the first-person pictures (165; masks have one per gender).
+  - `build_player_sprites.py` converts all of them like the base parts (every bitmap, ramp atlases; in-betweens for the torsos, arms, legs and weapons when `store.tweens` is on) and lists them in `player_parts.json` under `equipment` (kind, hotspot, surface class) and `first_person`. The players' bounds hold every piece of their gender, except one that would grow the render box by more than 120 base pixels (`MAX_GROW`; the red-nose masks, 200 pixels at shrink 1): those are clipped. Worn pieces are stored at their own pixels (`store.worn_detail_shrink` 0). With a value like 4 (the torso) or 16 (what the render target shows), pieces drawn finer are stored at that detail instead (`cell_scale`); those get no ramp atlas, so their own palette translation isn't applied. A torso, arm or leg atlas too big for 4096² with its in-betweens is kept without them (robe and gauntlet arms), so it keeps its ramp atlas. `--no-equipment` leaves them all out.
+  - `FMRSpriteAppearance` also carries the torso, arms and legs (`BodyBgf`, `LeftArmBgf`, `RightArmBgf`, `LegsBgf`), their translations as the server sends them (`BodyXlat`, `ArmsXlat`, `LegsXlat`), and `Overlays` (bgf, hotspot, translation, resting group).
+  - `MRNetLook` fills them: the torso is the object's icon, the arms and legs its overlays; the items' overlays are the ones after the nose and the hair (`FirstItemOverlay`).
+  - `SetPartBgfs` adds each overlay as a part named by its hotspot (`weapon` 22, `shield` 32, `bow` 33, `helmet` 13). A weapon bends the right arm to group 17 and a shield or bow the left to 7; that arm stops swinging, and one-shots end on it.
+  - First person, online: `AMRHUD` draws the server's `BP_PLAYER_OVERLAY` slots from their atlases. The local swing shows in the right hand's place while it plays. Offline the weapon's first-person picture comes from `first_person` (every weapon's, from Kod; `player_actions.json`'s `_first_person` wins).
+  - Try it offline: `-MRSpriteEquip=bte,swordov@22:4,metlshld@32:2,helm@13,nohair` (a bgf alone swaps the torso, arms or legs it is for; `bgf@hotspot:group` adds an overlay).
+  - Review: `tools/sprites/equipment_sheet.py` writes `build/sprites/equipment/outfits.png` (every torso with a weapon, shield or helmet, original against upscaled) and `items.png` (every weapon, shield, bow and helmet under each upscale method).
 - **The creator's previews** use the same body (`AMRAvatarPreview`). Its portrait mode draws only the head, face parts and hair (`SetOnlyParts`), front on, with a dense target (`SetDensityOverride`), as the original creator's face box did.
 
 ## Monsters
@@ -280,7 +297,7 @@ Monsters and NPCs are drawn by the same `UMRSpriteBodyComponent` as players. A m
   - `AI_FIGHT_AGGRESSIVE` (mummies), NPC / no-move flags
   - the aware, hit, miss and death sounds
 - Results go to the `monsters` table and the `m_*` looks in `player_parts.json`.
-- Monster atlases are upscaled 2× (not 4×) and capped at 4096², because big monsters (centipede) have many large frames. The upscaler pass is the same.
+- Monster atlases hold the original pixels (`store.monster_max_scale` 1; until 2026-10-08 an upscale of up to 2×), capped at 4096². They get no ramp atlas: creatures are never recoloured.
 - A monster look with only its own actions doesn't borrow the player's: a cow has no attack, and nothing dances.
 
 **Runtime:**
@@ -323,7 +340,7 @@ Monsters and NPCs are drawn by the same `UMRSpriteBodyComponent` as players. A m
 
 ## Open
 
-1. **Atlas size:** the 4× upscale plus 3 in-betweens per step is generous. 2× for the torso and limbs would roughly halve it.
+1. **Atlas size:** the original pixels (ADR 0008, 2026-10-08): ~636 MB cooked, most of it the high-resolution masks and long weapons and their ramp atlases. `worn_detail_shrink` 16 would make it ~241 MB.
 2. **Steps with no in-betweens:** big pose changes keep the original snap (user: fine for now). RIFE or ToonCrafter later, which needs a model download.
 3. **Distance aliasing:** render-target mips aren't regenerated after canvas draws. Watch for it; sizing the target to the sprite's screen height would fix it.
 4. **Memory per character:** two render targets of about 2.7 MB each at 4 texels per pixel. Lower `mr.Sprite.TexelsPerPixel` for distant characters if crowds grow.

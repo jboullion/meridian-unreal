@@ -1,5 +1,12 @@
 {
- "_doc": "How each player sprite part is upscaled 4x (tools/sprites/upscale_parts.py). Methods, all local: nearest, scale4x, gtav_dither, gtav, gtav_pinned, animesharp. 'roles' overrides the default per part: head, eyes, nose, mouth, hair, body, arms, legs, other (weapons, hands). Compare them with tools/sprites/face_sheet.py; the choice is recorded in docs/adr/0008-sprite-characters.md.",
+ "_doc": "How each player sprite part is upscaled 4x when 'store.scale' is 4 (tools/sprites/upscale_parts.py). Methods, all local: nearest, scale4x, gtav_dither, gtav, gtav_pinned, animesharp. 'roles' overrides the default per part: head, eyes, nose, mouth, hair, body, arms, legs, other (weapons, hands). Compare them with tools/sprites/face_sheet.py; the choice is recorded in docs/adr/0008-sprite-characters.md.",
+ "_store_doc": "What the atlases hold (tools/sprites/build_player_sprites.py; docs/adr/0008-sprite-characters.md, 'Back to the original pixels'). scale: texels per original pixel for player parts, 1 = the original pixels (filtered nearest), 4 = the upscale chosen below. tweens: in-betweens per animation step (tools/sprites/tweens.py, made from the 4x upscale), 0 = none, as the original. monster_max_scale: creatures at most this many texels per original pixel. worn_detail_shrink: weapons, shields, bows and hats finer than this are stored at its detail (4 = the torso's, 7 = the head's, 16 = what the render target shows); 0 = their own pixels, as the original drew them (since 2026-10-08: 4 looked blurry). Until 2026-10-08: scale 4, tweens 3, monster_max_scale 2.",
+ "store": {
+  "scale": 1,
+  "tweens": 0,
+  "monster_max_scale": 1,
+  "worn_detail_shrink": 0
+ },
  "default": "gtav_dither",
  "roles": {
   "head": "scale4x",

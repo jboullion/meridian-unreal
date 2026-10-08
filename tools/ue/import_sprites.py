@@ -100,6 +100,9 @@ def import_atlases(layout):
         # drawn into render targets by the canvas, which the streamer can't see: keep resident;
         # mips stay on: face parts (shrink 14) are drawn ~3x smaller than their atlas cells
         tex.set_editor_property("never_stream", True)
+        # the original pixels (data/sprites/upscale.json store.scale 1): square, as the original drew them
+        tex.set_editor_property("filter", unreal.TextureFilter.TF_NEAREST if layout.get("scale", 4) == 1
+                                else unreal.TextureFilter.TF_DEFAULT)
         eal.save_loaded_asset(tex)
         cache[a["texture"]] = a["hash"]
     os.makedirs(os.path.dirname(CACHE), exist_ok=True)
@@ -109,13 +112,18 @@ def import_atlases(layout):
 
 
 def _ramp_settings(name):
-    """Exact values, one texel per original pixel: uncompressed, linear, unfiltered, no mips."""
+    """Exact values, one texel per original pixel: 16-bit (TC_LQ: A1RGB555, which keeps red 255,
+    the ramp's four levels and the 1-bit coverage exactly; DXT5 on Mac, within the decoder's
+    rounding), linear, unfiltered, no mips."""
     tex = eal.load_asset("%s/%s" % (DIR, name))
     if not tex:
         log("WARNING: %s did not import" % name)
         return
     tex.set_editor_property("srgb", False)
-    tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_VECTOR_DISPLACEMENTMAP)
+    # TC_LQ is hidden from the editor's list, so Python's enum lacks it: set from C++
+    if not unreal.MREditorScripting.set_low_quality_compression(tex):
+        log("WARNING: %s: couldn't store it 16-bit; left uncompressed" % name)
+        tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_VECTOR_DISPLACEMENTMAP)
     tex.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
     tex.set_editor_property("filter", unreal.TextureFilter.TF_NEAREST)
     tex.set_editor_property("address_x", unreal.TextureAddress.TA_CLAMP)

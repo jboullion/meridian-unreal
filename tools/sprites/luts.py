@@ -161,9 +161,13 @@ def ramp_cell(cell: Image.Image, ids: np.ndarray | None, scale: int) -> np.ndarr
         known = cover.sum(axis=(1, 3)) * 2 >= scale * scale   # (at least half: the original pixel)
         known &= covered
     ids = grow_ids(ids, known, covered)
+    # R is 255 everywhere, covered or not: the atlas is stored 16-bit (TC_LQ, A1RGB555, exact for
+    # these values), and where a platform falls back to DXT5 (Mac) every block's colours then lie on
+    # one line (red fixed, blue the ramp), so red stays exactly 255 and the ramp within rounding
     out = np.zeros((h, w, 4), np.uint8)
-    out[covered] = np.stack([np.full(int(covered.sum()), 255), np.zeros(int(covered.sum())),
-                             ids[covered].astype(np.int32) * 85, np.full(int(covered.sum()), 255)], -1)
+    out[..., 0] = 255
+    out[covered, 2] = ids[covered].astype(np.int32) * 85
+    out[covered, 3] = 255
     return out
 
 

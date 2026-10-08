@@ -72,7 +72,24 @@ namespace
 	const FName WalkName(TEXT("walk"));
 	const FName StandName(TEXT("stand"));
 	const FName RightArm(TEXT("right_arm"));
+	const FName LeftArm(TEXT("left_arm"));
 	const FName WeaponName(TEXT("weapon"));
+	constexpr int32 RightHoldGroup = 17;  // player.kod SendOverlays iRight_group
+	constexpr int32 LeftHoldGroup = 7;    // iLeft_group
+
+	/** The part an overlay becomes, by its hotspot (blakston.khd HS_*). */
+	FName OverlayPartName(uint8 Hotspot)
+	{
+		switch (Hotspot)
+		{
+		case 22: return WeaponName;              // HS_RIGHT_WEAPON
+		case 32: return FName(TEXT("shield"));   // HS_LEFT_WEAPON (and a bow's top)
+		case 33: return FName(TEXT("bow"));      // HS_BOTTOM_BOW
+		case 13: return FName(TEXT("helmet"));   // HS_TOUPEE: hats and helmets
+		case 29: return FName(TEXT("token"));    // HS_TOKEN
+		default: return FName(*FString::Printf(TEXT("overlay_%d"), Hotspot));
+		}
+	}
 	const FName EyesName(TEXT("eyes"));
 	const FName MouthName(TEXT("mouth"));
 	constexpr float MovingSpeed = 20.f;
@@ -145,6 +162,13 @@ void UMRSpriteBodyComponent::SetLook(FName LookName)
 	}
 	BaseLook = Look;
 	PartOverrides.Reset();
+	OverlayList.Reset();
+	OverlayGroups.Reset();
+	XlatOverrides.Reset();
+	for (int32& C : Colours)
+	{
+		C = -1;
+	}
 	LastDrawKey = 0;
 	Target = nullptr;
 	if (Look)
@@ -159,8 +183,23 @@ void UMRSpriteBodyComponent::SetLook(FName LookName)
 		{
 			PartXlat.Add(Part.Name, Part.Xlat);
 		}
-		const FMRSpritePart* Weapon = Look->Find(WeaponName);
-		FirstPersonDef = FMRSpriteLibrary::Get().FirstPerson.Find(Weapon ? Weapon->Bgf : FString(TEXT("fist")));
+		FirstPersonDef = nullptr;
+		UpdateFirstPersonDef();
+	}
+}
+
+void UMRSpriteBodyComponent::UpdateFirstPersonDef()
+{
+	const FMRSpriteLibrary& Lib = FMRSpriteLibrary::Get();
+	const FMRSpritePart* Weapon = Look ? Look->Find(WeaponName) : nullptr;
+	const FMRFirstPersonOverlay* Def = Weapon ? Lib.FirstPerson.Find(Weapon->Bgf) : nullptr;
+	if (!Def)
+	{
+		Def = Lib.FirstPerson.Find(TEXT("fist"));  // no weapon, or one without a first-person picture
+	}
+	if (Def != FirstPersonDef)
+	{
+		FirstPersonDef = Def;
 		FirstPersonTrack = FMRSpriteTrack();
 		FirstPersonTrack.Group = FirstPersonDef ? FirstPersonDef->Hold : 0;
 	}
@@ -172,11 +211,15 @@ bool UMRSpriteBodyComponent::GetFirstPersonFrame(UTexture2D*& OutTexture, FBox2f
 	{
 		return false;
 	}
+	return GetBgfFrame(FirstPersonDef->Bgf, FirstPersonTrack.Group - 1, OutTexture, OutUV, OutSize, OutOffset);
+}
+
+bool UMRSpriteBodyComponent::GetBgfFrame(const FString& Key, int32 Group, UTexture2D*& OutTexture, FBox2f& OutUV, FIntPoint& OutSize, FIntPoint& OutOffset)
+{
 	const FMRSpriteLibrary& Lib = FMRSpriteLibrary::Get();
-	const FMRSpriteBgf* Bgf = Lib.FindBgf(FirstPersonDef->Bgf);
-	const FString Key = FirstPersonDef->Bgf;
+	const FMRSpriteBgf* Bgf = Lib.FindBgf(Key);
 	const FMRSpriteAtlas* Atlas = Lib.Atlases.Find(Key);
-	const int32 Bitmap = Bgf ? Bgf->BitmapIndex(FirstPersonTrack.Group - 1, 0) : INDEX_NONE;
+	const int32 Bitmap = Bgf && Group >= 0 ? Bgf->BitmapIndex(Group, 0) : INDEX_NONE;
 	const FIntRect* Cell = Atlas && Bitmap != INDEX_NONE ? Atlas->Cells.Find(Bitmap) : nullptr;
 	OutTexture = Cell ? AtlasTexture(Key) : nullptr;
 	if (!OutTexture)
@@ -193,10 +236,38 @@ bool UMRSpriteBodyComponent::GetFirstPersonFrame(UTexture2D*& OutTexture, FBox2f
 
 void UMRSpriteBodyComponent::SetColours(int32 Skin, int32 Hair, int32 Shirt, int32 Pants)
 {
+	Colours[0] = Skin;
+	Colours[1] = Hair;
+	Colours[2] = Shirt;
+	Colours[3] = Pants;
+	UpdateXlats();
+}
+
+void UMRSpriteBodyComponent::SetPartXlats(const TMap<FName, int32>& Xlats)
+{
+	XlatOverrides = Xlats;
+	UpdateXlats();
+}
+
+void UMRSpriteBodyComponent::SetAppearance(const FMRSpriteAppearance& A)
+{
+	if (!A.Look.IsNone() && GetLook() != A.Look)
+	{
+		SetLook(A.Look);
+	}
+	SetPartBgfs(A.PartBgfs(), A.Overlays);
+	XlatOverrides = A.PartXlats();
+	SetColours(A.Skin, A.Hair, A.Shirt, A.Pants);
+}
+
+void UMRSpriteBodyComponent::UpdateXlats()
+{
 	if (!Look)
 	{
 		return;
 	}
+	const int32 Skin = Colours[0], Hair = Colours[1], Shirt = Colours[2], Pants = Colours[3];
+	PartXlat.Reset();
 	// the look's own colours where none is given: its shirt and pants from their translations
 	const FMRSpritePart* Body = Look->Find(TEXT("body"));
 	const FMRSpritePart* Legs = Look->Find(TEXT("legs"));
@@ -224,6 +295,10 @@ void UMRSpriteBodyComponent::SetColours(int32 Skin, int32 Hair, int32 Shirt, int
 		else if (Role == TEXT("legs"))
 		{
 			X = PantsC != INDEX_NONE && (Skin >= 0 || Pants >= 0) ? FMRSpriteColours::ClothesXlat(PantsC, S) : X;
+		}
+		if (const int32* Server = XlatOverrides.Find(Part.Name))
+		{
+			X = *Server;  // the server's own (armour, robes, gauntlets: not a creator colour)
 		}
 		PartXlat.Add(Part.Name, X);
 	}
@@ -390,15 +465,17 @@ bool UMRSpriteBodyComponent::IsReady(const UTexture2D* Tex)
 	return true;
 }
 
-void UMRSpriteBodyComponent::SetPartBgfs(const TMap<FName, FName>& PartBgfs)
+void UMRSpriteBodyComponent::SetPartBgfs(const TMap<FName, FName>& PartBgfs, const TArray<FMRSpriteOverlay>& Overlays)
 {
-	if (!BaseLook || PartBgfs.OrderIndependentCompareEqual(PartOverrides))
+	if (!BaseLook || (PartBgfs.OrderIndependentCompareEqual(PartOverrides) && Overlays == OverlayList))
 	{
 		return;
 	}
 	const FMRSpriteLibrary& Lib = FMRSpriteLibrary::Get();
 	PartOverrides = PartBgfs;
-	if (PartOverrides.IsEmpty())
+	OverlayList = Overlays;
+	OverlayGroups.Reset();
+	if (PartOverrides.IsEmpty() && OverlayList.IsEmpty())
 	{
 		Look = BaseLook;
 	}
@@ -430,10 +507,72 @@ void UMRSpriteBodyComponent::SetPartBgfs(const TMap<FName, FName>& PartBgfs)
 					*Bgf, *O.Key.ToString());
 			}
 		}
+		// what items add (SendOverlayInformation): a part each, on its hotspot, in the order sent
+		TSet<FName> Added;
+		for (const FMRSpriteOverlay& O : OverlayList)
+		{
+			const FString Bgf = O.Bgf.ToString().ToLower();
+			if (!Lib.Atlases.Contains(Bgf) || !Lib.FindBgf(Bgf))
+			{
+				static TSet<FString> Logged;
+				if (!Logged.Contains(Bgf))
+				{
+					Logged.Add(Bgf);
+					UE_LOG(LogMeridian, Warning, TEXT("Sprite overlay %s not converted (tools/sprites/build_player_sprites.py)"), *Bgf);
+				}
+				continue;
+			}
+			FName Name = OverlayPartName(O.Hotspot);
+			for (int32 n = 2; Added.Contains(Name); ++n)
+			{
+				Name = FName(*FString::Printf(TEXT("%s_%d"), *OverlayPartName(O.Hotspot).ToString(), n));  // two on one hotspot
+			}
+			Added.Add(Name);
+			FMRSpritePart* P = CustomLook.Parts.FindByPredicate([Name](const FMRSpritePart& X) { return X.Name == Name; });
+			if (!P)
+			{
+				P = &CustomLook.Parts.AddDefaulted_GetRef();  // after the look's own: drawn in the order Kod sends them
+				P->Name = Name;
+			}
+			const FMRSpriteEquipment* E = Lib.Equipment.Find(Bgf);
+			P->Bgf = Bgf;
+			P->Atlas = Bgf;
+			P->Hotspot = O.Hotspot;
+			P->Xlat = O.Xlat;
+			P->Class = E ? E->Class : P->Class;
+			OverlayGroups.Add(Name, FMath::Max(1, O.Group));
+			AtlasTexture(Bgf);
+			RampTexture(Bgf);
+		}
+		// the render box grows by what is worn (an axe swung wide, a tall hat), only while worn
+		for (const FMRSpritePart& P : CustomLook.Parts)
+		{
+			const FMRSpriteEquipment* E = Lib.Equipment.Find(P.Bgf);
+			if (const FBox2f* B = E ? E->Bounds.Find(CustomLook.Gender) : nullptr)
+			{
+				CustomLook.Bounds += *B;
+			}
+		}
 		Look = &CustomLook;
 	}
 	LastDrawKey = 0;
-	Target = nullptr;  // (the same bounds, but redrawn from scratch)
+	Target = nullptr;  // redrawn from scratch (and resized when the box grew)
+	// a weapon, shield or bow changes how the arms rest and swing, and what is held in first person
+	BaseTracks.Reset();
+	SetBaseAction(BaseAction.IsNone() ? StandName : BaseAction);
+	UpdateFirstPersonDef();
+	UpdateXlats();
+}
+
+bool UMRSpriteBodyComponent::HoldsRight() const
+{
+	return Look && Look->Parts.ContainsByPredicate([](const FMRSpritePart& P) { return P.Hotspot == 22; });
+}
+
+bool UMRSpriteBodyComponent::HoldsLeft() const
+{
+	// HS_LEFT_WEAPON (a shield, a bow's top), HS_BOTTOM_BOW, HS_TOKEN
+	return Look && Look->Parts.ContainsByPredicate([](const FMRSpritePart& P) { return P.Hotspot == 32 || P.Hotspot == 33 || P.Hotspot == 29; });
 }
 
 void UMRSpriteBodyComponent::PrewarmLook(FName LookName)
@@ -535,6 +674,7 @@ void UMRSpriteBodyComponent::StartTracks(const FMRSpriteAction& Action, TMap<FNa
 {
 	Into.Reset();
 	const bool bWeapon = Look && Look->Find(WeaponName) != nullptr;
+	const bool bRight = HoldsRight(), bLeft = HoldsLeft();
 	for (const TPair<FName, FMRSpriteTrackDef>& T : Action.Tracks)
 	{
 		if (T.Key == WeaponName && !bWeapon)
@@ -542,9 +682,19 @@ void UMRSpriteBodyComponent::StartTracks(const FMRSpriteAction& Action, TMap<FNa
 			continue;
 		}
 		FMRSpriteTrackDef Def = T.Value;
-		if (!bWeapon && T.Key == RightArm && Def.Final == 17)
+		if (T.Key == RightArm || T.Key == LeftArm)
 		{
-			Def.Final = 1;  // the arm only rests on group 17 when it holds a weapon
+			// player.kod SendOverlays: an arm holding something doesn't swing or dance, and a one-shot
+			// (an attack, a wave) ends where it rests (iRight_group / iLeft_group)
+			const bool bHolds = T.Key == RightArm ? bRight : bLeft;
+			if (bHolds && Def.Mode == FMRSpriteTrackDef::EMode::Cycle)
+			{
+				continue;
+			}
+			if (Def.Mode == FMRSpriteTrackDef::EMode::Once)
+			{
+				Def.Final = bHolds ? (T.Key == RightArm ? RightHoldGroup : LeftHoldGroup) : 1;
+			}
 		}
 		Into.Add(T.Key).Start(Def);
 	}
@@ -593,7 +743,7 @@ TMap<FName, int32> UMRSpriteBodyComponent::CurrentGroups() const
 {
 	// SendOverlays / SendMoveOverlays: what each part shows when nothing animates it
 	TMap<FName, int32> Groups;
-	const bool bWeapon = Look->Find(WeaponName) != nullptr;
+	const bool bRight = HoldsRight(), bLeft = HoldsLeft();
 	for (const FMRSpritePart& Part : Look->Parts)
 	{
 		int32 G = 1;
@@ -601,18 +751,25 @@ TMap<FName, int32> UMRSpriteBodyComponent::CurrentGroups() const
 		{
 			G = Look->ActionFace;
 		}
+		else if (const int32* Rest = OverlayGroups.Find(Part.Name))
+		{
+			G = *Rest;  // the server's (a weapon 4, a shield 2, a helmet 1)
+		}
 		else if (Part.Name == WeaponName)
 		{
 			G = 4;
 		}
-		else if (Part.Name == RightArm && bWeapon)
+		else if (Part.Name == RightArm && bRight)
 		{
-			G = 17;
+			G = RightHoldGroup;
 		}
-		const FMRSpriteTrack* Base = BaseTracks.Find(Part.Name);
-		if (Base && !(Part.Name == RightArm && bWeapon))  // a weapon arm doesn't swing
+		else if (Part.Name == LeftArm && bLeft)
 		{
-			G = Base->Group;
+			G = LeftHoldGroup;
+		}
+		if (const FMRSpriteTrack* Base = BaseTracks.Find(Part.Name))
+		{
+			G = Base->Group;  // (an arm that holds something has no stand / walk track: StartTracks)
 		}
 		if (const FMRSpriteTrack* Act = ActionTracks.Find(Part.Name))
 		{
@@ -628,10 +785,6 @@ const FMRSpriteTrack* UMRSpriteBodyComponent::TrackFor(FName Part) const
 	if (const FMRSpriteTrack* Act = ActionTracks.Find(Part))
 	{
 		return Act;
-	}
-	if (Part == RightArm && Look->Find(WeaponName))
-	{
-		return nullptr;  // a weapon arm doesn't swing
 	}
 	return BaseTracks.Find(Part);
 }
@@ -830,7 +983,7 @@ void UMRSpriteBodyComponent::DrawItems(const TArray<FDrawItem>& AllItems)
 			{
 				Colour = FLinearColor(Xlat / 255.f, 0.f, 1.f, 1.f);  // x the ramp texel (1, 0, ramp * 85, 1)
 			}
-			// (the ramp atlas has the same layout at 1/4 the size: the same UVs)
+			// (the ramp atlas has the same layout at 1/scale the size, one texel per original pixel: the same UVs)
 			FCanvasTileItem Item(FVector2D((P.Pos.X - Origin.X) * T, (P.Pos.Y - Origin.Y) * T), Tex->GetResource(),
 				FVector2D(Bm.W * P.Scale * T, Bm.H * P.Scale * T),
 				FVector2D(Cell->Min.X, Cell->Min.Y) / AtlasSize, FVector2D(Cell->Max.X, Cell->Max.Y) / AtlasSize, Colour);

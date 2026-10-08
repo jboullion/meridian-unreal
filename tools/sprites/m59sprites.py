@@ -474,6 +474,8 @@ class Look:
     weapon: str | None = None
     action_face: int = 1            # piAction: eyes / mouth group (expression)
     extra: dict = field(default_factory=dict)
+    # more overlays after the weapon, as items send them (a shield, a helmet): {bgf, hotspot, group}
+    equipment: list = field(default_factory=list)
 
     @staticmethod
     def from_json(d: dict) -> "Look":
@@ -496,4 +498,6 @@ class Look:
             ovs.append(Layer(self.hair, 13, HAIR[self.hair_color], g("hair")))
         if self.weapon:
             ovs.append(Layer(self.weapon, 22, 0, g("weapon")))
+        for e in self.equipment:
+            ovs.append(Layer(e["bgf"], e["hotspot"], e.get("xlat", 0), e.get("group", 1) - 1))
         return Layer(self.body, 0, shirt, g("body")), ovs

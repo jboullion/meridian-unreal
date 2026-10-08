@@ -85,6 +85,18 @@ struct FMRNetObject
 	bool IsCreature() const;
 };
 
+/**
+ * A first-person picture (BP_PLAYER_OVERLAY; clientd3d overlay.c SetPlayerOverlay): its slot is
+ * the object's id (blakston.khd PWO_LEFT_HAND 1, PWO_RIGHT_HAND 2), where on the screen it goes
+ * (HS_NW 1 .. HS_CENTER 9, 0 = hidden), the bitmap and its animation (group 0 = nothing drawn).
+ */
+struct FMRNetPlayerOverlay
+{
+	uint8 Hotspot = 0;
+	FMRNetObject Object;
+	uint32 Seq = 0;           // FMRNetWorld::PlayerOverlaySeq when it came
+};
+
 /** The player's own character and room (BP_PLAYER; clientd3d server.c HandlePlayer). */
 struct FMRNetPlayer
 {
@@ -185,8 +197,10 @@ struct FMRNetWorld
 {
 	FMRNetPlayer Player;
 	TMap<uint32, FMRNetObject> Objects;
-	/** What the player holds as the original drew it in first person (BP_PLAYER_OVERLAY), by screen hotspot. */
-	TMap<uint8, FMRNetObject> PlayerOverlays;
+	/** What the player holds as the original drew it in first person (BP_PLAYER_OVERLAY), by slot (PWO_*). */
+	TMap<uint32, FMRNetPlayerOverlay> PlayerOverlays;
+	/** Counts BP_PLAYER_OVERLAYs, so a drawer sees each one (the same swing again restarts it). */
+	uint32 PlayerOverlaySeq = 0;
 	/** Who is logged on, by object id. */
 	TMap<uint32, FMRNetUser> Users;
 	TArray<FMRNetStatGroup> StatGroups;

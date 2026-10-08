@@ -245,6 +245,12 @@ namespace MRMsg
 	constexpr uint8 ANIMATE_TRANSLATION = 9;
 	constexpr uint8 ANIMATE_EFFECT = 10;
 
+	// first-person pictures (BP_PLAYER_OVERLAY): slots (blakston.khd PWO_*) and screen hotspots (HS_NW..HS_CENTER)
+	constexpr uint32 PWO_LEFT_HAND = 1;
+	constexpr uint32 PWO_RIGHT_HAND = 2;
+	constexpr uint8 HS_SE = 5;
+	constexpr uint8 HS_SW = 7;
+
 	// movement speeds sent with BP_REQ_MOVE (walk and run, as the original client)
 	constexpr uint8 SPEED_WALK = 25;
 	constexpr uint8 SPEED_RUN = 55;

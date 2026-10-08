@@ -85,6 +85,7 @@ struct MERIDIANREMASTERED_API FMRSpriteColours
 struct FMRSpriteLook
 {
 	FName Name;
+	FName Gender;                    // "male", "female"; None for creatures
 	/** Overlays in the order Kod sends them (SendOverlays), then the body last. */
 	TArray<FMRSpritePart> Parts;
 	int32 ActionFace = 1;            // piAction: the eyes' and mouth's Kod group
@@ -137,6 +138,20 @@ struct FMRFirstPersonOverlay
 };
 
 /**
+ * A bitmap an item puts on a player (data/sprites/equipment.json, docs/adr/0012 M2b): what it is
+ * (body, left_arm, right_arm, legs, weapon, shield, bow, helmet, first_person), where it attaches
+ * (blakston.khd HS_*) and its surface class.
+ */
+struct FMRSpriteEquipment
+{
+	FName Kind;
+	int32 Hotspot = 0;
+	int32 Class = 0;
+	/** A player's render box wearing it, by gender ("male", "female"), where it's bigger than the look's own. */
+	TMap<FName, FBox2f> Bounds;
+};
+
+/**
  * A monster or NPC class (tools/sprites/monsters.py, from data/monsters.json and its Kod): its
  * sprite looks and what its simple AI needs.
  */
@@ -179,8 +194,10 @@ public:
 	TMap<FString, FMRSpriteAtlas> Atlases;
 	TMap<FName, FMRSpriteLook> Looks;
 	TMap<FName, FMRSpriteAction> Actions;
-	/** By third-person weapon bgf ("fist" = no weapon). */
+	/** By third-person weapon bgf ("fist" = no weapon): player_actions.json's, then every weapon's from Kod. */
 	TMap<FString, FMRFirstPersonOverlay> FirstPerson;
+	/** Every converted bitmap an item puts on a player, by bgf. */
+	TMap<FString, FMRSpriteEquipment> Equipment;
 	/** Surface classes in index order (the index is written into the code render target). */
 	TArray<FMRSpriteMaterialClass> MaterialClasses;
 	/** Actions of one look (monsters animate their own way: their Kod's groups and timings). */
@@ -222,5 +239,6 @@ private:
 	bool ParseParts(const TSharedPtr<class FJsonObject>& Root);
 	bool ParseActions(const TSharedPtr<class FJsonObject>& Root);
 	static FMRSpriteTrackDef ParseTrack(const TSharedPtr<class FJsonObject>& O);
+	void ParseFirstPerson(const TSharedPtr<class FJsonObject>& O);
 	static void ParseAction(FName Name, const TSharedPtr<class FJsonObject>& O, FMRSpriteAction& Out);
 };

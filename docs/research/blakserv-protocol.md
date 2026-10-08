@@ -226,7 +226,24 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
   - At a player (`user.kod SendLookPlayer`) it answers `BP_USERCOMMAND` (155) `u8 UC_LOOK_PLAYER` (2): an object, `u8 editable` (1 for yourself or an admin), `u32 format` + parameters (the description), `u32 format` + parameters (extra lines), `string` web page.
   - **Writing a description:** `BP_CHANGE_DESCRIPTION` (126) `u32 object`, `string` (up to 1000 characters, `object.h MAX_DESCRIPTION`).
   - The format strings can number their parameters (`%s$2`, `srvrstr.c CheckMessageOrder`), but no Server 104 Kod resource does, so we don't reorder.
-- **First-person overlays:** `BP_PLAYER_OVERLAY` (151) is `u8 screen hotspot`, then an object without its light (`ExtractObjectNoLight`; its id names the slot, `PWO_RIGHT_HAND`...). Kod sends the fist and weapon swings this way (`player.kod DoWindowOverlayFistAttack`).
+- **First-person overlays:** `BP_PLAYER_OVERLAY` (151) is `u8 screen hotspot`, then an object without its light (`ExtractObjectNoLight`).
+  - The object's id is the slot: `PWO_LEFT_HAND` 1, `PWO_RIGHT_HAND` 2 (`blakston.khd`). Each message replaces its slot (`clientd3d/overlay.c SetPlayerOverlay`).
+  - The hotspot is a screen place: `HS_NW` 1 … `HS_SE` 5, `HS_S` 6, `HS_SW` 7, `HS_W` 8, `HS_CENTER` 9. 0 hides the slot (`weapon.kod GetWindowOverlayHotspot` when the weapon is put away). Group 0 draws nothing either (the fist after its swing).
+  - Placement (`ComputePlayerOverlayArea`): the bitmap's size × viewport width / 452 × 0.5, against the corner or edge, plus its offsets.
+  - Weapons send their window overlay when wielded (`SetWindowOverlay`): `ANIMATE_NONE` on `vrWeapon_window_hold` (5), and on attack `ANIMATE_ONCE` 150 ms from `vrWeapon_window_attack_start` to `_end` (1–4), back to the hold. Shields go to `HS_SW` in slot 1 (`shield.kod`). The bare fist is `ANIMATE_ONCE` 175 ms, groups 1–3, ending on 0 (`player.kod DoWindowOverlayFistAttack`).
+
+## Equipment on players (`player.kod SendOverlays` / `SendMoveOverlays`, the items' `SendOverlayInformation`)
+- **Order of a player's overlays:** left arm (`HS_LEFT_HAND` 31), right arm (21), legs (41), head (1), mouth (12), eyes (11), nose (14), the hair (13) unless a helmet took it off (`poHair_remove`, set by `RemoveHair` in `helm.kod`, `dhelm.kod`, `knighthelm.kod`, masks...), then each item in `plOverlays`.
+- **Worn pieces swap the base parts:**
+  - the torso is the object's own icon (`SetPlayerIcon`: a shirt's `GetShirtIcon`, armour's; `bt?`), its translation the object's (`piBody_translations`);
+  - the arms and legs are the overlays at 31, 21 and 41 (`SetPlayerArms` from shirts, robes and gauntlets' `GetOverrideLeftArm`; `SetPlayerLegs`), each with its translation (`GetArmsTranslation`, `GetLegsTranslation`; none sent when 0).
+  - Names: `bt?` torso, `bl?` / `br?` arms, `bf?` legs; the letter a, c, e... is male, b, d, f... female.
+- **Items add overlays:** a bgf, a hotspot and an animation each (`AddPacket(4,overlay, 1,hotspot)` + the animation, with `ANIMATE_TRANSLATION` from `ITEM_PALETTE_MASK` first).
+  - Weapons: `vrWeapon_overlay` at `HS_RIGHT_WEAPON` 22, resting on group 4, attacking `ANIMATE_ONCE` 300 ms groups 1–3 (`weapon.kod`).
+  - Shields: `vrShield_overlay` at `HS_LEFT_WEAPON` 32, group 2 (`shield.kod`).
+  - Bows: the bottom at `HS_BOTTOM_BOW` 33; while shooting also the top at `HS_TOP_BOW` (= 32) (`bow.kod`).
+  - Helmets and hats: their own icon at `HS_TOUPEE` 13, group 1 (`helmet.kod`).
+- **Holding bends the arms:** a weapon at 22 puts the right arm on group 17; a shield, bow or token puts the left on group 7. That arm then doesn't swing while walking or dance, and one-shots (attack, wave, cast) end on it (`iRight_group`, `iLeft_group`).
 
 ## Session (`blakserv/game.c`, Kod `user.kod`; the client side is `clientd3d/game.c`, `com.c`)
 - **Leaving the game but not the server:**

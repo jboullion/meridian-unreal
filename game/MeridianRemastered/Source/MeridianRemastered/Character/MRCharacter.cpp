@@ -143,7 +143,7 @@ void AMRCharacter::ServerSetSpriteAppearance_Implementation(const FMRSpriteAppea
 	A.Pants = FMath::Clamp(A.Pants, -1, FMRSpriteColours::NumClothes - 1);
 	A.HeightPct = FMath::Clamp(A.HeightPct, 90, 110);  // variety, never a game advantage
 	// face parts: only bgfs the game has converted ("blank" = bald)
-	for (FName* Part : {&A.HeadBgf, &A.HairBgf, &A.EyesBgf, &A.NoseBgf, &A.MouthBgf})
+	for (FName* Part : {&A.HeadBgf, &A.HairBgf, &A.EyesBgf, &A.NoseBgf, &A.MouthBgf, &A.BodyBgf, &A.LeftArmBgf, &A.RightArmBgf, &A.LegsBgf})
 	{
 		const FString Bgf = Part->ToString().ToLower();
 		if (!Part->IsNone() && Bgf != TEXT("blank") && !FMRSpriteLibrary::Get().Atlases.Contains(Bgf))
@@ -151,6 +151,9 @@ void AMRCharacter::ServerSetSpriteAppearance_Implementation(const FMRSpriteAppea
 			*Part = NAME_None;
 		}
 	}
+	// equipment: only converted overlays, a few of them
+	A.Overlays.RemoveAll([](const FMRSpriteOverlay& O) { return !FMRSpriteLibrary::Get().Equipment.Contains(O.Bgf.ToString().ToLower()); });
+	A.Overlays.SetNum(FMath::Min(A.Overlays.Num(), 6));
 	SpriteAppearance = A;
 	ApplySpriteAppearance();
 }
@@ -170,8 +173,7 @@ void AMRCharacter::ApplySpriteAppearance()
 			SpriteBody->SetLook(A.Look);
 			AppearanceDescription = FString::Printf(TEXT("sprite:%s"), *A.Look.ToString());
 		}
-		SpriteBody->SetPartBgfs(A.PartBgfs());
-		SpriteBody->SetColours(A.Skin, A.Hair, A.Shirt, A.Pants);
+		SpriteBody->SetAppearance(A);
 	}
 	ApplySpriteHeight(A.HeightPct / 100.f);
 }
@@ -202,6 +204,44 @@ void AMRCharacter::ApplyCommandLineAppearance()
 		for (int32 i = 0; i < 4 && i < C.Num(); ++i)
 		{
 			*Fields[i] = FCString::Atoi(*C[i]);
+		}
+	}
+	// equipment to try offline (docs/adr/0012 M2b): -MRSpriteEquip=bte,swordov@22:4,metlshld@32:2,helm@13,nohair
+	// (a bgf alone swaps the torso, arms or legs it is for; bgf@hotspot[:group] adds an overlay)
+	if (FParse::Value(FCommandLine::Get(), TEXT("MRSpriteEquip="), Value, false))
+	{
+		TArray<FString> Items;
+		Value.ParseIntoArray(Items, TEXT(","));
+		for (const FString& Item : Items)
+		{
+			FString Bgf = Item, Rest;
+			if (Item == TEXT("nohair"))
+			{
+				A.HairBgf = TEXT("blank");
+			}
+			else if (Item.Split(TEXT("@"), &Bgf, &Rest))
+			{
+				FString Hs = Rest, Group = TEXT("1");
+				Rest.Split(TEXT(":"), &Hs, &Group);
+				FMRSpriteOverlay O;
+				O.Bgf = FName(*Bgf.ToLower());
+				O.Hotspot = static_cast<uint8>(FCString::Atoi(*Hs));
+				O.Group = FCString::Atoi(*Group);
+				A.Overlays.Add(O);
+			}
+			else if (const FMRSpriteEquipment* E = FMRSpriteLibrary::Get().Equipment.Find(Bgf.ToLower()))
+			{
+				FName* Slot = E->Kind == TEXT("body") ? &A.BodyBgf : E->Kind == TEXT("left_arm") ? &A.LeftArmBgf
+					: E->Kind == TEXT("right_arm") ? &A.RightArmBgf : E->Kind == TEXT("legs") ? &A.LegsBgf : nullptr;
+				if (Slot)
+				{
+					*Slot = FName(*Bgf.ToLower());
+					if (E->Kind == TEXT("body"))
+					{
+						A.BodyXlat = 0;  // armour in its own colours
+					}
+				}
+			}
 		}
 	}
 	if (A != SpriteAppearance)

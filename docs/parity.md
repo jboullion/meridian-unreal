@@ -13,7 +13,7 @@ This file tracks what the Unreal client does compared with the original desktop 
 
 Protocol facts go in [research/blakserv-protocol.md](research/blakserv-protocol.md), each with the blakserv or clientd3d source it came from.
 
-Last survey: 2026-10-08. M0, M1 and M2a done the same day.
+Last survey: 2026-10-08. M0, M1, M2a and M2b done the same day.
 
 ## Session and account
 
@@ -55,8 +55,8 @@ Last survey: 2026-10-08. M0, M1 and M2a done the same day.
 | Sprites we haven't converted | `.bgf` | Done: drawn from the server's bitmap (no overlays or colours yet) | Done | M1 |
 | Draw effects, name colours, object lights | object fields | Partial: invisible, black and translucent (dithered) on bitmap sprites; name colours; object lights are M7 | Done | M2, M7 |
 | Name plates | — | Done: the original's rules (15 squares, signs, the target), not through walls | Done | M2 |
-| Armour, weapons and hats on players | overlays | Partial: face, hair and colours only | Done | M2b |
-| First-person weapon and shield | `BP_PLAYER_OVERLAY` | Partial: read into the world model; still a fixed picture | Done | M2b |
+| Armour, weapons and hats on players | overlays | Done: torsos, arms, legs, weapons, shields, bows and helmets from the server's overlays, all 165 bitmaps converted; arms bend as the original's | Done | M2b |
+| First-person weapon and shield | `BP_PLAYER_OVERLAY` | Done: the server's slots drawn in their screen corners and animated; the local swing shows first | Done | M2b |
 | Look / examine dialog | `BP_REQ_LOOK`, `BP_LOOK` | Done: right mouse button; picture, description, inscription; a picker for a pile; context buttons are M3 | Done | M2, M3 |
 | Player descriptions | `UC_LOOK_PLAYER`, `BP_CHANGE_DESCRIPTION` | Done: face portrait, extra lines, web page; edit and save one's own | Done | M2 |
 
@@ -162,7 +162,7 @@ The server serves about 395 rooms. `ReferenceServers/Server-104/resource/rooms` 
 |---|---|
 | M0 | Foundations: client world model, session robustness, asset cache, Escape menu (done 2026-10-08) |
 | M1 | Whole-world travel: runtime rooms and runtime sprites (done 2026-10-08) |
-| M2 | See and select everything: all objects, name plates, targeting, Look (M2a, done 2026-10-08); equipment overlays (M2b) |
+| M2 | See and select everything: all objects, name plates, targeting, Look (M2a, done 2026-10-08); equipment overlays (M2b, done 2026-10-08) |
 | M3 | Inventory and items |
 | M4 | Combat, death and effects |
 | M5 | Spells, skills, enchantments, stats |

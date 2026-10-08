@@ -1,5 +1,8 @@
 """
-Phase 1 of docs/sprites.md: the runtime data for sprite players.
+Phase 1 of docs/sprites.md: the runtime data for sprite players. What the atlases hold is a data
+switch (data/sprites/upscale.json "store"): since 2026-10-08 the original pixels, no in-betweens
+(docs/adr/0008-sprite-characters.md, "Back to the original pixels"); the 4x upscale and the
+in-betweens described below come back with store.scale 4 and store.tweens 3.
 
     build/texai/.venv/Scripts/python tools/sprites/build_player_sprites.py [--with-ai]
 
@@ -23,6 +26,11 @@ look's palette translation at runtime (luts.py), so any number of colour combina
 same atlases. Atlases are rewritten only when their cells change.
 
 Looks marked "ai" (an AI-made part, tools/sprites/new_hair.py) are left out unless --with-ai.
+
+Equipment (docs/adr/0012 M2b): every bitmap an item puts on a player (data/sprites/equipment.json,
+tools/kod_extract/extract.py) is converted too, all its bitmaps, and listed under "equipment" (kind,
+hotspot, surface class) with the weapons' first-person overlays under "first_person". The players'
+bounds hold every piece of their gender. --no-equipment leaves them out (a quicker build).
 """
 from __future__ import annotations
 
@@ -43,11 +51,55 @@ import upscale_parts as up
 
 OUT = ms.ROOT / "build" / "sprites" / "atlas"
 LAYOUT = ms.DATA / "player_parts.json"
-SCALE = 4
-PAD = 4                   # transparent pixels around each cell (mips, bilinear)
+STORE = {"scale": 4, "tweens": 3, "monster_max_scale": 2, "worn_detail_shrink": 4, **up.config().get("store", {})}
+SCALE = int(STORE["scale"])   # atlas texels per original pixel of a player part (data/sprites/upscale.json "store")
+PAD = 4 if SCALE > 1 else 2   # transparent texels around each cell (mips, filtering)
 EXTRA = [("povhand", 0), ("povsword", 0)]  # first-person hand / sword (window overlays), no translation
-TWEENS = 3               # in-betweens per original step (tweens.py), 0 = none
+TWEENS = int(STORE["tweens"])   # in-betweens per original step (tweens.py), 0 = none
 PARTS = ["body", "left_arm", "right_arm", "legs", "head", "eyes", "mouth", "nose", "hair", "weapon"]
+EQUIPMENT = ms.DATA / "equipment.json"
+SWAP_KINDS = ("body", "left_arm", "right_arm", "legs")   # equipment that replaces one of the look's parts
+
+
+def equipment() -> dict:
+    """data/sprites/equipment.json (tools/kod_extract/extract.py), or nothing."""
+    if not EQUIPMENT.exists():
+        print("  data/sprites/equipment.json missing (run tools/kod_extract/extract.py): no equipment")
+        return {"parts": {}, "first_person": {}}
+    d = json.loads(EQUIPMENT.read_text(encoding="utf-8"))
+    return {"parts": d.get("parts", {}), "first_person": d.get("first_person", {})}
+
+
+MAX_GROW = 120   # base pixels a piece of equipment may add to a player's render box on any side
+
+
+def equipment_bounds(look: ms.Look, actions: dict, box: list[float], parts: dict) -> dict[str, list[float]]:
+    """bounds() of a look wearing each piece of its gender's equipment in turn (a weapon in the
+    weapon actions, the others in all of them), by bgf: the runtime grows a player's render box by
+    what it wears (UMRSpriteBodyComponent::SetPartBgfs), so the unarmed keep the small one."""
+    import dataclasses
+    weapon_actions = {k: v for k, v in actions.items() if k in ("stand", "walk", "weapon_attack")}
+    base = box
+    out = {}
+    for bgf, d in parts.items():
+        kind = d["kind"]
+        if kind == "first_person" or d.get("gender", look.gender) != look.gender:
+            continue
+        if kind in SWAP_KINDS:
+            b = bounds(dataclasses.replace(look, **{kind: bgf}), actions)
+        elif kind == "weapon":
+            b = bounds(dataclasses.replace(look, weapon=bgf), weapon_actions)
+        else:
+            group = 2 if kind in ("shield", "bow") else 1   # shield.kod: group 2 is the player overlay
+            b = bounds(dataclasses.replace(look, equipment=[{"bgf": bgf, "hotspot": d["hotspot"], "group": group}]),
+                       {"stand": actions.get("stand", {})})
+        grow = max(base[0] - b[0], base[1] - b[1], b[2] - base[2], b[3] - base[3])
+        if grow > MAX_GROW:   # (mmrednose: 200 pixels at shrink 1, mostly empty) clipped instead
+            print(f"  {bgf} would grow {look.gender}'s box by {grow:.0f} base pixels: left out of the bounds")
+            continue
+        if grow > 0:
+            out[bgf] = b
+    return out
 
 
 def pow2(n: int) -> int:
@@ -132,14 +184,22 @@ def monster_bounds(bgf: str, actions: dict) -> list[float]:
     return [round(v - 1 if i < 2 else v + 1, 2) for i, v in enumerate(box)]
 
 
-MONSTER_SCALE = 2.0   # creatures: at most 2x their original pixels (their atlases are big: 50-70 frames)
+MONSTER_SCALE = float(STORE["monster_max_scale"])   # creatures: at most this many texels per original pixel
 MAX_ATLAS = 4096
 
 
-def cell_scale(bgf: str, monster_bgfs: set) -> float:
-    """Atlas texels per original pixel. Player parts: the 4x upscale. Creatures: up to one texel per
-    Kod fine unit, at most MONSTER_SCALE, so a high-resolution original (bunny2: shrink 18) isn't
-    blown up: 16 / shrink; 1 = the original pixels, no upscale."""
+WORN_SHRINK = float(STORE["worn_detail_shrink"])   # worn pieces finer than this are stored at its detail
+
+
+def cell_scale(bgf: str, monster_bgfs: set, fine_bgfs: set = frozenset()) -> float:
+    """Atlas texels per original pixel. Player parts: SCALE (1 = the original pixels). Creatures: up
+    to one texel per Kod fine unit, at most MONSTER_SCALE, so a high-resolution original (bunny2:
+    shrink 18) isn't blown up: 16 / shrink; 1 = the original pixels. Equipment worn on a body
+    (fine_bgfs: weapons, shields, hats; many are drawn at shrink 12-100) at most the detail of a part
+    of shrink WORN_SHRINK (the torso's), below its own pixels if it is finer: a 400-pixel hat
+    (pilgrimhat, shrink 30) is stored at about 53."""
+    if bgf in fine_bgfs and WORN_SHRINK > 0:   # (0: their own pixels, as the original drew them)
+        return min(float(SCALE), SCALE * WORN_SHRINK / ms.load_bgf(bgf).shrink)
     if bgf not in monster_bgfs:
         return SCALE
     return min(MONSTER_SCALE, max(1.0, 16.0 / ms.load_bgf(bgf).shrink))
@@ -147,10 +207,13 @@ def cell_scale(bgf: str, monster_bgfs: set) -> float:
 
 def cell_image(bgf: str, i: int, scale: float) -> Image.Image:
     b = ms.load_bgf(bgf).bitmaps[i]
-    if scale <= 1.0:
-        return ms.bitmap_rgba(bgf, i, 0)
-    im = up.get(bgf, i, 0)
-    return im if scale >= SCALE else im.resize((max(1, round(b.w * scale)), max(1, round(b.h * scale))), Image.LANCZOS)
+    size = (max(1, round(b.w * scale)), max(1, round(b.h * scale)))
+    if scale == 1.0:
+        return ms.bitmap_rgba(bgf, i, 0)              # the original pixels
+    if scale < 1.0:
+        return ms.bitmap_rgba(bgf, i, 0).resize(size, Image.LANCZOS)
+    im = up.get(bgf, i, 0)                            # the upscale (up.SCALE x)
+    return im if scale >= up.SCALE else im.resize(size, Image.LANCZOS)
 
 
 def coverage(im: Image.Image) -> Image.Image:
@@ -232,7 +295,10 @@ def bgf_meta(name: str, tween_keys: list, xid: int) -> dict:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--with-ai", action="store_true", help='also the looks with an AI-made part (looks.json "ai")')
+    ap.add_argument("--no-equipment", action="store_true", help="leave out the equipment (data/sprites/equipment.json)")
     args = ap.parse_args()
+    equip = {"parts": {}, "first_person": {}} if args.no_equipment else equipment()
+    equip_bounds: dict[str, dict] = defaultdict(dict)   # bgf -> gender -> a player's box wearing it
     looks_src = ms.load_json("looks.json")
     actions = {k: v for k, v in ms.load_json("player_actions.json").items() if not k.startswith("_")}
     materials = ms.load_json("materials.json")
@@ -256,8 +322,10 @@ def main():
         looks[name] = {"gender": look.gender, "action_face": look.action_face, "parts": look_parts(look, materials),
                        "bounds": bounds(look, actions)}
         if name.startswith("player_"):
-            # the bases players are drawn on wear any of the creator's hair: room for all of them
+            # the bases players are drawn on wear any of the creator's hair and any equipment: room for all
             looks[name]["bounds"] = creator_bounds(look, actions, looks[name]["bounds"])
+            for bgf, b in equipment_bounds(look, actions, looks[name]["bounds"], equip["parts"]).items():
+                equip_bounds[bgf][look.gender] = b
         # a look may also wear its parts in groups no action uses: add every bitmap of the face
         for part in ("eyes", "mouth"):
             p = looks[name]["parts"][part]
@@ -267,9 +335,23 @@ def main():
     # the creator's face parts and hair: every bitmap (all views, all expressions)
     for bgf in sorted(creator_parts()):
         need[bgf] |= set(range(len(ms.load_bgf(bgf).bitmaps)))
+    # equipment: every bitmap; its surface class by bgf (materials.json parts), else by kind
+    names = [c["name"] for c in materials["classes"]]
+    equip_table = {}
+    for bgf, d in sorted(equip["parts"].items()):
+        need[bgf] |= set(range(len(ms.load_bgf(bgf).bitmaps)))
+        cls = materials["parts"].get(bgf, materials["roles"].get(d["kind"], "cloth"))
+        equip_table[bgf] = {"kind": d["kind"], "hotspot": d["hotspot"], "class": names.index(cls)}
+        if d.get("gender"):
+            equip_table[bgf]["gender"] = d["gender"]
+        if equip_bounds.get(bgf):
+            equip_table[bgf]["bounds"] = equip_bounds[bgf]
+    print(f"  {len(equip_table)} equipment bitmaps")
+    # what's worn on top of the body is scaled by its own detail (cell_scale); torsos, arms, legs
+    # and the first-person pictures (drawn at their pixel size on screen) get the full upscale
+    fine_bgfs = {b for b, d in equip_table.items() if d["kind"] in ("weapon", "shield", "bow", "helmet")}
 
     # monsters and NPCs (monsters.py): one body bitmap, their own Kod animations; corpses
-    names = [c["name"] for c in materials["classes"]]
     creature = names.index(materials["roles"].get("monster", "cloth"))
     monster_table, monster_actions, monster_bgfs = {}, {}, set()
     for cls, d in mon.definitions().items():
@@ -305,9 +387,12 @@ def main():
                     pairs[pd["bgf"]] |= set(tw.bitmap_pairs(pd["bgf"], tw.transitions(actions, part)))
         for bgf, acts in monster_actions.items():
             pairs[bgf] |= set(tw.bitmap_pairs(bgf, tw.transitions(acts, "body")))
+        for bgf, d in equip_table.items():   # armour animates as the parts it replaces
+            if d["kind"] in tw.TWEEN_PARTS:
+                pairs[bgf] |= set(tw.bitmap_pairs(bgf, tw.transitions(actions, d["kind"])))
     tween_keys = {}
     for bgf, ps in pairs.items():
-        if bgf in monster_bgfs and cell_scale(bgf, monster_bgfs) <= 1.0:
+        if cell_scale(bgf, monster_bgfs, fine_bgfs) <= 1.0:
             continue   # an original already finer than the atlas needs: no 4x upscale to flow on
         ok = [(a, b) for a, b in sorted(ps) if tw.plan(bgf, a, b)]
         tween_keys[bgf] = [(a, b, k) for a, b in ok for k in range(1, TWEENS + 1)]
@@ -320,7 +405,7 @@ def main():
         # (luts.ramp_cell): from the palette indices, or for AI parts (all grey) and in-betweens
         # from their colours
         b = ms.load_bgf(bgf)
-        sc = cell_scale(bgf, monster_bgfs)
+        sc = cell_scale(bgf, monster_bgfs, fine_bgfs)
         if ms.is_custom(bgf):
             cells = {i: up.get(bgf, i, 0) for i in sorted(idxs)}
             ids = {i: np.full((cells[i].height // SCALE + 1, cells[i].width // SCALE + 1), 3, np.int8) for i in cells}
@@ -337,18 +422,26 @@ def main():
             cells[base + i] = im
             ids[base + i] = None
         w, h, rects = pack(cells)
-        while max(w, h) > MAX_ATLAS:   # too many frames for one texture: smaller cells
+        if max(w, h) > MAX_ATLAS and tween_keys.get(bgf) and sc == SCALE:
+            # too many frames for one texture: the in-betweens go first (a smaller cell would lose
+            # the 4x grid, and with it the ramp atlas the runtime recolours with; creatures have none)
+            print(f"  {bgf}: too big with its in-betweens, left without them")
+            cells = {i: im for i, im in cells.items() if i < base}
+            ids = {i: v for i, v in ids.items() if i < base}
+            tween_keys[bgf] = []
+            w, h, rects = pack(cells)
+        while max(w, h) > MAX_ATLAS:   # still too many frames: smaller cells
             cells = {i: im.resize((max(1, int(im.width * 0.8)), max(1, int(im.height * 0.8))), Image.LANCZOS)
                      for i, im in cells.items()}
             w, h, rects = pack(cells)
-        # player parts (4x, translated at runtime) get the ramp atlas; creatures are never translated
-        ramp = sc == SCALE and all(v % SCALE == 0 for r in rects.values() for v in r)
-        if sc == SCALE and not ramp:
+        # player parts (translated at runtime) get the ramp atlas; creatures are never translated
+        ramp = sc == SCALE and bgf not in monster_bgfs and all(v % SCALE == 0 for r in rects.values() for v in r)
+        if sc == SCALE and bgf not in monster_bgfs and not ramp:
             print(f"  WARNING {bgf}: cells not on the {SCALE}x grid (shrunk to fit): no ramp atlas")
         key = bgf
         tex = f"T_Spr_{key}"
         rtex = f"T_SprRamp_{key}"
-        digest = hashlib.sha1(json.dumps([w, h, sorted(rects.items()), ramp, 3]).encode()
+        digest = hashlib.sha1(json.dumps([w, h, sorted(rects.items()), ramp, 4]).encode()
                               + b"".join(im.tobytes() for _, im in sorted(cells.items()))).hexdigest()[:16]
         path = OUT / f"{tex}.png"
         rpath = OUT / f"{rtex}.png"
@@ -375,7 +468,7 @@ def main():
     layout = {
         "_comment": "Generated by tools/sprites/build_player_sprites.py - do not edit. Sprite player data "
                     "(docs/sprites.md): bitmaps in original pixels, atlas cells in texture pixels "
-                    f"({SCALE}x upscale). Kod groups are 1-based, 'groups' here are 0-based (client).",
+                    f"({SCALE} per original pixel). Kod groups are 1-based, 'groups' here are 0-based (client).",
         "version": 3, "scale": SCALE, "upscale": up.config(), "texture_dir": "/Game/Generated/Sprites",
         "square_cm": ms.SQUARE_M * 100.0, "fine_per_square": ms.FINE_PER_SQUARE,
         "bgfs": {b: bgf_meta(b, tween_keys.get(b, []), 0) for b in sorted(need)},
@@ -383,6 +476,8 @@ def main():
         "atlases": atlases,
         "looks": looks,
         "monsters": monster_table,
+        "equipment": equip_table,
+        "first_person": equip["first_person"],
     }
     LAYOUT.write_text(json.dumps(layout, indent=1), encoding="utf-8")
     luts.main()   # the palette lookups M_SpriteBody recolours with

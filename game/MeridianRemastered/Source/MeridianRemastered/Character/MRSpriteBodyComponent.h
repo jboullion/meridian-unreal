@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/StaticMeshComponent.h"
+#include "Character/MRSpriteAppearance.h"
 #include "Character/MRSpriteData.h"
 #include "MRSpriteBodyComponent.generated.h"
 
@@ -33,10 +34,19 @@ public:
 
 	/**
 	 * Replace some of the look's parts by other bgfs (the character creator's head, hair, eyes,
-	 * nose and mouth: part name -> bgf; "blank" removes the part, a bald head). Parts not given
-	 * keep the look's own. An empty map restores the look. Kept until the next SetLook.
+	 * nose and mouth; armour's torso, arms and legs: part name -> bgf; "blank" removes the part, a
+	 * bald head). Parts not given keep the look's own. Overlays add parts (a weapon, shield, bow or
+	 * helmet: docs/adr/0012 M2b) on their hotspots; holding something bends the arm the way
+	 * player.kod SendOverlays does (a weapon: the right arm rests on group 17; a shield or bow: the
+	 * left on 7) and that arm no longer swings. Empty restores the look. Kept until the next SetLook.
 	 */
-	void SetPartBgfs(const TMap<FName, FName>& PartBgfs);
+	void SetPartBgfs(const TMap<FName, FName>& PartBgfs, const TArray<FMRSpriteOverlay>& Overlays = TArray<FMRSpriteOverlay>());
+
+	/** Palette translations for some parts (the server's: part name -> xlat), over SetColours'. */
+	void SetPartXlats(const TMap<FName, int32>& Xlats);
+
+	/** All of an appearance: its look (if different), parts, overlays, colours and translations (not its height). */
+	void SetAppearance(const FMRSpriteAppearance& A);
 
 	/** Load a look's atlases ahead of SetLook (a monster's corpse), so it doesn't pop in late. */
 	void PrewarmLook(FName LookName);
@@ -76,6 +86,15 @@ public:
 
 	/** The first-person hand / weapon to draw now (AMRHUD): false if none. Offset and size in original pixels. */
 	bool GetFirstPersonFrame(UTexture2D*& OutTexture, FBox2f& OutUV, FIntPoint& OutSize, FIntPoint& OutOffset);
+	/** A first-person swing is playing (the local one, ahead of the server's: AMRHUD). */
+	bool IsFirstPersonAttacking() const { return FirstPersonTrack.IsPlaying(); }
+
+	/**
+	 * A converted bitmap's frame (any bgf with an atlas): its group (0-based) seen from the front,
+	 * the atlas texture and cell, size and offset in original pixels. False if not converted or not
+	 * loaded yet. AMRHUD draws the server's first-person overlays with it.
+	 */
+	bool GetBgfFrame(const FString& Bgf, int32 Group, UTexture2D*& OutTexture, FBox2f& OutUV, FIntPoint& OutSize, FIntPoint& OutOffset);
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -89,6 +108,18 @@ private:
 	const FMRSpriteLook* BaseLook = nullptr;
 	FMRSpriteLook CustomLook;
 	TMap<FName, FName> PartOverrides;
+	TArray<FMRSpriteOverlay> OverlayList;
+	/** The overlay parts' resting groups (Kod's, 1-based), by part name. */
+	TMap<FName, int32> OverlayGroups;
+	/** SetColours' choices (-1 = the look's) and SetPartXlats' translations: PartXlat is made from them. */
+	int32 Colours[4] = {-1, -1, -1, -1};
+	TMap<FName, int32> XlatOverrides;
+	void UpdateXlats();
+	/** player.kod SendOverlays: a weapon bends the right arm, a shield, bow or token the left. */
+	bool HoldsRight() const;
+	bool HoldsLeft() const;
+	/** The first-person hand / weapon for the weapon the look holds now. */
+	void UpdateFirstPersonDef();
 	float HeightScale = 1.f;
 
 	UPROPERTY(Transient) TObjectPtr<UTextureRenderTarget2D> Target;

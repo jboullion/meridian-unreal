@@ -2,6 +2,7 @@
 // and players' looks from the server's overlays (docs/sprites.md "Players online").
 // Run: UnrealEditor-Cmd <project> -ExecCmds="Automation RunTests Meridian;Quit" -unattended -nullrhi
 
+#include "Algo/AllOf.h"
 #include "Character/MRSpriteData.h"
 #include "Misc/AutomationTest.h"
 #include "Net/MRCharInfo.h"
@@ -223,6 +224,89 @@ bool FMRSpriteOverlaysTest::RunTest(const FString& Parameters)
 		const FMRSpritePlaced* P = Placed.FindByPredicate([](const FMRSpritePlaced& X) { return X.Part == TEXT("eyes"); });
 		TestTrue(TEXT("the new eyes are drawn"), P && P->PartDef && P->PartDef->Bgf == TEXT("pelx") && P->Bitmap != INDEX_NONE);
 	}
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMRSpriteEquipmentTest, "Meridian.Sprites.Equipment",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMRSpriteEquipmentTest::RunTest(const FString& Parameters)
+{
+	const FMRSpriteLibrary& Lib = FMRSpriteLibrary::Get();
+	if (!Lib.Equipment.Contains(TEXT("bte")) || !Lib.Equipment.Contains(TEXT("metlshld")) || !Lib.Atlases.Contains(TEXT("helm")))
+	{
+		AddError(TEXT("player_parts.json has no equipment: run tools/kod_extract/extract.py, then tools/sprites/build_player_sprites.py"));
+		return false;
+	}
+	auto Ov = [](const TCHAR* Bgf, uint8 Hotspot, int32 Xlat, int32 Group)
+	{
+		FMRNetOverlay V{Bgf, Hotspot, Xlat};
+		V.Animation.Type = MRMsg::ANIMATE_NONE;
+		V.Animation.Group = static_cast<uint16>(Group);
+		return V;
+	};
+	// a man in plate armour with a sword, a shield and a helmet, as player.kod SendOverlays sends him
+	FMRNetObject O;
+	O.Flags = MRMsg::OF_PLAYER;
+	O.Icon = TEXT("bte.bgf");
+	O.Xlat = 0;
+	O.OverlayParts = {Ov(TEXT("bla"), 31, 5, 7), Ov(TEXT("bra"), 21, 5, 17), Ov(TEXT("bfa"), 41, 9, 1), Ov(TEXT("phax"), 1, 2, 1),
+		Ov(TEXT("pmax"), 12, 2, 1), Ov(TEXT("peax"), 11, 2, 1), Ov(TEXT("pnax"), 14, 2, 1), Ov(TEXT("ptcd"), 13, 0x2C, 1),
+		Ov(TEXT("swordov"), 22, 0, 4), Ov(TEXT("metlshld"), 32, 0, 2), Ov(TEXT("helm"), 13, 0, 1)};
+	TestEqual(TEXT("the items come after the hair"), MRNetLook::FirstItemOverlay(O), 8);
+	FMRSpriteAppearance A;
+	TestTrue(TEXT("a player"), MRNetLook::AppearanceFromObject(O, A));
+	TestEqual(TEXT("male base"), A.Look, FName(TEXT("player_male")));
+	TestEqual(TEXT("the armour's torso"), A.BodyBgf, FName(TEXT("bte")));
+	TestEqual(TEXT("its translation, the server's"), A.BodyXlat, 0);
+	TestEqual(TEXT("the arms' translation"), A.ArmsXlat, 5);
+	TestEqual(TEXT("the legs' translation"), A.LegsXlat, 9);
+	TestEqual(TEXT("hair kept under the helmet"), A.HairBgf, FName(TEXT("ptcd")));
+	TestEqual(TEXT("three item overlays"), A.Overlays.Num(), 3);
+	if (A.Overlays.Num() == 3)
+	{
+		TestTrue(TEXT("the sword in the right hand on group 4"), A.Overlays[0].Bgf == TEXT("swordov") && A.Overlays[0].Hotspot == 22 && A.Overlays[0].Group == 4);
+		TestTrue(TEXT("the shield in the left on group 2"), A.Overlays[1].Bgf == TEXT("metlshld") && A.Overlays[1].Hotspot == 32 && A.Overlays[1].Group == 2);
+		TestTrue(TEXT("the helmet on the hair's hotspot"), A.Overlays[2].Bgf == TEXT("helm") && A.Overlays[2].Hotspot == 13);
+	}
+	// a helmet that takes the hair off (helm.kod RemoveHair): the hat comes right after the nose
+	O.OverlayParts.RemoveAt(7);
+	TestEqual(TEXT("no hair: the items come after the nose"), MRNetLook::FirstItemOverlay(O), 7);
+	MRNetLook::AppearanceFromObject(O, A);
+	TestEqual(TEXT("no hair drawn"), A.HairBgf, FName(TEXT("blank")));
+	TestEqual(TEXT("still three items"), A.Overlays.Num(), 3);
+
+	// the bent left arm (group 7) carries the shield's hotspot, the right (17) the weapon's, from every side
+	FMRSpriteLook L = Lib.Looks[TEXT("player_male")];
+	for (const FMRSpriteOverlay& E : A.Overlays)
+	{
+		FMRSpritePart& P = L.Parts.AddDefaulted_GetRef();
+		P.Name = E.Hotspot == 22 ? FName(TEXT("weapon")) : E.Hotspot == 32 ? FName(TEXT("shield")) : FName(TEXT("helmet"));
+		P.Bgf = P.Atlas = E.Bgf.ToString();
+		P.Hotspot = E.Hotspot;
+	}
+	const TMap<FName, int32> Groups = {{TEXT("left_arm"), 6}, {TEXT("right_arm"), 16}, {TEXT("weapon"), 3}, {TEXT("shield"), 1}, {TEXT("helmet"), 0}};
+	for (int32 Angle = 0; Angle < 4096; Angle += 512)
+	{
+		TArray<FMRSpritePlaced> Placed;
+		FVector2f Feet;
+		int32 Shrink = 0;
+		TestTrue(FString::Printf(TEXT("placed at %d"), Angle), Lib.Place(L, Groups, Angle, Placed, Feet, Shrink));
+		for (const TCHAR* Part : {TEXT("weapon"), TEXT("shield"), TEXT("helmet")})
+		{
+			TestTrue(FString::Printf(TEXT("%s drawn at angle %d"), Part, Angle),
+				Placed.ContainsByPredicate([Part](const FMRSpritePlaced& X) { return X.Part == Part; }));
+		}
+	}
+	// a long blade swung wide needs a bigger render box, only while it's worn
+	const FBox2f* Wide = Lib.Equipment[TEXT("spirswordov")].Bounds.Find(TEXT("male"));
+	TestTrue(TEXT("a long sword grows the male box"), Wide && Wide->GetSize().X > Lib.Looks[TEXT("player_male")].Bounds.GetSize().X);
+	TestEqual(TEXT("the looks know their gender"), Lib.Looks[TEXT("player_female")].Gender, FName(TEXT("female")));
+	TestTrue(TEXT("the sword has a first-person picture"), Lib.FirstPerson.Contains(TEXT("swordov")));
+	TestTrue(TEXT("every weapon's first-person picture is converted"), Algo::AllOf(Lib.FirstPerson, [&Lib](const TPair<FString, FMRFirstPersonOverlay>& F)
+	{
+		return Lib.Atlases.Contains(F.Value.Bgf);
+	}));
 	return true;
 }
 

@@ -9,6 +9,7 @@
 #include "Misc/App.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Paths.h"
+#include "Character/MRCharacter.h"
 #include "Net/MRAssetCache.h"
 #include "Net/MRCharInfo.h"
 #include "Net/MRProtocol.h"
@@ -774,6 +775,19 @@ void UMRNetTest::Tick()
 			else
 			{
 				Fail(FString::Printf(TEXT("look: objects without an actor: %s"), *FString::Join(Missing, TEXT(", "))));
+			}
+			// what we wear, as the server sends it (docs/adr/0012 M2b): our torso, arms and legs are converted parts
+			if (const AMRCharacter* Pawn = Cast<AMRCharacter>(PC->GetPawn()))
+			{
+				const FMRSpriteAppearance& A = Pawn->GetSpriteAppearance();
+				if (!A.BodyBgf.IsNone() && !A.LeftArmBgf.IsNone() && !A.RightArmBgf.IsNone() && !A.LegsBgf.IsNone())
+				{
+					Pass(FString::Printf(TEXT("we wear what the server says: %s"), *A.ToString()));
+				}
+				else
+				{
+					Fail(FString::Printf(TEXT("look: our worn parts didn't come through: %s"), *A.ToString()));
+				}
 			}
 			// a named object that isn't a player: an NPC first
 			const FMRNetObject* Pick = nullptr;

@@ -70,13 +70,11 @@ void AMRNetObject::SetAppearance(const FMRSpriteAppearance& A)
 {
 	if (SpriteBody)
 	{
-		if (!A.Look.IsNone() && SpriteBody->GetLook() != A.Look)
+		if (!A.Look.IsNone())
 		{
 			Look = A.Look;
-			SpriteBody->SetLook(A.Look);
 		}
-		SpriteBody->SetPartBgfs(A.PartBgfs());
-		SpriteBody->SetColours(A.Skin, A.Hair, A.Shirt, A.Pants);
+		SpriteBody->SetAppearance(A);
 	}
 }
 
