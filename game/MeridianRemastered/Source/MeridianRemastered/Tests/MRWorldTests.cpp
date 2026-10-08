@@ -13,6 +13,11 @@
 #include "World/MRBgf.h"
 #include "World/MRRooFile.h"
 #include "World/MRRoomMesh.h"
+#include "World/MRRuntimeRoom.h"
+#include "Audio/MRServerSound.h"
+#include "Engine/Engine.h"
+#include "Engine/World.h"
+#include "Net/MRProtocol.h"
 #include "Zones/MRZoneSubsystem.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
@@ -163,6 +168,182 @@ bool FMRWorldRoomsTest::RunTest(const FString& Parameters)
 	}
 	AddInfo(FString::Printf(TEXT("%d of %d rooms built, %d triangles, %.1f s"), Built, All.Num(), Tris, FPlatformTime::Seconds() - Start));
 	TestEqual(TEXT("every reference room builds"), Built, All.Num());
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMRWorldChangesTest, "Meridian.World.Changes",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMRWorldChangesTest::RunTest(const FString& Parameters)
+{
+	// 1. scrolling (bspload.c, roomanim.c): only rooms with scrolling sectors or walls have UV1
+	TArray<FString> All;
+	IFileManager::Get().FindFiles(All, *RoomsDir(), TEXT("*.roo"));
+	if (All.Num() == 0)
+	{
+		AddWarning(TEXT("no reference rooms: skipped"));
+		return true;
+	}
+	All.Sort();
+	const MRRoomMesh::FRepeat Repeat = CatalogRepeat();
+	int32 Scrolling = 0, Still = 0;
+	FMRRooFile Movable;
+	FString MovableName;
+	for (const FString& F : All)
+	{
+		TArray<uint8> Bytes;
+		FMRRooFile Room;
+		FString Error;
+		if (!FFileHelper::LoadFileToArray(Bytes, *FPaths::Combine(RoomsDir(), F)) || !Room.Load(Bytes, Error))
+		{
+			continue;
+		}
+		bool bFlagged = false;
+		for (const FMRRooSector& S : Room.Sectors)
+		{
+			bFlagged |= !S.AnimationSpeed && (S.Flags & 0x0C) && (S.Flags & 0x180);
+			if (MovableName.IsEmpty() && S.ServerId && S.FloorTexture && !S.bSlopedFloor)
+			{
+				MovableName = F;
+				Movable = Room;
+			}
+		}
+		for (const FMRRooSidedef& S : Room.Sidedefs)
+		{
+			bFlagged |= !S.AnimationSpeed && (S.Flags & 0x0C00);
+		}
+		bool bMoves = false;
+		for (const FMRRoomMeshSection& Sec : MRRoomMesh::Build(Room, Repeat, false).Sections)
+		{
+			if (Sec.Scroll.Num() != Sec.Positions.Num())
+			{
+				AddError(FString::Printf(TEXT("%s: %d scrolls for %d vertices"), *F, Sec.Scroll.Num(), Sec.Positions.Num()));
+			}
+			for (const FVector2D& V : Sec.Scroll)
+			{
+				bMoves |= !V.IsNearlyZero();
+			}
+		}
+		if (!bFlagged)
+		{
+			TestFalse(FString::Printf(TEXT("%s doesn't scroll"), *F), bMoves);
+			++Still;
+		}
+		else if (bMoves)
+		{
+			++Scrolling;
+		}
+	}
+	AddInfo(FString::Printf(TEXT("%d rooms scroll, %d don't"), Scrolling, Still));
+	TestTrue(TEXT("some rooms scroll"), Scrolling > 0);
+	if (MovableName.IsEmpty())
+	{
+		AddWarning(TEXT("no room with a server id sector"));
+		return true;
+	}
+	const int32 Index = Movable.Sectors.IndexOfByPredicate([](const FMRRooSector& S) { return S.ServerId && S.FloorTexture && !S.bSlopedFloor; });
+	{
+		// a scrolling floor moves at its period's speed: fast is a step every 2 ms, 1024 steps to a repeat
+		FMRRooFile One = Movable;
+		for (FMRRooSector& S : One.Sectors)
+		{
+			S.Flags &= ~0x1FCu;
+			S.AnimationSpeed = 0;
+		}
+		for (FMRRooSidedef& S : One.Sidedefs)
+		{
+			S.Flags &= ~0x7C00u;
+		}
+		One.Sectors[Index].Flags |= (3 << 2) | (4 << 4) | 0x80;  // fast, south, the floor
+		double Seen = 0.0;
+		for (const FMRRoomMeshSection& Sec : MRRoomMesh::Build(One, Repeat, false).Sections)
+		{
+			for (const FVector2D& V : Sec.Scroll)
+			{
+				Seen = FMath::Max(Seen, V.Length());
+			}
+		}
+		TestTrue(FString::Printf(TEXT("a fast floor scrolls 1000/2/1024 a second (%f)"), Seen), FMath::IsNearlyEqual(Seen, 1000.0 / 2 / 1024, 1e-4));
+	}
+
+	{
+		// what a lift's redraw costs: the mesher on this room
+		const double Start = FPlatformTime::Seconds();
+		for (int32 i = 0; i < 10; ++i)
+		{
+			MRRoomMesh::Build(Movable, Repeat, false);
+		}
+		AddInfo(FString::Printf(TEXT("%s meshes in %.1f ms"), *MovableName, (FPlatformTime::Seconds() - Start) * 100.0));
+	}
+
+	// 2. a runtime room takes the server's changes (roomanim.c MoveSector, SectorChange, TextureChange)
+	UWorld* World = UWorld::CreateWorld(EWorldType::Game, false);
+	FWorldContext& Context = GEngine->CreateNewWorldContext(EWorldType::Game);
+	Context.SetCurrentWorld(World);
+	AMRRuntimeRoom* Actor = World->SpawnActor<AMRRuntimeRoom>();
+	Actor->SetRoomFile(MovableName);
+	Actor->Build(Movable, {}, {}, nullptr);
+	const FMRRooSector Was = Movable.Sectors[Index];
+	const int32 Rebuilds = Actor->GetRebuilds();
+	Actor->MoveSector(MRMsg::ANIMATE_FLOOR_LIFT, Was.ServerId, static_cast<int16>(Was.FloorHeight + 32), 0);
+	TestEqual(TEXT("a lift at speed 0 moves at once"), static_cast<int32>(Actor->GetRoom().Sectors[Index].FloorHeight), Was.FloorHeight + 32);
+	TestTrue(TEXT("and rebuilds the room"), Actor->GetRebuilds() > Rebuilds && !Actor->IsMoving());
+	Actor->MoveSector(MRMsg::ANIMATE_FLOOR_LIFT, Was.ServerId, Was.FloorHeight, 64);
+	TestTrue(TEXT("a lift at speed 64 moves over time"), Actor->IsMoving());
+	Actor->Tick(0.25f);  // 32 units at 64 a second: half way
+	TestEqual(TEXT("half way after a quarter second"), static_cast<int32>(Actor->GetRoom().Sectors[Index].FloorHeight), Was.FloorHeight + 16);
+	Actor->Tick(0.5f);
+	TestTrue(TEXT("and stops where it was told"), !Actor->IsMoving() && Actor->GetRoom().Sectors[Index].FloorHeight == Was.FloorHeight);
+	Actor->ChangeSector(Was.ServerId, 2, MRMsg::CHANGE_OVERRIDE);
+	TestEqual(TEXT("BP_SECTOR_CHANGE sets the depth"), Actor->GetRoom().Sectors[Index].Depth(), 2);
+	Actor->ChangeSector(Was.ServerId, MRMsg::CHANGE_OVERRIDE, 3);
+	TestTrue(TEXT("and the scroll speed, keeping the depth"),
+		Actor->GetRoom().Sectors[Index].Depth() == 2 && ((Actor->GetRoom().Sectors[Index].Flags & 0x0C) >> 2) == 3);
+	const bool bHave = Actor->ChangeTexture(Was.ServerId, 1234, MRMsg::CTF_FLOOR);
+	TestTrue(TEXT("BP_CHANGE_TEXTURE changes the floor"), Actor->GetRoom().Sectors[Index].FloorTexture == 1234);
+	TestFalse(TEXT("and says the texture is still to fetch"), bHave);
+	Actor->ResetChanges();
+	TestTrue(TEXT("a room entry starts from the file again"), Actor->GetRoom().Sectors[Index].FloorTexture == Was.FloorTexture
+		&& Actor->GetRoom().Sectors[Index].Flags == Was.Flags);
+	AddInfo(FString::Printf(TEXT("changes tried on %s, sector id %d"), *MovableName, Was.ServerId));
+	GEngine->DestroyWorldContext(World);
+	World->DestroyWorld(false);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMRWorldSoundTest, "Meridian.World.Sound",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMRWorldSoundTest::RunTest(const FString& Parameters)
+{
+	// the server's .ogg sounds decode (MRServerSound::Decode): any the online test has cached
+	TArray<FString> Found;
+	IFileManager::Get().FindFilesRecursive(Found, *FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("MRNet")), TEXT("*.ogg"), true, false);
+	if (Found.Num() == 0)
+	{
+		AddWarning(TEXT("no cached .ogg (run tools/ue/run_net_test.ps1 once): skipped"));
+		return true;
+	}
+	Found.Sort();
+	int32 Decoded = 0;
+	for (int32 i = 0; i < FMath::Min(Found.Num(), 10); ++i)
+	{
+		TArray<uint8> Bytes;
+		FString Error;
+		FFileHelper::LoadFileToArray(Bytes, *Found[i]);
+		const FString Name = FPaths::GetCleanFilename(Found[i]);
+		const TSharedPtr<FMRPcmSound> Pcm = MRServerSound::Decode(Bytes, Error);
+		if (TestTrue(FString::Printf(TEXT("%s decodes (%s)"), *Name, *Error), Pcm.IsValid()))
+		{
+			TestTrue(FString::Printf(TEXT("%s has samples at a rate"), *Name),
+				Pcm->Samples.Num() > 0 && Pcm->SampleRate >= 8000 && Pcm->Channels >= 1 && Pcm->DurationSeconds() > 0.f);
+			++Decoded;
+		}
+	}
+	const TArray<uint8> Junk = {'n', 'o', 't', ' ', 'o', 'g', 'g'};
+	FString Error;
+	TestFalse(TEXT("junk isn't a sound"), MRServerSound::Decode(Junk, Error).IsValid());
+	AddInfo(FString::Printf(TEXT("%d sounds decoded"), Decoded));
 	return true;
 }
 

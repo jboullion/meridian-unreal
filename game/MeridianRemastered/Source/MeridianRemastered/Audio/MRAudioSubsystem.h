@@ -58,6 +58,30 @@ public:
 	/** A named 2D loop: started and faded to Volume, faded out at 0; bMuffled low-passes it. */
 	void SetLoop2D(FName Key, const FString& File, float Volume, bool bMuffled, float FadeSeconds = 2.f);
 
+	// --- online: the server's sounds (docs/adr/0012 M7; BP_PLAY_WAVE, BP_STOP_WAVE, BP_PLAY_MUSIC)
+	/**
+	 * Online the server says what plays: the zone's own music, loops and random sounds stop (the
+	 * weather's stay). A sound we haven't imported comes from the server's files (the asset cache),
+	 * decoded once (Audio/MRServerSound).
+	 */
+	void SetServerDriven(bool bOn);
+	bool IsServerDriven() const { return bServerDriven; }
+	/** The room's music (the same track carries on, as the original's MusicPlayFile). */
+	void ServerMusic(const FString& File);
+	/**
+	 * A sound at Location, or 2D. bLoop: until the player leaves the room (proto.h SF_LOOP); Pitch
+	 * (SF_RANDOM_PITCH picks one); ObjectId: the object it comes from, to stop it by.
+	 */
+	void ServerSound(const FString& File, const FVector& Location, bool b2D, bool bLoop, float Pitch, uint32 ObjectId);
+	/** BP_STOP_WAVE: that sound, from that object (0: any). */
+	void ServerStopSound(const FString& File, uint32 ObjectId);
+	/** A new room: its loops end. */
+	void ServerStopLoops();
+	/** Tests: the server's sounds asked for, and played (imported or decoded). */
+	int32 GetServerSoundsAsked() const { return ServerAsked; }
+	int32 GetServerSoundsPlayed() const { return ServerPlayed; }
+	const FString& GetMusicFile() const { return MusicFile; }
+
 	/** Re-read data/audio and restart the zone's sound. */
 	UFUNCTION(BlueprintCallable, Category = "Meridian|Audio")
 	void Reload();
@@ -77,6 +101,12 @@ private:
 	int32 ViewZone() const;
 	void EnterZone(int32 Zone);
 	void SetMusic(const FString& File);
+	/** Play this music sound (already found or decoded) as the track File. */
+	void SetMusicSound(const FString& File, USoundBase* Sound);
+	/** The sound for a server file: imported, else decoded from the server's file (maybe later). bLoop: a looping wave. */
+	void ResolveServer(const FString& File, bool bLoop, TFunction<void(USoundBase*)> Done);
+	/** Quietly: an imported sound, or null (no warning). */
+	USoundBase* FindImported(const FString& File);
 	void StartLoops(int32 Zone);
 	void StopLoops();
 	void TickPeriodic(double Now);
@@ -118,4 +148,18 @@ private:
 	bool bLoopsOn = true;
 	bool bRandomOn = true;
 	bool bMusicOn = true;
+
+	// online (SetServerDriven)
+	bool bServerDriven = false;
+	int32 ServerAsked = 0;
+	int32 ServerPlayed = 0;
+	/** Decoded server sounds by file (lower case), and those being fetched or that failed. */
+	TMap<FString, TSharedPtr<const struct FMRPcmSound>> Decoded;
+	TMap<FString, TArray<TFunction<void(TSharedPtr<const struct FMRPcmSound>)>>> Waiting;
+	TSet<FString> Undecodable;
+	/** The server's sounds playing, and their files and objects (to stop them by). */
+	UPROPERTY()
+	TArray<TObjectPtr<UAudioComponent>> ServerSounds;
+	TArray<TPair<FString, uint32>> ServerSoundKeys;
+	TArray<bool> ServerSoundLoops;
 };

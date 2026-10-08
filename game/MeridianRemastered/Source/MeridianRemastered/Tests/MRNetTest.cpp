@@ -33,6 +33,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "World/MRRuntimeRoom.h"
 #include "World/MRRuntimeRooms.h"
+#include "Audio/MRAudioSubsystem.h"
+#include "Kismet/KismetMaterialLibrary.h"
+#include "Materials/MaterialParameterCollection.h"
 
 namespace
 {
@@ -427,6 +430,54 @@ void UMRNetTest::CheckRuntimeRoom()
 	{
 		Fail(FString::Printf(TEXT("travel: the pawn isn't on the runtime room's floor (feet %.0f, below it: %s at %.0f)"), Feet,
 			*GetNameSafe(Hit.GetActor()), Hit.ImpactPoint.Z));
+	}
+}
+
+void UMRNetTest::CheckRoomLight()
+{
+	// M_RuntimeRoom draws with the server's light: the room's ambient (BP_PLAYER, BP_LIGHT_AMBIENT) and the player's
+	APlayerController* PC = Controller.Get();
+	UMRNetSubsystem* Net = NetOf(PC);
+	const UMaterialParameterCollection* Collection = LoadObject<UMaterialParameterCollection>(nullptr,
+		TEXT("/Game/Generated/Environment/Materials/MPC_Environment.MPC_Environment"));
+	if (!Collection)
+	{
+		Fail(TEXT("light: no MPC_Environment"));
+		return;
+	}
+	const float Ambient = UKismetMaterialLibrary::GetScalarParameterValue(PC->GetWorld(), const_cast<UMaterialParameterCollection*>(Collection), TEXT("RoomAmbient"));
+	const float Player = UKismetMaterialLibrary::GetScalarParameterValue(PC->GetWorld(), const_cast<UMaterialParameterCollection*>(Collection), TEXT("PlayerLight"));
+	const FMRNetPlayer& P = Net->GetPlayer();
+	if (FMath::IsNearlyEqual(Ambient, P.AmbientLight / 255.f, 1e-3f) && FMath::IsNearlyEqual(Player, P.PlayerLight / 255.f, 1e-3f))
+	{
+		Pass(FString::Printf(TEXT("the runtime room is lit by the server's light: ambient %d, player %d"), P.AmbientLight, P.PlayerLight));
+	}
+	else
+	{
+		Fail(FString::Printf(TEXT("light: the room draws with ambient %.3f and player %.3f, the server says %d and %d"), Ambient, Player,
+			P.AmbientLight, P.PlayerLight));
+	}
+}
+
+void UMRNetTest::CheckServerSounds()
+{
+	// the server's music and sounds (BP_PLAY_MUSIC, BP_PLAY_WAVE) are found and made ready to play: imported or decoded
+	APlayerController* PC = Controller.Get();
+	const UMRAudioSubsystem* Audio = PC ? PC->GetWorld()->GetSubsystem<UMRAudioSubsystem>() : nullptr;
+	if (!Audio)
+	{
+		Fail(TEXT("sound: no audio subsystem"));
+		return;
+	}
+	if (Audio->GetServerSoundsAsked() > 0 && Audio->GetServerSoundsPlayed() > 0 && !Audio->GetMusicFile().IsEmpty())
+	{
+		Pass(FString::Printf(TEXT("the server's sounds play: %d of %d ready, music %s"), Audio->GetServerSoundsPlayed(),
+			Audio->GetServerSoundsAsked(), *Audio->GetMusicFile()));
+	}
+	else
+	{
+		Fail(FString::Printf(TEXT("sound: %d of the server's %d sounds ready, music \"%s\""), Audio->GetServerSoundsPlayed(),
+			Audio->GetServerSoundsAsked(), *Audio->GetMusicFile()));
 	}
 }
 
@@ -1855,6 +1906,7 @@ void UMRNetTest::Tick()
 			{
 				RuntimeRid = Here;
 				CheckRuntimeRoom();
+				CheckRoomLight();
 				SayText = FString::Printf(TEXT("Hello from the forest %d"), FMath::RandRange(100, 999));
 				Net->Say(SayText);
 				TravelStage = 1;
@@ -2082,6 +2134,7 @@ void UMRNetTest::Tick()
 	case EStep::Relog:
 		if (!bAsked)
 		{
+			CheckServerSounds();
 			bAsked = true;
 			bSaid = false;
 			Net->ReturnToCharacters();

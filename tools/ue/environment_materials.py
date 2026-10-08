@@ -119,9 +119,17 @@ def build_runtime_room_material():
     """/Game/Generated/Runtime/M_RuntimeRoom: rooms the game builds from the server's .roo files
     (AMRRuntimeRoom, docs/adr/0012) and objects drawn from their own bitmaps (UMRBgfSpriteComponent).
     The original's look: unlit, its texture (a transient texture the game makes from the BGF through
-    the palette, parameter "Tex") times the sector light it carries as vertex colour, times
-    "Brightness" (0: the original's black drawing effect); palette index 254 is cut out (masked);
-    "Opacity" < 1 dithers it away (the translucent drawing effects); two-sided, like its walls."""
+    the palette, parameter "Tex") times the original's light level, times "Brightness" (0: the
+    original's black drawing effect); palette index 254 is cut out (masked); "Opacity" < 1 dithers
+    it away (the translucent drawing effects); two-sided, like its walls.
+
+    The light level is the original client's (draw3d.c GetLightPaletteIndex, RUNTIME_LIGHT): the
+    sector's light (vertex colour R, 0..255) on its own below 128; above, the room's ambient light
+    (MPC_Environment.RoomAmbient, the server's BP_LIGHT_AMBIENT) shifted by it, 192 being the
+    ambient itself; plus the player's light (PlayerLight, BP_LIGHT_PLAYER) falling off with the
+    distance from the eye. Vertex alpha 0 skips it (objects drawn from their bitmaps keep their own
+    level, vertex colour R). UV1 scrolls the texture (units a second: the .roo's scrolling sectors and
+    walls, the server's BP_SECTOR_CHANGE)."""
     name, path = "M_RuntimeRoom", RUNTIME_DIR + "/M_RuntimeRoom"
 
     def build():
@@ -136,11 +144,29 @@ def build_runtime_room_material():
         tex = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -700, 0, parameter_name="Tex",
                     sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR,
                     texture=eal.load_asset("/Engine/EngineResources/DefaultTexture"))
-        vcol = _expr(mat, unreal.MaterialExpressionVertexColor, -700, 300)
+        # scrolling: UV0 + time * UV1
+        uv0 = _expr(mat, unreal.MaterialExpressionTextureCoordinate, -1300, 0, coordinate_index=0)
+        uv1 = _expr(mat, unreal.MaterialExpressionTextureCoordinate, -1300, 100, coordinate_index=1)
+        time = _expr(mat, unreal.MaterialExpressionTime, -1300, 200)
+        drift = _expr(mat, unreal.MaterialExpressionMultiply, -1150, 150)
+        mel.connect_material_expressions(uv1, "", drift, "A")
+        mel.connect_material_expressions(time, "", drift, "B")
+        uv = _expr(mat, unreal.MaterialExpressionAdd, -1000, 50)
+        mel.connect_material_expressions(uv0, "", uv, "A")
+        mel.connect_material_expressions(drift, "", uv, "B")
+        mel.connect_material_expressions(uv, "", tex, "UVs")
+        vcol = _expr(mat, unreal.MaterialExpressionVertexColor, -1000, 300)
+        mpc = eal.load_asset(ensure_mpc())
+        ambient = _expr(mat, unreal.MaterialExpressionCollectionParameter, -1000, 400, collection=mpc, parameter_name="RoomAmbient")
+        player = _expr(mat, unreal.MaterialExpressionCollectionParameter, -1000, 480, collection=mpc, parameter_name="PlayerLight")
+        depth = _expr(mat, unreal.MaterialExpressionPixelDepth, -1000, 560)
+        level = _custom(mat, -700, 350, RUNTIME_LIGHT, unreal.CustomMaterialOutputType.CMOT_FLOAT1,
+                        [("Sector", vcol, "R"), ("Lit", vcol, "A"), ("Ambient", ambient, ""), ("Player", player, ""), ("Depth", depth, "")],
+                        "the original's light level")
         bright = _expr(mat, unreal.MaterialExpressionScalarParameter, -700, 450, parameter_name="Brightness", default_value=1.0)
         lit = _expr(mat, unreal.MaterialExpressionMultiply, -400, 100)
         mel.connect_material_expressions(tex, "RGB", lit, "A")
-        mel.connect_material_expressions(vcol, "R", lit, "B")
+        mel.connect_material_expressions(level, "", lit, "B")
         out = _expr(mat, unreal.MaterialExpressionMultiply, -200, 150)
         mel.connect_material_expressions(lit, "", out, "A")
         mel.connect_material_expressions(bright, "", out, "B")
@@ -158,8 +184,26 @@ def build_runtime_room_material():
         log("built " + path)
 
     cache = build_cache.CACHE
-    key = cache.key(build_cache.source(build_runtime_room_material, _expr))
+    key = cache.key(build_cache.source(build_runtime_room_material, _expr, _custom), RUNTIME_LIGHT, sorted(MPC_SCALARS))
     return cache.get_or_build(path, key, "masters", build)
+
+
+# draw3d.c GetLightPaletteIndex with draw3d.h LIGHT_INDEX: the palette (0..63) a sector's light, the
+# room's ambient and the player's light give at a distance (FINENESS 1024 to a square of 220 cm,
+# KOD_LIGHT_LEVELS 256, LIGHT_NEUTRAL 192), as a level 0..1
+RUNTIME_LIGHT = """
+if (Lit < 0.5)
+    return Sector;
+float s = Sector * 255.0;
+float fine = max(Depth / 220.0 * 1024.0, 1.0);
+float viewer = 4194304.0 / fine * (Player * 255.0) / 256.0;
+float index;
+if (s > 127.0)
+    index = (min(255.0, viewer + Ambient * 255.0) + s - 192.0) * 64.0 / 256.0;
+else
+    index = min(255.0, viewer) * 64.0 / 256.0 + s / 2.0;
+return saturate(index / 63.0);
+"""
 
 
 MPC_NAME = "MPC_Environment"
@@ -167,6 +211,8 @@ MPC_NAME = "MPC_Environment"
 # editor, UMREnvironmentSubsystem in game), the game clock writes GameHour, the director LampsOn
 MPC_SCALARS = {"WindowGlow": 0.0, "GameHour": 0.0, "LampsOn": 1.0, "Stars": 0.0, "WindowDaylight": 0.0,
                "SectorAmbient": 0.0,
+               # rooms built at runtime (M_RuntimeRoom): the server's ambient and player light (0..1)
+               "RoomAmbient": 1.0, "PlayerLight": 0.0,
                # weather (UMREnvironmentSubsystem, docs/adr/0005 phase 4): how wet / snowed on the
                # outdoor surfaces are, the wind (1 calm), how much rain or snow falls, and which
                "Wetness": 0.0, "SnowCover": 0.0, "Wind": 1.0, "Precip": 0.0, "Snow": 0.0, "Sand": 0.0,

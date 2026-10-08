@@ -138,7 +138,9 @@ void UMRBgfSpriteComponent::Show(int32 Bitmap)
 	const TArray<FVector> Pos = {Corner(0, 0), Corner(B.Width, 0), Corner(B.Width, B.Height), Corner(0, B.Height)};
 	const TArray<FVector2D> UV = {FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1)};
 	const TArray<FVector> Normals = {FVector::ForwardVector, FVector::ForwardVector, FVector::ForwardVector, FVector::ForwardVector};
-	const TArray<FLinearColor> Colors = {FLinearColor::White, FLinearColor::White, FLinearColor::White, FLinearColor::White};
+	// alpha 0: M_RuntimeRoom leaves out the room's light model (it's for the room's surfaces)
+	const FLinearColor Full(1.f, 1.f, 1.f, 0.f);
+	const TArray<FLinearColor> Colors = {Full, Full, Full, Full};
 	CreateMeshSection_LinearColor(0, Pos, {0, 2, 1, 0, 3, 2}, Normals, UV, Colors, TArray<FProcMeshTangent>(), false);
 	if (Material)
 	{

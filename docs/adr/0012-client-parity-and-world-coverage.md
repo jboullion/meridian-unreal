@@ -419,6 +419,64 @@ The existing movement, UI-shot and look-dev runs stay green. Look-dev compares r
 - `-Render` adds `shop.png` and `offer.png` (`build/net/m6_trade_ui.png`).
 - **The test's hops now stand on the room side of a door square,** and try the door's next square when one fails. The blacksmith's door square (4, 3) is in the frame: the server snapped the move back and "go" found no door.
 
+### M7, server-driven world: sound, light and room changes (2026-10-08)
+**What landed** (docs/research/blakserv-protocol.md, "Sound, light and room changes"):
+- **Sound** (ADR 0006, "Online"):
+  - the server's music, sounds and stops play, at their object or square, or 2D;
+  - looping sounds last until the next room;
+  - files we haven't imported are fetched through the asset cache and decoded at runtime (`Audio/MRServerSound`);
+  - online, the zones' own music and ambience step aside.
+- **Light** (ADR 0005, "The server's light"):
+  - `M_RuntimeRoom` draws with the original's light model: sector light, the room's ambient, and the player's light by distance;
+  - `BP_LIGHT_AMBIENT` and `BP_LIGHT_PLAYER` update it (`MPC_Environment` `RoomAmbient`, `PlayerLight`);
+  - `BP_LIGHT_SHADING` is stored.
+  - Objects drawn from their bitmaps stay full bright: vertex alpha 0 skips the model.
+- **Scrolling textures** from the `.roo`:
+  - floors, ceilings and walls at the original's periods and directions;
+  - the mesher writes each vertex's scroll speed as UV1, and the material adds `Time × UV1`;
+  - 123 of 362 reference rooms scroll something.
+- **Room changes** on runtime rooms (`AMRRuntimeRoom` keeps its room file and rebuilds):
+  - `BP_SECTOR_MOVE`: lifts and doors, animated at the server's speed;
+  - `BP_SECTOR_CHANGE`: depth and scroll;
+  - `BP_CHANGE_TEXTURE`: a texture we don't have is fetched and the room updated.
+
+  The server sends a room's changes again on each entry, so each entry starts from the file and replays them (`FMRNetWorld::RoomChanges`). That covers a room still building too.
+- **How lifts rebuild:** rather than splitting the mesh by sector (planned in §5 and M1), the room is meshed again:
+  - 20 times a second while a lift moves;
+  - its collision 5 times a second, cooked off the game thread;
+  - both exact when it stops.
+
+  a5.roo, one of the biggest rooms, meshes in 7 ms. The wall dedupe key is now a tuple, not a string, which took every reference room from 1.2 s to 0.7 s.
+- **Decided, not built** (blakserv-protocol.md has the details):
+  - our own sky instead of `BP_BACKGROUND` and the background overlays;
+  - no flicker (`BP_SECTOR_LIGHT`), as the Direct3D client.
+
+  Ignored, with the reason:
+  - `BP_XLAT_OVERRIDE`: Server 104's Kod never sends it;
+  - `BP_SET_VIEW`: only the view globe sends it.
+
+**Not yet:**
+- **Bitmap animation:**
+  - animated walls and sectors (the `.roo`'s animation speed) cycling their frames;
+  - `BP_WALL_ANIMATE`, which also makes a wall passable or solid.
+- **Authored zones** don't move or change: they need sector-tagged pieces from `roo2gltf` (W2.3).
+- **Depth areas** don't follow `BP_SECTOR_CHANGE` (sinking into water): the collision follows; the zone's depth areas don't.
+- **Light on objects:** sprites drawn from bitmaps and our converted sprites don't take the room's light.
+- **The player's light** uses the pixel's depth, not the original's distance per wall.
+- **Sound:** the server's 6 `.mp3` files (cave and temple music, ogre sounds) aren't decoded; fireworks (`EFFECT_FIREWORKS`) aren't drawn.
+- **A lift on a big room costs about 10 ms per redraw.** Meshing only the moving sector's walls and floors would fix that.
+- **No room on the test's path moves.** A lift or a texture change has only been tried by `Meridian.World.Changes`, not from the server.
+
+**Verification (local Shards stack):**
+- **New unit tests**, all 27 automation tests pass:
+  - `Meridian.Net.RoomChange`: the three room-change messages, and a short one refused;
+  - `Meridian.World.Changes`: scrolling rooms, a fast floor's speed, the mesher's time, and a runtime room taking a lift (at once and over time), a depth, a scroll and a texture, then reset;
+  - `Meridian.World.Sound`: the server's `.ogg` files decode.
+- `run_net_test.ps1` reports **DONE 46/46** (49/49 with `-Create -Death`). The new checks:
+  - "the runtime room is lit by the server's light: ambient 114, player 5";
+  - "the server's sounds play: 45 of 45 ready, music walk5.ogg".
+- `-Render`'s `runtime_room_0/1.png` show the Forest of Farol at its ambient light (`build/net/m7_runtime_light.png`).
+
 ## Alternatives considered
 
 - **Bake every room before allowing travel:** no runtime code, but hours of GPU texture work and hundreds of levels to import before anyone can leave Raza. A room changed on the server would also break until rebuilt.

@@ -83,6 +83,8 @@ private:
 	void CheckRuntimeRoom();
 	/** Every creature in the room is drawn (a sprite of ours, or the server's bitmap). */
 	void CheckCreaturesDrawn();
+	void CheckRoomLight();
+	void CheckServerSounds();
 	/** The new character the creator path sends (and what our object should then wear). */
 	void SendNewCharacter(class UMRNetSubsystem* Net);
 	void CheckLook(class UMRNetSubsystem* Net);

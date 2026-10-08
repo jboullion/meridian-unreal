@@ -17,6 +17,11 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Sound/SoundAttenuation.h"
+#include "Audio/MRServerSound.h"
+#include "Engine/GameInstance.h"
+#include "Net/MRAssetCache.h"
+#include "Net/MRNetSubsystem.h"
+#include "TimerManager.h"
 #include "Sound/SoundBase.h"
 #include "Sound/SoundClass.h"
 #include "Sound/SoundMix.h"
@@ -177,6 +182,32 @@ TSharedPtr<FJsonObject> UMRAudioSubsystem::Room(int32 InZone) const
 {
 	const TSharedPtr<FJsonObject>* Out = nullptr;
 	return Rooms.IsValid() && Rooms->TryGetObjectField(FString::FromInt(InZone), Out) ? *Out : nullptr;
+}
+
+USoundBase* UMRAudioSubsystem::FindImported(const FString& File)
+{
+	const FString Key = File.ToLower();
+	if (const TWeakObjectPtr<USoundBase>* Cached = Sounds.Find(Key); Cached && Cached->IsValid())
+	{
+		return Cached->Get();
+	}
+	if (Missing.Contains(Key))
+	{
+		return nullptr;
+	}
+	const FString Name = AssetName(File);
+	const FString Path = FString::Printf(TEXT("%s%s.%s"), SoundDir, *Name, *Name);
+	USoundBase* S = FindObject<USoundBase>(nullptr, *Path);
+	S = S ? S : LoadObject<USoundBase>(nullptr, *Path, nullptr, LOAD_NoWarn | LOAD_Quiet);
+	if (S)
+	{
+		Sounds.Add(Key, S);
+	}
+	else
+	{
+		Missing.Add(Key);
+	}
+	return S;
 }
 
 USoundBase* UMRAudioSubsystem::FindSound(const FString& File)
@@ -354,6 +385,11 @@ void UMRAudioSubsystem::SetMusic(const FString& File)
 	{
 		return;  // the same track carries on (the original: MusicPlayFile ignores the current file)
 	}
+	SetMusicSound(Want, Want.IsEmpty() ? nullptr : FindSound(Want));
+}
+
+void UMRAudioSubsystem::SetMusicSound(const FString& Want, USoundBase* Sound)
+{
 	const float Fade = float(Number(TEXT("music_fade_s"), 1.5));
 	if (IsValid(Music))
 	{
@@ -365,7 +401,7 @@ void UMRAudioSubsystem::SetMusic(const FString& File)
 	{
 		return;
 	}
-	if (USoundBase* Sound = FindSound(Want))
+	if (Sound)
 	{
 		Music = UGameplayStatics::CreateSound2D(GetWorld(), Sound, 1.f, 1.f, 0.f, nullptr, true, true);
 		if (IsValid(Music))
@@ -424,9 +460,238 @@ void UMRAudioSubsystem::StartLoops(int32 InZone)
 	}
 }
 
+void UMRAudioSubsystem::SetServerDriven(bool bOn)
+{
+	if (bOn == bServerDriven)
+	{
+		return;
+	}
+	bServerDriven = bOn;
+	if (bOn)
+	{
+		StopLoops();  // the zone's own; the server sends the room's
+		SetMusicSound(FString(), nullptr);
+	}
+	else
+	{
+		ServerStopLoops();
+		Zone = -1;  // the zone's sound again on the next tick
+	}
+}
+
+void UMRAudioSubsystem::ResolveServer(const FString& InFile, bool bLoop, TFunction<void(USoundBase*)> Done)
+{
+	// imported (the zones' sounds and music), else the server's file decoded once; the rsc may name
+	// a .wav the server serves as .ogg
+	FString File = InFile.ToLower();
+	if (USoundBase* S = FindImported(File))
+	{
+		Done(S);
+		return;
+	}
+	const UGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance() : nullptr;
+	UMRNetSubsystem* Net = GI ? GI->GetSubsystem<UMRNetSubsystem>() : nullptr;
+	FMRAssetCache* Cache = Net ? Net->GetAssets() : nullptr;
+	if (Cache && !Cache->IsListed(File) && File.EndsWith(TEXT(".wav")))
+	{
+		File = FPaths::ChangeExtension(File, TEXT("ogg"));
+		if (USoundBase* S = FindImported(File))
+		{
+			Done(S);
+			return;
+		}
+	}
+	TWeakObjectPtr<UMRAudioSubsystem> Weak(this);
+	auto Make = [Weak, bLoop, Done](TSharedPtr<const FMRPcmSound> Pcm)
+	{
+		UMRAudioSubsystem* Self = Weak.Get();
+		if (!Self || !Pcm.IsValid())
+		{
+			return;
+		}
+		UMRServerSoundWave* Wave = NewObject<UMRServerSoundWave>(Self);
+		Wave->Init(Pcm, bLoop);
+		Done(Wave);
+	};
+	if (const TSharedPtr<const FMRPcmSound>* Known = Decoded.Find(File))
+	{
+		Make(*Known);
+		return;
+	}
+	if (Undecodable.Contains(File) || !Cache || !Cache->IsListed(File))
+	{
+		if (!Undecodable.Contains(File))
+		{
+			Undecodable.Add(File);
+			UE_LOG(LogMeridian, Log, TEXT("MRAudio: the server has no %s"), *File);
+		}
+		return;
+	}
+	TArray<TFunction<void(TSharedPtr<const FMRPcmSound>)>>& Queue = Waiting.FindOrAdd(File);
+	Queue.Add(Make);
+	if (Queue.Num() > 1)
+	{
+		return;  // already on its way
+	}
+	Cache->Fetch(File, [Weak, File](bool bOk, const TArray<uint8>& Bytes)
+	{
+		UMRAudioSubsystem* Self = Weak.Get();
+		if (!Self)
+		{
+			return;
+		}
+		FString Error;
+		TSharedPtr<const FMRPcmSound> Pcm = bOk ? MRServerSound::Decode(Bytes, Error) : nullptr;
+		if (Pcm.IsValid())
+		{
+			Self->Decoded.Add(File, Pcm);
+			UE_LOG(LogMeridian, Log, TEXT("MRAudio: decoded the server's %s (%.1f s)"), *File, Pcm->DurationSeconds());
+		}
+		else
+		{
+			Self->Undecodable.Add(File);
+			UE_LOG(LogMeridian, Warning, TEXT("MRAudio: %s: %s"), *File, bOk ? *Error : TEXT("not downloaded"));
+		}
+		TArray<TFunction<void(TSharedPtr<const FMRPcmSound>)>> Done;
+		Self->Waiting.RemoveAndCopyValue(File, Done);
+		for (const TFunction<void(TSharedPtr<const FMRPcmSound>)>& F : Done)
+		{
+			F(Pcm);
+		}
+	});
+}
+
+void UMRAudioSubsystem::ServerMusic(const FString& File)
+{
+	const FString Want = bMusicOn ? File.ToLower() : FString();
+	if (Want.Equals(MusicFile, ESearchCase::IgnoreCase) && (Want.IsEmpty() || IsValid(Music)))
+	{
+		return;
+	}
+	if (Want.IsEmpty())
+	{
+		SetMusicSound(FString(), nullptr);
+		return;
+	}
+	MusicFile = Want;  // (asked for: the same request again while it decodes is ignored)
+	TWeakObjectPtr<UMRAudioSubsystem> Weak(this);
+	ResolveServer(Want, true, [Weak, Want](USoundBase* Sound)
+	{
+		UMRAudioSubsystem* Self = Weak.Get();
+		if (Self && Self->MusicFile.Equals(Want, ESearchCase::IgnoreCase))
+		{
+			if (UMRServerSoundWave* Wave = Cast<UMRServerSoundWave>(Sound))
+			{
+				Wave->SoundClassObject = Self->Classes.FindRef(TEXT("SC_Music"));
+			}
+			Self->MusicFile.Reset();
+			Self->SetMusicSound(Want, Sound);
+		}
+	});
+}
+
+void UMRAudioSubsystem::ServerSound(const FString& File, const FVector& Location, bool b2D, bool bLoop, float Pitch, uint32 ObjectId)
+{
+	++ServerAsked;
+	if (bLoop && !bLoopsOn)
+	{
+		return;  // the original: no looping sounds when they're switched off
+	}
+	TWeakObjectPtr<UMRAudioSubsystem> Weak(this);
+	const FString Key = File.ToLower();
+	ResolveServer(Key, bLoop, [Weak, Key, Location, b2D, bLoop, Pitch, ObjectId](USoundBase* Sound)
+	{
+		UMRAudioSubsystem* Self = Weak.Get();
+		if (!Self || !Sound)
+		{
+			return;
+		}
+		if (UMRServerSoundWave* Wave = Cast<UMRServerSoundWave>(Sound))
+		{
+			Wave->SoundClassObject = Self->Classes.FindRef(bLoop ? TEXT("SC_Loops") : TEXT("SC_World"));
+		}
+		++Self->ServerPlayed;
+		UAudioComponent* C = Self->Create(Sound, Location, b2D);
+		if (!C)
+		{
+			return;  // no audio device (-nosound)
+		}
+		C->SetPitchMultiplier(Pitch);
+		// an imported sound loops only if it was imported to; the server says
+		if (!Cast<UMRServerSoundWave>(Sound) && bLoop)
+		{
+			C->bAutoDestroy = false;
+			C->OnAudioFinishedNative.AddWeakLambda(Self, [](UAudioComponent* Done) { if (IsValid(Done)) Done->Play(); });
+		}
+		C->Play();
+		Self->ServerSounds.Add(C);
+		Self->ServerSoundKeys.Add({Key, ObjectId});
+		Self->ServerSoundLoops.Add(bLoop);
+		// a decoded one-shot doesn't end by itself (a procedural wave): stop it at its end
+		if (UMRServerSoundWave* Wave = Cast<UMRServerSoundWave>(Sound); Wave && !bLoop && Self->GetWorld())
+		{
+			FTimerHandle Handle;
+			TWeakObjectPtr<UAudioComponent> WeakC(C);
+			Self->GetWorld()->GetTimerManager().SetTimer(Handle, FTimerDelegate::CreateWeakLambda(Self, [WeakC]()
+			{
+				if (WeakC.IsValid())
+				{
+					WeakC->Stop();
+				}
+			}), FMath::Max(0.05f, Wave->Duration / FMath::Max(0.25f, Pitch)) + 0.05f, false);
+		}
+		UE_LOG(LogMeridian, Verbose, TEXT("MRAudio: server sound %s%s"), *Key, bLoop ? TEXT(" (loop)") : TEXT(""));
+	});
+}
+
+void UMRAudioSubsystem::ServerStopSound(const FString& File, uint32 ObjectId)
+{
+	const FString Key = File.ToLower();
+	for (int32 i = ServerSounds.Num() - 1; i >= 0; --i)
+	{
+		if (ServerSoundKeys[i].Key == Key && (ObjectId == 0 || ServerSoundKeys[i].Value == ObjectId))
+		{
+			if (IsValid(ServerSounds[i]))
+			{
+				ServerSounds[i]->OnAudioFinishedNative.RemoveAll(this);
+				ServerSounds[i]->Stop();
+			}
+			ServerSounds.RemoveAt(i);
+			ServerSoundKeys.RemoveAt(i);
+			ServerSoundLoops.RemoveAt(i);
+		}
+	}
+}
+
+void UMRAudioSubsystem::ServerStopLoops()
+{
+	const float Fade = float(Number(TEXT("loop_fade_s"), 0.5));
+	for (int32 i = ServerSounds.Num() - 1; i >= 0; --i)
+	{
+		// a loop, or a one-shot over: either goes from the list
+		const bool bOver = !IsValid(ServerSounds[i]) || !ServerSounds[i]->IsPlaying();
+		if (ServerSoundLoops[i] || bOver)
+		{
+			if (!bOver)
+			{
+				ServerSounds[i]->OnAudioFinishedNative.RemoveAll(this);
+				ServerSounds[i]->bAutoDestroy = true;
+				ServerSounds[i]->FadeOut(Fade, 0.f);
+			}
+			ServerSounds.RemoveAt(i);
+			ServerSoundKeys.RemoveAt(i);
+			ServerSoundLoops.RemoveAt(i);
+		}
+	}
+}
+
 void UMRAudioSubsystem::EnterZone(int32 InZone)
 {
 	Zone = InZone;
+	if (bServerDriven)
+	{
+		return;  // the server sends the room's music and sounds
+	}
 	const TSharedPtr<FJsonObject> R = Room(InZone);
 	FString Track;
 	if (R.IsValid())
@@ -529,7 +794,18 @@ void UMRAudioSubsystem::ApplySettings()
 		UGameplayStatics::PushSoundMixModifier(World, Mix);
 	}
 	// switching loops or music off stops them (the original doesn't play them at all)
-	if (Zone >= 0)
+	if (bServerDriven)
+	{
+		if (!bMusicOn)
+		{
+			SetMusicSound(FString(), nullptr);
+		}
+		if (!bLoopsOn)
+		{
+			ServerStopLoops();
+		}
+	}
+	else if (Zone >= 0)
 	{
 		const TSharedPtr<FJsonObject> R = Room(Zone);
 		FString Track;
@@ -574,21 +850,28 @@ void UMRAudioSubsystem::Tick(float DeltaTime)
 	{
 		EnterZone(Now_Zone);
 	}
-	if (Zone > 0)
+	if (Zone > 0 && !bServerDriven)
 	{
 		TickPeriodic(Now);
 	}
 	// the zone's track should always be playing (it loops): if anything stopped it, say so and
-	// start it again
-	if (Now >= NextMusicCheck && !MusicFile.IsEmpty())
+	// start it again (not without an audio device: -nosound)
+	if (Now >= NextMusicCheck && !MusicFile.IsEmpty() && World->GetAudioDeviceRaw())
 	{
 		NextMusicCheck = Now + 1.0;
-		if (!IsValid(Music) || !Music->IsPlaying())
+		if (IsValid(Music) && !Music->IsPlaying())
 		{
 			UE_LOG(LogMeridian, Warning, TEXT("MRAudio: music %s stopped by itself; restarting it"), *MusicFile);
 			const FString Track = MusicFile;
 			MusicFile.Reset();
-			SetMusic(Track);
+			if (bServerDriven)
+			{
+				ServerMusic(Track);
+			}
+			else
+			{
+				SetMusic(Track);
+			}
 		}
 	}
 }

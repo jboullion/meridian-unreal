@@ -452,6 +452,38 @@ bool MRNetRead::Player(FMRReader& R, const FMRResourceTable& Res, FMRNetPlayer& 
 	return R.IsOk();
 }
 
+bool MRNetRead::RoomChange(uint8 Type, FMRReader& R, FMRNetRoomChange& Out)
+{
+	switch (Type)
+	{
+	case MRMsg::BP_SECTOR_MOVE:
+		// server.c HandleSectorMove: type, sector, height, speed
+		Out.Kind = FMRNetRoomChange::EKind::MoveSector;
+		Out.Type = R.U8();
+		Out.Id = R.U16();
+		Out.Height = static_cast<int16>(R.U16());
+		Out.Speed = R.U8();
+		break;
+	case MRMsg::BP_SECTOR_CHANGE:
+		// HandleSectorChange: sector, depth, scroll
+		Out.Kind = FMRNetRoomChange::EKind::ChangeSector;
+		Out.Id = R.U16();
+		Out.Depth = R.U8();
+		Out.Scroll = R.U8();
+		break;
+	case MRMsg::BP_CHANGE_TEXTURE:
+		// HandleChangeTexture: id, texture, flags
+		Out.Kind = FMRNetRoomChange::EKind::ChangeTexture;
+		Out.Id = R.U16();
+		Out.Texture = R.U16();
+		Out.Flags = R.U8();
+		break;
+	default:
+		return false;
+	}
+	return R.IsOk();
+}
+
 bool MRNetRead::User(FMRReader& R, FMRNetUser& Out)
 {
 	Out.Id = MRMsg::PlainId(R.U32());

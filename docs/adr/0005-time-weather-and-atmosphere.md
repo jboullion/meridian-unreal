@@ -308,6 +308,16 @@ On a Meridian server the room's weather is the server's (`BP_EFFECT`: rain, snow
 
 Fireworks aren't drawn yet.
 
+## The server's light (2026-10-08, M7 of ADR 0012)
+Rooms built at runtime from the server's files (ADR 0012) are drawn with the original's light model, not the moods:
+- **`M_RuntimeRoom` uses the original client's palette level** (`draw3d.c GetLightPaletteIndex`):
+  - each sector's light;
+  - the room's ambient light (`MPC_Environment.RoomAmbient`, from `BP_PLAYER` and `BP_LIGHT_AMBIENT`);
+  - the player's own light, falling off with distance (`PlayerLight`, `BP_LIGHT_PLAYER`).
+- **Our sky and sun stay** over runtime rooms. The server's sky bitmap (`BP_BACKGROUND`), its sun and moon overlays (`BP_*_BG_OVERLAY`) and the sun's angle (`BP_LIGHT_SHADING`) are kept but not drawn.
+- **Authored zones keep their moods**: the server's light values don't change them.
+- **Flicker** (`BP_SECTOR_LIGHT`) isn't drawn, as in the original's Direct3D client.
+
 ## Phase 4 built (2026-10-05): weather
 - **The original's rules** (`MRWeather`, unit-tested in `Meridian.Environment.Weather`):
   - Every game day each of the 15 weather zones rolls a storm at 15% (kod `RecalcWeatherConditions`, `piStormChance`).

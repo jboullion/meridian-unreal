@@ -33,8 +33,14 @@ public class MeridianRemastered : ModuleRules
 			"WebSockets",
 			"HTTP",
 			"ProceduralMeshComponent",
-			"PhysicsCore"
+			"PhysicsCore",
+			// the server's sounds, decoded at runtime (Audio/MRServerSound)
+			"VorbisAudioDecoder",
+			"AudioExtensions"
 		});
+
+		// FSoundQualityInfo (the decoder's interface) is declared there; header only, as the Engine module uses it
+		PrivateIncludePathModuleNames.Add("TargetPlatform");
 
 		PublicIncludePaths.Add(ModuleDirectory);
 

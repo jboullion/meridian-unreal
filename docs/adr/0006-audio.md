@@ -164,6 +164,27 @@ All four recommendations below were accepted: a 1.5 s crossfade between tracks, 
   - **Window focus.** The engine mutes an unfocused window (`UnfocusedVolumeMultiplier` 0). A 100 s recording went silent when the window lost focus (`aud_music100`). `mr.Audio.Background` (default 1) keeps sound playing in the background, and the audio look-dev forces it.
   - Proof: 100 s at the square with the music looping past its 70 s length, with no silence and no restart (`aud_music100b`).
 
+## Online: the server's sound (2026-10-08, M7 of ADR 0012)
+On a Meridian server the server says what sounds, as it did for the original client (docs/research/blakserv-protocol.md, "Sound, light and room changes"):
+- **What the server sends:**
+  - music (`BP_PLAY_MUSIC`);
+  - every sound (`BP_PLAY_WAVE`): combat, spells, doors, the room's looping sounds;
+  - stops (`BP_STOP_WAVE`).
+- **The zones' own music, loops and periodic sounds stay quiet online** (`UMRAudioSubsystem::SetServerDriven`). The server sends the room's music and loops on every room change.
+  - **Weather sounds** still follow the weather. Online that weather is the server's (ADR 0005).
+- **Where a sound plays** is the original's rule: at its object, else at its square, about head high; else 2D.
+  - **A looping sound** (`SF_LOOP`) plays until the next room.
+  - **Random pitch** is ignored, as the original did (decision 2 below).
+- **The files:**
+  - **An imported original** (`/Game/Generated/Audio/Original`) plays when there is one.
+  - **Any other sound** comes from the server's files through the asset cache, as `.ogg`. It's decoded at runtime with the engine's Vorbis decoder (`MRServerSound::Decode`) and played by a procedural wave (`UMRServerSoundWave`). The 705 sounds the server serves are 167 MB, so each is fetched once, the first time it's heard.
+  - **A decoded sound** stays in memory for the session.
+  - A file that won't decode is remembered and not tried again.
+- **Checked by:**
+  - `Meridian.World.Sound`: the cached `.ogg` files decode, and junk is refused.
+  - `run_net_test.ps1`: "the server's sounds play: 45 of 45 ready, music walk5.ogg".
+- **Not yet:** the server also serves 6 `.mp3` files (`cave.mp3`, `drmusic.mp3`, `rijatemp.mp3` and three ogre sounds). We only decode `.ogg`, so those stay silent.
+
 ## Decisions as proposed
 1. **Music changes:** the original cuts straight to the new track. Recommendation: a short crossfade (about 1.5 s), since a hard cut is jarring once zone changes are instant.
 2. **Random pitch:** Kod asks for it on periodic sounds, but the 104 client ignored it. Recommendation: follow the 104 client in phase 1 (no pitch change, as players heard it), and offer it in phase 2.

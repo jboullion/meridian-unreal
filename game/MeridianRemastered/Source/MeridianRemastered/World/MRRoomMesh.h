@@ -13,6 +13,8 @@ struct FMRRoomMeshSection
 	TArray<FVector2D> UVs;
 	/** The sector light (0..1) the face sees, the original's per-sector lighting. */
 	TArray<float> Light;
+	/** How fast the texture scrolls there (UV units a second; the .roo's scrolling sectors and walls), as UV1. */
+	TArray<FVector2D> Scroll;
 	TArray<int32> Triangles;
 };
 

@@ -251,6 +251,8 @@ namespace MRMsg
 	constexpr uint8 ANIMATE_NONE = 1;
 	constexpr uint8 ANIMATE_CYCLE = 2;
 	constexpr uint8 ANIMATE_ONCE = 3;
+	constexpr uint8 ANIMATE_FLOOR_LIFT = 4;    // BP_SECTOR_MOVE's kind
+	constexpr uint8 ANIMATE_CEILING_LIFT = 5;
 	constexpr uint8 ANIMATE_TRANSLATION = 9;
 	constexpr uint8 ANIMATE_EFFECT = 10;
 
@@ -259,6 +261,20 @@ namespace MRMsg
 	constexpr uint32 PWO_RIGHT_HAND = 2;
 	constexpr uint8 HS_SE = 5;
 	constexpr uint8 HS_SW = 7;
+
+	// BP_CHANGE_TEXTURE flags (proto.h CTF_*): which surfaces with the id change
+	constexpr uint8 CTF_ABOVEWALL = 0x01;
+	constexpr uint8 CTF_NORMALWALL = 0x02;
+	constexpr uint8 CTF_BELOWWALL = 0x04;
+	constexpr uint8 CTF_FLOOR = 0x08;
+	constexpr uint8 CTF_CEILING = 0x10;
+	// BP_SECTOR_CHANGE: keep that value (roomanim.h CHANGE_OVERRIDE)
+	constexpr uint8 CHANGE_OVERRIDE = 4;
+
+	// BP_PLAY_WAVE flags (proto.h SF_*)
+	constexpr uint8 SF_LOOP = 0x01;          // until the player leaves the room
+	constexpr uint8 SF_RANDOM_PITCH = 0x02;  // (the original client ignores it)
+	constexpr uint8 SF_RANDOM_PLACE = 0x04;  // Kod chose a random square (the "random sounds" setting)
 
 	// BP_REQ_ATTACK's kind (proto.h ATTACK_*)
 	constexpr uint8 ATTACK_NORMAL = 1;

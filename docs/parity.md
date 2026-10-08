@@ -13,7 +13,7 @@ This file tracks what the Unreal client does compared with the original desktop 
 
 Protocol facts go in [research/blakserv-protocol.md](research/blakserv-protocol.md), each with the blakserv or clientd3d source it came from.
 
-Last survey: 2026-10-08. M0 to M6 done the same day; what they left over is in "Left over from finished milestones" at the end.
+Last survey: 2026-10-08. M0 to M7 done the same day; what they left over is in "Left over from finished milestones" at the end.
 
 ## Session and account
 
@@ -39,12 +39,12 @@ Last survey: 2026-10-08. M0 to M6 done the same day; what they left over is in "
 | Enter a room, walk, turn | `BP_PLAYER`, `BP_REQ_MOVE`, `BP_REQ_TURN` | Done | Done | — |
 | Doors ("go") and edge exits | `BP_REQ_GO` | Done | Done | — |
 | Every room in the world | `.roo` | Done: 13 built rooms; any other room is built at runtime from the server's files | Done: 362 rooms parsed at runtime | M1, W2 |
-| Server room changes: lifts, doors, texture swaps | `BP_SECTOR_MOVE`, `BP_WALL_ANIMATE`, `BP_CHANGE_TEXTURE`, ... | Missing | Missing | M7 |
-| Scrolling and animated textures | from the `.roo` | Missing | Done | M7 |
-| Sky and background overlays (sun, moon) | `BP_BACKGROUND`, `BP_*_BG_OVERLAY` | Missing: our own sky | Done | M1, M7 |
-| Server lighting | `BP_LIGHT_AMBIENT`, `BP_LIGHT_PLAYER`, `BP_LIGHT_SHADING` | Missing: moods only | Done | M7 |
-| Sector light changes | `BP_SECTOR_LIGHT` | Missing | Missing | M7 |
-| Set view, translation override | `BP_SET_VIEW`, `BP_RESET_VIEW`, `BP_XLAT_OVERRIDE` | Missing | Missing | M7 |
+| Server room changes: lifts, doors, texture swaps | `BP_SECTOR_MOVE`, `BP_SECTOR_CHANGE`, `BP_CHANGE_TEXTURE`, `BP_WALL_ANIMATE` | Partial: lifts, depth, scroll and texture changes on runtime rooms; authored zones don't move (W2.3); wall frames (`BP_WALL_ANIMATE`) not yet | Missing | M7 |
+| Scrolling and animated textures | from the `.roo` | Partial: scrolling floors, ceilings and walls on runtime rooms; frame animation not yet | Done | M7 |
+| Sky and background overlays (sun, moon) | `BP_BACKGROUND`, `BP_*_BG_OVERLAY` | Decided: our own sky and sun (ADR 0005); the server's background is kept, not drawn | Done | M7 |
+| Server lighting | `BP_LIGHT_AMBIENT`, `BP_LIGHT_PLAYER`, `BP_LIGHT_SHADING` | Done on runtime rooms: the original's light model (sector, ambient, the player's light); authored zones keep their moods | Done | M7 |
+| Sector light changes | `BP_SECTOR_LIGHT` | Not drawn: flicker, which the original's Direct3D client doesn't draw either | Missing | M7 |
+| Set view, translation override | `BP_SET_VIEW`, `BP_RESET_VIEW`, `BP_XLAT_OVERRIDE` | Not needed now: Kod never sends `BP_XLAT_OVERRIDE`; only the view globe sends `BP_SET_VIEW` (left over) | Missing | M7 |
 
 ## Objects
 
@@ -53,7 +53,7 @@ Last survey: 2026-10-08. M0 to M6 done the same day; what they left over is in "
 | Creatures as sprites (players, monsters, NPCs) | `BP_ROOM_CONTENTS`, `BP_CREATE`, `BP_MOVE`, ... | Done, for converted sprites | Done | — |
 | Items, containers, signs and ornaments | the same | Done: drawn from their bitmaps, or by the world build's props in built zones | Done | M2 |
 | Sprites we haven't converted | `.bgf` | Done: drawn from the server's bitmap (no overlays or colours yet) | Done | M1 |
-| Draw effects, name colours, object lights | object fields | Partial: invisible, black and translucent (dithered) on bitmap sprites; name colours; object lights are M7 | Done | M2, M7 |
+| Draw effects, name colours, object lights | object fields | Partial: invisible, black and translucent (dithered) on bitmap sprites; name colours; object lights not yet (left over) | Done | M2, M7 |
 | Name plates | — | Done: the original's rules (15 squares, signs, the target), not through walls | Done | M2 |
 | Armour, weapons and hats on players | overlays | Done: torsos, arms, legs, weapons, shields, bows and helmets from the server's overlays, all 165 bitmaps converted; arms bend as the original's | Done | M2b |
 | First-person weapon and shield | `BP_PLAYER_OVERLAY` | Done: the server's slots drawn in their screen corners and animated; the local swing shows first | Done | M2b |
@@ -129,8 +129,8 @@ Last survey: 2026-10-08. M0 to M6 done the same day; what they left over is in "
 
 | Feature | Messages | UE | Shards | M |
 |---|---|---|---|---|
-| Sounds from the server | `BP_PLAY_WAVE`, `BP_STOP_WAVE` | Missing: local zone audio | Done | M7 |
-| Music from the server | `BP_PLAY_MUSIC`, `BP_PLAY_MIDI` | Missing: local zone music | Done | M7 |
+| Sounds from the server | `BP_PLAY_WAVE`, `BP_STOP_WAVE` | Done: at their object or square, or 2D; loops until the next room; files we haven't imported are downloaded and decoded | Done | M7 |
+| Music from the server | `BP_PLAY_MUSIC`, `BP_PLAY_MIDI` | Done for `.ogg`; the server's 6 `.mp3` aren't decoded | Done | M7 |
 
 ## Interface and settings
 
@@ -167,7 +167,7 @@ The server serves about 395 rooms. `ReferenceServers/Server-104/resource/rooms` 
 | M4 | Combat, death and effects (done 2026-10-08) |
 | M5 | Spells, skills, enchantments, stats (done 2026-10-08) |
 | M6 | NPCs, economy, player trade (done 2026-10-08) |
-| M7 | Server-driven world: sound, light, room changes, texture animation |
+| M7 | Server-driven world: sound, light, room changes, texture animation (done 2026-10-08) |
 | M8 | Communication and social |
 | M9 | Settings, account, polish |
 | W2 | Baked tier for every room (runs alongside, after M1) |
@@ -180,8 +180,8 @@ Things a finished milestone didn't do, or did without proof. Each lands in the m
 | ☐ | From | What | Why it waited | Goes to |
 |---|---|---|---|---|
 | ☐ | M1 | Package a build with the runtime-room code (the `GeometryFramework` plugin, the cook directory) and play it | A package build takes over an hour; only the editor build has run | M9 (or the next package) |
-| ☐ | M1 | Room geometry grouped by sector, so lifts and doors can move | Grouped by texture for now | M7 |
-| ☐ | M1 | Light beyond the sector light (sprites from bitmaps are full bright) | The server's light messages come with M7 | M7 |
+| ☑ | M1 | Room geometry grouped by sector, so lifts and doors can move | M7 rebuilds the room instead (see M7's cost below) | M7 |
+| ☐ | M1, M7 | Light on objects: sprites drawn from bitmaps are full bright; our converted sprites don't take the room's light model | M7 lit the room's surfaces only | Any |
 | ☐ | M2b | Items' own colour translations on worn pieces stored below their own pixels (a red-tinted shield) | Those pieces have no colour-ramp atlas | Any |
 | ☐ | M2b | The overlays on first-person pictures (the fist's glow) | Not drawn yet | Any |
 | ☐ | M3 | Putting things into a container | The request exists (`BP_REQ_PUT`); no UI to choose the container | Any (likely with M9 polish) |
@@ -189,7 +189,7 @@ Things a finished milestone didn't do, or did without proof. Each lands in the m
 | ☐ | M3 | Weight and bulk from the server instead of our item data | The client sums our `items.json` | Any |
 | ☐ | M4 | Check other players' and monsters' swings on screen | Only our own character's swing is tested | Any (needs a second client or a monster attacking in a rendered run) |
 | ☐ | M4 | See a projectile from a real spell, and test bow attacks with their ammunition | The test character has no attack spell or bow | Any (a test character with them) |
-| ☐ | M4 | Fireworks (`EFFECT_FIREWORKS`) | Not drawn | M7 |
+| ☐ | M4 | Fireworks (`EFFECT_FIREWORKS`) | Not drawn; M7 didn't get to it | Any |
 | ☐ | M4 | A true colour inversion for `EFFECT_INVERT` | UE grades colour before the tonemapper; ours mirrors about mid grey | Any (a post-process material) |
 | ☐ | M5 | Retraining that lowers school levels for points | The original module's points rules aren't ported | Any |
 | ☐ | M5 | Try retraining with a real elder (Jasper, Marion, Ko'catan) | Far from the demo | Any |
@@ -197,4 +197,12 @@ Things a finished milestone didn't do, or did without proof. Each lands in the m
 | ☐ | M5, M6 | Chat commands: "rest", "stand", "cast", "buy", "deposit 100", "withdraw", "balance" | Chat command parsing is M8 | M8 |
 | ☐ | M6 | Try a trade between two players | The test plays one character | Any (two test clients) |
 | ☐ | M6 | List a vault's items without opening Withdraw; check weight and bulk before buying | The server refuses instead | Any |
+| ☐ | M7 | Bitmap animation: walls and sectors with an animation speed cycling their frames, and `BP_WALL_ANIMATE` (a wall's frame, passable or solid) | We draw a bitmap's first frame | Any |
+| ☐ | M7 | Room changes on authored zones (lifts, doors, textures) | Needs sector-tagged pieces from `roo2gltf` | W2.3 |
+| ☐ | M7 | Depth areas follow `BP_SECTOR_CHANGE` (sinking into newly deep water) | Collision follows; the zone's depth areas don't | Any |
+| ☐ | M7 | A moving lift costs about 10 ms per redraw on a big room: mesh only the moving sector's walls and floors | The whole room is meshed again | Any |
+| ☐ | M7 | See a lift, a door or a texture change sent by the server | No room on the test's path changes; only `Meridian.World.Changes` tries them | Any (a test hop through a room with a lift) |
+| ☐ | M7 | The server's `.mp3` files (cave and temple music, ogre sounds) | We decode `.ogg` only | Any |
+| ☐ | M7 | The player's light measured as the original (distance per wall), and `BP_LIGHT_SHADING`'s sun on runtime rooms | The pixel's depth stands in; our own sun shows | Any |
+| ☐ | M7 | `BP_SET_VIEW` / `BP_RESET_VIEW` (looking through a view globe) | Only the view globe sends them | Any |
 | ☐ | Tests | `run_move_test.ps1`'s ledge checks read the height a fixed 1.6 s in, so a slow frame catches a fall mid-air (7/8 in about half the runs) | Test timing, not movement | Any |

@@ -472,4 +472,39 @@ bool FMRNetTradeTest::RunTest(const FString& Parameters)
 	return true;
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMRNetRoomChangeTest, "Meridian.Net.RoomChange",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMRNetRoomChangeTest::RunTest(const FString& Parameters)
+{
+	// BP_SECTOR_MOVE (server.c HandleSectorMove; user.kod SectorSendUser): u8 type, u16 sector, u16 height, u8 speed
+	FMRWriter M(MRMsg::BP_SECTOR_MOVE);
+	M.U8(MRMsg::ANIMATE_CEILING_LIFT).U16(7).U16(static_cast<uint16>(-32)).U8(16);
+	FMRReader MR(M.Bytes, 1);
+	FMRNetRoomChange C;
+	TestTrue(TEXT("BP_SECTOR_MOVE reads to its end"), MRNetRead::RoomChange(MRMsg::BP_SECTOR_MOVE, MR, C) && MR.AtEnd());
+	TestTrue(TEXT("sector 7's ceiling to -32 at 16 a second"), C.Kind == FMRNetRoomChange::EKind::MoveSector && C.Type == MRMsg::ANIMATE_CEILING_LIFT
+		&& C.Id == 7 && C.Height == -32 && C.Speed == 16);
+	// BP_SECTOR_CHANGE (HandleSectorChange): u16 sector, u8 depth, u8 scroll
+	FMRWriter S(MRMsg::BP_SECTOR_CHANGE);
+	S.U16(3).U8(MRMsg::CHANGE_OVERRIDE).U8(2);
+	FMRReader SR(S.Bytes, 1);
+	TestTrue(TEXT("BP_SECTOR_CHANGE reads to its end"), MRNetRead::RoomChange(MRMsg::BP_SECTOR_CHANGE, SR, C) && SR.AtEnd());
+	TestTrue(TEXT("sector 3 keeps its depth, scrolls at 2"), C.Kind == FMRNetRoomChange::EKind::ChangeSector && C.Id == 3
+		&& C.Depth == MRMsg::CHANGE_OVERRIDE && C.Scroll == 2);
+	// BP_CHANGE_TEXTURE (HandleChangeTexture): u16 id, u16 texture, u8 flags
+	FMRWriter T(MRMsg::BP_CHANGE_TEXTURE);
+	T.U16(12).U16(41234).U8(MRMsg::CTF_NORMALWALL | MRMsg::CTF_FLOOR);
+	FMRReader TR(T.Bytes, 1);
+	TestTrue(TEXT("BP_CHANGE_TEXTURE reads to its end"), MRNetRead::RoomChange(MRMsg::BP_CHANGE_TEXTURE, TR, C) && TR.AtEnd());
+	TestTrue(TEXT("id 12's walls and floors take grd41234"), C.Kind == FMRNetRoomChange::EKind::ChangeTexture && C.Id == 12 && C.Texture == 41234
+		&& C.Flags == (MRMsg::CTF_NORMALWALL | MRMsg::CTF_FLOOR));
+	// cut short
+	FMRWriter Short(MRMsg::BP_SECTOR_MOVE);
+	Short.U8(MRMsg::ANIMATE_FLOOR_LIFT).U16(7);
+	FMRReader ShortR(Short.Bytes, 1);
+	TestFalse(TEXT("a short BP_SECTOR_MOVE fails"), MRNetRead::RoomChange(MRMsg::BP_SECTOR_MOVE, ShortR, C));
+	return true;
+}
+
 #endif

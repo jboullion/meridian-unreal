@@ -10,6 +10,8 @@ class UMRNetSubsystem;
 struct FMRBgf;
 struct FMRNetObject;
 struct FMRNetProjectile;
+struct FMRNetSound;
+struct FMRNetRoomChange;
 
 /**
  * Puts a Meridian server's view of the world into this UE world (docs/adr/0010-meridian-servers.md).
@@ -147,6 +149,15 @@ private:
 	void OnObjectMoved(uint32 Id);
 	void OnObjectRemoved(uint32 Id);
 	void OnEffect();
+	/** The server's sounds and music, placed at their object or square (UMRAudioSubsystem plays them). */
+	void OnSound(const FMRNetSound& S);
+	/** The room's ambient and the player's light to M_RuntimeRoom (MPC_Environment RoomAmbient, PlayerLight). */
+	void ApplyRoomLight();
+	/** A lift, sector or texture change: to the room built at runtime (authored zones don't move yet: W2.3). */
+	void OnRoomChange(const FMRNetRoomChange& C);
+	/** The runtime room we stand in, or null (an authored zone, or still building). */
+	class AMRRuntimeRoom* CurrentRuntimeRoom() const;
+	void ApplyRoomChange(class AMRRuntimeRoom* Room, const FMRNetRoomChange& C);
 	void OnProjectile(const FMRNetProjectile& P);
 	/** A one-off animation a BP_CHANGE carries (ANIMATE_ONCE: a swing, a cast, a bite) played on a sprite body. */
 	void PlayServerAction(const FMRNetObject& O);

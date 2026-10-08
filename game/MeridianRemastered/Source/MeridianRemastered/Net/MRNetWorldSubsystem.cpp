@@ -4,6 +4,7 @@
 #include "Character/MRSpriteBodyComponent.h"
 #include "Character/MRSpriteData.h"
 #include "Environment/MREnvironmentSubsystem.h"
+#include "Audio/MRAudioSubsystem.h"
 #include "Core/MRUnits.h"
 #include "Dom/JsonObject.h"
 #include "Engine/LocalPlayer.h"
@@ -20,6 +21,9 @@
 #include "Net/MRNetSubsystem.h"
 #include "Net/MRNetWorld.h"
 #include "World/MRRuntimeRooms.h"
+#include "World/MRRuntimeRoom.h"
+#include "Kismet/KismetMaterialLibrary.h"
+#include "Materials/MaterialParameterCollection.h"
 #include "Net/MRAssetCache.h"
 #include "World/MRBgf.h"
 #include "GameFramework/Character.h"
@@ -109,6 +113,14 @@ void UMRNetWorldSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	Net->OnObjectRemoved.AddUObject(this, &UMRNetWorldSubsystem::OnObjectRemoved);
 	Net->OnEffect.AddUObject(this, &UMRNetWorldSubsystem::OnEffect);
 	Net->OnProjectile.AddUObject(this, &UMRNetWorldSubsystem::OnProjectile);
+	Net->OnSound.AddUObject(this, &UMRNetWorldSubsystem::OnSound);
+	Net->OnLightChanged.AddUObject(this, &UMRNetWorldSubsystem::ApplyRoomLight);
+	Net->OnRoomChange.AddUObject(this, &UMRNetWorldSubsystem::OnRoomChange);
+	// the server says what sounds: the zones' own music, loops and random sounds step aside
+	if (UMRAudioSubsystem* Audio = InWorld.GetSubsystem<UMRAudioSubsystem>())
+	{
+		Audio->SetServerDriven(true);
+	}
 	if (Net->GetPhase() == EMRNetPhase::InGame)
 	{
 		OnRoomEntered();  // a level reload while connected
@@ -123,8 +135,10 @@ void UMRNetWorldSubsystem::Deinitialize()
 {
 	if (UMRNetSubsystem* Net = GetNet())
 	{
-		FOnMRNetEvent* Events[] = {&Net->OnPhaseChanged, &Net->OnRoomEntered, &Net->OnEffect};
+		FOnMRNetEvent* Events[] = {&Net->OnPhaseChanged, &Net->OnRoomEntered, &Net->OnEffect, &Net->OnLightChanged};
 		Net->OnProjectile.RemoveAll(this);
+		Net->OnSound.RemoveAll(this);
+		Net->OnRoomChange.RemoveAll(this);
 		FOnMRNetObjectEvent* ObjectEvents[] = {&Net->OnObjectAdded, &Net->OnObjectChanged, &Net->OnObjectMoved, &Net->OnObjectRemoved};
 		for (FOnMRNetEvent* E : Events)
 		{
@@ -326,6 +340,16 @@ void UMRNetWorldSubsystem::FinishEnterRoom(int32 PrevRid)
 		return;
 	}
 	Net->SetStatus(FString());
+	ApplyRoomLight();
+	if (AMRRuntimeRoom* Room = CurrentRuntimeRoom())
+	{
+		// the room as its file has it, then every change the server sent since BP_PLAYER (lifts at once)
+		Room->ResetChanges();
+		for (const FMRNetRoomChange& C : Net->GetRoomChanges())
+		{
+			ApplyRoomChange(Room, C);
+		}
+	}
 	PlacePlayer(PrevRid == Rid);
 	UpdateFrozen();
 	ApplySelfLook();
@@ -1266,6 +1290,109 @@ void UMRNetWorldSubsystem::OnProjectile(const FMRNetProjectile& P)
 			}
 		}
 	});
+}
+
+void UMRNetWorldSubsystem::OnSound(const FMRNetSound& S)
+{
+	UMRAudioSubsystem* Audio = GetWorld()->GetSubsystem<UMRAudioSubsystem>();
+	if (!Audio)
+	{
+		return;
+	}
+	switch (S.Kind)
+	{
+	case FMRNetSound::EKind::Music:
+		Audio->ServerMusic(S.File);
+		return;
+	case FMRNetSound::EKind::Stop:
+		Audio->ServerStopSound(S.File, S.ObjectId);
+		return;
+	case FMRNetSound::EKind::StopLoops:
+		Audio->ServerStopLoops();
+		return;
+	default:
+		break;
+	}
+	// game.c GamePlaySound: at its object, else at the square (its middle), else 2D at the player
+	FVector At = FVector::ZeroVector;
+	bool b2D = true;
+	constexpr double EarCm = 120.0;  // (an object's or a square's sound, about head high)
+	if (S.ObjectId && FeetOf(S.ObjectId, At))
+	{
+		At.Z += EarCm;
+		b2D = false;
+	}
+	else if ((S.Row > 0 || S.Col > 0) && Rid)
+	{
+		if (const UMRZoneSubsystem* Zones = GetWorld()->GetSubsystem<UMRZoneSubsystem>())
+		{
+			At = Zones->GridToWorld(Rid, S.Row, S.Col, true) + FVector(0.0, 0.0, EarCm);
+			b2D = false;
+		}
+	}
+	// SF_RANDOM_PITCH: the original plays it as it is
+	Audio->ServerSound(S.File, At, b2D, (S.Flags & MRMsg::SF_LOOP) != 0, 1.f, S.ObjectId);
+}
+
+void UMRNetWorldSubsystem::ApplyRoomLight()
+{
+	UMRNetSubsystem* Net = GetNet();
+	static const TCHAR* CollectionPath = TEXT("/Game/Generated/Environment/Materials/MPC_Environment.MPC_Environment");
+	UMaterialParameterCollection* Collection = LoadObject<UMaterialParameterCollection>(nullptr, CollectionPath);
+	if (!Net || !Collection)
+	{
+		return;
+	}
+	// d3drender.c: a sector's light over 127 adds the room's ambient light; the player's own light falls off with distance
+	const FMRNetPlayer& P = Net->GetPlayer();
+	UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), Collection, TEXT("RoomAmbient"), P.AmbientLight / 255.f);
+	UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), Collection, TEXT("PlayerLight"), P.PlayerLight / 255.f);
+}
+
+AMRRuntimeRoom* UMRNetWorldSubsystem::CurrentRuntimeRoom() const
+{
+	const UMRNetSubsystem* Net = GetNet();
+	const UMRRuntimeRooms* Runtime = GetWorld()->GetSubsystem<UMRRuntimeRooms>();
+	if (!Net || !Runtime || Rid < UMRRuntimeRooms::RuntimeRidBase || Runtime->FindBuiltRid(Net->GetPlayer().RoomFile) != Rid)
+	{
+		return nullptr;
+	}
+	return Runtime->FindRoomActor(Net->GetPlayer().RoomFile);
+}
+
+void UMRNetWorldSubsystem::OnRoomChange(const FMRNetRoomChange& C)
+{
+	if (AMRRuntimeRoom* Room = CurrentRuntimeRoom())
+	{
+		ApplyRoomChange(Room, C);
+	}
+	else if (Rid)
+	{
+		// (a room still building takes it from GetRoomChanges when it's ready)
+		UE_LOG(LogMeridian, Verbose, TEXT("MRNet: zone %d is authored; its room changes aren't drawn yet"), Rid);
+	}
+}
+
+void UMRNetWorldSubsystem::ApplyRoomChange(AMRRuntimeRoom* Room, const FMRNetRoomChange& C)
+{
+	switch (C.Kind)
+	{
+	case FMRNetRoomChange::EKind::MoveSector:
+		Room->MoveSector(C.Type, C.Id, C.Height, C.Speed);
+		break;
+	case FMRNetRoomChange::EKind::ChangeSector:
+		Room->ChangeSector(C.Id, C.Depth, C.Scroll);
+		break;
+	case FMRNetRoomChange::EKind::ChangeTexture:
+		if (!Room->ChangeTexture(C.Id, C.Texture, C.Flags))
+		{
+			if (UMRRuntimeRooms* Runtime = GetWorld()->GetSubsystem<UMRRuntimeRooms>())
+			{
+				Runtime->FetchTexture(Room->GetRoomFile(), C.Texture);
+			}
+		}
+		break;
+	}
 }
 
 void UMRNetWorldSubsystem::OnEffect()

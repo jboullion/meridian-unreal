@@ -143,13 +143,44 @@ namespace
 		TMap<FIntPoint, TArray<int32>> Grid;
 	};
 
+	// roomanim.c RoomAnimateSingle: one step every period ms in a direction (bsp.h SCROLL_N .. SCROLL_NW)
+	constexpr int32 ScrollDir[8][2] = {{0, -1}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}};
+
+	/** A floor's or ceiling's scroll (UV a second): s += dx, t -= dy in fine units, FINENESS (1024) to a repeat (d3drender.c). */
+	FVector2D SectorScroll(const FMRRooSector& S, bool bCeiling)
+	{
+		const int32 Speed = (S.Flags & 0x0C) >> 2;
+		if (!Speed || S.AnimationSpeed || !(S.Flags & (bCeiling ? 0x100 : 0x80)))
+		{
+			return FVector2D::ZeroVector;  // (an animated sector cycles its frames instead: bspload.c)
+		}
+		const double Period = Speed == 3 ? 2.0 : Speed == 2 ? 6.0 : 12.0;  // roomanim.h SCROLL_*_PERIOD
+		const int32* D = ScrollDir[(S.Flags & 0x70) >> 4];
+		return FVector2D(D[0], -D[1]) * (1000.0 / Period / RooPerSquare);
+	}
+
+	/** A wall's scroll (UV a second): t += dx, s -= dy bitmap pixels (a pixel / shrink is RooPerFine), reversed for backwards walls. */
+	FVector2D WallScroll(const FMRRooSidedef* Sd, const FVector2D& Repeat)
+	{
+		const int32 Speed = Sd ? (Sd->Flags & 0x0C00) >> 10 : 0;
+		if (!Speed || Sd->AnimationSpeed)
+		{
+			return FVector2D::ZeroVector;  // (an animated wall cycles its frames instead: bspload.c)
+		}
+		const double Period = Speed == 3 ? 8.0 : Speed == 2 ? 32.0 : 96.0;  // SCROLL_WALL_*_PERIOD
+		const int32* D = ScrollDir[(Sd->Flags & 0x7000) >> 12];
+		const double Sign = (Sd->Flags & MRRoo::WF_BACKWARDS) ? -1.0 : 1.0;
+		return FVector2D(-Sign * D[1] * Fine / Repeat.X, Sign * D[0] * Fine / Repeat.Y) * (1000.0 / Period);
+	}
+
 	class FBuilder
 	{
 	public:
 		FMRRoomMesh Mesh;
 
 		/** A convex polygon (ROO points), fanned into triangles; light: a level or one per glTF normal. */
-		void Poly(uint16 Tex, const TArray<FRoo>& Pts, const TArray<FVector2D>& UVs, TFunctionRef<double(const FVector&)> Light)
+		void Poly(uint16 Tex, const TArray<FRoo>& Pts, const TArray<FVector2D>& UVs, TFunctionRef<double(const FVector&)> Light,
+			const FVector2D& Scroll = FVector2D::ZeroVector)
 		{
 			if (Pts.Num() < 3)
 			{
@@ -175,6 +206,7 @@ namespace
 				S.Normals.Add(UENormal);
 				S.UVs.Add(UVs[i]);
 				S.Light.Add(Level);
+				S.Scroll.Add(Scroll);
 			}
 			// (x, height, y) -> (x, y, height) mirrors, so the winding flips too: faces keep facing
 			// the way their normal points (floors up), as UE's glTF import of roo2gltf's meshes does
@@ -336,7 +368,7 @@ FMRRoomMesh MRRoomMesh::Build(const FMRRooFile& Room, const FRepeat& Repeat, boo
 			Algo::Reverse(Floor);
 			Algo::Reverse(UVs);
 		}
-		MB.Poly(S.FloorTexture, Floor, UVs, [Level](const FVector&) { return Level; });
+		MB.Poly(S.FloorTexture, Floor, UVs, [Level](const FVector&) { return Level; }, SectorScroll(S, false));
 
 		if (S.CeilingTexture)  // 0: open sky
 		{
@@ -352,24 +384,27 @@ FMRRoomMesh MRRoomMesh::Build(const FMRRooFile& Room, const FRepeat& Repeat, boo
 				Algo::Reverse(Ceil);
 				Algo::Reverse(CUVs);
 			}
-			MB.Poly(S.CeilingTexture, Ceil, CUVs, [Level](const FVector&) { return Level; });
+			MB.Poly(S.CeilingTexture, Ceil, CUVs, [Level](const FVector&) { return Level; }, SectorScroll(S, true));
 		}
 	}
 
 	// ---- walls (Doom-style lower, upper and middle sections)
-	TSet<FString> Seen;
+	using FWallKey = TTuple<int64, int64, int64, int64, int32, int32>;
+	TSet<FWallKey> Seen;
+	Seen.Reserve(Room.Walls.Num());
 	for (const FMRRooWall& W : Room.Walls)
 	{
 		// (Python's round() rounds halves to even)
-		const FString Key = FString::Printf(TEXT("%lld,%lld,%lld,%lld,%d,%d"),
+		const FWallKey Key(
 			static_cast<int64>(FMath::RoundHalfToEven(static_cast<double>(W.X0))), static_cast<int64>(FMath::RoundHalfToEven(static_cast<double>(W.Y0))),
 			static_cast<int64>(FMath::RoundHalfToEven(static_cast<double>(W.X1))), static_cast<int64>(FMath::RoundHalfToEven(static_cast<double>(W.Y1))),
 			W.PosSector, W.NegSector);
-		if (Seen.Contains(Key))
+		bool bAlready = false;
+		Seen.Add(Key, &bAlready);
+		if (bAlready)
 		{
 			continue;
 		}
-		Seen.Add(Key);
 		const double Length = FMath::Sqrt(FMath::Square(static_cast<double>(W.X1) - W.X0) + FMath::Square(static_cast<double>(W.Y1) - W.Y0));
 		if (Length < 1.0)
 		{
@@ -414,8 +449,9 @@ FMRRoomMesh MRRoomMesh::Build(const FMRRooFile& Room, const FRepeat& Repeat, boo
 				return;
 			}
 			const FRoo P0(W.X0, W.Y0, B0), P1(W.X1, W.Y1, B1), P2(W.X1, W.Y1, T1), P3(W.X0, W.Y0, T0);
-			MB.Poly(Tex, {P0, P1, P2, P3}, {UB0, UB1, UT1, UT0}, WallLight);
-			MB.Poly(Tex, {P3, P2, P1, P0}, {UT0, UT1, UB1, UB0}, WallLight);
+			const FVector2D Scroll = WallScroll(Sd, Repeat(Tex));
+			MB.Poly(Tex, {P0, P1, P2, P3}, {UB0, UB1, UT1, UT0}, WallLight, Scroll);
+			MB.Poly(Tex, {P3, P2, P1, P0}, {UT0, UT1, UB1, UB0}, WallLight, Scroll);
 		};
 
 		if (!P || !N)

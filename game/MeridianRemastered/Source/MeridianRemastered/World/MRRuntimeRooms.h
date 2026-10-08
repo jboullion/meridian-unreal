@@ -53,6 +53,9 @@ public:
 	FString RoomForKodRid(int32 KodRid) const;
 	int32 NumIndexed() const { return Index.Num(); }
 
+	/** Download a texture a built room was changed to (BP_CHANGE_TEXTURE) and give it to the room. */
+	void FetchTexture(const FString& RoomFile, uint16 Texture);
+
 	/** The actor of a built room (tests). */
 	AMRRuntimeRoom* FindRoomActor(const FString& RoomFile) const;
 

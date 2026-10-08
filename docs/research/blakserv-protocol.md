@@ -336,6 +336,51 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
 - **The bank:** `BP_USERCOMMAND` with `UC_DEPOSIT` (35) or `UC_WITHDRAW` (36) and an `i32` amount, or `UC_BALANCE` (37). The room passes it to a banker there (`SomeoneTryUserCommand`), who answers aloud ("You have 10 shilling in your account."); else "can't deposit".
 - **Moving onto a door square:** a door square's middle is often in the door frame, outside every sector. The server snaps such a move back (`UserMove`, `LIR_SECTOR_INSIDE`), and "go" then finds no door. Stand on the room side of the square.
 
+## Sound, light and room changes (`clientd3d/server.c`, `roomanim.c`, `draw3d.c`, `bspload.c`, `game.c`, `audio.c`; Kod `user.kod`, `room.kod`)
+- **Sounds:** `BP_PLAY_WAVE` (`server.c HandlePlayWave`): `u32` rsc, `u32` object, `u8` flags, `i32` row, `i32` col, `i32` radius, `i32` max volume.
+  - **Where it plays** (`game.c GamePlaySound`): at the object if it's in the room, else at the square (1-based; 0, 0 means none), else 2D. The original ignores the radius and volume.
+  - **Flags:** `SF_LOOP` (1) loops until the player leaves the room; `SF_RANDOM_PITCH` (2) the original ignores; `SF_RANDOM_PLACE` (4) means Kod chose the square at random.
+  - `BP_STOP_WAVE`: `u32` rsc, `u32` object.
+  - `BP_PLAY_MUSIC` and `BP_PLAY_MIDI`: `u32` rsc; 0 stops the music.
+  - **The files:** the server's assets serve 705 sounds as `.ogg` (167 MB in all), plus 6 `.mp3` (`cave.mp3`, `drmusic.mp3`, `rijatemp.mp3` and three ogre sounds) and 4 `.wav`. A name the rsb gives as `.wav` but the manifest lacks is fetched as `.ogg`.
+  - **The room's own sounds:** on each `BP_PLAYER` the server sends the room's music and its looping sounds again (`user.kod ToCliPlayer`, `room.kod SendLoopingSounds`).
+  - **Raza's music:** `login.ogg` in town, `smithy.ogg` in the smithy and the vault, `bank.ogg` in the bank, `walk5.ogg` in the Forest of Farol.
+- **Light:** `BP_LIGHT_AMBIENT` and `BP_LIGHT_PLAYER` (220, 221) carry one byte each: the room's light, and the player's own (a torch, a light spell). `BP_PLAYER` carries both too.
+  - `BP_LIGHT_SHADING` (222): `u8` strength, `u16` sun angle, `u16` sun height (`user.kod ToCliShading`). Sent on every room change.
+  - **The light model** (`draw3d.c GetLightPaletteIndex`): a sector's light (0 to 255) at or below 127 is light on its own; the light is its value / 2, plus the player's light term.
+    - Above 127, the room's ambient light is added and the sector's value shifts it (192 adds nothing): `(min(255, viewer + ambient) + light − 192) · 64 / 256` of 64 palette levels.
+    - **The player's light falls off with distance:** `viewer = 4194304 / distance · player / 256`, the distance in fine units (1024 to a square).
+    - Raza's ambient is 255, the smithy's 174, the vault and bank 170, the Forest of Farol 114.
+  - `BP_SECTOR_LIGHT` (224): `u16` sector, `u8` flicker on or off (`SL_FLICKER_*`, `roomanim.c SectorFlickerChange`). The Direct3D client doesn't draw flicker.
+- **Room changes:** each names a sector's or sidedef's server id (the `.roo`'s), and changes every sector or sidedef with it (`roomanim.c`).
+  - `BP_SECTOR_MOVE` (223): `u8` type (`ANIMATE_FLOOR_LIFT` 4, `ANIMATE_CEILING_LIFT` 5), `u16` sector, `u16` height, `u8` speed.
+    - **Units:** the height is Kod units, the `.roo`'s own heights (`HeightKodToClient` × 16 gives fine units). The speed is Kod units a second; 0 moves it at once.
+    - **Objects standing on a floor lift move with it** (`SectorAdjustHeight`).
+  - `BP_SECTOR_CHANGE` (239): `u16` sector, `u8` depth, `u8` scroll speed. `CHANGE_OVERRIDE` (4) keeps either.
+    - **The depth** is the sector's wading depth bits.
+    - **The scroll speed** goes in the speed bits. A non-zero speed keeps the sector's direction and which of floor and ceiling scroll; 0 stops it.
+  - `BP_CHANGE_TEXTURE` (227): `u16` id, `u16` texture (`grdNNNNN.bgf`), `u8` flags. The flags say which surfaces change: `CTF_ABOVEWALL` 1, `CTF_NORMALWALL` 2, `CTF_BELOWWALL` 4, `CTF_FLOOR` 8, `CTF_CEILING` 16. `CTF_RESET` (32) is the server's own (`roofile.c`).
+  - `BP_WALL_ANIMATE` (225): `u16` sidedef, `u8` animation, then by animation:
+    - **For `ANIMATE_NONE`:** `u16` group;
+    - **For `ANIMATE_CYCLE`:** `u32` speed and two groups;
+    - **For `ANIMATE_ONCE`:** `u32` speed and three groups.
+
+    Then `u8` passable (0 leaves it alone, 1 passable, 2 solid; `user.kod WallSendUser`). It shows another frame of the wall's bitmap.
+  - **On entering a room** the server sends all of its changes again, lifts at speed 0 (`room.kod SendSectorChanges`, `SendSectorFlagChanges`, `SendWallChanges`, `SendTextureChanges`, right after `BP_PLAYER`). So a client can start each room from its file.
+- **Scrolling from the `.roo`** (`bspload.c`, `roomanim.c RoomAnimateSingle`):
+  - **Sector flags:** speed `(flags & 0x0C) >> 2` (1 slow, 2 medium, 3 fast); direction `(flags & 0x70) >> 4`; `SF_SCROLL_FLOOR` 0x80, `SF_SCROLL_CEILING` 0x100.
+  - **Sidedef flags:** speed `(flags & 0x0C00) >> 10`; direction `(flags & 0x7000) >> 12`.
+  - **A step every period:**
+    - sectors 12, 6 or 2 ms (slow, medium, fast);
+    - walls 96, 32 or 8 ms, slowed down on purpose.
+  - **Directions** N, NE, E, SE, S, SW, W, NW step (dx, dy) = (0, −1), (−1, −1), (−1, 0), (−1, 1), (0, 1), (1, 1), (1, 0), (1, −1).
+    - A floor moves its texture by dx and −dy fine units (1024 to a repeat).
+    - A wall moves it by −dy pixels across and dx down, reversed on a backwards wall.
+  - **An animated sector or sidedef** (its animation speed byte) cycles its bitmap's frames instead, and doesn't scroll.
+  - 123 of the 362 reference rooms scroll something.
+- **Never sent by Server 104's Kod:** `BP_XLAT_OVERRIDE` (234), which clientd3d doesn't handle either; `BP_SECTOR_ANIMATE`, `BP_WALL_SCROLL` and `BP_SECTOR_SCROLL`.
+  - `BP_SET_VIEW` and `BP_RESET_VIEW` (237, 238) come only from the view globe (`viewglbe.kod`): `u32` object, `u32` flags, `u32` height, `u8` light, to watch through another object.
+
 ## Session (`blakserv/game.c`, Kod `user.kod`; the client side is `clientd3d/game.c`, `com.c`)
 - **Leaving the game but not the server:**
   - The client sends `BP_REQ_QUIT` (54). The server logs the character off and answers `BP_QUIT` (149) (`GameProtocolParse`, `GameClientExit`).

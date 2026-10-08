@@ -62,6 +62,8 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetChat, const FMRChatLine&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetProjectile, const FMRNetProjectile&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetHit, const FMRNetHit&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetResult, bool);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetSound, const FMRNetSound&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetRoomChange, const FMRNetRoomChange&);
 
 /**
  * The session with a Meridian server (docs/adr/0010-meridian-servers.md): the server list, the
@@ -298,6 +300,13 @@ public:
 	FOnMRNetEvent OnStatChange;
 	/** The server's answer to ChangeStats: true BP_CHANGED_STATS_OK, false NOT_OK. */
 	FOnMRNetResult OnStatChangeResult;
+	/** The server plays or stops a sound or music; StopLoops when a new room begins (UMRNetWorldSubsystem plays them). */
+	FOnMRNetSound OnSound;
+	/** The room's ambient light, the player's light or the sun changed (BP_LIGHT_*). */
+	FOnMRNetEvent OnLightChanged;
+	/** A lift moved, a sector or a texture changed (also in GetRoomChanges, for a room still being built). */
+	FOnMRNetRoomChange OnRoomChange;
+	const TArray<FMRNetRoomChange>& GetRoomChanges() const { return World.RoomChanges; }
 	/** A shop's or a vault's list arrived (GetShop). */
 	FOnMRNetEvent OnShop;
 	/** The offer under way changed, or ended (GetTrade().bOpen false). */

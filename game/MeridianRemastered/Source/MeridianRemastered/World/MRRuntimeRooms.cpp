@@ -298,16 +298,11 @@ void UMRRuntimeRooms::Finish(TSharedPtr<FPending> Job)
 		return;
 	}
 	const FMRRooFile& Room = Job->Room;
-	auto Repeat = [Job](uint16 Texture)
-	{
-		const FMRBgf* B = Job->Bgfs.Find(Texture);
-		return B ? B->TextureRepeatRoo() : FVector2D(MRRoo::RooPerSquare, MRRoo::RooPerSquare);
-	};
-	const FMRRoomMesh RenderMesh = MRRoomMesh::Build(Room, Repeat, false);
-	const FMRRoomMesh CollisionMesh = MRRoomMesh::Build(Room, Repeat, true);
+	TMap<uint16, FVector2D> Repeats;
 	TMap<uint16, UTexture2D*> Textures;
 	for (const TPair<uint16, FMRBgf>& Pair : Job->Bgfs)
 	{
+		Repeats.Add(Pair.Key, Pair.Value.TextureRepeatRoo());
 		if (UTexture2D* Tex = Pair.Value.MakeTexture(0, true))
 		{
 			Textures.Add(Pair.Key, Tex);
@@ -329,7 +324,7 @@ void UMRRuntimeRooms::Finish(TSharedPtr<FPending> Job)
 		return;
 	}
 	Actor->SetRoomFile(Job->Roo);
-	Actor->Build(RenderMesh, CollisionMesh, Textures, AMRRuntimeRoom::LoadMaterial());
+	Actor->Build(Room, Repeats, Textures, AMRRuntimeRoom::LoadMaterial());
 
 	FMRZoneInfo Info;
 	Info.Rid = Rid;
@@ -337,7 +332,7 @@ void UMRRuntimeRooms::Finish(TSharedPtr<FPending> Job)
 	Info.KodClass = TEXT("Runtime");
 	Info.Origin = Origin;
 	Info.GridSizeRoo = FVector2D(Room.Width, Room.Height);
-	const FBox Bounds = RenderMesh.Bounds();
+	const FBox Bounds = Actor->GetMeshBounds();
 	if (Bounds.IsValid)
 	{
 		Info.BoundsWorld = FBox2D(FVector2D(Bounds.Min) + FVector2D(Origin), FVector2D(Bounds.Max) + FVector2D(Origin));
@@ -383,6 +378,31 @@ void UMRRuntimeRooms::Finish(TSharedPtr<FPending> Job)
 	{
 		Done(Rid);
 	}
+}
+
+void UMRRuntimeRooms::FetchTexture(const FString& RoomFile, uint16 Texture)
+{
+	FMRAssetCache* Cache = Assets();
+	if (!Cache || !Cache->IsListed(TextureFile(Texture)))
+	{
+		UE_LOG(LogMeridian, Warning, TEXT("World: %s changed to %s, which the server doesn't have"), *RoomFile, *TextureFile(Texture));
+		return;
+	}
+	TWeakObjectPtr<UMRRuntimeRooms> Weak(this);
+	const FString Roo = RoomFile.ToLower();
+	Cache->Fetch(TextureFile(Texture), [Weak, Roo, Texture](bool bOk, const TArray<uint8>& Bytes)
+	{
+		UMRRuntimeRooms* Self = Weak.Get();
+		AMRRuntimeRoom* Actor = Self ? Self->FindRoomActor(Roo) : nullptr;
+		FMRBgf Bgf;
+		FString Error;
+		if (!Actor || !bOk || !Bgf.Load(Bytes, Error))
+		{
+			UE_LOG(LogMeridian, Warning, TEXT("World: texture %s for %s: %s"), *TextureFile(Texture), *Roo, !bOk ? TEXT("not downloaded") : *Error);
+			return;
+		}
+		Actor->AddTexture(Texture, Bgf.MakeTexture(0, true), Bgf.TextureRepeatRoo());
+	});
 }
 
 // ------------------------------------------------------------------------------ prefetch

@@ -1026,6 +1026,11 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		if (MRNetRead::Player(R, Resources, World.Player))
 		{
 			bAwaitingRoom = true;
+			World.RoomChanges.Reset();  // the server sends this room's changes next
+			// a new room (or the same one again): the last one's looping sounds end (SF_LOOP)
+			FMRNetSound Stop;
+			Stop.Kind = FMRNetSound::EKind::StopLoops;
+			OnSound.Broadcast(Stop);
 			if (World.RoomEnchantments.Num() > 0)
 			{
 				World.RoomEnchantments.Reset();  // merintr enchant.c EnchantmentsNewRoom
@@ -1412,6 +1417,91 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		if (List.RemoveAll([Id](const FMRNetObject& E) { return E.Id == Id; }) > 0)
 		{
 			OnEnchantmentsChanged.Broadcast();
+		}
+		break;
+	}
+	case MRMsg::BP_LIGHT_AMBIENT:
+	case MRMsg::BP_LIGHT_PLAYER:
+	{
+		// server.c HandleLightAmbient / HandleLightPlayer: one byte (the room's light, the player's own)
+		const uint8 Light = R.U8();
+		if (R.IsOk())
+		{
+			(Body[0] == MRMsg::BP_LIGHT_AMBIENT ? World.Player.AmbientLight : World.Player.PlayerLight) = Light;
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: %s light %d"), Body[0] == MRMsg::BP_LIGHT_AMBIENT ? TEXT("ambient") : TEXT("player"), Light);
+			OnLightChanged.Broadcast();
+		}
+		break;
+	}
+	case MRMsg::BP_LIGHT_SHADING:
+	{
+		// HandleLightShading: the sun's strength, angle and height (user.kod ToCliShading)
+		const uint8 Directional = R.U8();
+		const uint16 Angle = R.U16();
+		const uint16 Height = R.U16();
+		if (R.IsOk())
+		{
+			World.Player.DirectionalLight = Directional;
+			World.Player.SunAngle = Angle;
+			World.Player.SunHeight = Height;
+			OnLightChanged.Broadcast();
+		}
+		break;
+	}
+	case MRMsg::BP_SECTOR_LIGHT:
+		// flickering on or off (SL_FLICKER_*): the original's Direct3D client doesn't draw it, nor do we
+		break;
+	case MRMsg::BP_SECTOR_MOVE:
+	case MRMsg::BP_SECTOR_CHANGE:
+	case MRMsg::BP_CHANGE_TEXTURE:
+	{
+		FMRNetRoomChange C;
+		if (MRNetRead::RoomChange(Body[0], R, C))
+		{
+			World.RoomChanges.Add(C);
+			OnRoomChange.Broadcast(C);
+		}
+		break;
+	}
+	case MRMsg::BP_PLAY_WAVE:
+	{
+		// server.c HandlePlayWave: rsc, object, flags, row, col, radius and volume (both ignored, as there)
+		FMRNetSound S;
+		S.File = Resources.Get(R.U32());
+		S.ObjectId = MRMsg::PlainId(R.U32());
+		S.Flags = R.U8();
+		S.Row = R.I32();
+		S.Col = R.I32();
+		R.I32();
+		R.I32();
+		if (R.IsOk() && !S.File.IsEmpty())
+		{
+			OnSound.Broadcast(S);
+		}
+		break;
+	}
+	case MRMsg::BP_STOP_WAVE:
+	{
+		FMRNetSound S;
+		S.Kind = FMRNetSound::EKind::Stop;
+		S.File = Resources.Get(R.U32());
+		S.ObjectId = MRMsg::PlainId(R.U32());
+		if (R.IsOk() && !S.File.IsEmpty())
+		{
+			OnSound.Broadcast(S);
+		}
+		break;
+	}
+	case MRMsg::BP_PLAY_MUSIC:
+	case MRMsg::BP_PLAY_MIDI:
+	{
+		FMRNetSound S;
+		S.Kind = FMRNetSound::EKind::Music;
+		S.File = Resources.Get(R.U32());
+		if (R.IsOk())
+		{
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: music %s"), S.File.IsEmpty() ? TEXT("(none)") : *S.File);
+			OnSound.Broadcast(S);
 		}
 		break;
 	}

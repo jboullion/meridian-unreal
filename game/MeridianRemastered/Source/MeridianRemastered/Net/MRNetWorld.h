@@ -120,6 +120,10 @@ struct FMRNetPlayer
 	uint32 RoomFlags = 0;  // ROOM_FLAG_* (blakston.khd)
 	/** The server's override of the three wading depths (SF_DEPTH1..3), in its units; 0 = the room's own. */
 	uint32 Depth[3] = {};
+	/** The sun on the room (BP_LIGHT_SHADING; user.kod ToCliShading): its strength, angle and height. */
+	uint8 DirectionalLight = 0;
+	uint16 SunAngle = 0;
+	uint16 SunHeight = 0;
 };
 
 /** A player logged on to the server (BP_PLAYERS, BP_PLAYER_ADD; the "who" list). */
@@ -235,6 +239,47 @@ struct FMRNetTrade
 	bool bAnswered = false;
 	/** We answered (BP_COUNTEROFFERED): theirs to accept. */
 	bool bCountered = false;
+};
+
+/**
+ * A sound the server plays or stops (BP_PLAY_WAVE, BP_STOP_WAVE, BP_PLAY_MUSIC / _MIDI; clientd3d
+ * server.c HandlePlayWave, game.c GamePlaySound, audio.c): at an object, at a square, or 2D.
+ */
+struct FMRNetSound
+{
+	enum class EKind : uint8 { Play, Stop, Music, StopLoops };
+	EKind Kind = EKind::Play;
+	FString File;
+	/** Where it comes from: an object in the room (0: none). */
+	uint32 ObjectId = 0;
+	/** SF_LOOP, SF_RANDOM_PLACE... */
+	uint8 Flags = 0;
+	/** A square (1-based; 0, 0: 2D unless ObjectId). */
+	int32 Row = 0;
+	int32 Col = 0;
+};
+
+/**
+ * A change the server makes to the room (clientd3d server.c HandleSectorMove, HandleSectorChange,
+ * HandleChangeTexture; roomanim.c). On entering a room the server sends all of its changes again
+ * (room.kod SendSectorChanges...), lifts at speed 0.
+ */
+struct FMRNetRoomChange
+{
+	enum class EKind : uint8 { MoveSector, ChangeSector, ChangeTexture };
+	EKind Kind = EKind::MoveSector;
+	/** The sectors' (and for a texture, the sidedefs') server id. */
+	uint16 Id = 0;
+	/** MoveSector: ANIMATE_FLOOR_LIFT or ANIMATE_CEILING_LIFT; the height (Kod units, as the .roo's) and speed (a second; 0: at once). */
+	uint8 Type = 0;
+	int16 Height = 0;
+	uint8 Speed = 0;
+	/** ChangeSector: the depth (0..3) and scroll speed (0..3); CHANGE_OVERRIDE keeps one. */
+	uint8 Depth = 0;
+	uint8 Scroll = 0;
+	/** ChangeTexture: the texture (grdNNNNN.bgf) and which surfaces (CTF_*). */
+	uint16 Texture = 0;
+	uint8 Flags = 0;
 };
 
 /** A spell the character knows (BP_SPELLS, BP_SPELL_ADD; merintr.c ExtractNewSpell). */
@@ -364,6 +409,8 @@ struct FMRNetWorld
 	/** The last shop or vault list (BP_BUY_LIST, BP_WITHDRAWAL_LIST), and the offer under way. */
 	FMRNetShop Shop;
 	FMRNetTrade Trade;
+	/** The room's changes since BP_PLAYER, in order: a room still being built takes them all when it's ready. */
+	TArray<FMRNetRoomChange> RoomChanges;
 
 	const FMRNetSpell* FindSpell(uint32 Id) const { return Spells.FindByPredicate([Id](const FMRNetSpell& S) { return S.Object.Id == Id; }); }
 	/** Forget the spells, skills and the player's enchantments (logged off, or asked for again after a save). */
@@ -407,6 +454,8 @@ namespace MRNetRead
 	MERIDIANREMASTERED_API bool LookPlayer(FMRReader& R, const FMRResourceTable& Res, FMRNetDescription& Out);
 	/** BP_PLAYER's body after the type byte. */
 	MERIDIANREMASTERED_API bool Player(FMRReader& R, const FMRResourceTable& Res, FMRNetPlayer& Out);
+	/** BP_SECTOR_MOVE, BP_SECTOR_CHANGE or BP_CHANGE_TEXTURE's body (Type: which). */
+	MERIDIANREMASTERED_API bool RoomChange(uint8 Type, FMRReader& R, FMRNetRoomChange& Out);
 	/** One entry of BP_PLAYERS, or BP_PLAYER_ADD's body (the name comes as a string, not a resource). */
 	MERIDIANREMASTERED_API bool User(FMRReader& R, FMRNetUser& Out);
 	/** A stat (merintr.c ExtractStatistic). */
