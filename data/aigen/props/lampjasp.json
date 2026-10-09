@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "lampjasp",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 151,
+  "oo_const": "OO_JASPERLAMP",
+  "bgf": "lampjasp",
+  "frame": 0,
+  "describe": "a hanging iron lantern: a narrow black hexagonal cage with small cross-shaped openings glowing faintly gold, a pointed cap and a large ring on top for hanging",
+  "mesh": "SM_AI_Lampjasp",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"], "extra": "hanging from above"},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "194a8bb1-74d5-4cc5-9aea-3a60bddd3355",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "medieval lantern 3d model",
+        "tris_raw": 1882,
+        "file": "build/aigen/props/lampjasp/04_tripo_out/C.glb",
+        "digest": "d7991cb963ce2ca4",
+        "tris": 1882,
+        "size_m": [0.2815, 0.2783, 0.9789]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/lampjasp/04_tripo_out/C.glb",
+      "tripo_task": "194a8bb1-74d5-4cc5-9aea-3a60bddd3355",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "medieval lantern 3d model",
+      "tris_raw": 1882,
+      "digest": "d7991cb963ce2ca4",
+      "tris": 1882,
+      "size_m": [0.2815, 0.2783, 0.9789]
+    }
+  },
+  "height_m": 0.6531,
+  "width_m": 0.1805,
+  "lift_m": 1.4266,
+  "sprite_px": [32, 242],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/lampjasp/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Lampjasp.glb",
+    "tris": 1882,
+    "size_m": [0.1878, 0.1857, 0.6531],
+    "scale": 0.66715
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "goose",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 63,
+  "oo_const": "OO_GOOSE",
+  "bgf": "goose",
+  "frame": 0,
+  "describe": "a plucked dead goose hanging upside down by its feet from a short red cord, wings spread loose, pale pink skin and a few brown feathers",
+  "mesh": "SM_AI_Goose",
+  "size_by": "height",
+  "placed": 2,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"], "extra": "hanging from above"},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "d4ef1603-68fc-49ec-984c-4b238b8f5b8c",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "d4ef1603-68fc-49ec-984c-4b238b8f5b8c",
+        "tris_raw": 1657,
+        "file": "build/aigen/props/goose/04_tripo_out/C.glb",
+        "digest": "0ce54bed506d0ab7",
+        "tris": 1657,
+        "size_m": [0.7859, 0.3888, 0.9671]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/goose/04_tripo_out/C.glb",
+      "tripo_task": "d4ef1603-68fc-49ec-984c-4b238b8f5b8c",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "d4ef1603-68fc-49ec-984c-4b238b8f5b8c",
+      "tris_raw": 1657,
+      "digest": "0ce54bed506d0ab7",
+      "tris": 1657,
+      "size_m": [0.7859, 0.3888, 0.9671]
+    }
+  },
+  "height_m": 1.6672,
+  "width_m": 1.0227,
+  "lift_m": 1.0828,
+  "sprite_px": [124, 320],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/goose/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Goose.glb",
+    "tris": 1657,
+    "size_m": [1.3549, 0.6703, 1.6672],
+    "scale": 1.72397
+  }
+}

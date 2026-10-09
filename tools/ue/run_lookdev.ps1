@@ -12,6 +12,8 @@
 #   powershell -File tools/ue/run_lookdev.ps1 -Label dusk -Mood raza_dusk        (one mood, no day/night cycle)
 #   powershell -File tools/ue/run_lookdev.ps1 -Label rain -Weather storm        (a storm at full strength, docs/adr/0005)
 #   powershell -File tools/ue/run_lookdev.ps1 -Label snow -Weather storm -Season 3   (winter: Raza snows)
+#   powershell -File tools/ue/run_lookdev.ps1 -Label props1 -Gallery     (the prop gallery: every prop and tree beside its
+#      sprite, cameras from data/environment/gallery_cameras.json; tools/environment/prop_gallery.py, docs/adr/0007)
 #   powershell -File tools/ue/run_lookdev.ps1 -Label perf -Profile -ResX 1920 -ResY 1080
 #     (-Profile: per camera, frame times with everything on / Nanite tessellation off / grass hidden / fire lights off,
 #      plus CSV-profiler captures; summarise with python tools/lookdev/profile_report.py perf)
@@ -51,6 +53,8 @@ param(
     [switch]$WithPawn,
     # frames at these times (s) after each camera cut, unsettled: what a zone change looks like, e.g. "0.05,0.2,0.5,1,2,4"
     [string]$Burst = "",
+    # the prop gallery (-MRGallery) and its cameras instead of the world's
+    [switch]$Gallery,
     [string]$Engine = "G:\Unreal Engine\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe",
     [int]$TimeoutSeconds = 900
 )
@@ -64,6 +68,7 @@ $log = Join-Path $repo "game\MeridianRemastered\Saved\Logs\lookdev-$Label.log"
 if (Test-Path $saved) { Remove-Item -Recurse -Force $saved }
 # -unattended: a GPU crash exits instead of waiting on an error dialog (then we try once more)
 $gameArgs = "`"$proj`" /Game/Generated/Maps/L_World -game -windowed -resx=$ResX -resy=$ResY$(if ($Audio -gt 0) { '' } else { ' -nosound' }) -unattended -MRStartZone=$StartZone -MRLookDev -MRLookDevLabel=$Label -abslog=`"$log`""
+if ($Gallery) { $gameArgs = $gameArgs.Replace("-MRStartZone=$StartZone", "-MRGallery -MRLookDevCameras=gallery_cameras.json") }
 if ($Only) { $gameArgs += " -MRLookDevOnly=" + ($Only -join ",") }
 if ($Profile) { $gameArgs += " -MRLookDevProfile" }
 if ($Audio -gt 0) { $gameArgs += " -MRLookDevAudio=$Audio" }

@@ -1,0 +1,111 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "necslime",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 128,
+  "oo_const": "OO_NECSLIME",
+  "bgf": "necslime",
+  "frame": 0,
+  "describe": "a heaped mound of thick glistening yellow-green slime, lumpy and pooling outward at its base",
+  "mesh": "SM_AI_Necslime",
+  "size_by": "height",
+  "placed": 24,
+  "rooms": 5,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {
+      "C": {"front": "openai"},
+      "FB": {"front": "openai", "back": "openai"},
+      "SYMM": {"front": "openai", "back": "openai@front:mirror"}
+    },
+    "runs": {
+      "C": {
+        "tripo_task": "38c71c71-1d48-44d6-843b-bc42d96f3ea2",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "gelatinous blob 3d model",
+        "tris_raw": 1970,
+        "file": "build/aigen/props/necslime/04_tripo_out/C.glb",
+        "digest": "7ba51dbfb3d538aa",
+        "tris": 1970,
+        "size_m": [0.9743, 0.8354, 0.6797]
+      },
+      "FB": {
+        "tripo_task": "904b2510-2c09-4782-8e35-daf50974026a",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view Front + Back (the back painted by OpenAI from the front) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/necslime/04_tripo_out/FB.glb",
+        "digest": "bfb35e9660229869",
+        "tris": 3874,
+        "size_m": [0.9843, 0.8463, 0.6807]
+      },
+      "SYM": {
+        "tripo_task": "b17d015f-face-44ed-a362-5dc5b6b00dfb",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in both the Front and Back slots (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/necslime/04_tripo_out/SYM.glb",
+        "digest": "f1867ff03ebce80a",
+        "tris": 3794,
+        "size_m": [0.9828, 0.9299, 0.6918]
+      },
+      "SYMM": {
+        "tripo_task": "e2301fb6-343d-427c-b64e-5974c2e21dc9",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/necslime/04_tripo_out/SYMM.glb",
+        "digest": "e8f779dab85be131",
+        "tris": 3840,
+        "size_m": [0.9814, 0.9131, 0.6881]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/necslime/04_tripo_out/C.glb",
+      "tripo_task": "38c71c71-1d48-44d6-843b-bc42d96f3ea2",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "gelatinous blob 3d model",
+      "tris_raw": 1970,
+      "digest": "58868ec102ff77ab",
+      "tris": 1970,
+      "size_m": [0.9743, 0.8354, 0.6797]
+    }
+  },
+  "height_m": 0.5672,
+  "width_m": 0.7276,
+  "lift_m": 0.0,
+  "sprite_px": [128, 99],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/necslime/02_restyle/openai_front.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac8efb6ab288190b451d8c3f99e2958",
+      "file": "build/aigen/props/necslime/02_restyle/openai_back.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Necslime.glb",
+    "tris": 1970,
+    "size_m": [0.8131, 0.6972, 0.5672],
+    "scale": 0.83454
+  },
+  "polycount": 4000,
+  "symmetrical": true,
+  "custom": {
+    "variant": "SYMM",
+    "file": "build/aigen/props/necslime/04_tripo_out/SYMM.glb",
+    "tripo_task": "e2301fb6-343d-427c-b64e-5974c2e21dc9",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+    "digest": "e8f779dab85be131",
+    "tris": 3840,
+    "size_m": [0.9814, 0.9131, 0.6881],
+    "normalized": {
+      "file": "build/environment/kit/SM_AI_Necslime_Custom.glb",
+      "tris": 3840,
+      "size_m": [0.809, 0.7527, 0.5672],
+      "scale": 0.82432
+    }
+  }
+}

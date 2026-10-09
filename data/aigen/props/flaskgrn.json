@@ -9,15 +9,43 @@
   "describe": "a glass conical laboratory flask with a narrow neck, the bottom half filled with bright green liquid",
   "mesh": "SM_AI_Flaskgrn",
   "size_by": "height",
-  "restyle": {"providers": ["openai"]},
+  "restyle": {"providers": ["openai"], "views": ["front"]},
   "tripo": {
-    "variants": {"C": {"front": "openai"}},
+    "variants": {
+      "C": {"front": "openai"},
+      "FB": {"front": "openai", "back": "openai"},
+      "SYMM": {"front": "openai", "back": "openai@front:mirror"}
+    },
     "runs": {
       "C": {
         "tripo_task": "d0fb0758-c46a-4807-83a1-9f9562a3c1a4",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
         "tripo_name": "erlenmeyer flask 3d model",
-        "tris_raw": 7738
+        "tris_raw": 7738,
+        "file": "build/aigen/props/flaskgrn/04_tripo_out/C.glb",
+        "digest": "7d8cbd08ed202488",
+        "tris": 7738,
+        "size_m": [0.7597, 0.7601, 0.9808]
+      },
+      "FB": {
+        "tripo_task": "c395b50b-1115-4aea-a1fa-7235b766e0a2",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view Front + Back (the back painted by OpenAI from the front) (45 credits; 2026-10-09)"
+      },
+      "SYM": {
+        "tripo_task": "78b0f4f2-c60f-4b11-a278-4c928820bdf3",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in both the Front and Back slots (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/flaskgrn/04_tripo_out/SYM.glb",
+        "digest": "ce86aaaa3dd24bf1",
+        "tris": 3861,
+        "size_m": [0.7635, 0.7657, 0.9803]
+      },
+      "SYMM": {
+        "tripo_task": "8d793782-a9b9-46bc-b658-b8806ae5f841",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/flaskgrn/04_tripo_out/SYMM.glb",
+        "digest": "8cafe899ade020b8",
+        "tris": 3810,
+        "size_m": [0.7667, 0.767, 0.9815]
       }
     },
     "chosen": {
@@ -40,6 +68,12 @@
       "seconds": null,
       "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
       "file": "build/aigen/props/flaskgrn/02_restyle/openai_front.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac8efb6ab288190b451d8c3f99e2958",
+      "file": "build/aigen/props/flaskgrn/02_restyle/openai_back.png"
     }
   },
   "normalized": {
@@ -47,5 +81,22 @@
     "tris": 7738,
     "size_m": [0.2663, 0.2665, 0.3438],
     "scale": 0.35054
+  },
+  "polycount": 4000,
+  "symmetrical": true,
+  "custom": {
+    "variant": "SYMM",
+    "file": "build/aigen/props/flaskgrn/04_tripo_out/SYMM.glb",
+    "tripo_task": "8d793782-a9b9-46bc-b658-b8806ae5f841",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+    "digest": "8cafe899ade020b8",
+    "tris": 3810,
+    "size_m": [0.7667, 0.767, 0.9815],
+    "normalized": {
+      "file": "build/environment/kit/SM_AI_Flaskgrn_Custom.glb",
+      "tris": 3810,
+      "size_m": [0.2686, 0.2687, 0.3438],
+      "scale": 0.35028
+    }
   }
 }

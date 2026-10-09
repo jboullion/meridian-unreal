@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "mummyx",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 164,
+  "oo_const": "OO_MUMMY",
+  "bgf": "mummyx",
+  "frame": 0,
+  "describe": "a mummified body stretched out on its back, wrapped in grimy, unravelling grey-white linen bandages, arms at its sides",
+  "mesh": "SM_AI_Mummyx",
+  "size_by": "height",
+  "placed": 13,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"], "extra": "lying flat on the ground"},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "84d8550d-c613-450a-9236-10eb8fe1d3c4",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "mummy figure 3d model",
+        "tris_raw": 1894,
+        "file": "build/aigen/props/mummyx/04_tripo_out/C.glb",
+        "digest": "525beaaaec19d92c",
+        "tris": 1894,
+        "size_m": [0.9765, 0.4886, 0.1771]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/mummyx/04_tripo_out/C.glb",
+      "tripo_task": "84d8550d-c613-450a-9236-10eb8fe1d3c4",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "mummy figure 3d model",
+      "tris_raw": 1894,
+      "digest": "525beaaaec19d92c",
+      "tris": 1894,
+      "size_m": [0.9765, 0.4886, 0.1771]
+    }
+  },
+  "height_m": 0.4813,
+  "width_m": 1.8792,
+  "lift_m": 0.0,
+  "sprite_px": [164, 42],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/mummyx/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Mummyx.glb",
+    "tris": 1894,
+    "size_m": [2.6533, 1.3276, 0.4813],
+    "scale": 2.71719
+  }
+}

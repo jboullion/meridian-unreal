@@ -1,0 +1,58 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "splitstump",
+  "kind": "props",
+  "class": "SplittingStump",
+  "bgf": "splitstump",
+  "frame": 0,
+  "describe": "a wide, low tree stump used as a chopping block, rough bark sides and a pale cut top with split logs lying on it",
+  "mesh": "SM_AI_Splitstump",
+  "size_by": "height",
+  "placed": 24,
+  "rooms": 13,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "274c9944-49ca-44b3-af08-cadb30c4538b",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "wood logs 3d model",
+        "tris_raw": 1829,
+        "file": "build/aigen/props/splitstump/04_tripo_out/C.glb",
+        "digest": "2531e45e0f8653cc",
+        "tris": 1829,
+        "size_m": [0.959, 0.9667, 0.7212]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/splitstump/04_tripo_out/C.glb",
+      "tripo_task": "274c9944-49ca-44b3-af08-cadb30c4538b",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "wood logs 3d model",
+      "tris_raw": 1829,
+      "digest": "2531e45e0f8653cc",
+      "tris": 1829,
+      "size_m": [0.959, 0.9667, 0.7212]
+    }
+  },
+  "height_m": 1.0106,
+  "width_m": 1.3647,
+  "lift_m": 0.0,
+  "sprite_px": [512, 512],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/splitstump/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Splitstump.glb",
+    "tris": 1829,
+    "size_m": [1.3439, 1.3547, 1.0106],
+    "scale": 1.40129
+  }
+}

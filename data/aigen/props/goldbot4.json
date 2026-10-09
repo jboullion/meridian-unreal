@@ -1,0 +1,61 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "goldbot4",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 24,
+  "oo_const": "OO_GOLD_BOTTLE",
+  "bgf": "goldbot4",
+  "frame": 0,
+  "describe": "a small square glass bottle with a short neck and stopper, the glass tinted gold and amber",
+  "mesh": "SM_AI_Goldbot4",
+  "size_by": "height",
+  "placed": 3,
+  "rooms": 2,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "9faff8e8-f2fe-43f8-9353-f7b35a15cb60",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "rusted gold bottle 3d model",
+        "tris_raw": 970,
+        "file": "build/aigen/props/goldbot4/04_tripo_out/C.glb",
+        "digest": "f050648e4bd6d9f1",
+        "tris": 970,
+        "size_m": [0.6266, 0.4364, 0.9784]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/goldbot4/04_tripo_out/C.glb",
+      "tripo_task": "9faff8e8-f2fe-43f8-9353-f7b35a15cb60",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "rusted gold bottle 3d model",
+      "tris_raw": 970,
+      "digest": "f050648e4bd6d9f1",
+      "tris": 970,
+      "size_m": [0.6266, 0.4364, 0.9784]
+    }
+  },
+  "polycount": 1000,
+  "height_m": 0.2664,
+  "width_m": 0.1719,
+  "lift_m": 0.0,
+  "sprite_px": [22, 32],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/goldbot4/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Goldbot4.glb",
+    "tris": 970,
+    "size_m": [0.1706, 0.1188, 0.2664],
+    "scale": 0.27228
+  }
+}

@@ -13,7 +13,8 @@
   "tripo": {
     "variants": {
       "C": {"front": "openai"},
-      "MV1k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
+      "MV1k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"},
+      "MV4k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
     },
     "runs": {
       "C": {
@@ -22,7 +23,7 @@
         "tripo_name": "monster 3d model",
         "tris_raw": 7862,
         "file": "build/aigen/props/modlupog/04_tripo_out/C.glb",
-        "digest": "63ec241ace9a1f88",
+        "digest": "727a3db62c91ce17",
         "tris": 7862,
         "size_m": [0.6717, 0.4512, 0.9823]
       },
@@ -32,9 +33,19 @@
         "tripo_name": "crocodile monster 3d model",
         "tris_raw": 952,
         "file": "build/aigen/props/modlupog/04_tripo_out/MV1k.glb",
-        "digest": "d5c697c29ebb1faa",
+        "digest": "67811b42e1f735fd",
         "tris": 952,
         "size_m": [0.702, 0.8728, 0.982]
+      },
+      "MV4k": {
+        "tripo_task": "e6a79ac8-8937-4e1a-bd9c-a7f8a1a99431",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view front/left/back/right restyled from the original's own angle frames (45 credits; 2026-10-09)",
+        "tripo_name": "stylized crocodile 3d model",
+        "tris_raw": 3814,
+        "file": "build/aigen/props/modlupog/04_tripo_out/MV4k.glb",
+        "digest": "b4480a7b603289bb",
+        "tris": 3814,
+        "size_m": [0.6885, 0.8567, 0.9792]
       }
     },
     "chosen": {
@@ -90,6 +101,24 @@
       "tris": 952,
       "size_m": [0.4095, 0.5092, 0.5729],
       "scale": 0.5834
+    }
+  },
+  "polycount": 4000,
+  "custom": {
+    "variant": "MV4k",
+    "file": "build/aigen/props/modlupog/04_tripo_out/MV4k.glb",
+    "tripo_task": "e6a79ac8-8937-4e1a-bd9c-a7f8a1a99431",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view front/left/back/right restyled from the original's own angle frames (45 credits; 2026-10-09)",
+    "tripo_name": "stylized crocodile 3d model",
+    "tris_raw": 3814,
+    "digest": "b4480a7b603289bb",
+    "tris": 3814,
+    "size_m": [0.6885, 0.8567, 0.9792],
+    "normalized": {
+      "file": "build/environment/kit/SM_AI_Modlupog_Custom.glb",
+      "tris": 3814,
+      "size_m": [0.4028, 0.5013, 0.5729],
+      "scale": 0.5851
     }
   }
 }

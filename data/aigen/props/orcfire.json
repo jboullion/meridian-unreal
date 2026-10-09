@@ -1,0 +1,105 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "orcfire",
+  "kind": "props",
+  "class": "OrcTorch",
+  "bgf": "orcfire",
+  "frame": 0,
+  "describe": "a heap of dark brown packed earth, dung and charred wood, a rough unlit orc bonfire mound",
+  "mesh": "SM_AI_Orcfire",
+  "size_by": "height",
+  "placed": 4,
+  "rooms": 3,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {
+      "C": {"front": "openai"},
+      "FB": {"front": "openai", "back": "openai"},
+      "SYMM": {"front": "openai", "back": "openai@front:mirror"}
+    },
+    "runs": {
+      "C": {
+        "tripo_task": "5d196369-d1cf-4eb6-802a-ba87c9e0f868",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "dirt pile 3d model",
+        "tris_raw": 1827,
+        "file": "build/aigen/props/orcfire/04_tripo_out/C.glb",
+        "digest": "9eb9c1386ff46ba0",
+        "tris": 1827,
+        "size_m": [0.9701, 0.625, 0.9419]
+      },
+      "FB": {
+        "tripo_task": "bf71ce1c-4834-4869-bac7-6302578ed89e",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view Front + Back (the back painted by OpenAI from the front) (45 credits; 2026-10-09)"
+      },
+      "SYM": {
+        "tripo_task": "028283ad-db8b-42db-b2a6-41527eff20ee",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in both the Front and Back slots (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/orcfire/04_tripo_out/SYM.glb",
+        "digest": "81cc992c5ff1fa31",
+        "tris": 3768,
+        "size_m": [0.971, 0.7383, 0.9748]
+      },
+      "SYMM": {
+        "tripo_task": "69de5613-83d2-4209-b4d5-eb3aa3f0a7b4",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/orcfire/04_tripo_out/SYMM.glb",
+        "digest": "8205f9568170c1d4",
+        "tris": 3762,
+        "size_m": [0.969, 0.6894, 0.9796]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/orcfire/04_tripo_out/C.glb",
+      "tripo_task": "5d196369-d1cf-4eb6-802a-ba87c9e0f868",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "dirt pile 3d model",
+      "tris_raw": 1827,
+      "digest": "9745fd7cf52c69c7",
+      "tris": 1827,
+      "size_m": [0.9701, 0.625, 0.9419]
+    }
+  },
+  "height_m": 0.7734,
+  "width_m": 0.7734,
+  "lift_m": 0.0,
+  "sprite_px": [120, 120],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/orcfire/02_restyle/openai_front.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac8efb6ab288190b451d8c3f99e2958",
+      "file": "build/aigen/props/orcfire/02_restyle/openai_back.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Orcfire.glb",
+    "tris": 1827,
+    "size_m": [0.7966, 0.5132, 0.7734],
+    "scale": 0.82114
+  },
+  "polycount": 4000,
+  "symmetrical": true,
+  "custom": {
+    "variant": "SYMM",
+    "file": "build/aigen/props/orcfire/04_tripo_out/SYMM.glb",
+    "tripo_task": "69de5613-83d2-4209-b4d5-eb3aa3f0a7b4",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+    "digest": "8205f9568170c1d4",
+    "tris": 3762,
+    "size_m": [0.969, 0.6894, 0.9796],
+    "normalized": {
+      "file": "build/environment/kit/SM_AI_Orcfire_Custom.glb",
+      "tris": 3762,
+      "size_m": [0.765, 0.5443, 0.7734],
+      "scale": 0.78952
+    }
+  }
+}

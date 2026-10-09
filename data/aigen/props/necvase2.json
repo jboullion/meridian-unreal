@@ -1,0 +1,61 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "necvase2",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 129,
+  "oo_const": "OO_NECVASE2",
+  "bgf": "necvase2",
+  "frame": 0,
+  "describe": "a round-bellied black pot with two looping handles, a ring of red marks around the shoulder and long blue teardrop stripes around the belly",
+  "mesh": "SM_AI_Necvase2",
+  "size_by": "height",
+  "placed": 2,
+  "rooms": 2,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "6010aadd-5202-48be-ace2-622f920aa888",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "ceramic vase 3d model",
+        "tris_raw": 966,
+        "file": "build/aigen/props/necvase2/04_tripo_out/C.glb",
+        "digest": "ebff95c4954c9a69",
+        "tris": 966,
+        "size_m": [0.9797, 0.6649, 0.899]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/necvase2/04_tripo_out/C.glb",
+      "tripo_task": "6010aadd-5202-48be-ace2-622f920aa888",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "ceramic vase 3d model",
+      "tris_raw": 966,
+      "digest": "ebff95c4954c9a69",
+      "tris": 966,
+      "size_m": [0.9797, 0.6649, 0.899]
+    }
+  },
+  "polycount": 1000,
+  "height_m": 0.5629,
+  "width_m": 0.6188,
+  "lift_m": 0.0,
+  "sprite_px": [150, 131],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/necvase2/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Necvase2.glb",
+    "tris": 966,
+    "size_m": [0.6135, 0.4164, 0.5629],
+    "scale": 0.62617
+  }
+}

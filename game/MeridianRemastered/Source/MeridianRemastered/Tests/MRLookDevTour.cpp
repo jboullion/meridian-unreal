@@ -103,7 +103,10 @@ FString UMRLookDevTour::FormatBookmark(const FString& Name, const FVector& Locat
 
 bool UMRLookDevTour::LoadShots()
 {
-	const FString Path = FPaths::Combine(UMRZoneSubsystem::GetDataDir(), TEXT("environment"), TEXT("lookdev_cameras.json"));
+	// -MRLookDevCameras=<file in data/environment>: another camera set (the prop gallery's: gallery_cameras.json)
+	FString CameraFile = TEXT("lookdev_cameras.json");
+	FParse::Value(FCommandLine::Get(), TEXT("MRLookDevCameras="), CameraFile);
+	const FString Path = FPaths::Combine(UMRZoneSubsystem::GetDataDir(), TEXT("environment"), CameraFile);
 	FString Text;
 	TSharedPtr<FJsonObject> Root;
 	if (!FFileHelper::LoadFileToString(Text, *Path) || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root) || !Root)

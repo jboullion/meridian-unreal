@@ -1,0 +1,68 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "firepit",
+  "kind": "props",
+  "class": "Firepit",
+  "bgf": "firepit",
+  "frame": 0,
+  "describe": "a low ring of rough grey fieldstones around a bed of glowing orange embers and ash, a campfire pit with no flames",
+  "mesh": "SM_AI_Firepit",
+  "size_by": "height",
+  "placed": 73,
+  "rooms": 29,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}, "C4k": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "55dc46f6-8fab-4eca-8517-eb5217d1e727",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "rocky lava pit 3d model",
+        "tris_raw": 1950,
+        "file": "build/aigen/props/firepit/04_tripo_out/C.glb",
+        "digest": "e4493359f497be24",
+        "tris": 1950,
+        "size_m": [0.9802, 0.8335, 0.2509]
+      },
+      "C4k": {
+        "tripo_task": "ac3eabf8-5b72-4214-8009-0377883343f3",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image (45 credits); rerun of C (2026-10-09)",
+        "tripo_name": "rocky lava crater 3d model",
+        "tris_raw": 3966,
+        "file": "build/aigen/props/firepit/04_tripo_out/C4k.glb",
+        "digest": "6c8b1538ef9dd1c2",
+        "tris": 3966,
+        "size_m": [0.9816, 0.7856, 0.2376]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/firepit/04_tripo_out/C.glb",
+      "tripo_task": "55dc46f6-8fab-4eca-8517-eb5217d1e727",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "rocky lava pit 3d model",
+      "tris_raw": 1950,
+      "digest": "e4493359f497be24",
+      "tris": 1950,
+      "size_m": [0.9802, 0.8335, 0.2509]
+    }
+  },
+  "height_m": 0.275,
+  "width_m": 0.7333,
+  "lift_m": 0.0,
+  "sprite_px": [64, 24],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/firepit/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Firepit.glb",
+    "tris": 1950,
+    "size_m": [1.0744, 0.9136, 0.275],
+    "scale": 1.09612
+  }
+}

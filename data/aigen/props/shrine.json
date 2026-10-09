@@ -1,0 +1,58 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "shrine",
+  "kind": "props",
+  "class": "Shrine",
+  "bgf": "shrine",
+  "frame": 0,
+  "describe": "a tall golden shrine like a lantern: a domed and finialed top, an open frame of four slender gold columns around a glowing cross, on a stepped gold base",
+  "mesh": "SM_AI_Shrine",
+  "size_by": "height",
+  "placed": 5,
+  "rooms": 5,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "173e0c46-fa21-43f4-9755-94bffe1292b5",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "golden lantern 3d model",
+        "tris_raw": 1900,
+        "file": "build/aigen/props/shrine/04_tripo_out/C.glb",
+        "digest": "ec4266586c4a6a65",
+        "tris": 1900,
+        "size_m": [0.3766, 0.3758, 0.9744]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/shrine/04_tripo_out/C.glb",
+      "tripo_task": "173e0c46-fa21-43f4-9755-94bffe1292b5",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "golden lantern 3d model",
+      "tris_raw": 1900,
+      "digest": "ec4266586c4a6a65",
+      "tris": 1900,
+      "size_m": [0.3766, 0.3758, 0.9744]
+    }
+  },
+  "height_m": 1.8494,
+  "width_m": 0.6256,
+  "lift_m": 0.0,
+  "sprite_px": [91, 269],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/shrine/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Shrine.glb",
+    "tris": 1900,
+    "size_m": [0.7147, 0.7132, 1.8494],
+    "scale": 1.89794
+  }
+}

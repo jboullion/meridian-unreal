@@ -1,0 +1,71 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "necvase",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 111,
+  "oo_const": "OO_NECVASE",
+  "bgf": "necvase",
+  "frame": 0,
+  "describe": "a tall slender vase of pale tan clay, its body covered in an intricate raised swirling relief pattern",
+  "mesh": "SM_AI_Necvase",
+  "size_by": "height",
+  "placed": 2,
+  "rooms": 2,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}, "C4k": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "27e7607f-7b68-4b20-9472-e7c7f425a4d7",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "ornate vase 3d model",
+        "tris_raw": 982,
+        "file": "build/aigen/props/necvase/04_tripo_out/C.glb",
+        "digest": "c76aedfab26b0cef",
+        "tris": 982,
+        "size_m": [0.5085, 0.509, 0.9813]
+      },
+      "C4k": {
+        "tripo_task": "3e200dc1-31d9-49dd-b6d2-18193e66310e",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image (45 credits); rerun of C (2026-10-09)",
+        "tripo_name": "ornate carved vase 3d model",
+        "tris_raw": 3956,
+        "file": "build/aigen/props/necvase/04_tripo_out/C4k.glb",
+        "digest": "263012bb64ec41f3",
+        "tris": 3956,
+        "size_m": [0.5015, 0.5084, 0.9831]
+      }
+    },
+    "chosen": {
+      "variant": "C4k",
+      "file": "build/aigen/props/necvase/04_tripo_out/C4k.glb",
+      "tripo_task": "3e200dc1-31d9-49dd-b6d2-18193e66310e",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image (45 credits); rerun of C (2026-10-09)",
+      "tripo_name": "ornate carved vase 3d model",
+      "tris_raw": 3956,
+      "digest": "263012bb64ec41f3",
+      "tris": 3956,
+      "size_m": [0.5015, 0.5084, 0.9831]
+    }
+  },
+  "polycount": 1000,
+  "height_m": 0.7176,
+  "width_m": 0.3652,
+  "lift_m": 0.0,
+  "sprite_px": [85, 167],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/necvase/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Necvase.glb",
+    "tris": 3956,
+    "size_m": [0.3661, 0.3711, 0.7176],
+    "scale": 0.72994
+  }
+}

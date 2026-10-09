@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "stochair",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 113,
+  "oo_const": "OO_STONECHAIR",
+  "bgf": "stochair",
+  "frame": 0,
+  "describe": "a stone pedestal seat: a thick round column of rough grey granite on a broad round foot, topped by a flat square slab of smooth grey stone",
+  "mesh": "SM_AI_Stochair",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "83163fd4-3c42-4344-9a23-0984082e1b86",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "stone pedestal 3d model",
+        "tris_raw": 1512,
+        "file": "build/aigen/props/stochair/04_tripo_out/C.glb",
+        "digest": "5fe2d5a136561b7e",
+        "tris": 1512,
+        "size_m": [0.7674, 0.7725, 0.9781]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/stochair/04_tripo_out/C.glb",
+      "tripo_task": "83163fd4-3c42-4344-9a23-0984082e1b86",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "stone pedestal 3d model",
+      "tris_raw": 1512,
+      "digest": "5fe2d5a136561b7e",
+      "tris": 1512,
+      "size_m": [0.7674, 0.7725, 0.9781]
+    }
+  },
+  "height_m": 0.6531,
+  "width_m": 0.5526,
+  "lift_m": 0.0,
+  "sprite_px": [209, 247],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/stochair/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Stochair.glb",
+    "tris": 1512,
+    "size_m": [0.5124, 0.5158, 0.6531],
+    "scale": 0.66773
+  }
+}

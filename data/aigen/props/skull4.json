@@ -1,0 +1,61 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "skull4",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 75,
+  "oo_const": "OO_SKULL4",
+  "bgf": "skull4",
+  "frame": 0,
+  "describe": "a stack of three human skulls with crossed bones between them, on a tripod of three long bones",
+  "mesh": "SM_AI_Skull4",
+  "size_by": "height",
+  "placed": 2,
+  "rooms": 2,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "4eba09bf-67db-4d1a-89f0-6caac182b967",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "skull stack 3d model",
+        "tris_raw": 988,
+        "file": "build/aigen/props/skull4/04_tripo_out/C.glb",
+        "digest": "6a4a34b3c57f9155",
+        "tris": 988,
+        "size_m": [0.6015, 0.4997, 0.9854]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/skull4/04_tripo_out/C.glb",
+      "tripo_task": "4eba09bf-67db-4d1a-89f0-6caac182b967",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "skull stack 3d model",
+      "tris_raw": 988,
+      "digest": "6a4a34b3c57f9155",
+      "tris": 988,
+      "size_m": [0.6015, 0.4997, 0.9854]
+    }
+  },
+  "polycount": 1000,
+  "height_m": 1.3234,
+  "width_m": 0.8766,
+  "lift_m": 0.0,
+  "sprite_px": [128, 160],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/skull4/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Skull4.glb",
+    "tris": 988,
+    "size_m": [0.8078, 0.6711, 1.3234],
+    "scale": 1.34303
+  }
+}

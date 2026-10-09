@@ -85,6 +85,7 @@ void UMRNetSubsystem::Deinitialize()
 bool UMRNetSubsystem::IsOfflineRequested()
 {
 	return FParse::Param(FCommandLine::Get(), TEXT("MROffline"))
+		|| FParse::Param(FCommandLine::Get(), TEXT("MRGallery"))  // the prop gallery is offline only
 		|| UMRScreenshotTour::IsRequested() || UMRProfileTour::IsRequested() || UMRLookDevTour::IsRequested()
 		|| UMRMapCapture::IsRequested() || UMRMonsterTour::IsRequested() || UMRSpriteClipTour::IsRequested()
 		|| UMRUIShots::IsRequested()

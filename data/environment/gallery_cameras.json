@@ -1,0 +1,1214 @@
+{
+ "_doc": "Look-dev cameras for the prop gallery (tools/environment/prop_gallery.py; tools/ue/run_lookdev.ps1 -Gallery). Same format as lookdev_cameras.json.",
+ "cameras": [
+  {
+   "name": "gallery_00_small",
+   "location_cm": [
+    -399750,
+    -399816,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_01_small",
+   "location_cm": [
+    -399250,
+    -399816,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_02_small",
+   "location_cm": [
+    -398750,
+    -399816,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_03_small",
+   "location_cm": [
+    -398250,
+    -399816,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_04_small",
+   "location_cm": [
+    -397750,
+    -399816,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_05_small",
+   "location_cm": [
+    -397250,
+    -399816,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_06_small",
+   "location_cm": [
+    -396750,
+    -399816,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_07_small",
+   "location_cm": [
+    -396250,
+    -399816,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_08_small",
+   "location_cm": [
+    -395750,
+    -399816,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_09_small",
+   "location_cm": [
+    -395250,
+    -399816,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_10_small",
+   "location_cm": [
+    -394750,
+    -399816,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_11_small",
+   "location_cm": [
+    -394250,
+    -399816,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_12_small",
+   "location_cm": [
+    -399750,
+    -400428,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_13_small",
+   "location_cm": [
+    -399250,
+    -400428,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_14_small",
+   "location_cm": [
+    -398750,
+    -400428,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_15_small",
+   "location_cm": [
+    -398250,
+    -400428,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_16_small",
+   "location_cm": [
+    -397750,
+    -400428,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_17_small",
+   "location_cm": [
+    -397250,
+    -400428,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_18_small",
+   "location_cm": [
+    -396750,
+    -400428,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_19_small",
+   "location_cm": [
+    -396250,
+    -400428,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_20_small",
+   "location_cm": [
+    -395750,
+    -400428,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_21_small",
+   "location_cm": [
+    -395250,
+    -400428,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_22_small",
+   "location_cm": [
+    -394750,
+    -400428,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_23_small",
+   "location_cm": [
+    -394250,
+    -400428,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_24_small",
+   "location_cm": [
+    -399750,
+    -401045,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_25_small",
+   "location_cm": [
+    -399250,
+    -401045,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_26_small",
+   "location_cm": [
+    -398750,
+    -401045,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_27_small",
+   "location_cm": [
+    -398250,
+    -401045,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_28_small",
+   "location_cm": [
+    -397750,
+    -401045,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_29_small",
+   "location_cm": [
+    -397250,
+    -401045,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_30_small",
+   "location_cm": [
+    -396750,
+    -401045,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_31_small",
+   "location_cm": [
+    -396250,
+    -401045,
+    110
+   ],
+   "rotation": [
+    -14.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_32_medium",
+   "location_cm": [
+    -399600,
+    -401485,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_33_medium",
+   "location_cm": [
+    -398800,
+    -401485,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_34_medium",
+   "location_cm": [
+    -398000,
+    -401485,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_35_medium",
+   "location_cm": [
+    -397200,
+    -401485,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_36_medium",
+   "location_cm": [
+    -396400,
+    -401485,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_37_medium",
+   "location_cm": [
+    -395600,
+    -401485,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_38_medium",
+   "location_cm": [
+    -394800,
+    -401485,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_39_medium",
+   "location_cm": [
+    -394000,
+    -401485,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_40_medium",
+   "location_cm": [
+    -399600,
+    -402117,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_41_medium",
+   "location_cm": [
+    -398800,
+    -402117,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_42_medium",
+   "location_cm": [
+    -398000,
+    -402117,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_43_medium",
+   "location_cm": [
+    -397200,
+    -402117,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_44_medium",
+   "location_cm": [
+    -396400,
+    -402117,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_45_medium",
+   "location_cm": [
+    -395600,
+    -402117,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_46_medium",
+   "location_cm": [
+    -394800,
+    -402117,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_47_medium",
+   "location_cm": [
+    -394000,
+    -402117,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_48_medium",
+   "location_cm": [
+    -399600,
+    -402793,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_49_medium",
+   "location_cm": [
+    -398800,
+    -402793,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_50_medium",
+   "location_cm": [
+    -398000,
+    -402793,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_51_medium",
+   "location_cm": [
+    -397200,
+    -402793,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_52_medium",
+   "location_cm": [
+    -396400,
+    -402793,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_53_medium",
+   "location_cm": [
+    -395600,
+    -402793,
+    150
+   ],
+   "rotation": [
+    -10.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_54_large",
+   "location_cm": [
+    -399500,
+    -403274,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_55_large",
+   "location_cm": [
+    -398500,
+    -403274,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_56_large",
+   "location_cm": [
+    -397500,
+    -403274,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_57_large",
+   "location_cm": [
+    -396500,
+    -403274,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_58_large",
+   "location_cm": [
+    -395500,
+    -403274,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_59_large",
+   "location_cm": [
+    -394500,
+    -403274,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_60_large",
+   "location_cm": [
+    -399500,
+    -404109,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_61_large",
+   "location_cm": [
+    -398500,
+    -404109,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_62_large",
+   "location_cm": [
+    -397500,
+    -404109,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_63_large",
+   "location_cm": [
+    -396500,
+    -404109,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_64_large",
+   "location_cm": [
+    -395500,
+    -404109,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_65_large",
+   "location_cm": [
+    -394500,
+    -404109,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_66_large",
+   "location_cm": [
+    -399500,
+    -404964,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_67_large",
+   "location_cm": [
+    -398500,
+    -404964,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_68_large",
+   "location_cm": [
+    -397500,
+    -404964,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_69_large",
+   "location_cm": [
+    -396500,
+    -404964,
+    180
+   ],
+   "rotation": [
+    -6.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_70_trees",
+   "location_cm": [
+    -399300,
+    -405001,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_71_trees",
+   "location_cm": [
+    -397900,
+    -405001,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_72_trees",
+   "location_cm": [
+    -396500,
+    -405001,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_73_trees",
+   "location_cm": [
+    -395100,
+    -405001,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_74_trees",
+   "location_cm": [
+    -399300,
+    -405902,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_75_trees",
+   "location_cm": [
+    -397900,
+    -405902,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_76_trees",
+   "location_cm": [
+    -396500,
+    -405902,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_77_trees",
+   "location_cm": [
+    -395100,
+    -405902,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_78_trees",
+   "location_cm": [
+    -399300,
+    -406821,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_79_trees",
+   "location_cm": [
+    -397900,
+    -406821,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_80_trees",
+   "location_cm": [
+    -396500,
+    -406821,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_81_trees",
+   "location_cm": [
+    -395100,
+    -406821,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_82_trees",
+   "location_cm": [
+    -399300,
+    -407749,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_83_trees",
+   "location_cm": [
+    -397900,
+    -407749,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_84_trees",
+   "location_cm": [
+    -396500,
+    -407749,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_85_trees",
+   "location_cm": [
+    -395100,
+    -407749,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_86_trees",
+   "location_cm": [
+    -399300,
+    -408748,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_87_trees",
+   "location_cm": [
+    -397900,
+    -408748,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_88_trees",
+   "location_cm": [
+    -396500,
+    -408748,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_89_trees",
+   "location_cm": [
+    -395100,
+    -408748,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_90_trees",
+   "location_cm": [
+    -399300,
+    -409675,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_91_trees",
+   "location_cm": [
+    -397900,
+    -409675,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  },
+  {
+   "name": "gallery_92_trees",
+   "location_cm": [
+    -396500,
+    -409675,
+    300
+   ],
+   "rotation": [
+    2.0,
+    -90.0
+   ],
+   "fov": 70
+  }
+ ]
+}

@@ -83,6 +83,15 @@ Defaults are the maintainer's machine; pass overrides where the scripts accept t
 
 ## Build and run
 
+**Shortcuts:** the repo-root `package.json` wraps the common commands; `npm run` lists them. There's nothing to install. Pass options after `--`, e.g. `npm run lookdev -- -Label mytest -Compare baseline`.
+- `npm run play` (offline, Raza Inn), `play:online` (the login screen), `editor`
+- `npm run prop-gallery` (also `:night`, `:rebuild`)
+- `npm test` (C++ unit tests, then the movement test; no server needed), `test:all` (plus the online smoke test), `test:unit`, `test:move`, `test:net` (`:create`, `:pair`, `:death`), `test:ui`
+- `npm run compile`, `world` (`world:clean`), `lookdev`, `lookdev:gallery`, `package`, `setup`
+- `npm run data` (Kod extract), `props:inventory`, `props:gallery-layout`, `props:overview`
+
+The commands those run, step by step:
+
 Fresh clone; rebuilds everything generated (data, extracted art, blockouts, binaries, sprite atlases, `Content/Generated/`):
 
 ```bash
@@ -165,6 +174,7 @@ WASD + mouse (running at the original's 12.9 m/s; `mr.Move.SpeedScale` scales ev
   powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_ui_shots.ps1 -Label mytest     # -StartZone 301: indoors
   ```
 
+- **Prop gallery** (docs/adr/0007 "Prop gallery"): every prop and tree mesh beside its original sprite, in its own zone under the real sky and moods. `python tools/environment/prop_gallery.py`, then `build_world.ps1`; play it with `tools/ue/play_gallery.bat` (or `play_gallery.ps1 [-GameHour 23] [-Weather storm] [-Rebuild]`; the game's `-MRGallery`, offline), or capture with `run_lookdev.ps1 -Label <name> -Gallery`. Rerun the generator after adding or changing props.
 - **Minimap pictures** (~2 min, a game window): `tools/ue/run_map_capture.ps1` captures every zone top-down and styles them (`build/minimap/review.png`); then `tools/ue/import_ui.ps1`. Recapture after changing a zone's art.
 - **In-game test modes** (command-line flags on the game): `-MRNetTest`, `-MRMoveTest`, `-MRScreenshots`, `-MRProfile`, `-MRLookDev`, `-MRUIShots`, `-MRMapCapture`, and `-MROffline` to play without a server. Console: `MRBookmark <name>`, `MREnvReload`, `MRUIReload`, `mr.GameHour <h>`, and online `MREffect <n> [ms] [xlat]` (a server screen effect, as if sent; `mr.UI.DamageNumbers 0` hides damage numbers).
 - **Visual work is decided by the user from images.** Show before/after sheets, recommend one option, keep the others reversible behind a data switch.
@@ -223,6 +233,7 @@ Full commands, flags and caches for the environment tools: [zone-environment/ref
 ## Known traps
 
 - Before debugging anything visual, check [pitfalls.md](.claude/skills/zone-environment/reference/pitfalls.md).
+- **Game data folder:** `tools/ue/package.ps1` copies `data/` into `game/MeridianRemastered/Data/` and leaves it there. Until 2026-10-09 development runs preferred that copy, so they read stale JSON after any packaging. `UMRZoneSubsystem::GetDataDir` now uses the repo's `data/` whenever the game isn't cooked; only a packaged build reads the copy.
 - A GPU crash (`DXGI_ERROR_DEVICE_HUNG`) in Nanite on the first frame of a look-dev run is a known engine issue, not your change; run it again.
 - A material helper used by a master must be in `_master`'s cache key in `environment_materials.py`, or the master won't rebuild.
 - An audio component must be held by a `UPROPERTY`, or it gets garbage-collected and the sound stops.

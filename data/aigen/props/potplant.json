@@ -1,0 +1,71 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "potplant",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 167,
+  "oo_const": "OO_POTPLANT",
+  "bgf": "potplant",
+  "frame": 0,
+  "describe": "a leafy green shrub growing in a white stone urn planter with a fluted bowl and a short pedestal",
+  "mesh": "SM_AI_Potplant",
+  "size_by": "height",
+  "placed": 5,
+  "rooms": 3,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}, "C4k": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "93deef9a-528d-42bb-8c69-7c29db09de79",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "potted plant 3d model",
+        "tris_raw": 858,
+        "file": "build/aigen/props/potplant/04_tripo_out/C.glb",
+        "digest": "617d699f29f1f88d",
+        "tris": 858,
+        "size_m": [0.3347, 0.4184, 0.5091]
+      },
+      "C4k": {
+        "tripo_task": "56954679-adcc-4024-809f-b0343c732b22",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image (45 credits); rerun of C (2026-10-09)",
+        "tripo_name": "potted plant 3d model",
+        "tris_raw": 3879,
+        "file": "build/aigen/props/potplant/04_tripo_out/C4k.glb",
+        "digest": "0cc92c66a00d9274",
+        "tris": 3879,
+        "size_m": [0.5517, 0.4635, 0.9633]
+      }
+    },
+    "chosen": {
+      "variant": "C4k",
+      "file": "build/aigen/props/potplant/04_tripo_out/C4k.glb",
+      "tripo_task": "56954679-adcc-4024-809f-b0343c732b22",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image (45 credits); rerun of C (2026-10-09)",
+      "tripo_name": "potted plant 3d model",
+      "tris_raw": 3879,
+      "digest": "0cc92c66a00d9274",
+      "tris": 3879,
+      "size_m": [0.5517, 0.4635, 0.9633]
+    }
+  },
+  "polycount": 1000,
+  "height_m": 1.799,
+  "width_m": 1.0427,
+  "lift_m": 0.0,
+  "sprite_px": [112, 157],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/potplant/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Potplant.glb",
+    "tris": 3879,
+    "size_m": [1.0302, 0.8655, 1.799],
+    "scale": 1.8675
+  }
+}

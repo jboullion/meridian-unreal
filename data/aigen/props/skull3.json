@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "skull3",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 74,
+  "oo_const": "OO_SKULL3",
+  "bgf": "skull3",
+  "frame": 0,
+  "describe": "a tall crooked bare wooden branch planted upright, with human skulls impaled along it",
+  "mesh": "SM_AI_Skull3",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "9f876643-4cf9-4c70-be20-d12c5b76bc8d",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "skull tree prop 3d model",
+        "tris_raw": 1974,
+        "file": "build/aigen/props/skull3/04_tripo_out/C.glb",
+        "digest": "d18a166976b6beca",
+        "tris": 1974,
+        "size_m": [0.331, 0.1919, 0.9792]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/skull3/04_tripo_out/C.glb",
+      "tripo_task": "9f876643-4cf9-4c70-be20-d12c5b76bc8d",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "skull tree prop 3d model",
+      "tris_raw": 1974,
+      "digest": "d18a166976b6beca",
+      "tris": 1974,
+      "size_m": [0.331, 0.1919, 0.9792]
+    }
+  },
+  "height_m": 2.5781,
+  "width_m": 0.8594,
+  "lift_m": 0.0,
+  "sprite_px": [112, 304],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/skull3/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Skull3.glb",
+    "tris": 1974,
+    "size_m": [0.8715, 0.5052, 2.5781],
+    "scale": 2.6329
+  }
+}

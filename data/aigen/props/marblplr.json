@@ -1,0 +1,58 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "marblplr",
+  "kind": "props",
+  "class": "Pillar",
+  "bgf": "marblplr",
+  "frame": 0,
+  "describe": "a slender pillar of white marble with a plain square base and capital, a round shaft wound with climbing green ivy",
+  "mesh": "SM_AI_Marblplr",
+  "size_by": "height",
+  "placed": 109,
+  "rooms": 10,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "68c02242-63e9-4f51-92d2-3187f09147a5",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "stone column 3d model",
+        "tris_raw": 1982,
+        "file": "build/aigen/props/marblplr/04_tripo_out/C.glb",
+        "digest": "b7ec45bac3c77447",
+        "tris": 1982,
+        "size_m": [0.2605, 0.26, 0.9798]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/marblplr/04_tripo_out/C.glb",
+      "tripo_task": "68c02242-63e9-4f51-92d2-3187f09147a5",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "stone column 3d model",
+      "tris_raw": 1982,
+      "digest": "b7ec45bac3c77447",
+      "tris": 1982,
+      "size_m": [0.2605, 0.26, 0.9798]
+    }
+  },
+  "height_m": 2.1055,
+  "width_m": 0.5844,
+  "lift_m": 0.0,
+  "sprite_px": [128, 245],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/marblplr/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Marblplr.glb",
+    "tris": 1982,
+    "size_m": [0.5597, 0.5587, 2.1055],
+    "scale": 2.14891
+  }
+}

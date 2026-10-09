@@ -1,0 +1,61 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "gryjug4",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 25,
+  "oo_const": "OO_GREY_JUG",
+  "bgf": "gryjug4",
+  "frame": 0,
+  "describe": "a heavy grey stoneware jug with a round belly, a short neck with a lip and a thick loop handle, mottled grey glaze",
+  "mesh": "SM_AI_Gryjug4",
+  "size_by": "height",
+  "placed": 2,
+  "rooms": 2,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "5871ee08-0eee-469c-8141-4739a61c35e1",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "ancient jug 3d model",
+        "tris_raw": 952,
+        "file": "build/aigen/props/gryjug4/04_tripo_out/C.glb",
+        "digest": "16d2097df5dfc720",
+        "tris": 952,
+        "size_m": [0.694, 0.6429, 0.9798]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/gryjug4/04_tripo_out/C.glb",
+      "tripo_task": "5871ee08-0eee-469c-8141-4739a61c35e1",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "ancient jug 3d model",
+      "tris_raw": 952,
+      "digest": "16d2097df5dfc720",
+      "tris": 952,
+      "size_m": [0.694, 0.6429, 0.9798]
+    }
+  },
+  "polycount": 1000,
+  "height_m": 0.6359,
+  "width_m": 0.4383,
+  "lift_m": 0.0,
+  "sprite_px": [59, 86],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/gryjug4/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Gryjug4.glb",
+    "tris": 952,
+    "size_m": [0.4504, 0.4172, 0.6359],
+    "scale": 0.64901
+  }
+}

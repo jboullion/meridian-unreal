@@ -1,0 +1,61 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "sacrbowl",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 112,
+  "oo_const": "OO_SACRIFICIALBOWL",
+  "bgf": "sacrbowl",
+  "frame": 0,
+  "describe": "a wide shallow sacrificial bowl of dark red stone with a black carved rim, holding a pool of murky green liquid",
+  "mesh": "SM_AI_Sacrbowl",
+  "size_by": "height",
+  "placed": 2,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "fd4d8064-acc2-4816-bc50-69b2b6e6b745",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "ornate stone bowl 3d model",
+        "tris_raw": 986,
+        "file": "build/aigen/props/sacrbowl/04_tripo_out/C.glb",
+        "digest": "e2975e7edb5ebf15",
+        "tris": 986,
+        "size_m": [0.9828, 0.9801, 0.4192]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/sacrbowl/04_tripo_out/C.glb",
+      "tripo_task": "fd4d8064-acc2-4816-bc50-69b2b6e6b745",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "ornate stone bowl 3d model",
+      "tris_raw": 986,
+      "digest": "e2975e7edb5ebf15",
+      "tris": 986,
+      "size_m": [0.9828, 0.9801, 0.4192]
+    }
+  },
+  "polycount": 1000,
+  "height_m": 0.2234,
+  "width_m": 0.401,
+  "lift_m": 0.0,
+  "sprite_px": [70, 39],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/sacrbowl/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Sacrbowl.glb",
+    "tris": 986,
+    "size_m": [0.5237, 0.5223, 0.2234],
+    "scale": 0.53288
+  }
+}

@@ -178,6 +178,8 @@ def restyle_jobs(m: dict, a) -> list:
     # views: the manifest's "views" if set, else the front plus every view the original draws itself
     angles = m.get("angles", {})
     views = a.views.split(",") if a.views else cfg.get("views") or ["front"] + list(angles)
+    if m.get("symmetrical") and not a.views:
+        views = ["front"]  # the back reuses the front (tripo.SYMMETRICAL_VIEWS): nothing else to paint
     out = work_dir(m) / "02_restyle"
     out.mkdir(parents=True, exist_ok=True)
     jobs = []
@@ -296,10 +298,19 @@ def resolve_input(m: dict, source: str, view: str) -> Path:
     this view) or "<provider>@<view>" (its restyle of another view: "openai@front" gives a side or the
     back the front's image, for props the original draws once, rocks and dung, docs/adr/0007)."""
     w = work_dir(m)
+    source, _, mirror = source.partition(":")
     if source == "upscale":
-        return w / "01_upscale" / "canvas.png"
-    source, _, own = source.partition("@")
-    return w / "02_restyle" / ("%s_%s.png" % (source, own or view))
+        path = w / "01_upscale" / "canvas.png"
+    else:
+        source, _, own = source.partition("@")
+        path = w / "02_restyle" / ("%s_%s.png" % (source, own or view))
+    if mirror == "mirror" and path.exists():
+        # "<source>:mirror": that image flipped left to right (a symmetrical prop's back, tripo.SYMMETRICAL_VIEWS)
+        flipped = path.with_name(path.stem + "_mirrored.png")
+        if not flipped.exists() or flipped.stat().st_mtime < path.stat().st_mtime:
+            Image.open(path).transpose(Image.Transpose.FLIP_LEFT_RIGHT).save(flipped)
+        return flipped
+    return path
 
 
 def step_tripo_prepare(m: dict, a):
@@ -308,7 +319,10 @@ def step_tripo_prepare(m: dict, a):
         return
     w = work_dir(m)
     variants = {}
-    for variant, views in (m.get("tripo", {}).get("variants") or tripo.default_variants(m)).items():
+    wanted = dict(m.get("tripo", {}).get("variants") or tripo.default_variants(m))
+    if m.get("symmetrical"):  # the front sprite in the Front and Back slots (tripo.SYMMETRICAL_VIEWS)
+        wanted.setdefault(tripo.symmetrical_variant(m), tripo.SYMMETRICAL_VIEWS)
+    for variant, views in wanted.items():
         paths = {view: resolve_input(m, source, view) for view, source in views.items()}
         missing = [str(p) for p in paths.values() if not p.exists()]
         if missing:

@@ -23,7 +23,7 @@
         "tripo_name": "giant spider 3d model",
         "tris_raw": 5910,
         "file": "build/aigen/props/modspdr/04_tripo_out/C.glb",
-        "digest": "c957b5e63f52d2c8",
+        "digest": "0aa57d9afd877422",
         "tris": 5910,
         "size_m": [0.9839, 0.7776, 0.7519]
       },
@@ -33,7 +33,7 @@
         "tripo_name": "spider creature 3d model",
         "tris_raw": 795,
         "file": "build/aigen/props/modspdr/04_tripo_out/MV1k.glb",
-        "digest": "41e65e13eea19d2b",
+        "digest": "3f0b5b4ea8c8dd6c",
         "tris": 795,
         "size_m": [0.3308, 0.7707, 0.3614]
       },
@@ -41,7 +41,11 @@
         "tripo_task": "a0411936-0b9f-41f2-acd2-8d340c3019e3",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 polycount (manifest override), multi-view front/left/back/right from the original's angle frames (45 credits)",
         "tripo_name": "spider 3d model",
-        "tris_raw": 3639
+        "tris_raw": 3639,
+        "file": "build/aigen/props/modspdr/04_tripo_out/MV4k.glb",
+        "digest": "9c6345a42e0f688d",
+        "tris": 3639,
+        "size_m": [0.7687, 0.9832, 0.6217]
       }
     },
     "chosen": {
@@ -95,6 +99,23 @@
   "normalized_variants": {
     "MV4k": {
       "file": "build/environment/kit/SM_AI_Modspdr_MV4k.glb",
+      "tris": 3639,
+      "size_m": [0.4515, 0.5775, 0.3652],
+      "scale": 0.58739
+    }
+  },
+  "custom": {
+    "variant": "MV4k",
+    "file": "build/aigen/props/modspdr/04_tripo_out/MV4k.glb",
+    "tripo_task": "a0411936-0b9f-41f2-acd2-8d340c3019e3",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 polycount (manifest override), multi-view front/left/back/right from the original's angle frames (45 credits)",
+    "tripo_name": "spider 3d model",
+    "tris_raw": 3639,
+    "digest": "9c6345a42e0f688d",
+    "tris": 3639,
+    "size_m": [0.7687, 0.9832, 0.6217],
+    "normalized": {
+      "file": "build/environment/kit/SM_AI_Modspdr_Custom.glb",
       "tris": 3639,
       "size_m": [0.4515, 0.5775, 0.3652],
       "scale": 0.58739

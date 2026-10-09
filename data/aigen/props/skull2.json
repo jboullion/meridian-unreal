@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "skull2",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 73,
+  "oo_const": "OO_SKULL2",
+  "bgf": "skull2",
+  "frame": 0,
+  "describe": "a tall tripod of three long wooden staves bound together near the top, a stack of skulls and crossed bones mounted above them",
+  "mesh": "SM_AI_Skull2",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "f4f289cf-e27f-4482-a398-e721ea58dadc",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "skull totem 3d model",
+        "tris_raw": 1918,
+        "file": "build/aigen/props/skull2/04_tripo_out/C.glb",
+        "digest": "81d80d3a19802222",
+        "tris": 1918,
+        "size_m": [0.4355, 0.1889, 0.9798]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/skull2/04_tripo_out/C.glb",
+      "tripo_task": "f4f289cf-e27f-4482-a398-e721ea58dadc",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "skull totem 3d model",
+      "tris_raw": 1918,
+      "digest": "81d80d3a19802222",
+      "tris": 1918,
+      "size_m": [0.4355, 0.1889, 0.9798]
+    }
+  },
+  "height_m": 2.7242,
+  "width_m": 1.0828,
+  "lift_m": 0.0,
+  "sprite_px": [152, 320],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/skull2/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Skull2.glb",
+    "tris": 1918,
+    "size_m": [1.211, 0.5253, 2.7242],
+    "scale": 2.78037
+  }
+}

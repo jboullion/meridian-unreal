@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "rice",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 49,
+  "oo_const": "OO_RICE",
+  "bgf": "rice",
+  "frame": 0,
+  "describe": "a tall burlap sack of grain, tied at the top, printed with a faded brown rice sheaf emblem",
+  "mesh": "SM_AI_Rice",
+  "size_by": "height",
+  "placed": 3,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "bd398ae6-fa57-4143-8eb4-762750bb2846",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "burlap sack 3d model",
+        "tris_raw": 1984,
+        "file": "build/aigen/props/rice/04_tripo_out/C.glb",
+        "digest": "679df1b0b62a03cc",
+        "tris": 1984,
+        "size_m": [0.656, 0.3892, 0.9818]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/rice/04_tripo_out/C.glb",
+      "tripo_task": "bd398ae6-fa57-4143-8eb4-762750bb2846",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "burlap sack 3d model",
+      "tris_raw": 1984,
+      "digest": "679df1b0b62a03cc",
+      "tris": 1984,
+      "size_m": [0.656, 0.3892, 0.9818]
+    }
+  },
+  "height_m": 0.9539,
+  "width_m": 0.6617,
+  "lift_m": 0.0,
+  "sprite_px": [78, 112],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/rice/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Rice.glb",
+    "tris": 1984,
+    "size_m": [0.6374, 0.3781, 0.9539],
+    "scale": 0.97157
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "boxsnak4",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 14,
+  "oo_const": "OO_BOX_WITH_SNAKE",
+  "bgf": "boxsnak4",
+  "frame": 0,
+  "describe": "a slatted wooden crate of rough copper-brown boards, its open top heaped with the thick tangled coils of a mottled brown snake",
+  "mesh": "SM_AI_Boxsnak4",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {
+      "C": {"front": "openai"},
+      "FB": {"front": "openai", "back": "openai"},
+      "SYMM": {"front": "openai", "back": "openai@front:mirror"}
+    },
+    "runs": {
+      "C": {
+        "tripo_task": "bd080376-248d-4dc2-8ec5-888878d260a0",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "wooden crate chains 3d model",
+        "tris_raw": 1691,
+        "file": "build/aigen/props/boxsnak4/04_tripo_out/C.glb",
+        "digest": "cd49f649892403e4",
+        "tris": 1691,
+        "size_m": [0.9851, 0.6899, 0.8687]
+      },
+      "FB": {
+        "tripo_task": "386bdf77-1a8c-4914-b275-3469d576ac40",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view Front + Back (the back painted by OpenAI from the front) (45 credits; 2026-10-09)"
+      },
+      "SYM": {
+        "tripo_task": "7de4134c-ea75-4f56-b4e3-d546fe047870",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in both the Front and Back slots (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/boxsnak4/04_tripo_out/SYM.glb",
+        "digest": "e1fcb9ced3505543",
+        "tris": 3527,
+        "size_m": [0.9801, 0.7375, 0.8462]
+      },
+      "SYMM": {
+        "tripo_task": "0eef3ba7-7447-4252-9d23-de1088e6b94b",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/boxsnak4/04_tripo_out/SYMM.glb",
+        "digest": "b4aeef37867ea8a3",
+        "tris": 3395,
+        "size_m": [0.9905, 0.734, 0.8581]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/boxsnak4/04_tripo_out/C.glb",
+      "tripo_task": "bd080376-248d-4dc2-8ec5-888878d260a0",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "wooden crate chains 3d model",
+      "tris_raw": 1691,
+      "digest": "5d5f44f953294c62",
+      "tris": 1691,
+      "size_m": [0.9851, 0.6899, 0.8687]
+    }
+  },
+  "height_m": 0.6359,
+  "width_m": 0.7648,
+  "lift_m": 0.0086,
+  "sprite_px": [96, 80],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/boxsnak4/02_restyle/openai_front.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac8efb6ab288190b451d8c3f99e2958",
+      "file": "build/aigen/props/boxsnak4/02_restyle/openai_back.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Boxsnak4.glb",
+    "tris": 1691,
+    "size_m": [0.7211, 0.5051, 0.6359],
+    "scale": 0.73203
+  },
+  "polycount": 4000,
+  "symmetrical": true,
+  "custom": {
+    "variant": "SYMM",
+    "file": "build/aigen/props/boxsnak4/04_tripo_out/SYMM.glb",
+    "tripo_task": "0eef3ba7-7447-4252-9d23-de1088e6b94b",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+    "digest": "b4aeef37867ea8a3",
+    "tris": 3395,
+    "size_m": [0.9905, 0.734, 0.8581],
+    "normalized": {
+      "file": "build/environment/kit/SM_AI_Boxsnak4_Custom.glb",
+      "tris": 3395,
+      "size_m": [0.734, 0.5439, 0.6359],
+      "scale": 0.74106
+    }
+  }
+}

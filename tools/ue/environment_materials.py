@@ -1504,6 +1504,33 @@ def tree_materials(kind):
     return out
 
 
+def build_gallery_sprite_master(name):
+    """M_GallerySprite: the prop gallery's sprite billboards (tools/environment/prop_gallery.py). The
+    original sprite as a lit, matte, two-sided card cut out on its alpha, so it sits under the same
+    sun and moods as the mesh beside it."""
+    mat = _new_material(name)
+    tex = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -600, 0, parameter_name="Sprite",
+                sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR,
+                texture=eal.load_asset("/Engine/EngineResources/DefaultTexture"))
+    mel.connect_material_property(tex, "RGB", unreal.MaterialProperty.MP_BASE_COLOR)
+    mel.connect_material_property(tex, "A", unreal.MaterialProperty.MP_OPACITY_MASK)
+    mel.connect_material_property(_expr(mat, unreal.MaterialExpressionConstant, -300, 200, r=0.95), "", unreal.MaterialProperty.MP_ROUGHNESS)
+    mel.connect_material_property(_expr(mat, unreal.MaterialExpressionConstant, -300, 300, r=0.1), "", unreal.MaterialProperty.MP_SPECULAR)
+    mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+    mat.set_editor_property("two_sided", True)
+    mel.recompile_material(mat)
+    eal.save_loaded_asset(mat)
+
+
+def gallery_sprite_material(texture_file):
+    """-> MI for one gallery sprite: T_GallerySprite_<bgf>.png from build/textures_placeholder/ on M_GallerySprite."""
+    tex = ensure_textures([(texture_file, True, False, True)])
+    if texture_file not in tex:
+        return None
+    master = _master("M_GallerySprite", build_gallery_sprite_master)
+    return _instance("MI_" + os.path.splitext(texture_file)[0], master, textures={"Sprite": tex[texture_file]})
+
+
 def build_night_sky_master(name, stars, mpc):
     """M_NightSky (docs/adr/0005): the sky dome's material. It is a sky material (is_sky), so the sky
     atmosphere is drawn through it (view luminance + the sun / moon disc) exactly as without a dome,

@@ -1,0 +1,58 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "newbsign",
+  "kind": "props",
+  "class": "AssassinSign",
+  "bgf": "newbsign",
+  "frame": 0,
+  "describe": "a signpost: a twisted grey iron post on a round foot holding an oval white plaque with dark engraved lettering, a small iron finial above",
+  "mesh": "SM_AI_Newbsign",
+  "size_by": "height",
+  "placed": 2,
+  "rooms": 2,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "7142da05-86e0-40cc-832d-b54a469171a8",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "ornate metal sign 3d model",
+        "tris_raw": 1964,
+        "file": "build/aigen/props/newbsign/04_tripo_out/C.glb",
+        "digest": "05c369351dc22bba",
+        "tris": 1964,
+        "size_m": [0.435, 0.4326, 0.9725]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/newbsign/04_tripo_out/C.glb",
+      "tripo_task": "7142da05-86e0-40cc-832d-b54a469171a8",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "ornate metal sign 3d model",
+      "tris_raw": 1964,
+      "digest": "05c369351dc22bba",
+      "tris": 1964,
+      "size_m": [0.435, 0.4326, 0.9725]
+    }
+  },
+  "height_m": 1.6844,
+  "width_m": 0.7563,
+  "lift_m": 0.0,
+  "sprite_px": [66, 147],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/newbsign/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Newbsign.glb",
+    "tris": 1964,
+    "size_m": [0.7535, 0.7493, 1.6844],
+    "scale": 1.73208
+  }
+}

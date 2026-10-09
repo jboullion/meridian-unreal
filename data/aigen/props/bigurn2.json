@@ -1,0 +1,61 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "bigurn2",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 90,
+  "oo_const": "OO_BIGURN2",
+  "bgf": "bigurn2",
+  "frame": 0,
+  "describe": "a tall slender amphora of burnished gold with two handles at the neck, its surface embossed with leafy relief, on a narrow foot",
+  "mesh": "SM_AI_Bigurn2",
+  "size_by": "height",
+  "placed": 2,
+  "rooms": 2,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "0157321a-c3f1-4d22-97e8-d57d8a8eeea1",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "ancient bronze vase 3d model",
+        "tris_raw": 949,
+        "file": "build/aigen/props/bigurn2/04_tripo_out/C.glb",
+        "digest": "f33a6289ca48a578",
+        "tris": 949,
+        "size_m": [0.3809, 0.3371, 0.9807]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/bigurn2/04_tripo_out/C.glb",
+      "tripo_task": "0157321a-c3f1-4d22-97e8-d57d8a8eeea1",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "ancient bronze vase 3d model",
+      "tris_raw": 949,
+      "digest": "f33a6289ca48a578",
+      "tris": 949,
+      "size_m": [0.3809, 0.3371, 0.9807]
+    }
+  },
+  "polycount": 1000,
+  "height_m": 0.9625,
+  "width_m": 0.3438,
+  "lift_m": 0.0,
+  "sprite_px": [40, 112],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/bigurn2/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Bigurn2.glb",
+    "tris": 949,
+    "size_m": [0.3738, 0.3309, 0.9625],
+    "scale": 0.98146
+  }
+}

@@ -1,0 +1,5827 @@
+{
+ "_doc": "Every room's placed objects by sprite (tools/aigen/inventory.py --world)",
+ "sprites": {
+  "smoke": {
+   "bgf": "smoke",
+   "name": null,
+   "kind": "effect",
+   "classes": {
+    "SmokeColumn": 31
+   },
+   "rooms": {
+    "BergJala": 2,
+    "BergAuc": 1,
+    "BergCity": 5,
+    "BergLeader": 1,
+    "BergVault": 1,
+    "CorNoth": 7,
+    "Jasper": 1,
+    "JixaCity": 1,
+    "JixaHall": 1,
+    "JixaSmith": 1,
+    "Berg8": 1,
+    "DValley1": 1,
+    "DValley2": 1,
+    "DValley3": 1,
+    "DValley4": 2,
+    "DValley5": 3,
+    "OutdoorsKA3": 1
+   },
+   "count": 31,
+   "bitmaps": 5,
+   "groups": 5,
+   "static": false,
+   "done": null
+  },
+  "forge": {
+   "bgf": "forge",
+   "name": "smelting forge",
+   "kind": "effect",
+   "classes": {
+    "Forge": 14,
+    "KocatanForge": 12
+   },
+   "rooms": {
+    "BergSmith": 1,
+    "GuildHall1": 2,
+    "GuildHall10": 2,
+    "GuildHall14": 2,
+    "GuildHall16": 2,
+    "GuildHall17": 2,
+    "GuildHall2": 2,
+    "GuildHall4": 2,
+    "GuildHall5": 2,
+    "GuildHall6": 2,
+    "GuildHall8": 2,
+    "GuildHall9": 2,
+    "KocatanSmithy": 2,
+    "TosSmithy": 1
+   },
+   "count": 26,
+   "bitmaps": 5,
+   "groups": 8,
+   "static": true,
+   "done": null
+  },
+  "portal": {
+   "bgf": "portal",
+   "name": "portal",
+   "kind": "effect",
+   "classes": {
+    "Portal": 20
+   },
+   "rooms": {
+    "Cave3": 1,
+    "CorNothMuseum": 5,
+    "Gallery": 1,
+    "OutdoorsG9": 2,
+    "OutdoorsI9": 2,
+    "Canyon2": 1,
+    "Orccave1": 2,
+    "Underworld": 6
+   },
+   "count": 20,
+   "bitmaps": 18,
+   "groups": 4,
+   "static": false,
+   "done": null
+  },
+  "light": {
+   "bgf": "light",
+   "name": "moving sector",
+   "kind": "effect",
+   "classes": {
+    "MovingSector": 13
+   },
+   "rooms": {
+    "SewerKingLair": 2,
+    "OutdoorsG9": 9,
+    "LichMaze": 2
+   },
+   "count": 13,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "teleport": {
+   "bgf": "teleport",
+   "name": "rip in space",
+   "kind": "effect",
+   "classes": {
+    "HellPortal": 4,
+    "DeathRealmExit": 1,
+    "DeathRealmEntrance": 2,
+    "CorpseNode": 2
+   },
+   "rooms": {
+    "Gallery": 1,
+    "DeathRealmCastle2": 1,
+    "MarionCrypt4": 2,
+    "Underworld": 3,
+    "University": 2
+   },
+   "count": 9,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": null
+  },
+  "fountjet": {
+   "bgf": "fountjet",
+   "name": "fountain",
+   "kind": "effect",
+   "classes": {
+    "FountainJet": 2
+   },
+   "rooms": {
+    "Gallery": 1,
+    "Duke4": 1
+   },
+   "count": 2,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": null
+  },
+  "modteleport": {
+   "bgf": "modteleport",
+   "name": "miniature portal",
+   "kind": "effect",
+   "classes": {
+    "OO_MUSEUM_TELEPORT": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "mushroom": {
+   "bgf": "mushroom",
+   "name": "mushroom",
+   "kind": "item",
+   "classes": {
+    "Mushroom": 5,
+    "OO_MUSEUM_INKYCAP": 1
+   },
+   "rooms": {
+    "Forest2": 4,
+    "RazaCrypt": 1,
+    "RazaMuseum": 1
+   },
+   "count": 6,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "mushroom"
+  },
+  "apple": {
+   "bgf": "apple",
+   "name": "apple",
+   "kind": "item",
+   "classes": {
+    "Apple": 2
+   },
+   "rooms": {
+    "ObjectRoom": 1,
+    "MonsterRoom": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "coin": {
+   "bgf": "coin",
+   "name": "shilling",
+   "kind": "item",
+   "classes": {
+    "Shillings": 1
+   },
+   "rooms": {
+    "RazaCrypt": 1
+   },
+   "count": 1,
+   "bitmaps": 2,
+   "groups": 2,
+   "static": false,
+   "done": null
+  },
+  "frozjewl": {
+   "bgf": "frozjewl",
+   "name": "Jewel of Froz",
+   "kind": "item",
+   "classes": {
+    "JewelOfFroz": 1
+   },
+   "rooms": {
+    "Cave3": 1
+   },
+   "count": 1,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": null
+  },
+  "herb": {
+   "bgf": "herb",
+   "name": "herb",
+   "kind": "item",
+   "classes": {
+    "Herbs": 1
+   },
+   "rooms": {
+    "RazaCrypt": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "scepter": {
+   "bgf": "scepter",
+   "name": "relic of Qor",
+   "kind": "item",
+   "classes": {
+    "Scepter": 1
+   },
+   "rooms": {
+    "Temple": 1
+   },
+   "count": 1,
+   "bitmaps": 2,
+   "groups": 2,
+   "static": false,
+   "done": null
+  },
+  "shrubbry": {
+   "bgf": "shrubbry",
+   "name": "elderberry",
+   "kind": "item",
+   "classes": {
+    "Elderberry": 1
+   },
+   "rooms": {
+    "RazaCrypt": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "blank": {
+   "bgf": "blank",
+   "name": null,
+   "kind": "logic",
+   "classes": {
+    "DynamicLight": 187,
+    "LivingStatue": 3
+   },
+   "rooms": {
+    "AssassinHeadQuarters": 6,
+    "BarVault": 1,
+    "BergDevRoom": 1,
+    "BergAuc": 2,
+    "BergBank": 3,
+    "BergCity": 5,
+    "BergInn": 7,
+    "BergLeader": 3,
+    "BergLeaderHall": 1,
+    "BergStore": 5,
+    "BowmakerHut": 1,
+    "Cave3": 1,
+    "CorNothGenHall": 4,
+    "CorNothMuseum": 6,
+    "CorNothUniversity": 3,
+    "DungeonVictoria": 8,
+    "DValley5B": 2,
+    "HermitHut": 3,
+    "JixaCity": 5,
+    "JixaSmith": 2,
+    "KocatanApoth": 2,
+    "KocatanBank": 4,
+    "KocatanSmithy": 1,
+    "KocatanStore": 2,
+    "Marion": 1,
+    "Berg1": 1,
+    "Berg3Cave": 3,
+    "Berg5": 1,
+    "Berg7": 3,
+    "Berg8": 2,
+    "BergGrave": 15,
+    "UlakeD6E6": 1,
+    "DeathRealmTosGraveyard": 1,
+    "JasSewer1": 7,
+    "MadScientistHut": 1,
+    "MarionCrypt3a": 5,
+    "MarionCrypt1": 1,
+    "MarionCrypt2": 1,
+    "Necropolis3": 1,
+    "Duke5": 5,
+    "RatCave2": 1,
+    "OrcCave5Extension": 1,
+    "RazaCrypt": 1,
+    "SurvivalArena": 10,
+    "Swamp2": 5,
+    "TosGraveyard": 1,
+    "RazaBar": 3,
+    "RazaHall": 1,
+    "RazaHut": 1,
+    "RazaInn": 4,
+    "RazaMuseum": 12,
+    "RazaApoth": 1,
+    "RazaSmith": 3,
+    "RazaVault": 3,
+    "TosApoth": 3,
+    "TosSmithy": 5,
+    "TradingPost": 8
+   },
+   "count": 190,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "news": {
+   "bgf": "news",
+   "name": "Newscroll",
+   "kind": "logic",
+   "classes": {
+    "Newslink": 8,
+    "NewsLink": 10,
+    "NewsGuildCharter": 1,
+    "News": 6,
+    "NewsAnnouncement": 2
+   },
+   "rooms": {
+    "BarHall": 1,
+    "BarInn": 1,
+    "GMHall": 1,
+    "BergHall": 1,
+    "BergInn": 1,
+    "CorHall": 1,
+    "CorInn": 1,
+    "Field1": 1,
+    "GuildHall": 1,
+    "GodRoom": 1,
+    "JasperHall": 1,
+    "JasperInn": 1,
+    "JasperTavern": 1,
+    "JixaCity": 1,
+    "JixaHall": 1,
+    "JixaInn": 1,
+    "KocatanHall": 1,
+    "KocatanInn": 1,
+    "MarHall": 1,
+    "DValleyTemple": 1,
+    "MarionElderHut": 1,
+    "MarionInn": 1,
+    "TosInn": 1,
+    "RazaHall": 1,
+    "RazaInn": 1,
+    "TosGrey": 1,
+    "TosHall": 1
+   },
+   "count": 27,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "res0001a": {
+   "bgf": "res0001a",
+   "name": "teotixleoc",
+   "kind": "monster",
+   "classes": {
+    "Thrasher": 12
+   },
+   "rooms": {
+    "MarionCrypt3a": 12
+   },
+   "count": 12,
+   "bitmaps": 72,
+   "groups": 9,
+   "static": false,
+   "done": null
+  },
+  "mummy": {
+   "bgf": "mummy",
+   "name": "kosnapleoc",
+   "kind": "monster",
+   "classes": {
+    "SpectralMummy": 1,
+    "MummyNoTreasure": 1,
+    "Mummy": 4,
+    "BlackMummy": 1
+   },
+   "rooms": {
+    "MarionCrypt1": 1,
+    "RazaCrypt": 6
+   },
+   "count": 7,
+   "bitmaps": 54,
+   "groups": 9,
+   "static": false,
+   "done": null
+  },
+  "duskrat": {
+   "bgf": "duskrat",
+   "name": "teotnapyijoa",
+   "kind": "monster",
+   "classes": {
+    "DuskRat": 6
+   },
+   "rooms": {
+    "RatCave2": 6
+   },
+   "count": 6,
+   "bitmaps": 66,
+   "groups": 11,
+   "static": false,
+   "done": null
+  },
+  "gskelbody": {
+   "bgf": "gskelbody",
+   "name": "gikochaleoc",
+   "kind": "monster",
+   "classes": {
+    "GiantDaemonSkeleton": 6
+   },
+   "rooms": {
+    "Necropolis6": 6
+   },
+   "count": 6,
+   "bitmaps": 78,
+   "groups": 13,
+   "static": false,
+   "done": null
+  },
+  "cow": {
+   "bgf": "cow",
+   "name": "nahyijoa",
+   "kind": "monster",
+   "classes": {
+    "Cow": 3
+   },
+   "rooms": {
+    "Raza": 3
+   },
+   "count": 3,
+   "bitmaps": 30,
+   "groups": 5,
+   "static": false,
+   "done": null
+  },
+  "ratking": {
+   "bgf": "ratking",
+   "name": "konapyijoa",
+   "kind": "monster",
+   "classes": {
+    "GiantRatKing": 3
+   },
+   "rooms": {
+    "Berg8": 1,
+    "GolemDungeon": 1,
+    "RatCave2": 1
+   },
+   "count": 3,
+   "bitmaps": 66,
+   "groups": 11,
+   "static": false,
+   "done": null
+  },
+  "troll": {
+   "bgf": "troll",
+   "name": "Guardian of Zjiria",
+   "kind": "monster",
+   "classes": {
+    "StoneTroll": 3
+   },
+   "rooms": {
+    "OutdoorsI9": 3
+   },
+   "count": 3,
+   "bitmaps": 36,
+   "groups": 7,
+   "static": false,
+   "done": null
+  },
+  "amoeba": {
+   "bgf": "amoeba",
+   "name": "mimnoc",
+   "kind": "monster",
+   "classes": {
+    "Mimic": 2
+   },
+   "rooms": {
+    "Necropolis6": 2
+   },
+   "count": 2,
+   "bitmaps": 18,
+   "groups": 5,
+   "static": false,
+   "done": null
+  },
+  "faerie-g": {
+   "bgf": "faerie-g",
+   "name": "kinimixlal",
+   "kind": "monster",
+   "classes": {
+    "Fairy": 1,
+    "Decorator": 1
+   },
+   "rooms": {
+    "FeyForest": 1,
+    "RentableRoom": 1
+   },
+   "count": 2,
+   "bitmaps": 48,
+   "groups": 8,
+   "static": false,
+   "done": null
+  },
+  "skelbody": {
+   "bgf": "skelbody",
+   "name": "chaleoc",
+   "kind": "monster",
+   "classes": {
+    "Skeleton": 1,
+    "BatteredSkeleton": 1
+   },
+   "rooms": {
+    "OutdoorsG9": 2
+   },
+   "count": 2,
+   "bitmaps": 78,
+   "groups": 13,
+   "static": false,
+   "done": null
+  },
+  "earthele": {
+   "bgf": "earthele",
+   "name": "Dirt",
+   "kind": "monster",
+   "classes": {
+    "EarthElementalChampion": 1
+   },
+   "rooms": {
+    "GolemDungeon": 1
+   },
+   "count": 1,
+   "bitmaps": 36,
+   "groups": 7,
+   "static": false,
+   "done": null
+  },
+  "faerie-e": {
+   "bgf": "faerie-e",
+   "name": "teotimixlal",
+   "kind": "monster",
+   "classes": {
+    "EvilFairy": 1
+   },
+   "rooms": {
+    "FeyForest": 1
+   },
+   "count": 1,
+   "bitmaps": 48,
+   "groups": 8,
+   "static": false,
+   "done": null
+  },
+  "fieleme": {
+   "bgf": "fieleme",
+   "name": "fire golem",
+   "kind": "monster",
+   "classes": {
+    "FireElemental": 1
+   },
+   "rooms": {
+    "GolemDungeon": 1
+   },
+   "count": 1,
+   "bitmaps": 36,
+   "groups": 7,
+   "static": false,
+   "done": null
+  },
+  "ghost": {
+   "bgf": "ghost",
+   "name": "far'nohl kotezleoc",
+   "kind": "monster",
+   "classes": {
+    "Ghost": 1
+   },
+   "rooms": {
+    "Throne2": 1
+   },
+   "count": 1,
+   "bitmaps": 12,
+   "groups": 2,
+   "static": false,
+   "done": null
+  },
+  "lichax": {
+   "bgf": "lichax",
+   "name": "ghostly remains of Queen Venya'cyr",
+   "kind": "monster",
+   "classes": {
+    "DeadLich": 1
+   },
+   "rooms": {
+    "InnerSanctum": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "minotaurb": {
+   "bgf": "minotaurb",
+   "name": "minotaur",
+   "kind": "monster",
+   "classes": {
+    "Minotaur": 1
+   },
+   "rooms": {
+    "Necropolis6": 1
+   },
+   "count": 1,
+   "bitmaps": 64,
+   "groups": 8,
+   "static": false,
+   "done": null
+  },
+  "spdrqu": {
+   "bgf": "spdrqu",
+   "name": "queen spider",
+   "kind": "monster",
+   "classes": {
+    "SpiderQueen": 1
+   },
+   "rooms": {
+    "SpiderNest1": 1
+   },
+   "count": 1,
+   "bitmaps": 18,
+   "groups": 3,
+   "static": false,
+   "done": null
+  },
+  "wothorns": {
+   "bgf": "wothorns",
+   "name": "patch of bramble",
+   "kind": "monster",
+   "classes": {
+    "Brambles": 1
+   },
+   "rooms": {
+    "OutdoorsK5": 1
+   },
+   "count": 1,
+   "bitmaps": 5,
+   "groups": 5,
+   "static": false,
+   "done": null
+  },
+  "xeoneru": {
+   "bgf": "xeoneru",
+   "name": "ne'xeochicatl",
+   "kind": "monster",
+   "classes": {
+    "XeoNeru": 1
+   },
+   "rooms": {
+    "DValley5": 1
+   },
+   "count": 1,
+   "bitmaps": 60,
+   "groups": 10,
+   "static": false,
+   "done": null
+  },
+  "yeti": {
+   "bgf": "yeti",
+   "name": "yeti",
+   "kind": "monster",
+   "classes": {
+    "yeti": 1
+   },
+   "rooms": {
+    "IceCave1": 1
+   },
+   "count": 1,
+   "bitmaps": 36,
+   "groups": 6,
+   "static": false,
+   "done": null
+  },
+  "pringard": {
+   "bgf": "pringard",
+   "name": "Keep Guard",
+   "kind": "npc",
+   "classes": {
+    "PrincessGuard": 29
+   },
+   "rooms": {
+    "Castle2a": 3,
+    "Castle2d": 10,
+    "Castle2b": 9,
+    "Castle2c": 4,
+    "OutdoorsJ3": 1,
+    "OutdoorsJ3_1": 2
+   },
+   "count": 29,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "dukegard": {
+   "bgf": "dukegard",
+   "name": "Keep Guard",
+   "kind": "npc",
+   "classes": {
+    "DukeGuard": 15,
+    "Dukeguard": 4
+   },
+   "rooms": {
+    "BarloqueCourt": 1,
+    "BarloqueJail": 3,
+    "Duke1": 4,
+    "Duke2": 1,
+    "Jixa1": 2,
+    "Duke4": 4,
+    "Duke5": 4
+   },
+   "count": 19,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcsentry": {
+   "bgf": "kcsentry",
+   "name": "sentry",
+   "kind": "npc",
+   "classes": {
+    "KocatanSentry": 6
+   },
+   "rooms": {
+    "KocatanBank": 1,
+    "KocatanGuardtowerEast": 4,
+    "OrcCave6": 1
+   },
+   "count": 6,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "captain": {
+   "bgf": "captain",
+   "name": "Captain Seaborn",
+   "kind": "npc",
+   "classes": {
+    "BoatCaptain": 4
+   },
+   "rooms": {
+    "BarloquePort": 1,
+    "KocatanSouth": 1,
+    "DesertShore4": 1,
+    "MarionPlantation": 1
+   },
+   "count": 4,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bqmerch": {
+   "bgf": "bqmerch",
+   "name": "Herbutte",
+   "kind": "npc",
+   "classes": {
+    "BarloqueMerchant": 2
+   },
+   "rooms": {
+    "BarHall": 1,
+    "BarMerchant": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bqsmith": {
+   "bgf": "bqsmith",
+   "name": "Fehr'loi Qan",
+   "kind": "npc",
+   "classes": {
+    "BarloqueBlacksmith": 1,
+    "RazaBlacksmith": 1
+   },
+   "rooms": {
+    "BarloqueSmithy": 1,
+    "RazaSmith": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "cngrocer": {
+   "bgf": "cngrocer",
+   "name": "Solomon",
+   "kind": "npc",
+   "classes": {
+    "CornothGrocer": 1,
+    "JasperVaultMan": 1
+   },
+   "rooms": {
+    "CorGrocer": 1,
+    "JasperVault": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "jsmerch": {
+   "bgf": "jsmerch",
+   "name": "Zhieu B'hob",
+   "kind": "npc",
+   "classes": {
+    "JasperMerchant": 1,
+    "RazaInnkeeper": 1
+   },
+   "rooms": {
+    "JasperStore": 1,
+    "RazaInn": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcshopk": {
+   "bgf": "kcshopk",
+   "name": "Pacal ix'Anoak",
+   "kind": "npc",
+   "classes": {
+    "kocatanShopkeeper": 1,
+    "RazaApothecary": 1
+   },
+   "rooms": {
+    "KocatanStore": 1,
+    "RazaApoth": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "mrelder": {
+   "bgf": "mrelder",
+   "name": "Ran er'Hoth",
+   "kind": "npc",
+   "classes": {
+    "MarionElder": 1,
+    "RazaElder": 1
+   },
+   "rooms": {
+    "Marion": 1,
+    "RazaHut": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "mrhealer": {
+   "bgf": "mrhealer",
+   "name": "Lady Aftyn",
+   "kind": "npc",
+   "classes": {
+    "MarionHealer": 2
+   },
+   "rooms": {
+    "MarionHealerShop": 1,
+    "PlantationHouse": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "qw01i": {
+   "bgf": "qw01i",
+   "name": "Amerantha",
+   "kind": "npc",
+   "classes": {
+    "Amerantha": 1,
+    "DesertInnKeeper": 1
+   },
+   "rooms": {
+    "DeathRealmMarion": 1,
+    "DValleyTemple": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "tsinnk": {
+   "bgf": "tsinnk",
+   "name": "Paddock",
+   "kind": "npc",
+   "classes": {
+    "TosInnKeeper": 1,
+    "RazaBartender": 1
+   },
+   "rooms": {
+    "TosInn": 1,
+    "RazaBar": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "assassin": {
+   "bgf": "assassin",
+   "name": "Roq",
+   "kind": "npc",
+   "classes": {
+    "Assassin": 1
+   },
+   "rooms": {
+    "AssassinHeadQuarters": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "basicinn": {
+   "bgf": "basicinn",
+   "name": "Rycksher",
+   "kind": "npc",
+   "classes": {
+    "Basicinnkeeper": 1
+   },
+   "rooms": {
+    "Duke5": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bentu": {
+   "bgf": "bentu",
+   "name": "Bentu",
+   "kind": "npc",
+   "classes": {
+    "RazaVaultman": 1
+   },
+   "rooms": {
+    "RazaVault": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bergbankerm": {
+   "bgf": "bergbankerm",
+   "name": "Michael d'Adue",
+   "kind": "npc",
+   "classes": {
+    "BergBanker": 1
+   },
+   "rooms": {
+    "BergBank": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "berggrocer": {
+   "bgf": "berggrocer",
+   "name": "Liam Magnus",
+   "kind": "npc",
+   "classes": {
+    "BergVaultman": 1
+   },
+   "rooms": {
+    "BergVault": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "berginnk": {
+   "bgf": "berginnk",
+   "name": "Bastiane d'Ile",
+   "kind": "npc",
+   "classes": {
+    "BergInnkeeper": 1
+   },
+   "rooms": {
+    "BergInn": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bergleader": {
+   "bgf": "bergleader",
+   "name": "King Aaron Leone",
+   "kind": "npc",
+   "classes": {
+    "BergLeaderM": 1
+   },
+   "rooms": {
+    "BergLeaderHall": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bergmerch": {
+   "bgf": "bergmerch",
+   "name": "Luisane d'Ile",
+   "kind": "npc",
+   "classes": {
+    "BergMerchant": 1
+   },
+   "rooms": {
+    "BergStore": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bergsmith": {
+   "bgf": "bergsmith",
+   "name": "Roderick Merk",
+   "kind": "npc",
+   "classes": {
+    "BergBlacksmith": 1
+   },
+   "rooms": {
+    "BergSmith": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bqapoth": {
+   "bgf": "bqapoth",
+   "name": "Joguer",
+   "kind": "npc",
+   "classes": {
+    "BarloqueApothecary": 1
+   },
+   "rooms": {
+    "BarApoth": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bqbart": {
+   "bgf": "bqbart",
+   "name": "Meidei",
+   "kind": "npc",
+   "classes": {
+    "BarloqueBartender": 1
+   },
+   "rooms": {
+    "BarlBar1": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bqclerk": {
+   "bgf": "bqclerk",
+   "name": "Caramo",
+   "kind": "npc",
+   "classes": {
+    "BarloqueClerk": 1
+   },
+   "rooms": {
+    "BarloqueCourt": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bqinnk": {
+   "bgf": "bqinnk",
+   "name": "Pritchett",
+   "kind": "npc",
+   "classes": {
+    "BarloqueInnkeeper": 1
+   },
+   "rooms": {
+    "BarInn": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bqtailor": {
+   "bgf": "bqtailor",
+   "name": "Madelia",
+   "kind": "npc",
+   "classes": {
+    "BarloqueTailor": 1
+   },
+   "rooms": {
+    "Castle2E": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bqvaultm": {
+   "bgf": "bqvaultm",
+   "name": "Obert Cair'bre",
+   "kind": "npc",
+   "classes": {
+    "Barloquevaultman": 1
+   },
+   "rooms": {
+    "BarVault": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "celegorm": {
+   "bgf": "celegorm",
+   "name": "Celegorm",
+   "kind": "npc",
+   "classes": {
+    "Celegorm": 1
+   },
+   "rooms": {
+    "DeathRealmCastle2": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "cninnk": {
+   "bgf": "cninnk",
+   "name": "D'Franco",
+   "kind": "npc",
+   "classes": {
+    "CorNothInnKeeper": 1
+   },
+   "rooms": {
+    "CorInn": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "cnmuseumguard": {
+   "bgf": "cnmuseumguard",
+   "name": "Mychel",
+   "kind": "npc",
+   "classes": {
+    "CorNothMuseumGuard": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "cnsarge": {
+   "bgf": "cnsarge",
+   "name": "Rook",
+   "kind": "npc",
+   "classes": {
+    "CorNothSergeant": 1
+   },
+   "rooms": {
+    "CorWeaponsMaster": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "cntailor": {
+   "bgf": "cntailor",
+   "name": "Hester Gilk",
+   "kind": "npc",
+   "classes": {
+    "CorNothTailor": 1
+   },
+   "rooms": {
+    "CorTailor": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "duke": {
+   "bgf": "duke",
+   "name": "Kailor",
+   "kind": "npc",
+   "classes": {
+    "Kailor": 1
+   },
+   "rooms": {
+    "DeathRealmTos": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "farnprst": {
+   "bgf": "farnprst",
+   "name": "Priestess Tenuv'vyal",
+   "kind": "npc",
+   "classes": {
+    "FarenPriestess": 1
+   },
+   "rooms": {
+    "Badland1": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "fortuna": {
+   "bgf": "fortuna",
+   "name": "Fortuna",
+   "kind": "npc",
+   "classes": {
+    "Fortuna": 1
+   },
+   "rooms": {
+    "BarloquePort": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "gamos": {
+   "bgf": "gamos",
+   "name": "Gamos",
+   "kind": "npc",
+   "classes": {
+    "RazaBanker": 1
+   },
+   "rooms": {
+    "RazaBank": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "gcreator": {
+   "bgf": "gcreator",
+   "name": "Frular",
+   "kind": "npc",
+   "classes": {
+    "GuildCreator": 1
+   },
+   "rooms": {
+    "GMHall": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "goadx": {
+   "bgf": "goadx",
+   "name": "The Goad",
+   "kind": "npc",
+   "classes": {
+    "Goad": 1
+   },
+   "rooms": {
+    "NecArena": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "jalaprst": {
+   "bgf": "jalaprst",
+   "name": "Priestess Themala",
+   "kind": "npc",
+   "classes": {
+    "JalaPriestess": 1
+   },
+   "rooms": {
+    "BergJala": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "jixadyem": {
+   "bgf": "jixadyem",
+   "name": "Rosaline Marinus",
+   "kind": "npc",
+   "classes": {
+    "JixaDyeM": 1
+   },
+   "rooms": {
+    "JixaDye": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "jixainnk": {
+   "bgf": "jixainnk",
+   "name": "Jorgan Yesjor",
+   "kind": "npc",
+   "classes": {
+    "JixaInnkeeper": 1
+   },
+   "rooms": {
+    "JixaInn": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "jixasmith": {
+   "bgf": "jixasmith",
+   "name": "Tylo Barsis",
+   "kind": "npc",
+   "classes": {
+    "JixaBlacksmith": 1
+   },
+   "rooms": {
+    "JixaSmith": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "jsbanker": {
+   "bgf": "jsbanker",
+   "name": "Yevitan",
+   "kind": "npc",
+   "classes": {
+    "JasperBanker": 1
+   },
+   "rooms": {
+    "JasBank": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "jsbart": {
+   "bgf": "jsbart",
+   "name": "Pietro",
+   "kind": "npc",
+   "classes": {
+    "JasperBartender": 1
+   },
+   "rooms": {
+    "JasperTavern": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "jselder": {
+   "bgf": "jselder",
+   "name": "Afiera D'xor",
+   "kind": "npc",
+   "classes": {
+    "JasperElder": 1
+   },
+   "rooms": {
+    "JasperElderHut": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "jsinnk": {
+   "bgf": "jsinnk",
+   "name": "Widow Qesino",
+   "kind": "npc",
+   "classes": {
+    "JasperInnkeeper": 1
+   },
+   "rooms": {
+    "JasperInn": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "jssmith": {
+   "bgf": "jssmith",
+   "name": "Quintor",
+   "kind": "npc",
+   "classes": {
+    "JasperBlackSmith": 1
+   },
+   "rooms": {
+    "JasperSmithy": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcapoth": {
+   "bgf": "kcapoth",
+   "name": "Zala ix'Mecya",
+   "kind": "npc",
+   "classes": {
+    "KocatanApothecary": 1
+   },
+   "rooms": {
+    "KocatanApoth": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcbanker": {
+   "bgf": "kcbanker",
+   "name": "Huital ko'Nosak",
+   "kind": "npc",
+   "classes": {
+    "KocatanBanker": 1
+   },
+   "rooms": {
+    "KocatanBank": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcbart": {
+   "bgf": "kcbart",
+   "name": "Oxal ix'Tokak",
+   "kind": "npc",
+   "classes": {
+    "KocatanBartender": 1
+   },
+   "rooms": {
+    "KocatanTavern": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcbonepr": {
+   "bgf": "kcbonepr",
+   "name": "The Bone Priestess",
+   "kind": "npc",
+   "classes": {
+    "KocatanBonePriestess": 1
+   },
+   "rooms": {
+    "OutdoorsKD1": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcbowmak": {
+   "bgf": "kcbowmak",
+   "name": "Hanla zax'Ta",
+   "kind": "npc",
+   "classes": {
+    "KocatanBowmaker": 1
+   },
+   "rooms": {
+    "BowmakerHut": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcguarde": {
+   "bgf": "kcguarde",
+   "name": "Xacal ko'Ixca",
+   "kind": "npc",
+   "classes": {
+    "KocatanCaptainEvil": 1
+   },
+   "rooms": {
+    "KocatanGuardtowerEast": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcguardg": {
+   "bgf": "kcguardg",
+   "name": "Cital ko'Manca",
+   "kind": "npc",
+   "classes": {
+    "KocatanCaptainGood": 1
+   },
+   "rooms": {
+    "KocatanGuardtowerEast": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcinnk": {
+   "bgf": "kcinnk",
+   "name": "Moxal ix'Hanak",
+   "kind": "npc",
+   "classes": {
+    "KocatanInnkeeper": 1
+   },
+   "rooms": {
+    "KocatanInn": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kclangua": {
+   "bgf": "kclangua",
+   "name": "Quetzal",
+   "kind": "npc",
+   "classes": {
+    "KocatanLanguageMaster": 1
+   },
+   "rooms": {
+    "KocatanHallB": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcmadsci": {
+   "bgf": "kcmadsci",
+   "name": "Bahal zax'Ot",
+   "kind": "npc",
+   "classes": {
+    "KocatanMadScientist": 1
+   },
+   "rooms": {
+    "MadScientistHut": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcmerch": {
+   "bgf": "kcmerch",
+   "name": "Wulfgang zax'Ak",
+   "kind": "npc",
+   "classes": {
+    "KocatanTradeMaster": 1
+   },
+   "rooms": {
+    "TradingPost": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcrjmonk": {
+   "bgf": "kcrjmonk",
+   "name": "Monk of Riija",
+   "kind": "npc",
+   "classes": {
+    "RiijaMonk": 1
+   },
+   "rooms": {
+    "TempleRiija": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcsmith": {
+   "bgf": "kcsmith",
+   "name": "Ixla cha'Totlak",
+   "kind": "npc",
+   "classes": {
+    "KocatanBlacksmith": 1
+   },
+   "rooms": {
+    "KocatanSmithy": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kctailor": {
+   "bgf": "kctailor",
+   "name": "Tepal ix'Zonak",
+   "kind": "npc",
+   "classes": {
+    "KocatanTailor": 1
+   },
+   "rooms": {
+    "KocatanTailorShop": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcvault": {
+   "bgf": "kcvault",
+   "name": "Itzal cha'Nosak",
+   "kind": "npc",
+   "classes": {
+    "KocatanVaultman": 1
+   },
+   "rooms": {
+    "KocatanBank": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kcweapon": {
+   "bgf": "kcweapon",
+   "name": "Kochtal ko'Tulca",
+   "kind": "npc",
+   "classes": {
+    "KocatanWeaponsMaster": 1
+   },
+   "rooms": {
+    "KocatanHallA": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "kranprst": {
+   "bgf": "kranprst",
+   "name": "Priestess Qerti'nya",
+   "kind": "npc",
+   "classes": {
+    "KraananPriestess": 1
+   },
+   "rooms": {
+    "TempleKraanan": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "lootmaster": {
+   "bgf": "lootmaster",
+   "name": "Quartermaster",
+   "kind": "npc",
+   "classes": {
+    "QuarterMaster": 1
+   },
+   "rooms": {
+    "KocatanSouth": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "mrbart": {
+   "bgf": "mrbart",
+   "name": "Tova",
+   "kind": "npc",
+   "classes": {
+    "MarionBartender": 1
+   },
+   "rooms": {
+    "MarionInn": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "mrinnk": {
+   "bgf": "mrinnk",
+   "name": "Morrigan",
+   "kind": "npc",
+   "classes": {
+    "MarionInnKeeper": 1
+   },
+   "rooms": {
+    "MarionInn": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "mrsmith": {
+   "bgf": "mrsmith",
+   "name": "Colhorr",
+   "kind": "npc",
+   "classes": {
+    "MarionBlacksmith": 1
+   },
+   "rooms": {
+    "MarionSmithy": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "nnm01": {
+   "bgf": "nnm01",
+   "name": "Tendrath",
+   "kind": "npc",
+   "classes": {
+    "HunterGhost": 1
+   },
+   "rooms": {
+    "GodRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "qorprst": {
+   "bgf": "qorprst",
+   "name": "Priestess Zuxana",
+   "kind": "npc",
+   "classes": {
+    "QorPriestess": 1
+   },
+   "rooms": {
+    "TempleQor": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "qroq": {
+   "bgf": "qroq",
+   "name": "Ceres of Qor",
+   "kind": "npc",
+   "classes": {
+    "CeresofQor": 1
+   },
+   "rooms": {
+    "DeathRealmJasperWest": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "qw04i": {
+   "bgf": "qw04i",
+   "name": "Joline",
+   "kind": "npc",
+   "classes": {
+    "Joline": 1
+   },
+   "rooms": {
+    "DeathRealmCorNoth": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "qw05i": {
+   "bgf": "qw05i",
+   "name": "Beelzebub",
+   "kind": "npc",
+   "classes": {
+    "Beelzebub": 1
+   },
+   "rooms": {
+    "DeathRealmBarloqueNorth": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "qw06i": {
+   "bgf": "qw06i",
+   "name": "Keeper of Souls",
+   "kind": "npc",
+   "classes": {
+    "DeathBanker": 1
+   },
+   "rooms": {
+    "GodRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "shalprst": {
+   "bgf": "shalprst",
+   "name": "Priestess Xiana",
+   "kind": "npc",
+   "classes": {
+    "ShalillePriestess": 1
+   },
+   "rooms": {
+    "Temple": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "treant2": {
+   "bgf": "treant2",
+   "name": "Xoenta tree",
+   "kind": "npc",
+   "classes": {
+    "SwampTree": 1
+   },
+   "rooms": {
+    "Swamp2": 1
+   },
+   "count": 1,
+   "bitmaps": 18,
+   "groups": 3,
+   "static": false,
+   "done": null
+  },
+  "tsapoth": {
+   "bgf": "tsapoth",
+   "name": "Frisconar",
+   "kind": "npc",
+   "classes": {
+    "TosApothecary": 1
+   },
+   "rooms": {
+    "TosApoth": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "tsbanker": {
+   "bgf": "tsbanker",
+   "name": "Skivlat",
+   "kind": "npc",
+   "classes": {
+    "TosBanker": 1
+   },
+   "rooms": {
+    "TosBank": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "tsdeatharenawatcher": {
+   "bgf": "tsdeatharenawatcher",
+   "name": "Johlan Tulca",
+   "kind": "npc",
+   "classes": {
+    "DeathArenaWatcher": 1
+   },
+   "rooms": {
+    "TosDeathArena": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "tswatch": {
+   "bgf": "tswatch",
+   "name": "Watcher",
+   "kind": "npc",
+   "classes": {
+    "TosWatcher": 1
+   },
+   "rooms": {
+    "TosArena": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "veydran": {
+   "bgf": "veydran",
+   "name": "Veydran Goldleaf",
+   "kind": "npc",
+   "classes": {
+    "Veydran": 1
+   },
+   "rooms": {
+    "BarloqueMarket": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "watchersurvival": {
+   "bgf": "watchersurvival",
+   "name": "Osvann Vaendefdall",
+   "kind": "npc",
+   "classes": {
+    "SurvivalWatcher": 1
+   },
+   "rooms": {
+    "SurvivalArena": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "wndarkwi": {
+   "bgf": "wndarkwi",
+   "name": "Maleval",
+   "kind": "npc",
+   "classes": {
+    "DarkWizard": 1
+   },
+   "rooms": {
+    "GodRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "wnhereti": {
+   "bgf": "wnhereti",
+   "name": "Miriana",
+   "kind": "npc",
+   "classes": {
+    "Heretic": 1
+   },
+   "rooms": {
+    "GodRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 4,
+   "groups": 8,
+   "static": true,
+   "done": null
+  },
+  "wnizzio": {
+   "bgf": "wnizzio",
+   "name": "Izzio",
+   "kind": "npc",
+   "classes": {
+    "Izzio": 1
+   },
+   "rooms": {
+    "GodRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "wnminstr": {
+   "bgf": "wnminstr",
+   "name": "Parrin Aragone",
+   "kind": "npc",
+   "classes": {
+    "Minstrel": 1
+   },
+   "rooms": {
+    "GodRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "zimmucas": {
+   "bgf": "zimmucas",
+   "name": "Zimmucas",
+   "kind": "npc",
+   "classes": {
+    "Zimmucas": 1
+   },
+   "rooms": {
+    "DesertShore4": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "brazier": {
+   "bgf": "brazier",
+   "name": "brazier",
+   "kind": "prop",
+   "classes": {
+    "Brazier": 310,
+    "brazier": 12,
+    "BrazierSwitch": 12
+   },
+   "rooms": {
+    "BarloqueCourt": 2,
+    "BarHall": 6,
+    "BarMerchant": 3,
+    "BarVault": 2,
+    "GMHall": 2,
+    "BazmansRoom": 10,
+    "BergDevRoom": 10,
+    "BergJail": 2,
+    "BergLeader": 2,
+    "BergLeaderHall": 12,
+    "CorGrocer": 2,
+    "CorHall": 2,
+    "CorInn": 2,
+    "CorTailor": 2,
+    "Duke1": 5,
+    "Duke3": 6,
+    "Gallery": 1,
+    "GuildHall1": 4,
+    "GuildHall14": 2,
+    "GuildHall19": 4,
+    "GuildHall2": 6,
+    "GuildHall20": 4,
+    "GuildHall3": 13,
+    "GuildHall4": 20,
+    "GuildHall5": 6,
+    "GuildHall6": 4,
+    "GuildHall7": 10,
+    "GuildHall8": 4,
+    "JasBank": 3,
+    "JasperElderHut": 2,
+    "JasperSmithy": 2,
+    "JasperStore": 12,
+    "JasperTavern": 4,
+    "JasperVault": 4,
+    "JixaCity": 11,
+    "MarHall": 3,
+    "Marion": 3,
+    "BanditCamp": 1,
+    "BanditCave": 1,
+    "BarlSewer": 2,
+    "BarlSewer3": 2,
+    "BergGrave": 16,
+    "BergMine": 1,
+    "Castle1D": 6,
+    "OutdoorsF8": 2,
+    "GolemDungeon": 12,
+    "MarionCrypt1": 2,
+    "Duke4": 7,
+    "Duke5": 5,
+    "MarionElderHut": 2,
+    "RatCave2": 2,
+    "RatCave3": 2,
+    "OldCorNothUniversity": 2,
+    "RazaCrypt": 2,
+    "Swamp1": 1,
+    "Throne1": 4,
+    "Throne2": 4,
+    "TosInnCellar": 1,
+    "TosCrypt": 4,
+    "TosSecret": 18,
+    "Underworld": 5,
+    "Raza": 2,
+    "RazaBank": 1,
+    "RentableRoom": 1,
+    "TempleKraanan": 2,
+    "TempleQor": 22,
+    "TosBank": 4,
+    "TosHall": 4,
+    "TosSecretPassage": 2
+   },
+   "count": 334,
+   "bitmaps": 7,
+   "groups": 7,
+   "static": false,
+   "done": "brazier"
+  },
+  "lamp": {
+   "bgf": "lamp",
+   "name": "lamp",
+   "kind": "prop",
+   "classes": {
+    "Lamp": 149
+   },
+   "rooms": {
+    "BarloqueNorth": 8,
+    "BarloqueSouth": 4,
+    "BergJala": 5,
+    "BergCity": 25,
+    "BergLeader": 3,
+    "BergLeaderHall": 2,
+    "CorNoth": 32,
+    "Gallery": 1,
+    "BergMG": 4,
+    "Necropolis5": 4,
+    "RazaForest": 9,
+    "Raza": 9,
+    "EastTos": 36,
+    "Tos": 7
+   },
+   "count": 149,
+   "bitmaps": 7,
+   "groups": 7,
+   "static": false,
+   "done": "lamp"
+  },
+  "marblplr": {
+   "bgf": "marblplr",
+   "name": "pillar",
+   "kind": "prop",
+   "classes": {
+    "Pillar": 109
+   },
+   "rooms": {
+    "GMHall": 4,
+    "BazmansRoom": 6,
+    "Gallery": 1,
+    "GuildHall5": 20,
+    "DeathRealmThrone1": 12,
+    "DeathRealmThrone2": 12,
+    "Throne1": 12,
+    "Throne2": 12,
+    "RentableRoom": 1,
+    "TempleKraanan": 29
+   },
+   "count": 109,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "marblplr"
+  },
+  "table": {
+   "bgf": "table",
+   "name": "table",
+   "kind": "prop",
+   "classes": {
+    "Table": 100
+   },
+   "rooms": {
+    "BarloqueCourt": 1,
+    "BarHall": 4,
+    "BarloqueJail": 1,
+    "BergInn": 2,
+    "Castle2d": 2,
+    "CorWeaponsMaster": 1,
+    "Gallery": 1,
+    "GuildHall1": 2,
+    "GuildHall10": 3,
+    "GuildHall11": 4,
+    "GuildHall14": 3,
+    "GuildHall17": 6,
+    "GuildHall2": 2,
+    "GuildHall20": 2,
+    "GuildHall3": 2,
+    "GuildHall4": 6,
+    "GuildHall5": 5,
+    "GuildHall7": 2,
+    "GuildHall8": 2,
+    "HermitHut": 1,
+    "JasperElderHut": 2,
+    "JasperInn": 1,
+    "JasperStore": 4,
+    "JasperTavern": 8,
+    "JixaInn": 2,
+    "MarHall": 3,
+    "BarlBar1": 15,
+    "MarionElderHut": 2,
+    "MarionInn": 4,
+    "TosInn": 2,
+    "RazaBank": 1,
+    "RazaInn": 3,
+    "TosBank": 1
+   },
+   "count": 100,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "table"
+  },
+  "stool": {
+   "bgf": "stool",
+   "name": "stool",
+   "kind": "prop",
+   "classes": {
+    "Stool": 80
+   },
+   "rooms": {
+    "Castle2E": 2,
+    "CorNothGenHall": 1,
+    "CorTailor": 1,
+    "CorNothUniversity": 1,
+    "Gallery": 1,
+    "GuildHall14": 13,
+    "GuildHall17": 35,
+    "GuildHall19": 2,
+    "HermitHut": 1,
+    "JasperElderHut": 1,
+    "MarionInn": 8,
+    "OldCorNothUniversity": 1,
+    "RazaBar": 6,
+    "RazaHall": 6,
+    "RentableRoom": 1
+   },
+   "count": 80,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "stool"
+  },
+  "feytree": {
+   "bgf": "feytree",
+   "name": "tree",
+   "kind": "prop",
+   "classes": {
+    "FeyTree": 78
+   },
+   "rooms": {
+    "Gallery": 1,
+    "OutdoorsA1": 7,
+    "OutdoorsB1": 3,
+    "OutdoorsB2": 12,
+    "OutdoorsC1": 7,
+    "OutdoorsC2": 28,
+    "OutdoorsC3": 4,
+    "OutdoorsD1": 9,
+    "OutdoorsD2": 7
+   },
+   "count": 78,
+   "bitmaps": 9,
+   "groups": 9,
+   "static": true,
+   "done": null
+  },
+  "firepit": {
+   "bgf": "firepit",
+   "name": "fire",
+   "kind": "prop",
+   "classes": {
+    "Firepit": 72,
+    "FirePit": 1
+   },
+   "rooms": {
+    "BarloqueMarket": 3,
+    "BarloqueSmithy": 1,
+    "BergJala": 2,
+    "BergAuc": 1,
+    "BergCity": 1,
+    "BergLeader": 1,
+    "BergVault": 1,
+    "CorWeaponsMaster": 4,
+    "Duke1": 10,
+    "Duke2": 2,
+    "Gallery": 1,
+    "GuildHall11": 2,
+    "GuildHall17": 1,
+    "GuildHall19": 1,
+    "GuildHall2": 1,
+    "GuildHall20": 1,
+    "GuildHall4": 22,
+    "GuildHall7": 2,
+    "HermitHut": 1,
+    "JasBank": 1,
+    "JixaHall": 1,
+    "Badland1": 1,
+    "BanditCamp": 1,
+    "BanditCave": 1,
+    "DesertBridge": 1,
+    "OutdoorsG6": 1,
+    "OutdoorsKA0": 6,
+    "MarionSmithy": 1,
+    "RatCave1": 1
+   },
+   "count": 73,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "firepit"
+  },
+  "bta": {
+   "bgf": "bta",
+   "name": "statue",
+   "kind": "prop",
+   "classes": {
+    "Statue": 66,
+    "Farnohl": 1
+   },
+   "rooms": {
+    "ForgottenToo": 9,
+    "KocatanHall": 15,
+    "DeathRealmThrone2": 1,
+    "TosForgotten": 42
+   },
+   "count": 67,
+   "bitmaps": 24,
+   "groups": 22,
+   "static": false,
+   "done": null
+  },
+  "barstool": {
+   "bgf": "barstool",
+   "name": "bar stool",
+   "kind": "prop",
+   "classes": {
+    "BarStool": 62,
+    "Barstool": 1
+   },
+   "rooms": {
+    "BergHall": 3,
+    "BergInn": 5,
+    "BergVault": 3,
+    "CorNothMuseum": 2,
+    "Gallery": 1,
+    "JasperTavern": 11,
+    "JixaHall": 6,
+    "JixaInn": 4,
+    "BarlBar1": 12,
+    "TosInn": 6,
+    "RazaInn": 3,
+    "TosDeathArena": 7
+   },
+   "count": 63,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "barstool"
+  },
+  "skull": {
+   "bgf": "skull",
+   "name": "skull",
+   "kind": "prop",
+   "classes": {
+    "Skull": 54
+   },
+   "rooms": {
+    "BarloqueMarket": 2,
+    "DValley5B": 2,
+    "Gallery": 1,
+    "GuildHall2": 1,
+    "DValley1": 3,
+    "DValley2": 3,
+    "DValley3": 3,
+    "DValley4": 3,
+    "DValley5": 10,
+    "MarionCrypt1": 2,
+    "Necropolis2": 4,
+    "Necropolis3": 1,
+    "Necropolis6": 7,
+    "RatCave1": 1,
+    "RatCave2": 1,
+    "OrcCave5": 6,
+    "RazaCrypt": 1,
+    "Swamp2": 1,
+    "Underworld": 1,
+    "OutOfGrace": 1
+   },
+   "count": 54,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "skull"
+  },
+  "box2": {
+   "bgf": "box2",
+   "name": "chest",
+   "kind": "prop",
+   "classes": {
+    "Chest": 48,
+    "chest": 5
+   },
+   "rooms": {
+    "Field1": 6,
+    "Gallery": 1,
+    "GuildHall1": 1,
+    "GuildHall10": 1,
+    "GuildHall12": 2,
+    "GuildHall13": 4,
+    "GuildHall14": 3,
+    "GuildHall16": 4,
+    "GuildHall17": 6,
+    "GuildHall20": 1,
+    "GuildHall3": 2,
+    "GuildHall4": 6,
+    "GuildHall5": 5,
+    "GuildHall8": 4,
+    "GuildHall9": 2,
+    "GodRoom": 1,
+    "OutdoorsA5": 1,
+    "GolemDungeon": 1,
+    "TosHall": 1,
+    "TosTavern": 1
+   },
+   "count": 53,
+   "bitmaps": 12,
+   "groups": 2,
+   "static": false,
+   "done": null
+  },
+  "halfskul": {
+   "bgf": "halfskul",
+   "name": "skull",
+   "kind": "prop",
+   "classes": {
+    "OO_HALFSKULL": 48
+   },
+   "rooms": {
+    "DValley5B": 3,
+    "Berg7": 2,
+    "DValley1": 3,
+    "DValley2": 3,
+    "DValley3": 3,
+    "DValley4": 3,
+    "DValley5": 11,
+    "Necropolis2": 11,
+    "Necropolis3": 1,
+    "Necropolis6": 8
+   },
+   "count": 48,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "halfskul"
+  },
+  "sign": {
+   "bgf": "sign",
+   "name": "sign",
+   "kind": "prop",
+   "classes": {
+    "Sign": 44,
+    "sign": 1
+   },
+   "rooms": {
+    "AssassinHeadQuarters": 5,
+    "BarloqueCourt": 1,
+    "BarloqueMarket": 3,
+    "BergBank": 1,
+    "BergSmith": 1,
+    "CorNothMuseum": 1,
+    "Gallery": 1,
+    "JasBank": 1,
+    "JasperVault": 1,
+    "KocatanBank": 1,
+    "OutdoorsJ3_1": 1,
+    "MarionCrypt2": 1,
+    "RazaCrypt": 5,
+    "SurvivalArena": 1,
+    "Raza": 2,
+    "RazaBank": 1,
+    "RazaBar": 1,
+    "RazaHall": 1,
+    "RazaHut": 1,
+    "RazaInn": 1,
+    "RazaMuseum": 8,
+    "RazaApoth": 1,
+    "RazaSmith": 1,
+    "RazaVault": 1,
+    "Temple": 1,
+    "TosBank": 1,
+    "TosDeathArena": 1
+   },
+   "count": 45,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "sign"
+  },
+  "jbook": {
+   "bgf": "jbook",
+   "name": null,
+   "kind": "prop",
+   "classes": {
+    "NewsJusticar": 1,
+    "GuildWarNews": 1,
+    "BookPedestal": 33,
+    "NewsAdventure": 3,
+    "OO_JALA_BOOK": 1
+   },
+   "rooms": {
+    "BarloqueCourt": 1,
+    "GMHall": 1,
+    "BergJala": 2,
+    "BergDevRoom": 1,
+    "BergInn": 1,
+    "Castle2d": 1,
+    "CorNothGenHall": 6,
+    "CorHall": 1,
+    "CorNothMuseum": 8,
+    "ForgottenToo": 2,
+    "GuildHall14": 1,
+    "HermitHut": 1,
+    "JasperAB3": 1,
+    "JixaInn": 1,
+    "KocatanHallB": 1,
+    "MarHall": 1,
+    "MarionHealerShop": 1,
+    "OutdoorsG9": 1,
+    "GolemDungeon": 1,
+    "JasSewer1": 1,
+    "MarionCrypt4": 1,
+    "RatCave2": 1,
+    "RentableRoom": 1,
+    "TosApoth": 1,
+    "TosForgotten": 1
+   },
+   "count": 39,
+   "bitmaps": 9,
+   "groups": 2,
+   "static": false,
+   "done": null
+  },
+  "bonepile": {
+   "bgf": "bonepile",
+   "name": "pile of bones",
+   "kind": "prop",
+   "classes": {
+    "OO_BONES": 20,
+    "OO_BONES_RAZA": 17
+   },
+   "rooms": {
+    "OrcCave5": 20,
+    "RazaCrypt": 17
+   },
+   "count": 37,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "bonepile"
+  },
+  "craftanvil": {
+   "bgf": "craftanvil",
+   "name": "blacksmith's anvil",
+   "kind": "prop",
+   "classes": {
+    "CraftingAnvil": 12,
+    "GoadsAnvil": 12,
+    "KocatanAnvil": 12
+   },
+   "rooms": {
+    "GuildHall1": 3,
+    "GuildHall10": 3,
+    "GuildHall14": 3,
+    "GuildHall16": 3,
+    "GuildHall17": 3,
+    "GuildHall2": 3,
+    "GuildHall4": 3,
+    "GuildHall5": 3,
+    "GuildHall6": 3,
+    "GuildHall8": 3,
+    "GuildHall9": 3,
+    "KocatanSmithy": 1,
+    "Necropolis6": 1,
+    "TosSmithy": 1
+   },
+   "count": 36,
+   "bitmaps": 8,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "lever": {
+   "bgf": "lever",
+   "name": "lever",
+   "kind": "prop",
+   "classes": {
+    "Lever": 32,
+    "GuestLever": 4
+   },
+   "rooms": {
+    "Gallery": 1,
+    "JixaCity": 4,
+    "SewerKingLair": 2,
+    "OutdoorsG9": 9,
+    "GolemDungeon": 4,
+    "InnerSanctum": 10,
+    "MarionCrypt1": 2,
+    "RatCave2": 1,
+    "OrcPitB": 1,
+    "RazaCrypt": 2
+   },
+   "count": 36,
+   "bitmaps": 2,
+   "groups": 2,
+   "static": false,
+   "done": null
+  },
+  "corn": {
+   "bgf": "corn",
+   "name": "browncorn plant",
+   "kind": "prop",
+   "classes": {
+    "OO_CORN": 34
+   },
+   "rooms": {
+    "RazaForest": 17,
+    "Raza": 17
+   },
+   "count": 34,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "corn"
+  },
+  "tombston": {
+   "bgf": "tombston",
+   "name": "tombstone",
+   "kind": "prop",
+   "classes": {
+    "Tombstone": 26
+   },
+   "rooms": {
+    "Gallery": 2,
+    "DeathRealmTosGraveyard": 11,
+    "TosGraveyard": 11,
+    "TosDeathArena": 2
+   },
+   "count": 26,
+   "bitmaps": 4,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "barrel2": {
+   "bgf": "barrel2",
+   "name": "storage barrel",
+   "kind": "prop",
+   "classes": {
+    "OO_BARREL2": 25
+   },
+   "rooms": {
+    "BarloqueNorth": 3,
+    "BarloqueSouth": 6,
+    "BergAuc": 1,
+    "BergInn": 2,
+    "CorNoth": 2,
+    "GuildHall19": 3,
+    "Jasper": 1,
+    "BanditCave": 2,
+    "RatCave2": 1,
+    "RatCave3": 1,
+    "EastTos": 3
+   },
+   "count": 25,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "barrel2"
+  },
+  "necslime": {
+   "bgf": "necslime",
+   "name": "slimy deposit",
+   "kind": "prop",
+   "classes": {
+    "OO_NECSLIME": 24
+   },
+   "rooms": {
+    "Necropolis2": 6,
+    "Necropolis3": 1,
+    "Necropolis4": 6,
+    "Necropolis5": 4,
+    "Necropolis6": 7
+   },
+   "count": 24,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "necslime"
+  },
+  "splitstump": {
+   "bgf": "splitstump",
+   "name": "splitting stump",
+   "kind": "prop",
+   "classes": {
+    "SplittingStump": 12,
+    "KocatanSplittingStump": 12
+   },
+   "rooms": {
+    "GuildHall1": 2,
+    "GuildHall10": 2,
+    "GuildHall14": 2,
+    "GuildHall16": 2,
+    "GuildHall17": 2,
+    "GuildHall2": 2,
+    "GuildHall4": 2,
+    "GuildHall5": 2,
+    "GuildHall6": 2,
+    "GuildHall8": 2,
+    "GuildHall9": 2,
+    "Marion": 1,
+    "OutdoorsKD4": 1
+   },
+   "count": 24,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "splitstump"
+  },
+  "tanrack": {
+   "bgf": "tanrack",
+   "name": "tanning rack",
+   "kind": "prop",
+   "classes": {
+    "TanningRack": 12,
+    "KocatanTanningRack": 12
+   },
+   "rooms": {
+    "BarloqueSmithy": 1,
+    "GuildHall1": 2,
+    "GuildHall10": 2,
+    "GuildHall14": 2,
+    "GuildHall16": 2,
+    "GuildHall17": 2,
+    "GuildHall2": 2,
+    "GuildHall4": 2,
+    "GuildHall5": 2,
+    "GuildHall6": 2,
+    "GuildHall8": 2,
+    "GuildHall9": 2,
+    "KocatanTailorShop": 1
+   },
+   "count": 24,
+   "bitmaps": 8,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "candelab": {
+   "bgf": "candelab",
+   "name": "candelabra",
+   "kind": "prop",
+   "classes": {
+    "Candelabra": 22
+   },
+   "rooms": {
+    "BarloqueCourt": 1,
+    "BergVault": 1,
+    "CorNothMuseum": 1,
+    "CorTailor": 2,
+    "CorNothUniversity": 1,
+    "Gallery": 2,
+    "GuildHall14": 1,
+    "GuildHall19": 1,
+    "MarionHealerShop": 2,
+    "Duke4": 6,
+    "Duke5": 1,
+    "TosForgottenLovers": 1,
+    "University": 2
+   },
+   "count": 22,
+   "bitmaps": 5,
+   "groups": 5,
+   "static": false,
+   "done": null
+  },
+  "hay": {
+   "bgf": "hay",
+   "name": "hay bundle",
+   "kind": "prop",
+   "classes": {
+    "OO_HAY": 20
+   },
+   "rooms": {
+    "RazaForest": 10,
+    "Raza": 10
+   },
+   "count": 20,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "hay"
+  },
+  "box1": {
+   "bgf": "box1",
+   "name": "old wooden box",
+   "kind": "prop",
+   "classes": {
+    "Box": 1,
+    "WoodenBox": 18
+   },
+   "rooms": {
+    "Gallery": 1,
+    "GuildHall11": 2,
+    "GuildHall19": 2,
+    "GuildHall2": 4,
+    "GuildHall6": 3,
+    "GuildHall7": 2,
+    "GuildHall9": 1,
+    "BanditCave": 1,
+    "MarionCrypt3a": 1,
+    "RatCave2": 1,
+    "Raza": 1
+   },
+   "count": 19,
+   "bitmaps": 12,
+   "groups": 2,
+   "static": false,
+   "done": "box1"
+  },
+  "candle": {
+   "bgf": "candle",
+   "name": null,
+   "kind": "prop",
+   "classes": {
+    "Candle": 15
+   },
+   "rooms": {
+    "BergHall": 3,
+    "BergStore": 2,
+    "BowmakerHut": 2,
+    "Gallery": 1,
+    "KocatanTavern": 1,
+    "MarionHealerShop": 2,
+    "RazaBar": 1,
+    "RentableRoom": 1,
+    "TradingPost": 2
+   },
+   "count": 15,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": "candle"
+  },
+  "quillpen": {
+   "bgf": "quillpen",
+   "name": "quill pen",
+   "kind": "prop",
+   "classes": {
+    "QuillPen": 13,
+    "Quillpen": 2
+   },
+   "rooms": {
+    "BarVault": 1,
+    "BergAuc": 1,
+    "BergBank": 1,
+    "BergSmith": 1,
+    "BergVault": 1,
+    "Castle2d": 1,
+    "CorNothGenHall": 1,
+    "CorNothUniversity": 1,
+    "Gallery": 1,
+    "GuildHall19": 1,
+    "JasperVault": 1,
+    "JixaSmith": 1,
+    "KocatanHallB": 1,
+    "RatCave2": 1,
+    "TosDeathArena": 1
+   },
+   "count": 15,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "quillpen"
+  },
+  "barrel": {
+   "bgf": "barrel",
+   "name": "storage barrel",
+   "kind": "prop",
+   "classes": {
+    "OO_BARREL": 14
+   },
+   "rooms": {
+    "BarloqueNorth": 3,
+    "BergCity": 2,
+    "BergHall": 2,
+    "BergInn": 2,
+    "CorNoth": 2,
+    "Jasper": 1,
+    "TosInn": 1,
+    "Swamp1": 1
+   },
+   "count": 14,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "barrel"
+  },
+  "node": {
+   "bgf": "node",
+   "name": "mana node",
+   "kind": "prop",
+   "classes": {
+    "ManaNode": 12,
+    "FeyNode": 1,
+    "AvarNode": 1
+   },
+   "rooms": {
+    "OutdoorsA5": 1,
+    "Badland1": 1,
+    "Castle1B": 1,
+    "DesertBridge": 1,
+    "OutdoorsC2": 1,
+    "OutdoorsG9": 1,
+    "OutdoorsI9": 1,
+    "OutdoorsKE4": 1,
+    "Necropolis6": 1,
+    "Canyon2": 1,
+    "Cave2": 1,
+    "OutdoorsH9": 1,
+    "IceCave1": 1,
+    "RazaCrypt": 1
+   },
+   "count": 14,
+   "bitmaps": 8,
+   "groups": 8,
+   "static": true,
+   "done": "node"
+  },
+  "mummyx": {
+   "bgf": "mummyx",
+   "name": "mummified corpse",
+   "kind": "prop",
+   "classes": {
+    "OO_MUMMY": 13
+   },
+   "rooms": {
+    "MarionCrypt1": 13
+   },
+   "count": 13,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "mummyx"
+  },
+  "dung": {
+   "bgf": "dung",
+   "name": "dung",
+   "kind": "prop",
+   "classes": {
+    "OO_DUNG": 12
+   },
+   "rooms": {
+    "RazaForest": 6,
+    "Raza": 6
+   },
+   "count": 12,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "dung"
+  },
+  "loom": {
+   "bgf": "loom",
+   "name": "loom",
+   "kind": "prop",
+   "classes": {
+    "Loom": 12
+   },
+   "rooms": {
+    "Castle2E": 1,
+    "GuildHall1": 1,
+    "GuildHall10": 1,
+    "GuildHall14": 1,
+    "GuildHall16": 1,
+    "GuildHall17": 1,
+    "GuildHall2": 1,
+    "GuildHall4": 1,
+    "GuildHall5": 1,
+    "GuildHall6": 1,
+    "GuildHall8": 1,
+    "GuildHall9": 1
+   },
+   "count": 12,
+   "bitmaps": 8,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "nectree2": {
+   "bgf": "nectree2",
+   "name": "coal oak tree",
+   "kind": "prop",
+   "classes": {
+    "OO_NECTREE2": 12
+   },
+   "rooms": {
+    "Necropolis2": 6,
+    "Necropolis3": 1,
+    "Swamp1": 2,
+    "Swamp2": 3
+   },
+   "count": 12,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "shavehorse": {
+   "bgf": "shavehorse",
+   "name": "shave horse",
+   "kind": "prop",
+   "classes": {
+    "ShaveHorse": 12
+   },
+   "rooms": {
+    "BowmakerHut": 1,
+    "GuildHall1": 1,
+    "GuildHall10": 1,
+    "GuildHall14": 1,
+    "GuildHall16": 1,
+    "GuildHall17": 1,
+    "GuildHall2": 1,
+    "GuildHall4": 1,
+    "GuildHall5": 1,
+    "GuildHall6": 1,
+    "GuildHall8": 1,
+    "GuildHall9": 1
+   },
+   "count": 12,
+   "bitmaps": 8,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "spinwheel": {
+   "bgf": "spinwheel",
+   "name": "spinning wheel",
+   "kind": "prop",
+   "classes": {
+    "SpinningWheel": 12
+   },
+   "rooms": {
+    "CorTailor": 1,
+    "GuildHall1": 1,
+    "GuildHall10": 1,
+    "GuildHall14": 1,
+    "GuildHall16": 1,
+    "GuildHall17": 1,
+    "GuildHall2": 1,
+    "GuildHall4": 1,
+    "GuildHall5": 1,
+    "GuildHall6": 1,
+    "GuildHall8": 1,
+    "GuildHall9": 1
+   },
+   "count": 12,
+   "bitmaps": 8,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "lamp1": {
+   "bgf": "lamp1",
+   "name": null,
+   "kind": "prop",
+   "classes": {
+    "KocatanLamp": 11
+   },
+   "rooms": {
+    "GuildHall12": 1,
+    "KocatanTavern": 7,
+    "KocatanGuardtowerEast": 2,
+    "TosDeathArena": 1
+   },
+   "count": 11,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": null
+  },
+  "head": {
+   "bgf": "head",
+   "name": null,
+   "kind": "prop",
+   "classes": {
+    "SkullBrazier": 10
+   },
+   "rooms": {
+    "Gallery": 1,
+    "RentableRoom": 1,
+    "TosDeathArena": 8
+   },
+   "count": 10,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": null
+  },
+  "necglobe": {
+   "bgf": "necglobe",
+   "name": null,
+   "kind": "prop",
+   "classes": {
+    "TargetGlobe": 5,
+    "ViewpointGlobe": 5
+   },
+   "rooms": {
+    "JixaCity": 2,
+    "LichMaze": 8
+   },
+   "count": 10,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "necglobe"
+  },
+  "throne": {
+   "bgf": "throne",
+   "name": "throne",
+   "kind": "prop",
+   "classes": {
+    "Throne": 9
+   },
+   "rooms": {
+    "BazmansRoom": 1,
+    "BergLeaderHall": 1,
+    "Duke3": 1,
+    "Gallery": 1,
+    "GuildHall17": 1,
+    "Castle2c": 2,
+    "DeathRealmThrone2": 1,
+    "Throne2": 1
+   },
+   "count": 9,
+   "bitmaps": 7,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "artrop01": {
+   "bgf": "artrop01",
+   "name": "Kraanan's Pride",
+   "kind": "prop",
+   "classes": {
+    "ArenaSign2": 8
+   },
+   "rooms": {
+    "TosArena2": 4,
+    "TosDeathArena": 4
+   },
+   "count": 8,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "artrop01"
+  },
+  "flaskgrn": {
+   "bgf": "flaskgrn",
+   "name": "flask",
+   "kind": "prop",
+   "classes": {
+    "OO_FLASK_GREEN": 8
+   },
+   "rooms": {
+    "BergStore": 4,
+    "RazaApoth": 1,
+    "TosApoth": 3
+   },
+   "count": 8,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "flaskgrn"
+  },
+  "fountain": {
+   "bgf": "fountain",
+   "name": "fountain",
+   "kind": "prop",
+   "classes": {
+    "Fountain": 7
+   },
+   "rooms": {
+    "BarloqueSouth": 1,
+    "Castle2a": 1,
+    "Gallery": 1,
+    "GuildHall17": 1,
+    "MarionPlantation": 1,
+    "MarionPlantationWorker1": 1,
+    "Tos": 1
+   },
+   "count": 7,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "fountain"
+  },
+  "jug4": {
+   "bgf": "jug4",
+   "name": "water urn",
+   "kind": "prop",
+   "classes": {
+    "OO_JUG": 7
+   },
+   "rooms": {
+    "BergStore": 1,
+    "BanditCamp": 1,
+    "TosInn": 1,
+    "RazaHut": 1,
+    "RentableRoom": 1,
+    "TosApoth": 1,
+    "TosForgottenLovers": 1
+   },
+   "count": 7,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "jug4"
+  },
+  "skulbrok": {
+   "bgf": "skulbrok",
+   "name": "skull",
+   "kind": "prop",
+   "classes": {
+    "OO_SKULL8": 7
+   },
+   "rooms": {
+    "Necropolis2": 7
+   },
+   "count": 7,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "skulbrok"
+  },
+  "dice": {
+   "bgf": "dice",
+   "name": null,
+   "kind": "prop",
+   "classes": {
+    "Dice": 6
+   },
+   "rooms": {
+    "GuildHall14": 2,
+    "GuildHall17": 4
+   },
+   "count": 6,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "dice"
+  },
+  "necgrav2": {
+   "bgf": "necgrav2",
+   "name": "grave",
+   "kind": "prop",
+   "classes": {
+    "OO_NECGRAVE2": 6
+   },
+   "rooms": {
+    "Necropolis2": 6
+   },
+   "count": 6,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "necgrav2"
+  },
+  "nectree1": {
+   "bgf": "nectree1",
+   "name": "gnarlwood tree",
+   "kind": "prop",
+   "classes": {
+    "OO_NECTREE1": 6
+   },
+   "rooms": {
+    "Necropolis2": 1,
+    "Necropolis3": 1,
+    "Necropolis5": 2,
+    "RazaForest": 1,
+    "Raza": 1
+   },
+   "count": 6,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "nectree1"
+  },
+  "nectree3": {
+   "bgf": "nectree3",
+   "name": null,
+   "kind": "prop",
+   "classes": {
+    "GlowTree": 6
+   },
+   "rooms": {
+    "Necropolis2": 4,
+    "Necropolis3": 1,
+    "Necropolis6": 1
+   },
+   "count": 6,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "nectree4": {
+   "bgf": "nectree4",
+   "name": "spine vine",
+   "kind": "prop",
+   "classes": {
+    "OO_NECTREE4": 6
+   },
+   "rooms": {
+    "Necropolis2": 3,
+    "Necropolis3": 1,
+    "Necropolis5": 1,
+    "Necropolis6": 1
+   },
+   "count": 6,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "nestobj2": {
+   "bgf": "nestobj2",
+   "name": "mound of dirt",
+   "kind": "prop",
+   "classes": {
+    "OO_NESTOBJ2": 6
+   },
+   "rooms": {
+    "RazaForest": 3,
+    "Raza": 3
+   },
+   "count": 6,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "nestobj2"
+  },
+  "rockb": {
+   "bgf": "rockb",
+   "name": "rock",
+   "kind": "prop",
+   "classes": {
+    "OO_ROCKB": 6
+   },
+   "rooms": {
+    "RazaForest": 3,
+    "Raza": 3
+   },
+   "count": 6,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "rockb"
+  },
+  "arsign01": {
+   "bgf": "arsign01",
+   "name": "Arena Tapestry.. don't use",
+   "kind": "prop",
+   "classes": {
+    "ArenaSign1": 5
+   },
+   "rooms": {
+    "TosArena": 5
+   },
+   "count": 5,
+   "bitmaps": 2,
+   "groups": 2,
+   "static": false,
+   "done": null
+  },
+  "fixins4": {
+   "bgf": "fixins4",
+   "name": "basket of eggs",
+   "kind": "prop",
+   "classes": {
+    "OO_FIXINS": 5
+   },
+   "rooms": {
+    "BergStore": 1,
+    "BanditCave": 1,
+    "RazaHut": 1,
+    "TosApoth": 2
+   },
+   "count": 5,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "fixins4"
+  },
+  "necgrav3": {
+   "bgf": "necgrav3",
+   "name": "grave",
+   "kind": "prop",
+   "classes": {
+    "OO_NECGRAVE3": 5
+   },
+   "rooms": {
+    "Necropolis2": 5
+   },
+   "count": 5,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "necgrav3"
+  },
+  "nestobj1": {
+   "bgf": "nestobj1",
+   "name": "mound of dirt",
+   "kind": "prop",
+   "classes": {
+    "OO_NESTOBJ1": 5
+   },
+   "rooms": {
+    "RatCave1": 1,
+    "RazaForest": 2,
+    "Raza": 2
+   },
+   "count": 5,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "nestobj1"
+  },
+  "potplant": {
+   "bgf": "potplant",
+   "name": "potted plant",
+   "kind": "prop",
+   "classes": {
+    "OO_POTPLANT": 5
+   },
+   "rooms": {
+    "BergJala": 2,
+    "CorNoth": 2,
+    "GuildHall19": 1
+   },
+   "count": 5,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "potplant"
+  },
+  "shrine": {
+   "bgf": "shrine",
+   "name": "shrine",
+   "kind": "prop",
+   "classes": {
+    "Shrine": 4,
+    "shrine": 1
+   },
+   "rooms": {
+    "BarloqueMarket": 1,
+    "OutdoorsKA0": 1,
+    "OutdoorsK5": 1,
+    "OrcCave5": 1,
+    "NecArena": 1
+   },
+   "count": 5,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "shrine"
+  },
+  "tablamp": {
+   "bgf": "tablamp",
+   "name": null,
+   "kind": "prop",
+   "classes": {
+    "TableLamp": 5
+   },
+   "rooms": {
+    "Gallery": 1,
+    "GuildHall13": 3,
+    "RentableRoom": 1
+   },
+   "count": 5,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": null
+  },
+  "tallurn": {
+   "bgf": "tallurn",
+   "name": "slag urn",
+   "kind": "prop",
+   "classes": {
+    "OO_TALLURN": 5
+   },
+   "rooms": {
+    "BarloqueNorth": 2,
+    "RazaBar": 1,
+    "RazaApoth": 2
+   },
+   "count": 5,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "tallurn"
+  },
+  "lettuce": {
+   "bgf": "lettuce",
+   "name": "Marion cabbage",
+   "kind": "prop",
+   "classes": {
+    "OO_LETTUCE": 4
+   },
+   "rooms": {
+    "RazaForest": 2,
+    "Raza": 2
+   },
+   "count": 4,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "lettuce"
+  },
+  "necgrav1": {
+   "bgf": "necgrav1",
+   "name": "grave",
+   "kind": "prop",
+   "classes": {
+    "OO_NECGRAVE1": 4
+   },
+   "rooms": {
+    "Necropolis2": 4
+   },
+   "count": 4,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "necgrav1"
+  },
+  "orcfire": {
+   "bgf": "orcfire",
+   "name": null,
+   "kind": "prop",
+   "classes": {
+    "OrcTorch": 4
+   },
+   "rooms": {
+    "Gallery": 1,
+    "RentableRoom": 1,
+    "TosDeathArena": 2
+   },
+   "count": 4,
+   "bitmaps": 5,
+   "groups": 8,
+   "static": true,
+   "done": "orcfire"
+  },
+  "3bolts": {
+   "bgf": "3bolts",
+   "name": null,
+   "kind": "prop",
+   "classes": {
+    "OrnamentalObject": 2,
+    "OO_3_CLOTH_BOLTS": 1
+   },
+   "rooms": {
+    "Gallery": 1,
+    "Marion": 1,
+    "RentableRoom": 1
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "3bolts"
+  },
+  "bucket": {
+   "bgf": "bucket",
+   "name": "well bucket",
+   "kind": "prop",
+   "classes": {
+    "OO_BUCKET": 3
+   },
+   "rooms": {
+    "RazaBar": 3
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "bucket"
+  },
+  "flaskw": {
+   "bgf": "flaskw",
+   "name": "flask",
+   "kind": "prop",
+   "classes": {
+    "OO_FLASK_STAND": 3
+   },
+   "rooms": {
+    "BergStore": 1,
+    "RazaApoth": 1,
+    "TosApoth": 1
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "flaskw"
+  },
+  "goathead": {
+   "bgf": "goathead",
+   "name": "goat head",
+   "kind": "prop",
+   "classes": {
+    "OO_GOATHEAD": 3
+   },
+   "rooms": {
+    "InnerSanctum": 3
+   },
+   "count": 3,
+   "bitmaps": 5,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "goldbot4": {
+   "bgf": "goldbot4",
+   "name": "scented oil",
+   "kind": "prop",
+   "classes": {
+    "OO_GOLD_BOTTLE": 3
+   },
+   "rooms": {
+    "BergStore": 2,
+    "TosApoth": 1
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "goldbot4"
+  },
+  "koclamp": {
+   "bgf": "koclamp",
+   "name": "settlement lamp",
+   "kind": "prop",
+   "classes": {
+    "KocatanBrazier": 3
+   },
+   "rooms": {
+    "Gallery": 1,
+    "OrcCave6": 2
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "koclamp"
+  },
+  "music": {
+   "bgf": "music",
+   "name": "illusionary item",
+   "kind": "prop",
+   "classes": {
+    "GhostItem": 2,
+    "OO_MUSEUM_LUTE": 1
+   },
+   "rooms": {
+    "Berg8": 1,
+    "OutdoorsKA0": 1,
+    "RazaMuseum": 1
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "music"
+  },
+  "rice": {
+   "bgf": "rice",
+   "name": "bag of purple potatoes",
+   "kind": "prop",
+   "classes": {
+    "OO_RICE": 3
+   },
+   "rooms": {
+    "BergCity": 3
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "rice"
+  },
+  "rock": {
+   "bgf": "rock",
+   "name": "rough boulder",
+   "kind": "prop",
+   "classes": {
+    "OO_ROCK1": 3
+   },
+   "rooms": {
+    "RatCave1": 1,
+    "RazaForest": 1,
+    "Raza": 1
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "rock"
+  },
+  "rockc": {
+   "bgf": "rockc",
+   "name": "boulder",
+   "kind": "prop",
+   "classes": {
+    "OO_ROCKC": 3
+   },
+   "rooms": {
+    "RatCave1": 1,
+    "RazaForest": 1,
+    "Raza": 1
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "rockc"
+  },
+  "roombell": {
+   "bgf": "roombell",
+   "name": "service bell",
+   "kind": "prop",
+   "classes": {
+    "Bell": 3
+   },
+   "rooms": {
+    "BarloqueRentableRoom": 1,
+    "KocatanRentableRoom": 1,
+    "MarionRentableRoom": 1
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "roombell"
+  },
+  "spdrtree": {
+   "bgf": "spdrtree",
+   "name": "Web Covered Tree",
+   "kind": "prop",
+   "classes": {
+    "SpiderTree": 2,
+    "SingleTree": 1
+   },
+   "rooms": {
+    "Gallery": 1,
+    "Forest2": 1,
+    "OutdoorsH7": 1
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "bigiron": {
+   "bgf": "bigiron",
+   "name": "cooking cauldron",
+   "kind": "prop",
+   "classes": {
+    "OO_BIGIRON": 2
+   },
+   "rooms": {
+    "RentableRoom": 1,
+    "TosSmithy": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "bigiron"
+  },
+  "bigurn": {
+   "bgf": "bigurn",
+   "name": "decorative urn",
+   "kind": "prop",
+   "classes": {
+    "OO_BIGURN": 2
+   },
+   "rooms": {
+    "BergCity": 1,
+    "RentableRoom": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "bigurn"
+  },
+  "bigurn2": {
+   "bgf": "bigurn2",
+   "name": "large urn",
+   "kind": "prop",
+   "classes": {
+    "OO_BIGURN2": 2
+   },
+   "rooms": {
+    "RentableRoom": 1,
+    "TosForgottenLovers": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "bigurn2"
+  },
+  "bucket2": {
+   "bgf": "bucket2",
+   "name": "bucket",
+   "kind": "prop",
+   "classes": {
+    "OO_BUCKET2": 2
+   },
+   "rooms": {
+    "BergSmith": 1,
+    "CorNoth": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "bucket2"
+  },
+  "chalice": {
+   "bgf": "chalice",
+   "name": "model chalice of the rain",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_CHALICE": 2
+   },
+   "rooms": {
+    "CorNothMuseum": 1,
+    "RazaMuseum": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "chalice"
+  },
+  "chandelr": {
+   "bgf": "chandelr",
+   "name": "Chandelier",
+   "kind": "prop",
+   "classes": {
+    "Chandelier": 2
+   },
+   "rooms": {
+    "Gallery": 1,
+    "RazaHall": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "chandelr"
+  },
+  "decopot4": {
+   "bgf": "decopot4",
+   "name": "ceramic seed pot",
+   "kind": "prop",
+   "classes": {
+    "OO_DECORATIVE_POT": 2
+   },
+   "rooms": {
+    "BergCity": 1,
+    "TosInn": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "decopot4"
+  },
+  "goose": {
+   "bgf": "goose",
+   "name": "dead vineyard goose",
+   "kind": "prop",
+   "classes": {
+    "OO_GOOSE": 2
+   },
+   "rooms": {
+    "TosApoth": 2
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "goose"
+  },
+  "gryjug4": {
+   "bgf": "gryjug4",
+   "name": "water jug",
+   "kind": "prop",
+   "classes": {
+    "OO_GREY_JUG": 2
+   },
+   "rooms": {
+    "BanditCave": 1,
+    "RentableRoom": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "gryjug4"
+  },
+  "guildlvr": {
+   "bgf": "guildlvr",
+   "name": "mystical shield deactivator",
+   "kind": "prop",
+   "classes": {
+    "GuildLever": 1,
+    "guildLever": 1
+   },
+   "rooms": {
+    "GuildHall": 2
+   },
+   "count": 2,
+   "bitmaps": 4,
+   "groups": 4,
+   "static": false,
+   "done": null
+  },
+  "hammer": {
+   "bgf": "hammer",
+   "name": "model hammer",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_HAMMER": 2
+   },
+   "rooms": {
+    "CorNoth": 1,
+    "RazaMuseum": 1
+   },
+   "count": 2,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": "hammer"
+  },
+  "helm": {
+   "bgf": "helm",
+   "name": "model helm",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_HELM": 2
+   },
+   "rooms": {
+    "CorNoth": 1,
+    "RazaMuseum": 1
+   },
+   "count": 2,
+   "bitmaps": 9,
+   "groups": 4,
+   "static": false,
+   "done": "helm"
+  },
+  "mortpest": {
+   "bgf": "mortpest",
+   "name": "mortar and pestle",
+   "kind": "prop",
+   "classes": {
+    "OO_MORTARANDPESTLE": 2
+   },
+   "rooms": {
+    "BergStore": 1,
+    "TosApoth": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "mortpest"
+  },
+  "necbottl": {
+   "bgf": "necbottl",
+   "name": "bottle",
+   "kind": "prop",
+   "classes": {
+    "OO_NECBOTTLE": 2
+   },
+   "rooms": {
+    "BergStore": 1,
+    "TosApoth": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "necbottl"
+  },
+  "necvase": {
+   "bgf": "necvase",
+   "name": "vase",
+   "kind": "prop",
+   "classes": {
+    "OO_NECVASE": 2
+   },
+   "rooms": {
+    "Necropolis3a": 1,
+    "Necropolis5": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "necvase"
+  },
+  "necvase2": {
+   "bgf": "necvase2",
+   "name": "vase",
+   "kind": "prop",
+   "classes": {
+    "OO_NECVASE2": 2
+   },
+   "rooms": {
+    "Necropolis3a": 1,
+    "Necropolis5": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "necvase2"
+  },
+  "newbsign": {
+   "bgf": "newbsign",
+   "name": "the Assassin's Circle",
+   "kind": "prop",
+   "classes": {
+    "AssassinSign": 2
+   },
+   "rooms": {
+    "AssassinHeadQuarters": 1,
+    "Gallery": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "newbsign"
+  },
+  "plateamr": {
+   "bgf": "plateamr",
+   "name": "model plate armor",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_PLATEARMOR": 2
+   },
+   "rooms": {
+    "CorNoth": 1,
+    "RazaMuseum": 1
+   },
+   "count": 2,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": "plateamr"
+  },
+  "sacrbowl": {
+   "bgf": "sacrbowl",
+   "name": "sacrificial bowl",
+   "kind": "prop",
+   "classes": {
+    "OO_SACRIFICIALBOWL": 2
+   },
+   "rooms": {
+    "InnerSanctum": 2
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "sacrbowl"
+  },
+  "shswd": {
+   "bgf": "shswd",
+   "name": "model short sword",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_SHORTSWORD": 2
+   },
+   "rooms": {
+    "CorNoth": 1,
+    "RazaMuseum": 1
+   },
+   "count": 2,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": "shswd"
+  },
+  "skulhorn": {
+   "bgf": "skulhorn",
+   "name": "horned skull",
+   "kind": "prop",
+   "classes": {
+    "OO_SKULL10": 2
+   },
+   "rooms": {
+    "BarloqueMarket": 1,
+    "InnerSanctum": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "skulhorn"
+  },
+  "skull4": {
+   "bgf": "skull4",
+   "name": "bone structure",
+   "kind": "prop",
+   "classes": {
+    "OO_SKULL4": 2
+   },
+   "rooms": {
+    "OutdoorsKD1": 1,
+    "RentableRoom": 1
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "skull4"
+  },
+  "altar": {
+   "bgf": "altar",
+   "name": "bone altar",
+   "kind": "prop",
+   "classes": {
+    "OO_ALTAR": 1
+   },
+   "rooms": {
+    "OutdoorsKD1": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "altar"
+  },
+  "bagbean4": {
+   "bgf": "bagbean4",
+   "name": "bag of beans",
+   "kind": "prop",
+   "classes": {
+    "OO_BAG_OF_BEANS": 1
+   },
+   "rooms": {
+    "Jasper": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "bagbean4"
+  },
+  "bluejug": {
+   "bgf": "bluejug",
+   "name": "decorative blue urn",
+   "kind": "prop",
+   "classes": {
+    "OO_BLUEJUG": 1
+   },
+   "rooms": {
+    "RentableRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "bluejug"
+  },
+  "book1": {
+   "bgf": "book1",
+   "name": "dusty journal",
+   "kind": "prop",
+   "classes": {
+    "OO_VJOURNAL": 1
+   },
+   "rooms": {
+    "JasperVault": 1
+   },
+   "count": 1,
+   "bitmaps": 4,
+   "groups": 4,
+   "static": false,
+   "done": null
+  },
+  "boulder": {
+   "bgf": "boulder",
+   "name": "Boulder",
+   "kind": "prop",
+   "classes": {
+    "Boulder": 1
+   },
+   "rooms": {
+    "Gallery": 1
+   },
+   "count": 1,
+   "bitmaps": 4,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "boxsnak4": {
+   "bgf": "boxsnak4",
+   "name": "box of dried snakes",
+   "kind": "prop",
+   "classes": {
+    "OO_BOX_WITH_SNAKE": 1
+   },
+   "rooms": {
+    "RentableRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "boxsnak4"
+  },
+  "gauntlet": {
+   "bgf": "gauntlet",
+   "name": "model gauntlets",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_GAUNTLETS": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": "gauntlet"
+  },
+  "hist_banker": {
+   "bgf": "hist_banker",
+   "name": "miniature banker",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_BANKER": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "hist_bsmith": {
+   "bgf": "hist_bsmith",
+   "name": "miniature blacksmith",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_BSMITH": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "hist_centip": {
+   "bgf": "hist_centip",
+   "name": "miniature giant centipede",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_CENTIPEDE": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "hist_duke": {
+   "bgf": "hist_duke",
+   "name": "miniature duke",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_DUKE": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 7,
+   "groups": 7,
+   "static": false,
+   "done": null
+  },
+  "hist_evprstt": {
+   "bgf": "hist_evprstt",
+   "name": "miniature evil priestess",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_EVPRSTT": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "hist_fungbst": {
+   "bgf": "hist_fungbst",
+   "name": "miniature fungus beast",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_FUNGBST": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "hist_gauntlet": {
+   "bgf": "hist_gauntlet",
+   "name": "miniature gauntlets",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_GAUNTLET": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 7,
+   "groups": 2,
+   "static": false,
+   "done": null
+  },
+  "hist_gshield": {
+   "bgf": "hist_gshield",
+   "name": "miniature gold shield",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_GOLDSHIELD": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 8,
+   "groups": 3,
+   "static": false,
+   "done": null
+  },
+  "hist_gsword": {
+   "bgf": "hist_gsword",
+   "name": "miniature gold sword",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_GSWORD": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": null
+  },
+  "hist_hermit": {
+   "bgf": "hist_hermit",
+   "name": "miniature hermit",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_HERMIT": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "hist_king1": {
+   "bgf": "hist_king1",
+   "name": "miniature king",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_KING1": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 3,
+   "groups": 4,
+   "static": false,
+   "done": null
+  },
+  "hist_kshield": {
+   "bgf": "hist_kshield",
+   "name": "miniature knight's shield",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_KSHIELD": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 8,
+   "groups": 3,
+   "static": false,
+   "done": null
+  },
+  "hist_leathamr": {
+   "bgf": "hist_leathamr",
+   "name": "miniature leather armor",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_LEATHAMR": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "hist_leathamr"
+  },
+  "hist_orc": {
+   "bgf": "hist_orc",
+   "name": "miniature orc",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_ORC": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 4,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "hist_ornhelma": {
+   "bgf": "hist_ornhelma",
+   "name": "miniature magic spirit helmet",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_ORNHELMA": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "hist_ornhelma"
+  },
+  "hist_plate": {
+   "bgf": "hist_plate",
+   "name": "miniature plate armor",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_PLATE": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 2,
+   "groups": 2,
+   "static": false,
+   "done": null
+  },
+  "hist_priestess": {
+   "bgf": "hist_priestess",
+   "name": "miniature priestess",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_PRIESTESS": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "hist_princess": {
+   "bgf": "hist_princess",
+   "name": "miniature princess",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_PRINCESS": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 7,
+   "groups": 7,
+   "static": false,
+   "done": null
+  },
+  "hist_rat": {
+   "bgf": "hist_rat",
+   "name": "miniature giant rat",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_RAT": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "hist_rshield": {
+   "bgf": "hist_rshield",
+   "name": "miniature round shield",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_ROUNDSHLD": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 8,
+   "groups": 3,
+   "static": false,
+   "done": null
+  },
+  "hist_scimitar": {
+   "bgf": "hist_scimitar",
+   "name": "miniature scimitar",
+   "kind": "prop",
+   "classes": {
+    "OO_HIST_SCIMITAR": 1
+   },
+   "rooms": {
+    "CorNothMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": null
+  },
+  "lampjas1": {
+   "bgf": "lampjas1",
+   "name": "lantern",
+   "kind": "prop",
+   "classes": {
+    "OO_JASPERLAMP1": 1
+   },
+   "rooms": {
+    "JasperWest": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "lampjas1"
+  },
+  "lampjasp": {
+   "bgf": "lampjasp",
+   "name": "lantern",
+   "kind": "prop",
+   "classes": {
+    "OO_JASPERLAMP": 1
+   },
+   "rooms": {
+    "Jasper": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "lampjasp"
+  },
+  "modaltar": {
+   "bgf": "modaltar",
+   "name": "miniature altar",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_ALTAR": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "modaltar"
+  },
+  "modant": {
+   "bgf": "modant",
+   "name": "miniature giant ant",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_ANT": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": "modant"
+  },
+  "modavar": {
+   "bgf": "modavar",
+   "name": "miniature avar",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_AVAR": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": "modavar"
+  },
+  "modcen": {
+   "bgf": "modcen",
+   "name": "miniature giant centipede",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_CENTIPEDE": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": "modcen"
+  },
+  "modfey": {
+   "bgf": "modfey",
+   "name": "miniature fey elhai",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_FEY": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": "modfey"
+  },
+  "modfung": {
+   "bgf": "modfung",
+   "name": "miniature fungus beast",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_FUNGUSBEAST": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": "modfung"
+  },
+  "modlupog": {
+   "bgf": "modlupog",
+   "name": "miniature lupogg",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_LUPOGG": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": "modlupog"
+  },
+  "modnewsb": {
+   "bgf": "modnewsb",
+   "name": "miniature newsball",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_NEWS": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "modnewsb"
+  },
+  "modnode": {
+   "bgf": "modnode",
+   "name": "miniature mana node",
+   "kind": "prop",
+   "classes": {
+    "ModelNode": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 8,
+   "groups": 8,
+   "static": true,
+   "done": "modnode"
+  },
+  "modorc": {
+   "bgf": "modorc",
+   "name": "miniature orc",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_ORC": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": "modorc"
+  },
+  "modportal": {
+   "bgf": "modportal",
+   "name": "miniature portal",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_PORTAL": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 8,
+   "groups": 1,
+   "static": false,
+   "done": "modportal"
+  },
+  "modshrin": {
+   "bgf": "modshrin",
+   "name": "miniature shrine",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_SHRINE": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "modshrin"
+  },
+  "modspdr": {
+   "bgf": "modspdr",
+   "name": "miniature baby spider",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_SPIDER": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 6,
+   "groups": 1,
+   "static": false,
+   "done": "modspdr"
+  },
+  "modthron": {
+   "bgf": "modthron",
+   "name": "miniature throne",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_THRONE": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 7,
+   "groups": 1,
+   "static": false,
+   "done": "modthron"
+  },
+  "necrock": {
+   "bgf": "necrock",
+   "name": "rock",
+   "kind": "prop",
+   "classes": {
+    "OO_NECROCK": 1
+   },
+   "rooms": {
+    "RatCave1": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "necrock"
+  },
+  "necvase3": {
+   "bgf": "necvase3",
+   "name": "vase",
+   "kind": "prop",
+   "classes": {
+    "OO_NECVASE3": 1
+   },
+   "rooms": {
+    "Necropolis2": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "necvase3"
+  },
+  "potion01": {
+   "bgf": "potion01",
+   "name": "model potion",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_POTION": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "potion01"
+  },
+  "potion4": {
+   "bgf": "potion4",
+   "name": "apothecary jar",
+   "kind": "prop",
+   "classes": {
+    "OO_POTION": 1
+   },
+   "rooms": {
+    "RazaApoth": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "potion4"
+  },
+  "prism3": {
+   "bgf": "prism3",
+   "name": "model prism",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_PRISM": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "prism3"
+  },
+  "roomcage": {
+   "bgf": "roomcage",
+   "name": "wire cage",
+   "kind": "prop",
+   "classes": {
+    "DragonflyCage": 1
+   },
+   "rooms": {
+    "RentableRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 5,
+   "groups": 5,
+   "static": false,
+   "done": null
+  },
+  "roompilo": {
+   "bgf": "roompilo",
+   "name": "goosefeather pillow",
+   "kind": "prop",
+   "classes": {
+    "Pillow": 1
+   },
+   "rooms": {
+    "GuildHall17": 1
+   },
+   "count": 1,
+   "bitmaps": 2,
+   "groups": 1,
+   "static": false,
+   "done": null
+  },
+  "roompla1": {
+   "bgf": "roompla1",
+   "name": "jade plant",
+   "kind": "prop",
+   "classes": {
+    "OO_RR_PLANT1": 1
+   },
+   "rooms": {
+    "RentableRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "roompla1"
+  },
+  "roompla2": {
+   "bgf": "roompla2",
+   "name": "palm",
+   "kind": "prop",
+   "classes": {
+    "OO_RR_PLANT2": 1
+   },
+   "rooms": {
+    "RentableRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "roompla2"
+  },
+  "roomtabl": {
+   "bgf": "roomtabl",
+   "name": "table",
+   "kind": "prop",
+   "classes": {
+    "OO_RR_TABLE": 1
+   },
+   "rooms": {
+    "RentableRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "roomtabl"
+  },
+  "roomwash": {
+   "bgf": "roomwash",
+   "name": "wash basin",
+   "kind": "prop",
+   "classes": {
+    "OO_RR_BASIN": 1
+   },
+   "rooms": {
+    "RentableRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "roomwash"
+  },
+  "scimitar": {
+   "bgf": "scimitar",
+   "name": "model scimitar",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_SCIMITAR": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 3,
+   "groups": 3,
+   "static": false,
+   "done": "scimitar"
+  },
+  "scr01": {
+   "bgf": "scr01",
+   "name": "model scroll",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_SCROLL": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 2,
+   "groups": 2,
+   "static": false,
+   "done": "scr01"
+  },
+  "signet": {
+   "bgf": "signet",
+   "name": "model signet ring",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_SIGNETRING": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "signet"
+  },
+  "skull1": {
+   "bgf": "skull1",
+   "name": "skull tower",
+   "kind": "prop",
+   "classes": {
+    "OO_SKULL1": 1
+   },
+   "rooms": {
+    "OutdoorsKD1": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "skull1"
+  },
+  "skull2": {
+   "bgf": "skull2",
+   "name": "stacked skulls",
+   "kind": "prop",
+   "classes": {
+    "OO_SKULL2": 1
+   },
+   "rooms": {
+    "OutdoorsKC1": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "skull2"
+  },
+  "skull3": {
+   "bgf": "skull3",
+   "name": "human skull tree",
+   "kind": "prop",
+   "classes": {
+    "OO_SKULL3": 1
+   },
+   "rooms": {
+    "OutdoorsKC1": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "skull3"
+  },
+  "skull5": {
+   "bgf": "skull5",
+   "name": "skull post",
+   "kind": "prop",
+   "classes": {
+    "OO_SKULL5": 1
+   },
+   "rooms": {
+    "OutdoorsKD1": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "skull5"
+  },
+  "skull6": {
+   "bgf": "skull6",
+   "name": "skull totem",
+   "kind": "prop",
+   "classes": {
+    "OO_SKULL6": 1
+   },
+   "rooms": {
+    "OutdoorsKC1": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "skull6"
+  },
+  "skulnorm": {
+   "bgf": "skulnorm",
+   "name": "skull",
+   "kind": "prop",
+   "classes": {
+    "OO_SKULL7": 1
+   },
+   "rooms": {
+    "RazaHut": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "skulnorm"
+  },
+  "skultusk": {
+   "bgf": "skultusk",
+   "name": "skull",
+   "kind": "prop",
+   "classes": {
+    "OO_SKULL9": 1
+   },
+   "rooms": {
+    "Necropolis2": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "skultusk"
+  },
+  "smwbox": {
+   "bgf": "smwbox",
+   "name": "personal chest",
+   "kind": "prop",
+   "classes": {
+    "SmallBox": 1
+   },
+   "rooms": {
+    "RentableRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 12,
+   "groups": 2,
+   "static": false,
+   "done": null
+  },
+  "stochair": {
+   "bgf": "stochair",
+   "name": "stone chair",
+   "kind": "prop",
+   "classes": {
+    "OO_STONECHAIR": 1
+   },
+   "rooms": {
+    "RentableRoom": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "stochair"
+  },
+  "tcat": {
+   "bgf": "tcat",
+   "name": "model token",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_TOKEN": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "tcat"
+  },
+  "urn4": {
+   "bgf": "urn4",
+   "name": "achalot urn",
+   "kind": "prop",
+   "classes": {
+    "OO_URN": 1
+   },
+   "rooms": {
+    "RazaHut": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "urn4"
+  },
+  "wand2": {
+   "bgf": "wand2",
+   "name": "model wand",
+   "kind": "prop",
+   "classes": {
+    "OO_MUSEUM_WAND": 1
+   },
+   "rooms": {
+    "RazaMuseum": 1
+   },
+   "count": 1,
+   "bitmaps": 2,
+   "groups": 2,
+   "static": false,
+   "done": "wand2"
+  },
+  "tree2": {
+   "bgf": "tree2",
+   "name": "kichan tree",
+   "kind": "tree",
+   "classes": {
+    "OO_TREE2": 98
+   },
+   "rooms": {
+    "OutdoorsKB1": 2,
+    "OutdoorsKB2": 8,
+    "OutdoorsKB4": 18,
+    "OutdoorsKC2": 12,
+    "OutdoorsKC3": 19,
+    "OutdoorsKC4": 14,
+    "OutdoorsKD3": 25
+   },
+   "count": 98,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "razshrub": {
+   "bgf": "razshrub",
+   "name": "shrub",
+   "kind": "tree",
+   "classes": {
+    "OO_RAZA_SHRUB": 67
+   },
+   "rooms": {
+    "BarloqueNorth": 9,
+    "BarloqueSouth": 11,
+    "CorNoth": 24,
+    "OutdoorsD6E6": 4,
+    "Tos": 19
+   },
+   "count": 67,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "raztree1": {
+   "bgf": "raztree1",
+   "name": "tree",
+   "kind": "tree",
+   "classes": {
+    "OO_RAZA_TREE1": 58
+   },
+   "rooms": {
+    "BarloqueNorth": 10,
+    "BarloqueSouth": 8,
+    "CorNoth": 15,
+    "OutdoorsD6E6": 7,
+    "Tos": 18
+   },
+   "count": 58,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "midtree2": {
+   "bgf": "midtree2",
+   "name": "tree",
+   "kind": "tree",
+   "classes": {
+    "OO_MIDTREE2": 57
+   },
+   "rooms": {
+    "BergCity": 3,
+    "BergLeader": 2,
+    "BergLeaderHall": 2,
+    "Duke1": 8,
+    "Duke3": 3,
+    "BanditCamp": 1,
+    "Berg3": 1,
+    "Berg5": 1,
+    "Berg6": 1,
+    "Berg7": 1,
+    "Berg8": 1,
+    "BergMG": 1,
+    "Jixa1": 2,
+    "RazaForest": 15,
+    "Raza": 15
+   },
+   "count": 57,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "midtree2"
+  },
+  "talltree1": {
+   "bgf": "talltree1",
+   "name": "tree",
+   "kind": "tree",
+   "classes": {
+    "OO_TALLTREE1": 54
+   },
+   "rooms": {
+    "BergCity": 2,
+    "BergLeader": 3,
+    "BergLeaderHall": 1,
+    "Duke1": 8,
+    "Duke3": 1,
+    "Berg2": 1,
+    "Berg5": 1,
+    "Berg8": 1,
+    "BergMG": 1,
+    "Castle2b": 23,
+    "EastTos": 12
+   },
+   "count": 54,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "midtree1": {
+   "bgf": "midtree1",
+   "name": "tree",
+   "kind": "tree",
+   "classes": {
+    "OO_MIDTREE1": 52
+   },
+   "rooms": {
+    "BergJala": 8,
+    "BergCity": 6,
+    "BergLeader": 1,
+    "BergLeaderHall": 2,
+    "Duke1": 5,
+    "Duke3": 2,
+    "BanditCamp": 1,
+    "Berg1": 2,
+    "Berg2": 2,
+    "Berg3": 1,
+    "Berg4": 5,
+    "Berg5": 1,
+    "Berg6": 2,
+    "Berg7": 2,
+    "Berg8": 2,
+    "BergMG": 3,
+    "OutdoorsJ3_2": 1,
+    "Jixa1": 1,
+    "Jixa3": 1,
+    "Swamp1": 2,
+    "EastTos": 2
+   },
+   "count": 52,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "shrub": {
+   "bgf": "shrub",
+   "name": "shrub",
+   "kind": "tree",
+   "classes": {
+    "Shrub": 48
+   },
+   "rooms": {
+    "GMHall": 6,
+    "Castle2a": 7,
+    "Duke2": 4,
+    "GuildHall5": 8,
+    "Castle2b": 16,
+    "OldCorNoth": 1,
+    "EastTos": 2,
+    "Tos": 4
+   },
+   "count": 48,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "shrubee1": {
+   "bgf": "shrubee1",
+   "name": "shrub",
+   "kind": "tree",
+   "classes": {
+    "OO_SHRUBEE1": 46
+   },
+   "rooms": {
+    "BergLeader": 2,
+    "BergLeaderHall": 1,
+    "Duke1": 12,
+    "Berg5": 2,
+    "Berg8": 3,
+    "RazaForest": 2,
+    "Swamp1": 2,
+    "Raza": 2,
+    "EastTos": 20
+   },
+   "count": 46,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "shrubee1"
+  },
+  "tree1": {
+   "bgf": "tree1",
+   "name": "tingi vine tree",
+   "kind": "tree",
+   "classes": {
+    "OO_TREE1": 27
+   },
+   "rooms": {
+    "OutdoorsKB3": 13,
+    "OutdoorsKD2": 14
+   },
+   "count": 27,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "midtree3": {
+   "bgf": "midtree3",
+   "name": "tree",
+   "kind": "tree",
+   "classes": {
+    "OO_MIDTREE3": 25
+   },
+   "rooms": {
+    "BergCity": 4,
+    "Duke1": 7,
+    "Duke3": 2,
+    "Berg1": 1,
+    "Berg2": 1,
+    "Berg3": 1,
+    "Berg4": 1,
+    "Berg5": 1,
+    "Berg6": 1,
+    "Berg7": 1,
+    "Berg8": 2,
+    "OutdoorsJ3_2": 1,
+    "Jixa1": 1,
+    "Jixa3": 1
+   },
+   "count": 25,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "talltree2": {
+   "bgf": "talltree2",
+   "name": "tree",
+   "kind": "tree",
+   "classes": {
+    "OO_TALLTREE2": 25
+   },
+   "rooms": {
+    "BergCity": 3,
+    "BergLeader": 1,
+    "BergLeaderHall": 1,
+    "Duke1": 2,
+    "BanditCamp": 1,
+    "Berg1": 1,
+    "Berg2": 1,
+    "Berg4": 2,
+    "Berg6": 1,
+    "Berg7": 1,
+    "Berg8": 1,
+    "BergMG": 1,
+    "OutdoorsJ3_1": 1,
+    "OutdoorsJ3_2": 1,
+    "Jixa1": 1,
+    "Jixa3": 1,
+    "EastTos": 5
+   },
+   "count": 25,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "tree3": {
+   "bgf": "tree3",
+   "name": "motubanak tree",
+   "kind": "tree",
+   "classes": {
+    "OO_TREE3": 23
+   },
+   "rooms": {
+    "OutdoorsKA5": 7,
+    "OutdoorsKB5": 12,
+    "OutdoorsKC2": 4
+   },
+   "count": 23,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "midtree4": {
+   "bgf": "midtree4",
+   "name": "tree",
+   "kind": "tree",
+   "classes": {
+    "OO_MIDTREE4": 22
+   },
+   "rooms": {
+    "BergCity": 2,
+    "Duke1": 6,
+    "Duke3": 2,
+    "BanditCamp": 1,
+    "Berg1": 1,
+    "Berg2": 1,
+    "Berg3": 1,
+    "Berg4": 1,
+    "Berg5": 1,
+    "Berg6": 1,
+    "Berg7": 1,
+    "Berg8": 1,
+    "BergMG": 1,
+    "OutdoorsJ3_1": 1,
+    "Jixa1": 1
+   },
+   "count": 22,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "tallbush": {
+   "bgf": "tallbush",
+   "name": "bush",
+   "kind": "tree",
+   "classes": {
+    "Tallbush": 15
+   },
+   "rooms": {
+    "CorNoth": 14,
+    "Gallery": 1
+   },
+   "count": 15,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "roundshrub": {
+   "bgf": "roundshrub",
+   "name": "sculpted shrub",
+   "kind": "tree",
+   "classes": {
+    "OO_RSHRUB": 10
+   },
+   "rooms": {
+    "BergJala": 2,
+    "BergDevRoom": 2,
+    "BergLeaderHall": 2,
+    "CorNoth": 2,
+    "Duke1": 2
+   },
+   "count": 10,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "talltree3": {
+   "bgf": "talltree3",
+   "name": "tree",
+   "kind": "tree",
+   "classes": {
+    "OO_TALLTREE3": 6
+   },
+   "rooms": {
+    "BergCity": 1,
+    "Duke1": 2,
+    "Duke3": 1,
+    "BanditCamp": 1,
+    "EastTos": 1
+   },
+   "count": 6,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "palm": {
+   "bgf": "palm",
+   "name": "exzor mec",
+   "kind": "tree",
+   "classes": {
+    "OO_PALM": 1
+   },
+   "rooms": {
+    "RatCave1": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "yrxltree": {
+   "bgf": "yrxltree",
+   "name": "yrxl tree",
+   "kind": "tree",
+   "classes": {
+    "YrxlTree": 1
+   },
+   "rooms": {
+    "OutdoorsKD1": 1
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  }
+ }
+}

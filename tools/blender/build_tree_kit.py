@@ -72,6 +72,88 @@ TREES = {
         "limbs": (5, 7), "twigs": (3, 5), "cards": 440, "card_m": (0.66, 0.96),
         "variants": {"A": 173, "B": 181, "C": 191},
     },
+    # The world batch (docs/adr/0007 "World batch"): the rest of the world's trees, measured off their
+    # sprites the same way (height and width from the visible pixels, crown base from the lowest wide
+    # row). "taper" narrows a crown towards its top (0 an ellipsoid, 1 a cone): poplars, cypresses.
+    "Mid1": {  # midtree1: a broad round crown on a slender trunk
+        "height_m": 4.77, "crown_base_m": 1.61, "crown_r_m": (1.66, 1.58), "trunk_d_m": 0.17,
+        "limbs": (4, 6), "twigs": (3, 5), "cards": 420, "card_m": (0.66, 0.96),
+        "variants": {"A": 211, "B": 223, "C": 227},
+    },
+    "Mid3": {  # midtree3: a small, open crown
+        "height_m": 4.27, "crown_base_m": 1.54, "crown_r_m": (1.0, 1.37), "trunk_d_m": 0.15, "taper": 0.2,
+        "limbs": (3, 5), "twigs": (3, 4), "cards": 220, "card_m": (0.5, 0.76),
+        "variants": {"A": 229, "B": 233},
+    },
+    "Mid4": {  # midtree4: a tall oval crown
+        "height_m": 7.0, "crown_base_m": 1.48, "crown_r_m": (1.45, 2.76), "trunk_d_m": 0.17, "taper": 0.3,
+        "limbs": (5, 7), "twigs": (3, 5), "cards": 640, "card_m": (0.7, 1.0),
+        "variants": {"A": 239, "B": 241, "C": 251},
+    },
+    "Tall1": {  # talltree1: the biggest broadleaf, a high oval crown on a stout trunk
+        "height_m": 8.76, "crown_base_m": 2.2, "crown_r_m": (1.7, 3.28), "trunk_d_m": 0.28, "taper": 0.25,
+        "limbs": (6, 8), "twigs": (3, 5), "cards": 900, "card_m": (0.8, 1.15),
+        "variants": {"A": 257, "B": 263, "C": 269},
+    },
+    "Tall2": {  # talltree2: narrow, pointed, poplar-like
+        "height_m": 6.04, "crown_base_m": 1.59, "crown_r_m": (1.05, 2.23), "trunk_d_m": 0.15, "taper": 0.55,
+        "limbs": (5, 7), "twigs": (2, 4), "cards": 320, "card_m": (0.55, 0.82),
+        "variants": {"A": 271, "B": 277},
+    },
+    "Tall3": {  # talltree3: tall and narrow, pointed
+        "height_m": 8.1, "crown_base_m": 1.88, "crown_r_m": (1.15, 3.11), "trunk_d_m": 0.18, "taper": 0.6,
+        "limbs": (6, 8), "twigs": (2, 4), "cards": 520, "card_m": (0.65, 0.95),
+        "variants": {"A": 281, "B": 283},
+    },
+    # Jungle trunks (tree1-3): a thick buttressed trunk wrapped in vines; the sprite shows only the
+    # canopy's underside at its top edge. "flare" widens the foot, "roots" adds buttress roots,
+    # "vines" hangs that many vines from under the crown.
+    "Jungle1": {
+        "height_m": 8.8, "crown_base_m": 7.75, "crown_r_m": (2.2, 0.52), "trunk_d_m": 0.95,
+        "flare": 2.2, "roots": 5, "vines": 5, "limbs": (5, 7), "twigs": (2, 3), "cards": 380, "card_m": (0.75, 1.05),
+        "variants": {"A": 293, "B": 307},
+    },
+    "Jungle2": {
+        "height_m": 8.8, "crown_base_m": 7.75, "crown_r_m": (2.25, 0.52), "trunk_d_m": 1.0,
+        "flare": 2.6, "roots": 6, "vines": 3, "limbs": (5, 7), "twigs": (2, 3), "cards": 380, "card_m": (0.75, 1.05),
+        "variants": {"A": 311, "B": 313},
+    },
+    "Jungle3": {
+        "height_m": 8.8, "crown_base_m": 7.75, "crown_r_m": (2.25, 0.52), "trunk_d_m": 0.95,
+        "flare": 2.4, "roots": 5, "vines": 2, "limbs": (5, 7), "twigs": (2, 3), "cards": 380, "card_m": (0.75, 1.05),
+        "variants": {"A": 317, "B": 331},
+    },
+    "Yrxl": {  # yrxltree: a twisted, vine-wrapped trunk with clumps of hanging moss
+        "height_m": 4.4, "crown_base_m": 2.5, "crown_r_m": (0.9, 0.95), "trunk_d_m": 0.42,
+        "flare": 1.8, "roots": 4, "vines": 4, "limbs": (3, 4), "twigs": (2, 3), "cards": 150, "card_m": (0.45, 0.7),
+        "variants": {"A": 337, "B": 347},
+    },
+    # Shrubs, from the ground up like Shrub
+    "RazaShrub": {  # razshrub: a yellow-green dome
+        "height_m": 2.18, "crown_base_m": -0.3, "crown_r_m": (1.05, 1.24), "trunk_d_m": 0.08,
+        "limbs": (5, 7), "twigs": (2, 3), "cards": 320, "card_m": (0.46, 0.7), "min_card_z_m": 0.06,
+        "variants": {"A": 349, "B": 353, "C": 359},
+    },
+    "Bush": {  # shrub: a dark green dome
+        "height_m": 2.18, "crown_base_m": -0.3, "crown_r_m": (1.05, 1.24), "trunk_d_m": 0.08,
+        "limbs": (5, 7), "twigs": (2, 3), "cards": 320, "card_m": (0.46, 0.7), "min_card_z_m": 0.06,
+        "variants": {"A": 367, "B": 373, "C": 379},
+    },
+    "Topiary": {  # roundshrub: a clipped cone
+        "height_m": 4.25, "crown_base_m": -0.2, "crown_r_m": (1.1, 2.22), "trunk_d_m": 0.1, "taper": 0.55,
+        "limbs": (6, 8), "twigs": (2, 3), "cards": 500, "card_m": (0.42, 0.62), "min_card_z_m": 0.08,
+        "variants": {"A": 383, "B": 389},
+    },
+    "Cypress": {  # tallbush: a tall dark column on a short red trunk
+        "height_m": 8.8, "crown_base_m": 0.35, "crown_r_m": (1.12, 4.22), "trunk_d_m": 0.25, "taper": 0.75,
+        "limbs": (8, 10), "twigs": (2, 3), "cards": 900, "card_m": (0.5, 0.75),
+        "variants": {"A": 397, "B": 401},
+    },
+    "Fern": {  # palm (OO_PALM): a low fern, knee-high
+        "height_m": 0.55, "crown_base_m": -0.05, "crown_r_m": (0.46, 0.3), "trunk_d_m": 0.03,
+        "limbs": (5, 7), "twigs": (1, 2), "cards": 60, "card_m": (0.3, 0.45), "min_card_z_m": 0.02,
+        "variants": {"A": 409, "B": 419},
+    },
 }
 
 TRUNK_SIDES = 9
@@ -154,13 +236,32 @@ def crown_point(cfg, centre, direction, frac):
     d = direction.normalized()
     # distance to the ellipsoid surface along d
     k = 1.0 / math.sqrt((d.x / rh) ** 2 + (d.y / rh) ** 2 + (d.z / rv) ** 2)
-    return centre + d * k * frac
+    p = d * k * frac
+    s = taper_at(cfg, p.z)
+    return centre + Vector((p.x * s, p.y * s, p.z))
+
+
+def taper_at(cfg, z):
+    """Horizontal scale of the crown at height z above its centre: 1 for an ellipsoid; with "taper",
+    wider at the bottom and narrowing towards the top (a cone at taper 1), the middle unchanged."""
+    t = cfg.get("taper", 0.0)
+    if not t:
+        return 1.0
+    u = min(1.0, max(0.0, (z / cfg["crown_r_m"][1] + 1) / 2))  # 0 at the crown's bottom, 1 at its top
+    return (1 - t * u) / (1 - t * 0.5)
 
 
 def ellipsoid_normal(cfg, centre, p):
     rh, rv = cfg["crown_r_m"]
     q = p - centre
-    return Vector((q.x / rh ** 2, q.y / rh ** 2, q.z / rv ** 2)).normalized()
+    t = cfg.get("taper", 0.0)
+    if not t:
+        return Vector((q.x / rh ** 2, q.y / rh ** 2, q.z / rv ** 2)).normalized()
+    # a tapered crown: the ellipsoid's normal at the tapered radius, tipped up by the side's slope
+    rs = rh * max(0.2, taper_at(cfg, q.z))
+    n = Vector((q.x / rs ** 2, q.y / rs ** 2, q.z / rv ** 2)).normalized()
+    slope = t * rh / (2 * rv * (1 - t * 0.5))
+    return (n + Vector((0, 0, slope * math.hypot(n.x, n.y)))).normalized()
 
 
 def wind_at(cfg, centre, p):
@@ -197,10 +298,14 @@ def skeleton(b, cfg, rng, centre):
     lean = Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), 0)) * 0.03
     trunk = [Vector((0, 0, -0.15))] + [Vector((0, 0, top * t)) + lean * t * t * top +
                                        Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), 0)) * 0.012 for t in (0.2, 0.45, 0.7, 0.85, 1.0)]
-    radii = [r0 * 1.35, r0 * 1.08, r0, r0 * 0.9, r0 * 0.78, r0 * 0.4]
+    flare = cfg.get("flare")  # the foot's widening; the first trees keep their fixed 1.35, 1.08
+    foot = (r0 * flare, r0 * (1 + (flare - 1) * 0.23)) if flare else (r0 * 1.35, r0 * 1.08)
+    radii = [*foot, r0, r0 * 0.9, r0 * 0.78, r0 * 0.4]
     tint = rng.random()
     tube(b, trunk, radii, TRUNK_SIDES, [wind_at(cfg, centre, p) for p in trunk], tint,
          [ao_at(cfg, centre, p) for p in trunk])
+    roots(b, cfg, rng)
+    vines(b, cfg, rng)
     n_limbs = rng.randint(*cfg["limbs"])
     phase = rng.uniform(0, 2 * math.pi)
     for i in range(n_limbs):
@@ -226,6 +331,38 @@ def skeleton(b, cfg, rng, centre):
             tr = lr * 0.42
             tube(b, tpts, [tr * (1 - 0.85 * k / 3) for k in range(4)], 4,
                  [wind_at(cfg, centre, p) for p in tpts], rng.random(), [ao_at(cfg, centre, p) for p in tpts])
+
+
+def roots(b, cfg, rng):
+    """Buttress roots ("roots"): tubes from low on the trunk arching out and down into the ground."""
+    r0 = cfg["trunk_d_m"] / 2
+    n = cfg.get("roots", 0)
+    if not n:  # no random draws, so trees without roots keep their seeds' shapes
+        return
+    phase = rng.uniform(0, 2 * math.pi)
+    for i in range(n):
+        az = phase + 2 * math.pi * (i + rng.uniform(-0.2, 0.2)) / n
+        out = Vector((math.cos(az), math.sin(az), 0))
+        reach = r0 * rng.uniform(2.2, 3.2)
+        start = Vector((0, 0, r0 * rng.uniform(1.4, 2.2))) + out * r0 * 0.4
+        pts = [start + out * reach * t + Vector((0, 0, -start.z * t ** 0.7 - 0.12 * t)) for t in (0.0, 0.3, 0.6, 1.0)]
+        rr = r0 * rng.uniform(0.45, 0.6)
+        tube(b, pts, [rr, rr * 0.75, rr * 0.5, rr * 0.25], BRANCH_SIDES, [0.0] * 4, rng.random(), [1.0] * 4)
+
+
+def vines(b, cfg, rng):
+    """Hanging vines ("vines"): thin tubes from under the crown, swaying down towards the ground."""
+    rh = cfg["crown_r_m"][0]
+    for _ in range(cfg.get("vines", 0)):
+        az = rng.uniform(0, 2 * math.pi)
+        out = Vector((math.cos(az), math.sin(az), 0))
+        top = Vector((0, 0, cfg["crown_base_m"] + 0.1)) + out * rh * rng.uniform(0.35, 0.85)
+        length = (top.z - 0.6) * rng.uniform(0.45, 0.85)
+        ts = (0.0, 0.2, 0.4, 0.6, 0.8, 1.0)
+        pts = [top + Vector((math.sin(t * 9 + az) * 0.08, math.cos(t * 7 + az) * 0.08, -length * t)) for t in ts]
+        r = cfg["trunk_d_m"] * 0.035 + 0.012
+        tube(b, pts, [r * f for f in (1.0, 1.0, 0.9, 0.85, 0.75, 0.5)], 4, [0.6 + 0.4 * t for t in ts],
+             rng.random(), [0.6] * 6)
 
 
 def lobes(rng, count=7):

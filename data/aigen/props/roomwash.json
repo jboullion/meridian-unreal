@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "roomwash",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 155,
+  "oo_const": "OO_RR_BASIN",
+  "bgf": "roomwash",
+  "frame": 0,
+  "describe": "a washstand: a tall slender wooden stand with four legs and a footrest ring, holding a white porcelain wash basin and a white pitcher on top",
+  "mesh": "SM_AI_Roomwash",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "bc83f15b-faba-4975-b636-f4839343db08",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "ceramic pitcher 3d model",
+        "tris_raw": 1872,
+        "file": "build/aigen/props/roomwash/04_tripo_out/C.glb",
+        "digest": "3575895fa22ef055",
+        "tris": 1872,
+        "size_m": [0.4031, 0.4192, 0.9793]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/roomwash/04_tripo_out/C.glb",
+      "tripo_task": "bc83f15b-faba-4975-b636-f4839343db08",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "ceramic pitcher 3d model",
+      "tris_raw": 1872,
+      "digest": "3575895fa22ef055",
+      "tris": 1872,
+      "size_m": [0.4031, 0.4192, 0.9793]
+    }
+  },
+  "height_m": 1.8906,
+  "width_m": 0.7448,
+  "lift_m": 0.0,
+  "sprite_px": [65, 165],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/roomwash/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Roomwash.glb",
+    "tris": 1872,
+    "size_m": [0.7782, 0.8094, 1.8906],
+    "scale": 1.9306
+  }
+}

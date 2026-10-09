@@ -14,7 +14,7 @@ import shutil
 from pathlib import Path
 
 # The Studio settings in use (docs/adr/0007 "Next run"); the card repeats them per variant.
-DEFAULT_POLYCOUNT = 4000  # triangles; a manifest's "polycount" overrides it
+DEFAULT_POLYCOUNT = 2000  # triangles; a manifest's "polycount" overrides it (1000 for simple props; docs/adr/0007 "World batch")
 # manifest "model": how the asset's mesh is made. "hd" (the default): HD Model H3.1. "smart_mesh":
 # Studio's Smart Mesh (P2.0, clean low-poly topology, textured afterwards). "custom": no Tripo run;
 # the manifest's "custom" model (aigen.py <name> custom <variant>, or a hand-made GLB) is the mesh.
@@ -64,6 +64,17 @@ def retopology(manifest: dict):
     return {"polycount": int(r.get("polycount", polycount(manifest))), "topology": r.get("topology", "triangle")}
 
 
+# manifest "symmetrical": true, for props that look the same from behind (skulls, jars, crates): the one
+# front restyle of the original sprite goes in the Front slot of Studio's multi-view and, mirrored left to
+# right (what a symmetrical object looks like from behind), in the Back slot, so Tripo builds a real back
+# instead of inventing one or leaving it flat. Nothing new is painted. (":mirror" flips a source image.)
+SYMMETRICAL_VIEWS = {"front": "openai", "back": "openai@front:mirror"}
+
+
+def symmetrical_variant(manifest: dict) -> str:
+    return "SYM" if model(manifest) == "hd" else "SMSYM"
+
+
 def default_variants(manifest: dict) -> dict:
     """The Tripo inputs when a manifest names none: all four views when the original draws its own
     sides and back (manifest "angles", the sprite step), else the front. Named by model: "C"/"MV"
@@ -71,6 +82,8 @@ def default_variants(manifest: dict) -> dict:
     kind = model(manifest)
     if kind == "custom":
         return {}
+    if manifest.get("symmetrical"):
+        return {symmetrical_variant(manifest): SYMMETRICAL_VIEWS}
     views = ["front"] + list(manifest.get("angles", {}))
     single, multi = ("C", "MV") if kind == "hd" else ("SM", "SMMV")
     return {multi: {v: "openai" for v in views}} if len(views) > 1 else {single: {"front": "openai"}}

@@ -8,15 +8,47 @@
   "describe": "a miniature mana node: a glowing sphere of swirling blue with bright green and yellow veins of energy",
   "mesh": "SM_AI_Modnode",
   "size_by": "height",
-  "restyle": {"providers": ["openai"]},
+  "restyle": {"providers": ["openai"], "views": ["front"]},
   "tripo": {
-    "variants": {"C": {"front": "openai"}},
+    "variants": {
+      "C": {"front": "openai"},
+      "FB": {"front": "openai", "back": "openai"},
+      "SYMM": {"front": "openai", "back": "openai@front:mirror"}
+    },
     "runs": {
       "C": {
         "tripo_task": "6f030433-e720-44cc-ac46-64d5eed0c852",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
         "tripo_name": "glowing planet 3d model",
-        "tris_raw": 7590
+        "tris_raw": 7590,
+        "file": "build/aigen/props/modnode/04_tripo_out/C.glb",
+        "digest": "16a5ba7ddd3263d9",
+        "tris": 7590,
+        "size_m": [0.9805, 0.7995, 0.9787]
+      },
+      "FB": {
+        "tripo_task": "06fc3bea-6ed6-4419-8b34-e755acb69c05",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view Front + Back (the back painted by OpenAI from the front) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/modnode/04_tripo_out/FB.glb",
+        "digest": "ab6fa631586cdc79",
+        "tris": 3759,
+        "size_m": [0.9771, 0.6469, 0.9769]
+      },
+      "SYM": {
+        "tripo_task": "3b3d0850-b0f7-4748-b1e7-5c1b68f4a0c3",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in both the Front and Back slots (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/modnode/04_tripo_out/SYM.glb",
+        "digest": "4483339c459c31c5",
+        "tris": 3908,
+        "size_m": [0.9798, 0.8891, 0.9773]
+      },
+      "SYMM": {
+        "tripo_task": "6fcf25e5-ce96-4fec-88fe-9b76ee903716",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/modnode/04_tripo_out/SYMM.glb",
+        "digest": "d76e5372c04c5829",
+        "tris": 3824,
+        "size_m": [0.9796, 0.8893, 0.9771]
       }
     },
     "chosen": {
@@ -39,6 +71,12 @@
       "seconds": null,
       "batch": "batch_6ac498fc8e788190a1db41d6a3c185cf",
       "file": "build/aigen/props/modnode/02_restyle/openai_front.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac8efb6ab288190b451d8c3f99e2958",
+      "file": "build/aigen/props/modnode/02_restyle/openai_back.png"
     }
   },
   "normalized": {
@@ -46,5 +84,22 @@
     "tris": 7590,
     "size_m": [0.551, 0.4493, 0.55],
     "scale": 0.56199
+  },
+  "polycount": 4000,
+  "symmetrical": true,
+  "custom": {
+    "variant": "SYMM",
+    "file": "build/aigen/props/modnode/04_tripo_out/SYMM.glb",
+    "tripo_task": "6fcf25e5-ce96-4fec-88fe-9b76ee903716",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+    "digest": "d76e5372c04c5829",
+    "tris": 3824,
+    "size_m": [0.9796, 0.8893, 0.9771],
+    "normalized": {
+      "file": "build/environment/kit/SM_AI_Modnode_Custom.glb",
+      "tris": 3824,
+      "size_m": [0.5514, 0.5006, 0.55],
+      "scale": 0.56287
+    }
   }
 }

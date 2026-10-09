@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "skull6",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 77,
+  "oo_const": "OO_SKULL6",
+  "bgf": "skull6",
+  "frame": 0,
+  "describe": "a crooked forked wooden branch planted upright, topped with a cluster of human skulls and crossed bones",
+  "mesh": "SM_AI_Skull6",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "c1b38e00-da58-4fdd-8d49-ddfc07fee917",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "skull totem 3d model",
+        "tris_raw": 1978,
+        "file": "build/aigen/props/skull6/04_tripo_out/C.glb",
+        "digest": "b22a4bc41dd5c116",
+        "tris": 1978,
+        "size_m": [0.4249, 0.1996, 0.9747]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/skull6/04_tripo_out/C.glb",
+      "tripo_task": "c1b38e00-da58-4fdd-8d49-ddfc07fee917",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "skull totem 3d model",
+      "tris_raw": 1978,
+      "digest": "b22a4bc41dd5c116",
+      "tris": 1978,
+      "size_m": [0.4249, 0.1996, 0.9747]
+    }
+  },
+  "height_m": 1.3664,
+  "width_m": 0.6273,
+  "lift_m": 0.0,
+  "sprite_px": [96, 160],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/skull6/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Skull6.glb",
+    "tris": 1978,
+    "size_m": [0.5956, 0.2799, 1.3664],
+    "scale": 1.40187
+  }
+}

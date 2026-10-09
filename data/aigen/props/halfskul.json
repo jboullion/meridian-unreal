@@ -1,0 +1,61 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "halfskul",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 98,
+  "oo_const": "OO_HALFSKULL",
+  "bgf": "halfskul",
+  "frame": 0,
+  "describe": "a large weathered human skull, only its top, brow and empty eye sockets showing, bleached white and cracked",
+  "mesh": "SM_AI_Halfskul",
+  "size_by": "height",
+  "placed": 48,
+  "rooms": 10,
+  "restyle": {"providers": ["openai"], "views": ["front"], "extra": "half sunk into the ground"},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "551f1721-c2c9-4450-8fbe-a0882adffc4f",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "fossil skull 3d model",
+        "tris_raw": 946,
+        "file": "build/aigen/props/halfskul/04_tripo_out/C.glb",
+        "digest": "8c12cd76ff072d22",
+        "tris": 946,
+        "size_m": [0.9714, 0.974, 0.841]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/halfskul/04_tripo_out/C.glb",
+      "tripo_task": "551f1721-c2c9-4450-8fbe-a0882adffc4f",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "fossil skull 3d model",
+      "tris_raw": 946,
+      "digest": "8c12cd76ff072d22",
+      "tris": 946,
+      "size_m": [0.9714, 0.974, 0.841]
+    }
+  },
+  "polycount": 1000,
+  "height_m": 0.2544,
+  "width_m": 0.3713,
+  "lift_m": 0.0,
+  "sprite_px": [54, 37],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/halfskul/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Halfskul.glb",
+    "tris": 946,
+    "size_m": [0.2939, 0.2946, 0.2544],
+    "scale": 0.30251
+  }
+}

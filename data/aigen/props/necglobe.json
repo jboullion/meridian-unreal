@@ -1,0 +1,104 @@
+{
+ "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+ "name": "necglobe",
+ "kind": "props",
+ "class": "TargetGlobe",
+ "bgf": "necglobe",
+ "frame": 0,
+ "describe": "a crystal scrying orb, a perfect sphere of milky glass swirling with pale pink, white and lilac mist",
+ "mesh": "SM_AI_Necglobe",
+ "size_by": "height",
+ "placed": 10,
+ "rooms": 2,
+ "restyle": {
+  "providers": [
+   "openai"
+  ],
+  "views": [
+   "front"
+  ]
+ },
+ "tripo": {
+  "variants": {
+   "C": {
+    "front": "openai"
+   },
+   "C4kL": {
+    "front": "openai"
+   }
+  },
+  "runs": {
+   "C": {
+    "tripo_task": "1af60972-5180-4672-8f58-a68cdd1b69d8",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+    "tripo_name": "swirled marble sphere 3d model",
+    "tris_raw": 958,
+    "file": "build/aigen/props/necglobe/04_tripo_out/C.glb",
+    "digest": "efec6abc2438c051",
+    "tris": 958,
+    "size_m": [
+     0.9815,
+     0.9765,
+     0.9806
+    ]
+   },
+   "C4kL": {
+    "tripo_task": "bc550f54-0bc1-4add-9e41-5ca8ac160587",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting OFF, triangles, 4000 faces, single image (45 credits); rerun of C, its swirl was lost as lighting (2026-10-09)",
+    "tripo_name": "marble ball 3d model",
+    "tris_raw": 3936,
+    "file": "build/aigen/props/necglobe/04_tripo_out/C4kL.glb",
+    "digest": "642f5bfb1ae5a613",
+    "tris": 3936,
+    "size_m": [
+     0.9805,
+     0.9745,
+     0.9771
+    ]
+   }
+  },
+  "chosen": {
+   "variant": "C4kL",
+   "file": "build/aigen/props/necglobe/04_tripo_out/C4kL.glb",
+   "tripo_task": "bc550f54-0bc1-4add-9e41-5ca8ac160587",
+   "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting OFF, triangles, 4000 faces, single image (45 credits); rerun of C, its swirl was lost as lighting (2026-10-09)",
+   "tripo_name": "marble ball 3d model",
+   "tris_raw": 3936,
+   "digest": "642f5bfb1ae5a613",
+   "tris": 3936,
+   "size_m": [
+    0.9805,
+    0.9745,
+    0.9771
+   ]
+  }
+ },
+ "polycount": 1000,
+ "height_m": 0.6016,
+ "width_m": 0.593,
+ "lift_m": 0.0,
+ "sprite_px": [
+  69,
+  70
+ ],
+ "restyle_runs": {
+  "openai_front": {
+   "model": "gpt-image-2.5-sunburst",
+   "seconds": null,
+   "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+   "file": "build/aigen/props/necglobe/02_restyle/openai_front.png"
+  }
+ },
+ "normalized": {
+  "file": "build/environment/kit/SM_AI_Necglobe.glb",
+  "tris": 3936,
+  "size_m": [
+   0.6037,
+   0.6,
+   0.6016
+  ],
+  "scale": 0.61573
+ },
+ "note": "Kept as its original sprite in game (the user, 2026-10-09: a sprite marks something that moves or can be used; static scenery is 3D). Its Tripo models stay in art_src/ and build/.",
+ "status": "sprite"
+}

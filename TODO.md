@@ -14,10 +14,15 @@
 
 ### UI
 
-- About Meridian had a cut off NDS image. Investigate if this is still the case
+
 
 ### Props
 
+- List of props that will probably be in game as sprites
+  - necglobe
+  - node
+  - avarnode
+  - 
 
 
 ### Movement
