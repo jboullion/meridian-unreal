@@ -19,7 +19,7 @@
   - the face specks are fixed (see "Ramps per original pixel");
   - players are drawn from what the server sends (see "Players online").
 
-Every `AMRCharacter` is drawn with the sprite body. The default look is `DefaultSpriteLook` under `[/Script/MeridianRemastered.MRCharacter]` in `DefaultGame.ini`; a test client picks its own with `-MRSpriteLook=<name>`.
+Every `AMRCharacter` is drawn with the sprite body. The default look is `DefaultSpriteLook` under `[/Script/UnrealMeridian.MRCharacter]` in `DefaultGame.ini`; a test client picks its own with `-MRSpriteLook=<name>`.
 
 ## How the original draws a player
 

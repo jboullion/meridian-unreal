@@ -16,9 +16,9 @@ param(
 )
 $Variants = $Variants | ForEach-Object { $_ -split "," } | Where-Object { $_ }   # "-Variants a,b" through -File arrives as one string
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$projDir = Join-Path $repo "game\MeridianRemastered"
-$proj = Join-Path $projDir "MeridianRemastered.uproject"
-$log = Join-Path $projDir "Saved\Logs\MeridianRemastered.log"
+$projDir = Join-Path $repo "game\UnrealMeridian"
+$proj = Join-Path $projDir "UnrealMeridian.uproject"
+$log = Join-Path $projDir "Saved\Logs\UnrealMeridian.log"
 $shots = Join-Path $projDir "Saved\Screenshots\MRClip"
 $cvars = @{
     "original"      = "mr.Sprite.Smooth.Tweens 0,mr.Sprite.Smooth.Crossfade 0,mr.Sprite.Smooth.AngleFade 0,mr.Sprite.Smooth.Motion 0"

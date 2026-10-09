@@ -13,8 +13,8 @@ param(
 )
 
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$proj = Join-Path $repo "game\MeridianRemastered\MeridianRemastered.uproject"
-$log = Join-Path $repo "game\MeridianRemastered\Saved\Logs\mapcapture.log"
+$proj = Join-Path $repo "game\UnrealMeridian\UnrealMeridian.uproject"
+$log = Join-Path $repo "game\UnrealMeridian\Saved\Logs\mapcapture.log"
 $gameArgs = "`"$proj`" /Game/Generated/Maps/L_World -game -windowed -resx=1280 -resy=720 -nosound -unattended " +
     "-MRStartZone=300 -MRGameHour=$GameHour -MRWeather=clear -MRNoLightning -MRSeason=1 -MRMapCapture " +
     "-abslog=`"$log`""

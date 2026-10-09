@@ -111,7 +111,7 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
   - **Offline:** `UMRMockInventory`, as before.
   - **In a server's game:** a fresh `UMRNetInventory` per character. It holds the server's spells and skills, and a spell bar kept on this client. The bag, hotbar and equipment are empty until M3; no mock items are shown online.
   - `UMRUISubsystem` swaps the source when the server phase changes; the widgets read the current one.
-- Sheets: `build/ui/shots/m0/18_game_menu.png` (offline), `game/MeridianRemastered/Saved/Screenshots/MRNet/online_4.png` and `online_5.png` (`run_net_test.ps1 -Render -Hold 52`).
+- Sheets: `build/ui/shots/m0/18_game_menu.png` (offline), `game/UnrealMeridian/Saved/Screenshots/MRNet/online_4.png` and `online_5.png` (`run_net_test.ps1 -Render -Hold 52`).
 
 ## Over the world, and Look (2026-10-08, M2a of ADR 0012)
 - **`SMRWorldOverlay`** (under every panel) draws:
@@ -198,7 +198,7 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
   - **Game:** the server-kept options (safety, grouping, auto-loot...), damage numbers, and the original's typing (every line a command, `mr.Chat.OriginalTyping`).
   - **Chat:** the quick chat's twelve lines, each run at once or put in the chat line.
   - **Account:** change the password; delete the character, confirmed with the password.
-  - **Where they're kept:** console variables and keys in `GameUserSettings.ini` (`[MeridianRemastered.CVars]`, `[MeridianRemastered.Keys]`); the quick chat, hotbar and map notes per character (`Saved/MRNet/<server>/social/<name>.json`).
+  - **Where they're kept:** console variables and keys in `GameUserSettings.ini` (`[UnrealMeridian.CVars]`, `[UnrealMeridian.Keys]`); the quick chat, hotbar and map notes per character (`Saved/MRNet/<server>/social/<name>.json`).
 - **The quick chat** (the original's function-key aliases, `alias.c`): F1–F12 online, F10 staying the menu's. The original's defaults: help, rest, stand, neutral, happy, sad, wry, wave, point; F11 mail, and F12 who (the original's "quit" is too easy to hit).
 - **The large map** (M, or "map"): the whole room with the player's notes, kept per room as the original's annotations were. A click marks where a note goes, else it goes where the player stands.
 - **The hotbar and the spell bar** are kept with the character and come back when it enters again (an item found by its icon and name).

@@ -26,7 +26,7 @@ TODO.md already set the goal: the Unreal game should be "a full client build for
    - ~~**Shards' TypeScript is GPLv2. Never copy or translate it into this repo.**~~ Changed 2026-10-08: this repo is now GPLv2 too, with an Unreal Engine linking exception ([LICENSE-EXCEPTION.md](../../LICENSE-EXCEPTION.md)). Shards' own code, its protocol code included, may be reused. Code Shards ported from the Meridian 59 source still may not, because the exception can't cover the original authors' code (AGENTS.md, "Hard rules").
    - The protocol facts (message ids, layouts, the security arithmetic) aren't code, and our notes cite blakserv for each.
 3. **Transport: WebSocket through the gateway**, using UE's `WebSockets` module with binary frames.
-   - We send the Origin `app://meridian-remastered`. The VM's `GATEWAY_ORIGINS` has to list it; the local gateway allows any origin.
+   - We send the Origin `app://unreal-meridian`. The VM's `GATEWAY_ORIGINS` has to list it; the local gateway allows any origin.
    - TLS comes from the site's `wss://`. The login sends an unsalted MD5, so it must not go over plain TCP across the internet.
 4. **The server's own resources.** Before connecting, the client downloads `rsc0000.rsb` from the server's `assets` URL.
    - It is cached in `Saved/MRNet/<server>/` and fetched again when `manifest.json`'s `rsbHash` changes.
@@ -76,7 +76,7 @@ TODO.md already set the goal: the Unreal game should be "a full client build for
 - **Port Shards' TypeScript protocol code:** fastest, but it is GPLv2 and this repo was not. (Allowed since 2026-10-08; see decision 2.)
 
 ## Follow-up work
-- **The VM:** add `app://meridian-remastered` to `GATEWAY_ORIGINS` in the VM's `deploy/.env` and restart the gateway. Until then "Shards (online)" gets 403.
+- **The VM:** add `app://unreal-meridian` to `GATEWAY_ORIGINS` in the VM's `deploy/.env` and restart the gateway. Until then "Shards (online)" gets 403.
 - **Retire the UE-server path:** done 2026-10-08 (M9 of ADR 0012). Removed: client-side zone streaming, `ClientPrepareZone`, `IsZoneReadyFor`'s check of a remote client, `MRZoneSmokeTest` / `run_zone_test.ps1`, `MRSpriteNetTest` / `run_sprite_net_test.ps1`. The spawn and teleport waits stay (for the zones still loading at start-up), and so do the replicated properties, which offline play runs through. The plan was: remove the dedicated-server spawn wait, `ClientPrepareZone` and `IsZoneReadyFor`, `MRZoneSmokeTest` / `run_zone_test.ps1`, `MRSpriteNetTest` / `run_sprite_net_test.ps1`, and the "Play As Client" instructions.
 - **Next features** (the full plan is in [ADR 0012](0012-client-parity-and-world-coverage.md) and [docs/parity.md](../parity.md)):
   - player looks from the server's overlays: done 2026-10-07 for the face, hair and colours. Armour torsos, weapons and hats aren't drawn from the server yet;

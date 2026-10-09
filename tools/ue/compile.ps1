@@ -6,6 +6,6 @@ param(
     [string]$Config = "Development"
 )
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$proj = Join-Path $repo "game\MeridianRemastered\MeridianRemastered.uproject"
-& "$EngineRoot\Engine\Build\BatchFiles\Build.bat" MeridianRemasteredEditor Win64 $Config "-Project=$proj" -WaitMutex
+$proj = Join-Path $repo "game\UnrealMeridian\UnrealMeridian.uproject"
+& "$EngineRoot\Engine\Build\BatchFiles\Build.bat" UnrealMeridianEditor Win64 $Config "-Project=$proj" -WaitMutex
 exit $LASTEXITCODE

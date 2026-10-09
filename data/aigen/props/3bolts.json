@@ -48,7 +48,9 @@
         "file": "build/aigen/props/3bolts/04_tripo_out/SYMM.glb",
         "digest": "5940ca7a15aac68b",
         "tris": 3836,
-        "size_m": [0.3351, 0.2678, 0.9802]
+        "size_m": [0.3351, 0.2678, 0.9802],
+        "tripo_name": "ornate fabric bolts 3d model",
+        "tris_raw": 3836
       }
     },
     "chosen": {

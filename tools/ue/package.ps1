@@ -10,7 +10,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$project = Join-Path $repo "game\MeridianRemastered\MeridianRemastered.uproject"
+$project = Join-Path $repo "game\UnrealMeridian\UnrealMeridian.uproject"
 $out = Join-Path $repo "build\package\$Platform"
 
 if ($Platform -eq "Linux") {
@@ -20,7 +20,7 @@ if ($Platform -eq "Linux") {
 
 # A packaged game reads its JSON from <project>/Data (UMRZoneSubsystem::GetDataDir); in development it
 # reads the repo's data/. Copy it in so the stage step (DirectoriesToAlwaysStageAsNonUFS) picks it up.
-$dataOut = Join-Path $repo "game\MeridianRemastered\Data"
+$dataOut = Join-Path $repo "game\UnrealMeridian\Data"
 robocopy (Join-Path $repo "data") $dataOut /MIR /XD aigen /NFL /NDL /NJH /NJS /NP | Out-Null
 if ($LASTEXITCODE -ge 8) { throw "Copying data/ failed ($LASTEXITCODE)" }
 

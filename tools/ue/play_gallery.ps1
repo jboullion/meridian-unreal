@@ -25,7 +25,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$proj = Join-Path $repo "game\MeridianRemastered\MeridianRemastered.uproject"
+$proj = Join-Path $repo "game\UnrealMeridian\UnrealMeridian.uproject"
 
 if ($Rebuild) {
     Write-Host "Regenerating the gallery layout..."

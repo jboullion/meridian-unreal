@@ -11,8 +11,8 @@ param(
 )
 
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$proj = Join-Path $repo "game\MeridianRemastered\MeridianRemastered.uproject"
-$log = Join-Path $repo "game\MeridianRemastered\Saved\Logs\unittests.log"
+$proj = Join-Path $repo "game\UnrealMeridian\UnrealMeridian.uproject"
+$log = Join-Path $repo "game\UnrealMeridian\Saved\Logs\unittests.log"
 if (Test-Path $log) { Remove-Item $log }
 
 $cmdArgs = "`"$proj`" -ExecCmds=`"Automation RunTests $Filter;Quit`" -unattended -nullrhi -nosound -nosplash -stdout -abslog=`"$log`""

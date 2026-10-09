@@ -26,7 +26,7 @@ So every new feature has two halves:
 - **On the server:** Kod and resources in our own fork.
 - **In the client:** our pipeline run over that fork, plus a few places that are hardcoded today.
 
-C++ paths are under `game/MeridianRemastered/Source/MeridianRemastered/`.
+C++ paths are under `game/UnrealMeridian/Source/UnrealMeridian/`.
 
 ## Decision (proposed)
 

@@ -45,7 +45,9 @@
         "file": "build/aigen/props/flaskgrn/04_tripo_out/SYMM.glb",
         "digest": "8cafe899ade020b8",
         "tris": 3810,
-        "size_m": [0.7667, 0.767, 0.9815]
+        "size_m": [0.7667, 0.767, 0.9815],
+        "tripo_name": "erlenmeyer flask 3d model",
+        "tris_raw": 3810
       }
     },
     "chosen": {

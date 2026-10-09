@@ -1,10 +1,10 @@
-# Meridian Remastered
+# Unreal Meridian
 
 A free, fan-made remaster of **Meridian 59**, the 1996 classic that was one of the first 3D MMORPGs, rebuilt in Unreal Engine 5.8.
 
 The goal is simple: walk back into Meridian and have it feel like home, only better looking. The same towns, the same rules and the same music, with modern lighting, real 3D buildings, a day/night cycle, weather, and first- or third-person action combat.
 
-> Meridian Remastered is a fan project. It is not affiliated with or endorsed by the owners of the Meridian 59 trademark. It's built on the open-source Server 104 ruleset, with the blessing of the Server 103 and 104 teams.
+> Unreal Meridian is a fan project. It is not affiliated with or endorsed by the owners of the Meridian 59 trademark. It's built on the open-source Server 104 ruleset, with the blessing of the Server 103 and 104 teams.
 
 ## Where it stands
 
@@ -26,7 +26,7 @@ The code is open source under the GPLv2 (see [License](#license)).
 
 A few things matter a lot to the people who made this possible, so please respect them in anything you contribute:
 
-- **The name is "Meridian Remastered".** Never use "104" in the name or branding.
+- **The name is "Unreal Meridian".** Never use "104" in the name or branding.
 - **No original game files in the repo.** The original art and sounds are extracted from your own installed copy of the game when you set up the project.
 - **Stay close to the original.** This is a remaster, not a reimagining. Keep the colours, the motifs and the feel people remember.
 
@@ -72,7 +72,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/setup.ps1
 
 This extracts the original data and art, builds the maps, compiles the game and generates the world. Pass `-EngineRoot "<path to UE_5.8>"` if Unreal is installed somewhere else.
 
-To play, open `game/MeridianRemastered/MeridianRemastered.uproject` and press Play (Net Mode "Play Standalone"). The login screen connects to a Meridian server: "Shards (online)", or "Local (dev)" when the Shards dev stack runs on your machine (`npm run dev` in the meridian-browser repo). Any new name and password make an account. Move with WASD and the mouse (you run; hold Shift to walk), press Space on a door to go through it, V to switch between first and third person, and Enter to chat.
+To play, open `game/UnrealMeridian/UnrealMeridian.uproject` and press Play (Net Mode "Play Standalone"). The login screen connects to a Meridian server: "Shards (online)", or "Local (dev)" when the Shards dev stack runs on your machine (`npm run dev` in the meridian-browser repo). Any new name and password make an account. Move with WASD and the mouse (you run; hold Shift to walk), press Space on a door to go through it, V to switch between first and third person, and Enter to chat.
 
 More detail on building, testing and the tools is in [AGENTS.md](AGENTS.md).
 

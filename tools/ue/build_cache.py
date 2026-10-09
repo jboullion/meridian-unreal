@@ -7,7 +7,7 @@ the assets it was built from). A step whose key matches what was saved last time
 still exists, is skipped; anything else is rebuilt in place (same asset, so whatever references it
 stays valid). Nothing is deleted between runs.
 
-The keys live in game/MeridianRemastered/Saved/MRBuild/world_cache.json. Deleting that file (or
+The keys live in game/UnrealMeridian/Saved/MRBuild/world_cache.json. Deleting that file (or
 build_world.ps1 -Clean) rebuilds everything.
 """
 import hashlib

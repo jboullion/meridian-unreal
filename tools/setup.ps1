@@ -12,7 +12,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $repo = Split-Path -Parent $PSScriptRoot
-$proj = Join-Path $repo "game\MeridianRemastered\MeridianRemastered.uproject"
+$proj = Join-Path $repo "game\UnrealMeridian\UnrealMeridian.uproject"
 
 function Step($name, [scriptblock]$body) {
     Write-Host "== $name"
@@ -30,7 +30,7 @@ try {
     }
     if (-not $SkipBuild) {
         Step "compile editor" {
-            & (Join-Path $EngineRoot "Engine\Build\BatchFiles\Build.bat") MeridianRemasteredEditor Win64 Development "-Project=$proj" -WaitMutex
+            & (Join-Path $EngineRoot "Engine\Build\BatchFiles\Build.bat") UnrealMeridianEditor Win64 Development "-Project=$proj" -WaitMutex
         }
     }
     Step "build world level" {

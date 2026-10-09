@@ -52,7 +52,9 @@
         "file": "build/aigen/props/necslime/04_tripo_out/SYMM.glb",
         "digest": "e8f779dab85be131",
         "tris": 3840,
-        "size_m": [0.9814, 0.9131, 0.6881]
+        "size_m": [0.9814, 0.9131, 0.6881],
+        "tripo_name": "slime blob 3d model",
+        "tris_raw": 3840
       }
     },
     "chosen": {

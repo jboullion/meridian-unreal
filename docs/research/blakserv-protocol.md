@@ -2,7 +2,7 @@
 
 These are our own notes on the Meridian 59 client/server protocol, written from reading `ReferenceServers/Server-104` and checked against a running server ([ADR 0010](../adr/0010-meridian-servers.md)).
 
-The implementation is `game/MeridianRemastered/Source/MeridianRemastered/Net/`. Paths below are relative to `ReferenceServers/Server-104/`.
+The implementation is `game/UnrealMeridian/Source/UnrealMeridian/Net/`. Paths below are relative to `ReferenceServers/Server-104/`.
 
 Never copy or translate code from Server-104: it's the Meridian 59 authors' GPL code, which our Unreal Engine linking exception can't cover. Read it, write the facts down here, and implement from this page. Meridian Shards' own protocol code (`packages/protocol`) may be reused (AGENTS.md, "Hard rules").
 

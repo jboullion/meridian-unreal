@@ -48,7 +48,9 @@
         "file": "build/aigen/props/modnode/04_tripo_out/SYMM.glb",
         "digest": "d76e5372c04c5829",
         "tris": 3824,
-        "size_m": [0.9796, 0.8893, 0.9771]
+        "size_m": [0.9796, 0.8893, 0.9771],
+        "tripo_name": "glowing planet 3d model",
+        "tris_raw": 3824
       }
     },
     "chosen": {

@@ -59,7 +59,9 @@
         "file": "build/aigen/props/hist_ornhelma/04_tripo_out/SYMM.glb",
         "digest": "b0e7a32bbc9dba10",
         "tris": 3500,
-        "size_m": [0.9686, 0.8633, 0.981]
+        "size_m": [0.9686, 0.8633, 0.981],
+        "tripo_name": "greek helmet 3d model",
+        "tris_raw": 3500
       }
     },
     "chosen": {

@@ -48,7 +48,9 @@
         "file": "build/aigen/props/skulhorn/04_tripo_out/SYMM.glb",
         "digest": "95756b262fba02b4",
         "tris": 3944,
-        "size_m": [0.8021, 0.8793, 0.981]
+        "size_m": [0.8021, 0.8793, 0.981],
+        "tripo_name": "fossil skull 3d model",
+        "tris_raw": 3944
       }
     },
     "chosen": {

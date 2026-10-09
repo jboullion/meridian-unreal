@@ -1,6 +1,6 @@
 ---
 name: sprite-to-3d
-description: The current recipe for turning original Meridian 59 sprites (.bgf) into 3D assets in Meridian Remastered - inventory the zone's objects, extract and upscale sprites, restyle with OpenAI image edit (batch API), image-to-3D in Tripo Studio (driven in Chrome, collected over the DCC Bridge into Blender), normalise, place through props.json and judge in look-dev. Use when making or replacing props (lamps, braziers, furniture, ornamental objects, plants, rocks, museum pieces), later monsters, or when touching tools/aigen/, data/aigen/, tools/blender/prop_glb.py, props.json "classes"/"types"/"light_scale", or anything Tripo.
+description: The current recipe for turning original Meridian 59 sprites (.bgf) into 3D assets in Unreal Meridian - inventory the zone's objects, extract and upscale sprites, restyle with OpenAI image edit (batch API), image-to-3D in Tripo Studio (driven in Chrome, collected over the DCC Bridge into Blender), normalise, place through props.json and judge in look-dev. Use when making or replacing props (lamps, braziers, furniture, ornamental objects, plants, rocks, museum pieces), later monsters, or when touching tools/aigen/, data/aigen/, tools/blender/prop_glb.py, props.json "classes"/"types"/"light_scale", or anything Tripo.
 ---
 
 # Sprite to 3D

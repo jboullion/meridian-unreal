@@ -60,10 +60,10 @@ param(
 )
 
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$proj = Join-Path $repo "game\MeridianRemastered\MeridianRemastered.uproject"
-$saved = Join-Path $repo "game\MeridianRemastered\Saved\Screenshots\MRLookDev\$Label"
+$proj = Join-Path $repo "game\UnrealMeridian\UnrealMeridian.uproject"
+$saved = Join-Path $repo "game\UnrealMeridian\Saved\Screenshots\MRLookDev\$Label"
 $out = Join-Path $repo "build\lookdev\$Label"
-$log = Join-Path $repo "game\MeridianRemastered\Saved\Logs\lookdev-$Label.log"
+$log = Join-Path $repo "game\UnrealMeridian\Saved\Logs\lookdev-$Label.log"
 
 if (Test-Path $saved) { Remove-Item -Recurse -Force $saved }
 # -unattended: a GPU crash exits instead of waiting on an error dialog (then we try once more)

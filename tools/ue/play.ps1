@@ -15,7 +15,7 @@ param(
     [string]$Engine = "G:\Unreal Engine\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe"
 )
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$proj = Join-Path $repo "game\MeridianRemastered\MeridianRemastered.uproject"
+$proj = Join-Path $repo "game\UnrealMeridian\UnrealMeridian.uproject"
 if ($Editor) {
     Start-Process -FilePath $Engine -ArgumentList "`"$proj`""
     exit 0

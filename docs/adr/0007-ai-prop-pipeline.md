@@ -443,7 +443,7 @@ Most of the world batch belongs to rooms that only exist online, where the serve
 - Look-dev: `tools/ue/run_lookdev.ps1 -Label <name> -Gallery` renders `data/environment/gallery_cameras.json` (65 cameras along the rows; `-MRLookDevCameras=<file>`).
 - Rerun the generator after a batch adds or changes meshes, then the world build.
 - First captures: labels gallery1 (day, 92 cameras) and gallery1_night (hour 23); sheets `build/lookdev/gallery_day_1..4.jpg` and `gallery_night.jpg`. Every mesh stands beside its sprite at true scale, under the real sun and night sky; labels read from the cameras.
-- Found while building it: development runs read JSON from the copy `package.ps1` leaves in `game/MeridianRemastered/Data/`, not from `data/` (AGENTS.md "Known traps"); fixed in `UMRZoneSubsystem::GetDataDir`. The movement test passes after the change (8/8). The online smoke test wasn't run (it needs the Shards dev stack).
+- Found while building it: development runs read JSON from the copy `package.ps1` leaves in `game/UnrealMeridian/Data/`, not from `data/` (AGENTS.md "Known traps"); fixed in `UMRZoneSubsystem::GetDataDir`. The movement test passes after the change (8/8). The online smoke test wasn't run (it needs the Shards dev stack).
 
 ## Gallery review: symmetrical props, creatures, sprites (2026-10-09)
 The user walked the prop gallery and sorted what needed another pass.

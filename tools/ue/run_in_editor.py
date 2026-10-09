@@ -18,7 +18,7 @@ import sys
 import time
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-PROJECT_DIR = os.path.join(REPO, "game", "MeridianRemastered")
+PROJECT_DIR = os.path.join(REPO, "game", "UnrealMeridian")
 DEFAULT_ENGINE = r"G:\Unreal Engine\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
 PASS_ENV = ("MR_MOOD", "MR_DISPLACEMENT_RANGE_CM")
 # lines worth echoing from the editor's output (everything goes to its log as usual)

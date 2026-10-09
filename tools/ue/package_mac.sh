@@ -10,11 +10,11 @@ REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 OUT="$REPO/build/package/Mac"
 
 # A packaged game reads its JSON from <project>/Data; stage a copy of data/ (see package.ps1)
-mkdir -p "$REPO/game/MeridianRemastered/Data"
-rsync -a --delete --exclude aigen/ "$REPO/data/" "$REPO/game/MeridianRemastered/Data/"
+mkdir -p "$REPO/game/UnrealMeridian/Data"
+rsync -a --delete --exclude aigen/ "$REPO/data/" "$REPO/game/UnrealMeridian/Data/"
 
 "$ENGINE/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun \
-	-project="$REPO/game/MeridianRemastered/MeridianRemastered.uproject" \
+	-project="$REPO/game/UnrealMeridian/UnrealMeridian.uproject" \
 	-platform=Mac -clientconfig="$CONFIG" -noP4 \
 	-build -cook -stage -pak -archive -archivedirectory="$OUT" -utf8output \
 	-map=/Game/Generated/Maps/L_World

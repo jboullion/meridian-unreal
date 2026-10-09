@@ -52,7 +52,9 @@
         "file": "build/aigen/props/skulbrok/04_tripo_out/SYMM.glb",
         "digest": "d7690341f58e8bae",
         "tris": 3867,
-        "size_m": [0.9836, 0.5169, 0.6826]
+        "size_m": [0.9836, 0.5169, 0.6826],
+        "tripo_name": "rock specimen 3d model",
+        "tris_raw": 3867
       }
     },
     "chosen": {

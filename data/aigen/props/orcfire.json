@@ -46,7 +46,9 @@
         "file": "build/aigen/props/orcfire/04_tripo_out/SYMM.glb",
         "digest": "8205f9568170c1d4",
         "tris": 3762,
-        "size_m": [0.969, 0.6894, 0.9796]
+        "size_m": [0.969, 0.6894, 0.9796],
+        "tripo_name": "manure pile 3d model",
+        "tris_raw": 3762
       }
     },
     "chosen": {

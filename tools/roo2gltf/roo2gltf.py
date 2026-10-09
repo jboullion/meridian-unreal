@@ -431,7 +431,7 @@ def write_glb(mb: MeshBuilder, path: Path, name: str) -> dict:
         tri_count += len(pr["idx"]) // 3
 
     gltf = {
-        "asset": {"version": "2.0", "generator": "meridian-remastered roo2gltf"},
+        "asset": {"version": "2.0", "generator": "unreal-meridian roo2gltf"},
         "scene": 0,
         "scenes": [{"nodes": [0]}],
         "nodes": [{"name": name, "mesh": 0}],

@@ -12,8 +12,8 @@ param(
 )
 
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$proj = Join-Path $repo "game\MeridianRemastered\MeridianRemastered.uproject"
-$log = Join-Path $repo "game\MeridianRemastered\Saved\Logs\movetest.log"
+$proj = Join-Path $repo "game\UnrealMeridian\UnrealMeridian.uproject"
+$log = Join-Path $repo "game\UnrealMeridian\Saved\Logs\movetest.log"
 
 $gameArgs = "`"$proj`" /Game/Generated/Maps/L_World -game -windowed -resx=960 -resy=540 -nosound -unattended " +
     "-MRStartZone=306 -MRGameHour=13 -MRWeather=clear -MRNoLightning -MRMoveTest -abslog=`"$log`" $Extra"

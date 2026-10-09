@@ -20,10 +20,10 @@ param(
 )
 
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$projDir = Join-Path $repo "game\MeridianRemastered"
-$proj = Join-Path $projDir "MeridianRemastered.uproject"
+$projDir = Join-Path $repo "game\UnrealMeridian"
+$proj = Join-Path $projDir "UnrealMeridian.uproject"
 $py = Join-Path $repo "tools\ue\$Script"
-$log = Join-Path $projDir "Saved\Logs\MeridianRemastered.log"
+$log = Join-Path $projDir "Saved\Logs\UnrealMeridian.log"
 $started = Get-Date
 
 if (-not $Headless) {

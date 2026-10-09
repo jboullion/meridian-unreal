@@ -4,11 +4,11 @@ Guidance for AI coding agents (and humans who like the detail) working in this r
 
 ## What this is
 
-**Meridian Remastered**: a free fan remaster of Meridian 59, built on the Server 104 ruleset, in Unreal Engine 5.8. Right now it's a faithful port: original rules, zones, textures and sounds, rebuilt in a modern engine. It's a client for Meridian servers (blakserv): it plays on the same server as our browser port, Meridian Shards ([ADR 0010](docs/adr/0010-meridian-servers.md)). The first playable demo covers the town of **Raza** and the zones around it (RIDs 300–308, 330–333). We plan to open-source as much of it as we're allowed once it's in a working state.
+**Unreal Meridian**: a free fan remaster of Meridian 59, built on the Server 104 ruleset, in Unreal Engine 5.8. Right now it's a faithful port: original rules, zones, textures and sounds, rebuilt in a modern engine. It's a client for Meridian servers (blakserv): it plays on the same server as our browser port, Meridian Shards ([ADR 0010](docs/adr/0010-meridian-servers.md)). The first playable demo covers the town of **Raza** and the zones around it (RIDs 300–308, 330–333). We plan to open-source as much of it as we're allowed once it's in a working state.
 
 ## Hard rules
 
-- **Name.** The product is "Meridian Remastered" (UE module `MeridianRemastered`). The Server 104 team approved "Meridian" but **"104" must never appear in the product name or branding**. Referring to the `ReferenceServers/Server-104/` reference checkout or the Server 104 ruleset in code and docs is fine.
+- **Name.** The product is "Unreal Meridian" (UE module `UnrealMeridian`). The Server 104 team approved "Meridian" but **"104" must never appear in the product name or branding**. Referring to the `ReferenceServers/Server-104/` reference checkout or the Server 104 ruleset in code and docs is fine.
 - **Original art and audio stay out of git.** We have permission from the Server 103 and 104 teams to use all original assets (different name, own server; both met), so upscaled or reworked originals may ship. Raw extracted files still go to `build/` (git-ignored) and are regenerated from the installed client by `tools/setup.ps1`.
 - **No redistributable-restricted content in git.** Engine template content, anything from Fab (`Content/Fab/`), MetaHumans, and downloads in `UnrealAssets/` are git-ignored. This repo is public.
 - **License: GPLv2 ([LICENSE](LICENSE)) with an Unreal Engine linking exception ([LICENSE-EXCEPTION.md](LICENSE-EXCEPTION.md)).** The exception lets the game ship with the engine, but it only covers code we own. GPL code from anyone else can't come in, or the game couldn't be distributed at all.
@@ -67,7 +67,7 @@ When a decision changes a default, update both the skill and its ADR. New pipeli
 | `data/` | Generated JSON (game data, zone layouts, environment/audio config). Committed. |
 | `build/` | Generated meshes, previews, extracted reference art, AI model caches. Git-ignored; regenerate any time. |
 | `art_src/` | Hand-made art sources (AI prop models, building overrides). LFS. |
-| `game/MeridianRemastered/` | The UE 5.8 C++ project |
+| `game/UnrealMeridian/` | The UE 5.8 C++ project |
 | `backend/supabase/` | Database migrations and policies (not created yet) |
 | `docs/` | ADRs, findings and research notes |
 | `UnrealAssets/`, `ReferenceImages/` | Local-only downloads and references. Git-ignored. |
@@ -123,7 +123,7 @@ blender -b --factory-startup -P tools/blender/build_prop_kit.py
 Compile the editor target:
 
 ```bash
-"G:/Unreal Engine/UE_5.8/Engine/Build/BatchFiles/Build.bat" MeridianRemasteredEditor Win64 Development -Project="E:/2026_Experiments/meridian-unreal/game/MeridianRemastered/MeridianRemastered.uproject" -WaitMutex
+"G:/Unreal Engine/UE_5.8/Engine/Build/BatchFiles/Build.bat" UnrealMeridianEditor Win64 Development -Project="E:/2026_Experiments/meridian-unreal/game/UnrealMeridian/UnrealMeridian.uproject" -WaitMutex
 ```
 
 C++ changes need a compile and an editor restart.
@@ -140,7 +140,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/build_world.ps1   #
 
 To play: open the project and press Play with Net Mode "Play Standalone". The login screen offers the servers in `data/net/servers.json`:
 - "Local (dev)" needs the Shards dev stack (`npm run dev` in `E:\2026_Experiments\meridian-browser`: blakserv, the gateway on `ws://localhost:8059`, the game files on `http://localhost:5173/assets`).
-- "Shards (online)" needs `app://meridian-remastered` in the VM's `GATEWAY_ORIGINS`.
+- "Shards (online)" needs `app://unreal-meridian` in the VM's `GATEWAY_ORIGINS`.
 - A new name and password make an account. `-MROffline` (and every visual test tour) plays locally without a server, as before.
 
 WASD + mouse (running at the original's 12.9 m/s; `mr.Move.SpeedScale` scales every speed), hold Shift to walk, Space goes through the door you stand on (the original's "go"; edge exits are walked through), V cycles the view, Ctrl + wheel zooms. 1–9 or the wheel select the hotbar slot, numpad 1–9 cast from the spell bar (online: at the target, else the crosshair's, else the next thing you click; \ for yourself, Esc stops), R rests or stands, U uses the selected item on the next thing you click, E or I opens the inventory dialog, - and = zoom the minimap, M the large map (notes), Enter chats (a line is said unless it's a command: `tell <name> ...`, `/yell`, `:emote`, `/who`, `/mail`, `/guild`, `/help`; Up and Down recall lines), O who is on, L mail, Y the guild, F1–F12 online run the quick chat (the original's defaults: help, rest, stand, the moods, wave, point, mail, who), Esc or F10 opens the menu (Who Is On, Mail, Guild, Options, Log Off to the character list, Quit; in PIE Esc stops play, so use F10); online the crosshair aims, left mouse attacks (the target, else what the crosshair is on, else the nearest within 5 squares), right mouse looks at what it's on, G picks it up, F opens or works it, T targets it, Tab or ] / Shift+Tab or [ cycle targets, \ targets yourself, Esc clears the target first. Offline, F5, F6, F7 and F9 play the wave, point, dance and cast clips. The keys can be changed in Options > Controls (Modern, or the original's: arrows walk and turn, Ctrl attacks); they're kept in `GameUserSettings.ini` (`Core/MRSettings`). Offline, `-MRSpriteEquip=bte,swordov@22:4,metlshld@32:2,helm@13,nohair` dresses the player (docs/sprites.md).
@@ -179,7 +179,7 @@ WASD + mouse (running at the original's 12.9 m/s; `mr.Move.SpeedScale` scales ev
 - **In-game test modes** (command-line flags on the game): `-MRNetTest`, `-MRMoveTest`, `-MRScreenshots`, `-MRProfile`, `-MRLookDev`, `-MRUIShots`, `-MRMapCapture`, and `-MROffline` to play without a server. Console: `MRBookmark <name>`, `MREnvReload`, `MRUIReload`, `mr.GameHour <h>`, and online `MREffect <n> [ms] [xlat]` (a server screen effect, as if sent; `mr.UI.DamageNumbers 0` hides damage numbers).
 - **Visual work is decided by the user from images.** Show before/after sheets, recommend one option, keep the others reversible behind a data switch.
 
-## C++ source map (`game/MeridianRemastered/Source/MeridianRemastered/`)
+## C++ source map (`game/UnrealMeridian/Source/UnrealMeridian/`)
 
 | Path | What it does |
 |---|---|
@@ -209,7 +209,7 @@ WASD + mouse (running at the original's 12.9 m/s; `mr.Move.SpeedScale` scales ev
 - `L_World` holds only lighting and sky. Each zone is a streaming sublevel `Generated/Maps/Zones/L_Zone_<rid>_<KodClass>` (e.g. `L_Zone_307_RazaBar`). Raza town and the Outskirts share `L_Zone_300`. The name is built in two places that must agree: `tools/ue/build_world.py` `zone_level_path()` and `UMRZoneSubsystem`.
 - Zones sit on a 2 km grid (`data/zone_layout.json` `world_origin_cm`); characters cull at 300 m, so Iris never replicates players in other zones.
 - The game loads every zone (`LoadAllZoneLevels`). A spawn or a teleport waits up to 8 s for its zone's level to show, so nobody drops through a floor still loading.
-- In development the game reads `data/zones.json` and `data/zone_layout.json` from the repo; a packaged build reads `game/MeridianRemastered/Data/`.
+- In development the game reads `data/zones.json` and `data/zone_layout.json` from the repo; a packaged build reads `game/UnrealMeridian/Data/`.
 - Coordinates: blockout glTF is metres, x east, y up, z south. UE is cm, X east, Y south, Z up: UE = `world_origin_cm` + (100x, 100z, 100y).
 
 ## Tools reference
@@ -233,7 +233,8 @@ Full commands, flags and caches for the environment tools: [zone-environment/ref
 ## Known traps
 
 - Before debugging anything visual, check [pitfalls.md](.claude/skills/zone-environment/reference/pitfalls.md).
-- **Game data folder:** `tools/ue/package.ps1` copies `data/` into `game/MeridianRemastered/Data/` and leaves it there. Until 2026-10-09 development runs preferred that copy, so they read stale JSON after any packaging. `UMRZoneSubsystem::GetDataDir` now uses the repo's `data/` whenever the game isn't cooked; only a packaged build reads the copy.
+- **The old name:** until 2026-10-09 the project was "Meridian Remastered" (module `MeridianRemastered`, `game/MeridianRemastered/`, origin `app://meridian-remastered`). `Config/DefaultEngine.ini`'s `[CoreRedirects]` keeps assets saved before the rename loading; drop it once `build_world.ps1 -Clean` has re-saved everything.
+- **Game data folder:** `tools/ue/package.ps1` copies `data/` into `game/UnrealMeridian/Data/` and leaves it there. Until 2026-10-09 development runs preferred that copy, so they read stale JSON after any packaging. `UMRZoneSubsystem::GetDataDir` now uses the repo's `data/` whenever the game isn't cooked; only a packaged build reads the copy.
 - A GPU crash (`DXGI_ERROR_DEVICE_HUNG`) in Nanite on the first frame of a look-dev run is a known engine issue, not your change; run it again.
 - A material helper used by a master must be in `_master`'s cache key in `environment_materials.py`, or the master won't rebuild.
 - An audio component must be held by a `UPROPERTY`, or it gets garbage-collected and the sound stops.

@@ -17,10 +17,10 @@ param(
 )
 
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$proj = Join-Path $repo "game\MeridianRemastered\MeridianRemastered.uproject"
-$saved = Join-Path $repo "game\MeridianRemastered\Saved\Screenshots\MRUI\$Label"
+$proj = Join-Path $repo "game\UnrealMeridian\UnrealMeridian.uproject"
+$saved = Join-Path $repo "game\UnrealMeridian\Saved\Screenshots\MRUI\$Label"
 $out = Join-Path $repo "build\ui\shots\$Label"
-$log = Join-Path $repo "game\MeridianRemastered\Saved\Logs\uishots-$Label.log"
+$log = Join-Path $repo "game\UnrealMeridian\Saved\Logs\uishots-$Label.log"
 
 if (Test-Path $saved) { Remove-Item -Recurse -Force $saved }
 $gameArgs = "`"$proj`" /Game/Generated/Maps/L_World -game -windowed -resx=$ResX -resy=$ResY -nosound -unattended " +

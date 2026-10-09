@@ -13,7 +13,7 @@ param(
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $layout = Get-Content (Join-Path $repo "data\sprites\player_parts.json") -Raw | ConvertFrom-Json
 $wanted = @($layout.atlases.PSObject.Properties | ForEach-Object { $_.Value.texture; if ($_.Value.ramp) { $_.Value.ramp } })
-$dir = Join-Path $repo "game\MeridianRemastered\Content\Generated\Sprites"
+$dir = Join-Path $repo "game\UnrealMeridian\Content\Generated\Sprites"
 if (Test-Path $dir) {
     Get-ChildItem $dir -Filter "T_Spr*_*.uasset" | Where-Object { @("T_SprXlat", "T_SprClass") -notcontains $_.BaseName } | Where-Object { $wanted -notcontains $_.BaseName } |
         ForEach-Object { Remove-Item $_.FullName; Write-Host "removed old $($_.BaseName)" }

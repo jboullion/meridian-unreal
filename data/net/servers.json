@@ -1,6 +1,6 @@
 {
   "_doc": "Meridian servers the login screen offers (docs/adr/0010-meridian-servers.md). ws: the gateway's WebSocket (bytes pass through to blakserv). assets: where the server serves its game files (manifest.json, rsc0000.rsb), which the client needs from that very server. secret_key: blakserv's [Login] SecretKey; not a secret, every client of the server ships it. origin: sent with the WebSocket upgrade, for the gateway's GATEWAY_ORIGINS allowlist. ruleset: which rules the server runs (server104), so the UI lays out what it sends (data/ui/stat_layout.json).",
-  "origin": "app://meridian-remastered",
+  "origin": "app://unreal-meridian",
   "servers": [
     {
       "name": "Shards (online)",

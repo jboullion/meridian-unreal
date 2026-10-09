@@ -1,7 +1,7 @@
 {
-  "name": "meridian-remastered",
+  "name": "unreal-meridian",
   "private": true,
-  "description": "Task shortcuts for Meridian Remastered: `npm run` lists them. Nothing to install; each runs a script in tools/. Pass options after --, e.g. npm run lookdev -- -Label mytest -Compare baseline",
+  "description": "Task shortcuts for Unreal Meridian: `npm run` lists them. Nothing to install; each runs a script in tools/. Pass options after --, e.g. npm run lookdev -- -Label mytest -Compare baseline",
   "scripts": {
     "play": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/play.ps1",
     "play:online": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/play.ps1 -Online",

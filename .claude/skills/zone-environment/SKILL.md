@@ -1,6 +1,6 @@
 ---
 name: zone-environment
-description: The current recipe for Meridian Remastered environment art - turning a zone's roo2gltf blockout into the finished look (upscaled original textures, selective normals, rebuilt roofs/parapets/cut-outs, grime, moods, lit windows, look-dev). Use when building or dressing a zone or level (Raza, its interiors, the Outskirts, the Crypt, new maps), or when touching data/environment/*.json, make_placeholders.py, build_zone_art.py, environment_materials.py, zone_mood.py or the look-dev captures.
+description: The current recipe for Unreal Meridian environment art - turning a zone's roo2gltf blockout into the finished look (upscaled original textures, selective normals, rebuilt roofs/parapets/cut-outs, grime, moods, lit windows, look-dev). Use when building or dressing a zone or level (Raza, its interiors, the Outskirts, the Crypt, new maps), or when touching data/environment/*.json, make_placeholders.py, build_zone_art.py, environment_materials.py, zone_mood.py or the look-dev captures.
 ---
 
 # Zone environment art
@@ -122,5 +122,5 @@ Typical costs on the RTX 3070: texture no-op 0 s, one building about 22 s in Ble
 - They iterate visually and decide from sheets: show before/after images, recommend one option, keep the others reversible behind a data switch.
 - They handle git commits; don't commit unless asked (a PR request counts as asking).
 - Ask before any download, stating the file, source and size. Models go in `build/texai/models/` (git-ignored).
-- Raw extracted art stays in `build/` and never enters git. Never print `.env`. The product is "Meridian Remastered", never with "104".
+- Raw extracted art stays in `build/` and never enters git. Never print `.env`. The product is "Unreal Meridian", never with "104".
 - They may use all original M59 assets; stay close to the original look (colours, motifs, recognizable facades).

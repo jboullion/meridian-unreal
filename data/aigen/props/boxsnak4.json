@@ -48,7 +48,9 @@
         "file": "build/aigen/props/boxsnak4/04_tripo_out/SYMM.glb",
         "digest": "b4aeef37867ea8a3",
         "tris": 3395,
-        "size_m": [0.9905, 0.734, 0.8581]
+        "size_m": [0.9905, 0.734, 0.8581],
+        "tripo_name": "snakes on crate 3d model",
+        "tris_raw": 3395
       }
     },
     "chosen": {

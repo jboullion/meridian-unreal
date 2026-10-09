@@ -1,5 +1,5 @@
 # Sprite player visual check (docs/sprites.md): the -MRScreenshots tour, or the
-# -MRProfile crowd, in Raza. Screenshots land in game/MeridianRemastered/Saved/Screenshots/MRTour
+# -MRProfile crowd, in Raza. Screenshots land in game/UnrealMeridian/Saved/Screenshots/MRTour
 # (tour) or .../MRProfile (crowd); copies go to build/sprites/tour/<label>/.
 #
 #   powershell -File tools/sprites/run_sprite_tour.ps1 -Label uvfix
@@ -18,8 +18,8 @@ param(
     [string]$Engine = "G:\Unreal Engine\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe"
 )
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$projDir = Join-Path $repo "game\MeridianRemastered"
-$proj = Join-Path $projDir "MeridianRemastered.uproject"
+$projDir = Join-Path $repo "game\UnrealMeridian"
+$proj = Join-Path $projDir "UnrealMeridian.uproject"
 $mode = if ($Crowd) { "-MRProfile" } elseif ($Monsters) { "-MRMonsters" } else { "-MRScreenshots" }
 $shots = Join-Path $projDir ("Saved\Screenshots\" + $(if ($Crowd) { "MRProfile" } elseif ($Monsters) { "MRMonsters" } else { "MRTour" }))
 if (Test-Path $shots) { Remove-Item -Recurse -Force $shots }
@@ -30,7 +30,7 @@ if ($Hour -ge 0) { $exec += "mr.GameHour $Hour,mr.Season 1" }
 if ($Cvars) { $exec += $Cvars }
 if ($exec) { $args += " -ExecCmds=`"" + ($exec -join ",") + "`"" }
 if ($Extra) { $args += " $Extra" }
-$log = Join-Path $projDir "Saved\Logs\MeridianRemastered.log"
+$log = Join-Path $projDir "Saved\Logs\UnrealMeridian.log"
 # a Nanite / VSM GPU page fault on the first frames sometimes kills a -game run (see run_lookdev.ps1): retry once
 for ($try = 0; $try -lt 2; $try++) {
     if (Test-Path $log) { Remove-Item $log -ErrorAction SilentlyContinue }

@@ -63,7 +63,7 @@ Run `bgf2png` before `roo2gltf`, which needs texture sizes for its UVs.
 **World build: `powershell -File tools/ue/build_world.ps1 [-Script zone_mood.py] [-Clean] [-Headless]`**
 - **Where it runs:** in the open editor through Python remote execution (`run_in_editor.py`). With no editor open it starts a headless editor on the Entry map. Stop PIE first.
 - **What it builds:** `build_world.py` imports textures, materials (`environment_materials.py`), zone meshes (blockout as hidden collision, the rendered blockout minus rebuilt faces, the art meshes, grime as decals), props and scatter. It then builds `L_Zone_<rid>_<KodClass> (e.g. L_Zone_307_RazaBar)` sublevels and `L_World`.
-- **Incremental:** every asset is keyed by its inputs in `game/MeridianRemastered/Saved/MRBuild/world_cache.json` (`build_cache.py`). Changed assets are rebuilt in place.
+- **Incremental:** every asset is keyed by its inputs in `game/UnrealMeridian/Saved/MRBuild/world_cache.json` (`build_cache.py`). Changed assets are rebuilt in place.
 - **`-Script zone_mood.py`:** applies the mood only. `$env:MR_MOOD` picks a mood without editing `levels`.
 
 **`environment_materials.py` masters**
@@ -101,19 +101,19 @@ Run `bgf2png` before `roo2gltf`, which needs texture sizes for its UVs.
   The CSV pass timings are noisy; the 150-frame averages in the run's `MRLookDevProfile:` log lines are the steadier figure.
 
 **Environment director (C++)**
-- `UMREnvironmentSubsystem` (`Source/MeridianRemastered/Environment/`): client and PIE only (not the dedicated server; editor worlds with `mr.Env.Editor 1`).
+- `UMREnvironmentSubsystem` (`Source/UnrealMeridian/Environment/`): client and PIE only (not the dedicated server; editor worlds with `mr.Env.Editor 1`).
 - Reads `moods.json` at runtime; blends the cycle's keys by hour; moves the directional light along the sun or moon path (`"sky"`); switches `NightLamp` lights and `MPC_Environment.LampsOn`; sets `WindowGlow` and `Stars`.
 - It re-evaluates every `mr.Env.UpdateSeconds` (5) and applies only changes. Lighting actors are found by tag (`build_world.py` tags them with their label).
 - `-MRMood=` / `mr.Env.Mood` pin a mood; `MREnvReload` re-reads the file.
 - Tests: `UnrealEditor-Cmd <uproject> -ExecCmds="Automation RunTests Meridian.Environment;Quit" -unattended -nullrhi`.
 
 **Game time (C++)**
-- `UMRGameTimeSubsystem` (`Source/MeridianRemastered/Environment/`) writes `MPC_Environment.GameHour` every tick, in game, PIE and the editor.
+- `UMRGameTimeSubsystem` (`Source/UnrealMeridian/Environment/`) writes `MPC_Environment.GameHour` every tick, in game, PIE and the editor.
 - The formula is the original server's: `((UTC − 5 h) mod 2 h) / 5 min`, so a game day is two real hours.
 - To pin the hour: `-MRGameHour=<h>` on the command line, or the console variable `mr.GameHour <h>` (≥ 0).
 
 ## Compile
 ```
-"G:/Unreal Engine/UE_5.8/Engine/Build/BatchFiles/Build.bat" MeridianRemasteredEditor Win64 Development -Project="E:/2026_Experiments/meridian-unreal/game/MeridianRemastered/MeridianRemastered.uproject" -WaitMutex
+"G:/Unreal Engine/UE_5.8/Engine/Build/BatchFiles/Build.bat" UnrealMeridianEditor Win64 Development -Project="E:/2026_Experiments/meridian-unreal/game/UnrealMeridian/UnrealMeridian.uproject" -WaitMutex
 ```
 New C++ needs an editor restart before `build_world.ps1` runs inside the editor.

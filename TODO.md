@@ -2,8 +2,6 @@
 
 ## Current TODOs
 
-- Update our project to be called "Unreal Meridian" or "Meridian Unreal", not sure which one sounds better.
-  - This includes updating our gateway origin for our server from app://meridian-remastered to app://meridian-unreal
 
 ## Loading Screens
 
@@ -56,5 +54,6 @@
 
 ## Admins and Guides
 
-- admin console
+- admin console?
+  - How does it work?
 

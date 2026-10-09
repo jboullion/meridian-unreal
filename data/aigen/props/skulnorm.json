@@ -49,7 +49,9 @@
         "file": "build/aigen/props/skulnorm/04_tripo_out/SYMM.glb",
         "digest": "f28d71eac495ef24",
         "tris": 3992,
-        "size_m": [0.9827, 0.7996, 0.8163]
+        "size_m": [0.9827, 0.7996, 0.8163],
+        "tripo_name": "human skull 3d model",
+        "tris_raw": 3992
       }
     },
     "chosen": {

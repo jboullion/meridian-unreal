@@ -43,8 +43,8 @@ if ($Create) {
 }
 
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$proj = Join-Path $repo "game\MeridianRemastered\MeridianRemastered.uproject"
-$logs = Join-Path $repo "game\MeridianRemastered\Saved\Logs"
+$proj = Join-Path $repo "game\UnrealMeridian\UnrealMeridian.uproject"
+$logs = Join-Path $repo "game\UnrealMeridian\Saved\Logs"
 $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $log = Join-Path $logs "nettest-$stamp.log"
 
