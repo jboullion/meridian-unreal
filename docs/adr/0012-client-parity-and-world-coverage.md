@@ -477,6 +477,52 @@ The existing movement, UI-shot and look-dev runs stay green. Look-dev compares r
   - "the server's sounds play: 45 of 45 ready, music walk5.ogg".
 - `-Render`'s `runtime_room_0/1.png` show the Forest of Farol at its ambient light (`build/net/m7_runtime_light.png`).
 
+### M8, communication and social (2026-10-08)
+**What landed** (docs/research/blakserv-protocol.md, "Chat and social"; ADR 0009, "Chat and the others"):
+- **Speech:**
+  - kinds: say, yell, broadcast, emote, tell (`BP_SAY_GROUP`), guild;
+  - the chat log shows the server's style codes;
+  - tabs All, Chat, Combat and Game, and timestamps.
+- **Typed commands:** the original's list, English and German names (`Net/MRChatCommands`).
+  - **Speech or commands:** say, tell, yell, broadcast, emote, tellguild, appeal.
+  - **Windows:** who, mail, guild.
+  - **The rest:** time, the gestures and moods, rest, stand, cast by name, get, look, use, buy, offer, deposit, withdraw, balance, tell groups, aliases, and the server-kept options ("safety off").
+  - **The chat commands left over from M5 and M6** are done.
+- **Ignoring:** players by name, everyone, broadcasts. A blocked tell is reported (`BP_SAY_BLOCKED`).
+  - Groups, aliases and these options are kept per character (`Saved/MRNet/<server>/social/<name>.json`).
+- **The server-kept options:** asked for on entering, changed by the commands.
+- **Mail:** fetched, kept on this computer as the original did (`Saved/MRNet/<server>/mail/<name>.json`), then deleted on the server; read, reply, write. Names are looked up before sending.
+- **News boards:** looking at one opens it; the headings, an article, posting.
+- **Guilds:** the guild's members and ranks, and every member action the guild's rights allow; other guilds, alliances and enemies; founding from a guild creator's offer.
+- **Gestures:** `BP_ACTION` from the commands and F5–F7. The server's animation comes back on our sprite and others' (the M4 path).
+
+**Not yet:**
+- **Guild halls and shields** (`UC_GUILD_HALLS`, `UC_GUILD_SHIELD(S)`, `UC_CLAIM_SHIELD`): not read or shown.
+- **Untried online:**
+  - **Guilds:** the test character has none, and the guild creator is in Barloque. The members page is pictured with sample data.
+  - **Two players:** ignoring, blocked tells, broadcasts and trading tells need a second player.
+  - **Posting:** our board is read only.
+  - **Moods:** a mood's changed face isn't checked.
+- **The original's way of typing** (every line a command) isn't offered as an option; a profanity filter isn't ported.
+- **Quick-chat keys** (the original's function-key aliases) and moving or resizing the chat log.
+- **The who list** shows names only: no name colours, guilds or flags.
+- **Italic text** shows upright: the UI's font has no italic face.
+- **Two commands answer "not in this version yet":** "suicide" (deleting a character) and "password" (M9).
+
+**Verification (local Shards stack):**
+- **New unit tests**, all 29 automation tests pass:
+  - `Meridian.Net.Chat`: reading lines, aliases, the say filter, names, tells and groups, spells by name, style runs;
+  - `Meridian.Net.Social`: mail and its end, articles, a board, name lookup, the guild and the guild list, a German subject.
+- `run_net_test.ps1` reports **DONE 54/54**. The new Social step, in the Inn:
+  - reads the Designers' News board;
+  - types a tell to itself and an emote;
+  - mails itself and gets the mail;
+  - asks the time;
+  - flips "spellpower" and finds the server kept it;
+  - types /guild ("You do not belong to a guild.") and /wave ("You wave your hand.").
+- `-Render` adds `news.png`, `mail.png`, `guild.png` and `who.png` (`build/net/m8_social.png`).
+- **Found on the way:** a user command sent while the client waits for its room isn't sent at all (`CanSend`), so the options are asked for after the room.
+
 ## Alternatives considered
 
 - **Bake every room before allowing travel:** no runtime code, but hours of GPU texture work and hundreds of levels to import before anyone can leave Raza. A room changed on the server would also break until rebuilt.

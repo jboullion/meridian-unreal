@@ -15,6 +15,7 @@
 #include "UI/SMRLookDialog.h"
 #include "UI/SMRStatChange.h"
 #include "UI/SMRTradeDialog.h"
+#include "UI/SMRSocial.h"
 #include "UI/SMRInventoryScreen.h"
 #include "UI/SMRMinimap.h"
 #include "UI/SMRSlot.h"
@@ -177,6 +178,14 @@ void SMRTextField::Focus()
 	if (Edit.IsValid() && FSlateApplication::IsInitialized())
 	{
 		FSlateApplication::Get().SetAllUserFocus(Edit, EFocusCause::SetDirectly);
+	}
+}
+
+void SMRTextField::MoveToEnd()
+{
+	if (Edit.IsValid())
+	{
+		Edit->GoTo(ETextLocation::EndOfDocument);
 	}
 }
 
@@ -457,6 +466,13 @@ void SMRHUDRoot::Rebuild()
 	TradeDialog = SNew(SMRTradeDialog, Ui);
 	TradeDialog->SetVisibility(Ui->IsTradeOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 	GameMenu->SetVisibility(Ui->IsGameMenuOpen() ? EVisibility::Visible : EVisibility::Collapsed);
+	Windows = {SNew(SMRWhoDialog, Ui), SNew(SMRMailDialog, Ui), SNew(SMRNewsDialog, Ui), SNew(SMRGuildDialog, Ui)};
+	TSharedRef<SOverlay> WindowLayer = SNew(SOverlay);
+	for (int32 i = 0; i < Windows.Num(); ++i)
+	{
+		Windows[i]->SetVisibility(Ui->IsWindowOpen(static_cast<EMRWindow>(i)) ? EVisibility::Visible : EVisibility::Collapsed);
+		WindowLayer->AddSlot()[Windows[i].ToSharedRef()];
+	}
 
 	ChildSlot
 	[
@@ -522,6 +538,10 @@ void SMRHUDRoot::Rebuild()
 		+ SOverlay::Slot()
 		[
 			TradeDialog.ToSharedRef()
+		]
+		+ SOverlay::Slot()
+		[
+			WindowLayer
 		]
 		+ SOverlay::Slot()
 		[
@@ -680,6 +700,19 @@ void SMRHUDRoot::SetTradeOpen(bool bOpen)
 	if (TradeDialog.IsValid())
 	{
 		TradeDialog->SetVisibility(bOpen ? EVisibility::Visible : EVisibility::Collapsed);
+	}
+}
+
+void SMRHUDRoot::SetWindowOpen(int32 Index, bool bOpen)
+{
+	if (TSharedPtr<SMRSocialWindow> W = GetWindow(Index))
+	{
+		W->SetVisibility(bOpen ? EVisibility::Visible : EVisibility::Collapsed);
+		if (bOpen)
+		{
+			W->OnOpened();
+			FSlateApplication::Get().SetAllUserFocus(W, EFocusCause::SetDirectly);
+		}
 	}
 }
 

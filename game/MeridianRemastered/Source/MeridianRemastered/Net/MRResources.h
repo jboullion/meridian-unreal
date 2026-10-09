@@ -48,10 +48,32 @@ private:
  * The text's style codes (~B bold, ~I italic, ~U underline, ~n normal, ~<colour letter>) are
  * dropped: the chat log draws plain text for now.
  */
+/** A run of chat text in one colour and style (the server's "~" codes: MRServerText::Runs). */
+struct FMRTextRun
+{
+	FString Text;
+	/** Unset: the line's own colour. */
+	TOptional<FLinearColor> Color;
+	/** MRServerText::STYLE_* bits. */
+	uint8 Style = 0;
+};
+
 namespace MRServerText
 {
+	constexpr uint8 STYLE_ITALIC = 1;
+	constexpr uint8 STYLE_BOLD = 2;
+	constexpr uint8 STYLE_UNDERLINE = 4;
+
+	/**
+	 * Text in runs by its style codes (clientd3d srvrstr.c DisplayMessage): "~" or "`" and a letter:
+	 * a colour (r f g l b k w y p o a c q t s v m), B, I or U toggling bold, italic or underline, n
+	 * back to the line's own colour and style. Any other letter after "~" stays as typed.
+	 */
+	MERIDIANREMASTERED_API TArray<FMRTextRun> Runs(const FString& In);
+	/** The colour of a code letter, if it is one. */
+	MERIDIANREMASTERED_API bool CodeColor(TCHAR Code, FLinearColor& Out);
 	/** Format FormatId reading parameters from Reader. False if a parameter is missing. */
 	MERIDIANREMASTERED_API bool Format(const FMRResourceTable& Resources, uint32 FormatId, FMRReader& Reader, FString& Out);
-	/** Remove ~x style codes. */
+	/** Remove the style codes (as Runs reads them). */
 	MERIDIANREMASTERED_API FString StripStyle(const FString& In);
 }

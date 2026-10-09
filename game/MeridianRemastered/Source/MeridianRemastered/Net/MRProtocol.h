@@ -191,9 +191,73 @@ namespace MRMsg
 	constexpr uint8 UC_LOOK_PLAYER = 2;
 	constexpr uint8 UC_REST = 5;
 	constexpr uint8 UC_STAND = 6;
+	constexpr uint8 UC_REQ_PREFERENCES = 7;
+	constexpr uint8 UC_SUICIDE = 8;
+	constexpr uint8 UC_SEND_PREFERENCES = 9;     // i32 CF_* flags
+	constexpr uint8 UC_REQ_GUILDINFO = 10;
+	constexpr uint8 UC_GUILDINFO = 11;           // from the server: the guild (MRNetRead::GuildInfo)
+	constexpr uint8 UC_INVITE = 12;              // u32 player
+	constexpr uint8 UC_EXILE = 13;               // u32 player
+	constexpr uint8 UC_RENOUNCE = 14;
+	constexpr uint8 UC_ABDICATE = 15;            // u32 player
+	constexpr uint8 UC_VOTE = 16;                // u32 player
+	constexpr uint8 UC_SET_RANK = 17;            // u32 player, u8 rank
+	constexpr uint8 UC_GUILD_ASK = 18;           // from the server: i32 cost, i32 secret cost
+	constexpr uint8 UC_GUILD_CREATE = 19;        // name, 5 x (male rank, female rank), password, u8 secret
+	constexpr uint8 UC_DISBAND = 20;
+	constexpr uint8 UC_REQ_GUILD_LIST = 21;
+	constexpr uint8 UC_GUILD_LIST = 22;          // from the server (MRNetRead::GuildList)
+	constexpr uint8 UC_MAKE_ALLIANCE = 23;       // u32 guild
+	constexpr uint8 UC_END_ALLIANCE = 24;
+	constexpr uint8 UC_MAKE_ENEMY = 25;
+	constexpr uint8 UC_END_ENEMY = 26;
+	constexpr uint8 UC_GUILD_SET_PASSWORD = 30;  // the guild hall's password
+	constexpr uint8 UC_RECEIVE_PREFERENCES = 34; // from the server: i32 CF_* flags
 	constexpr uint8 UC_DEPOSIT = 35;   // i32 shillings, to a banker in the room
 	constexpr uint8 UC_WITHDRAW = 36;  // i32 shillings
 	constexpr uint8 UC_BALANCE = 37;
+	constexpr uint8 UC_APPEAL = 40;              // a string, to the guides
+	constexpr uint8 UC_REQ_TIME = 60;            // the server answers with Meridian's date and hour
+
+	// the server-kept game options (proto.h CF_*: UC_REQ_PREFERENCES, UC_SEND_PREFERENCES)
+	constexpr uint32 CF_SAFETY_OFF = 0x0001;
+	constexpr uint32 CF_TEMPSAFE = 0x0002;
+	constexpr uint32 CF_GROUPING = 0x0004;
+	constexpr uint32 CF_AUTOLOOT = 0x0008;
+	constexpr uint32 CF_AUTOCOMBINE = 0x0010;
+	constexpr uint32 CF_BAGS = 0x0020;
+	constexpr uint32 CF_SPELLPOWER = 0x0040;
+
+	// what a guild member may do (merintr guild.h GC_*: UC_GUILDINFO's flags)
+	constexpr uint32 GC_INVITE = 0x0001;
+	constexpr uint32 GC_EXILE = 0x0002;
+	constexpr uint32 GC_RENOUNCE = 0x0004;
+	constexpr uint32 GC_VOTE = 0x0020;
+	constexpr uint32 GC_ABDICATE = 0x0040;
+	constexpr uint32 GC_MAKE_ALLIANCE = 0x0100;
+	constexpr uint32 GC_END_ALLIANCE = 0x0200;
+	constexpr uint32 GC_DECLARE_ENEMY = 0x0400;
+	constexpr uint32 GC_END_ENEMY = 0x0800;
+	constexpr uint32 GC_SET_RANK = 0x1000;
+	constexpr uint32 GC_DISBAND = 0x2000;
+	constexpr uint32 GC_ABANDON = 0x4000;
+	constexpr int32 GuildRanks = 5;
+
+	// BP_LOOK_NEWSGROUP's permission (news.h NEWS_*)
+	constexpr uint8 NEWS_READ = 0x01;
+	constexpr uint8 NEWS_POST = 0x02;
+
+	// BP_ACTION's actions (merintr command.c UA_*): a mood, or an animation the server shows everyone
+	constexpr uint8 UA_NORMAL = 1;
+	constexpr uint8 UA_HAPPY = 2;
+	constexpr uint8 UA_SAD = 3;
+	constexpr uint8 UA_WRY = 4;
+	constexpr uint8 UA_WAVE = 8;
+	constexpr uint8 UA_POINT = 9;
+	constexpr uint8 UA_DANCE = 10;
+
+	/** Kod's times (mail, news) are Unix seconds less this (blakserv ccode.c C_GetTime: "Offset to Oct 2025"). */
+	constexpr int64 KodTimeOffset = 1760000000;
 
 	// enchantment types (BP_ADD_ENCHANTMENT, BP_SEND_ENCHANTMENTS; proto.h ENCHANT_*)
 	constexpr uint8 ENCHANT_PLAYER = 1;
@@ -226,7 +290,12 @@ namespace MRMsg
 	constexpr uint8 SAY_NORMAL = 1;
 	constexpr uint8 SAY_YELL = 2;
 	constexpr uint8 SAY_EVERYONE = 3;
+	constexpr uint8 SAY_GROUP = 4;     // a tell (BP_SAY_GROUP)
+	constexpr uint8 SAY_RESOURCE = 5;  // an NPC or an object
 	constexpr uint8 SAY_EMOTE = 6;
+	constexpr uint8 SAY_MESSAGE = 7;
+	constexpr uint8 SAY_DM = 9;
+	constexpr uint8 SAY_GUILD = 10;
 
 	// object flags (proto.h OF_*)
 	constexpr uint32 OF_DISPLAY_NAME = 0x00000001;

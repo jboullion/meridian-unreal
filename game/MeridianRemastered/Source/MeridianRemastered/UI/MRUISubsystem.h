@@ -26,6 +26,16 @@ struct FSlateBrush;
  * E / I open the dialog, - / = zoom the map).
  */
 enum class EMRPickAction : uint8;
+
+/** The windows for the others (UI/SMRSocial.h). */
+enum class EMRWindow : uint8
+{
+	Who,
+	Mail,
+	News,
+	Guild,
+	Count,
+};
 enum class EMRObjectAction : uint8;
 
 UCLASS()
@@ -54,6 +64,20 @@ public:
 	/** The chat line was said or cancelled. */
 	void OnChatClosed();
 	bool IsChatOpen() const { return bChatOpen; }
+	/** Open the chat line with this already typed (a tell from the who list). */
+	void OpenChatWith(const FString& Text);
+	/**
+	 * Run a typed line (MRChat::Interpret): speech, or one of the original's commands (say, tell,
+	 * yell, broadcast, emote, who, mail, guild, wave, rest, cast, deposit, safety on...). UI/MRUIChat.cpp.
+	 */
+	void RunChatLine(const FString& Line);
+
+	// --- the windows for the others (who, mail, news, guild)
+	void SetWindowOpen(EMRWindow Window, bool bOpen);
+	void ToggleWindow(EMRWindow Window) { SetWindowOpen(Window, !IsWindowOpen(Window)); }
+	bool IsWindowOpen(EMRWindow Window) const { return (OpenWindows & (1u << static_cast<uint32>(Window))) != 0; }
+	bool IsAnyWindowOpen() const { return OpenWindows != 0; }
+	TSharedPtr<class SMRSocialWindow> GetWindow(EMRWindow Window) const;
 
 	// --- keys (from AMRPlayerController)
 	void OnHotbarKey(int32 Index);
@@ -243,6 +267,11 @@ private:
 	FDelegateHandle NetStatChangeResultHandle;
 	bool bStatChangeOpen = false;
 	bool bTradeOpen = false;
+	uint32 OpenWindows = 0;
+	FDelegateHandle NetNewsHandle;
+	FDelegateHandle NetGuildHandle;
+	void OnNetNews();
+	void OnNetGuild();
 	FDelegateHandle NetShopHandle;
 	FDelegateHandle NetTradeHandle;
 	void SetTradeOpen(bool bOpen);

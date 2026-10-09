@@ -30,6 +30,8 @@
 #include "UI/SMRLookDialog.h"
 #include "UI/SMRStatChange.h"
 #include "UI/SMRTradeDialog.h"
+#include "UI/SMRSocial.h"
+#include "UI/SMRChatLog.h"
 #include "Net/MRAssetCache.h"
 #include "Net/MRNetLook.h"
 #include "Net/MRNetObject.h"
@@ -77,6 +79,8 @@ void UMRUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		NetStatChangeHandle = Net->OnStatChange.AddUObject(this, &UMRUISubsystem::OnNetStatChange);
 		NetShopHandle = Net->OnShop.AddUObject(this, &UMRUISubsystem::OnNetShop);
 		NetTradeHandle = Net->OnTradeChanged.AddUObject(this, &UMRUISubsystem::OnNetTrade);
+		NetNewsHandle = Net->OnNewsChanged.AddUObject(this, &UMRUISubsystem::OnNetNews);
+		NetGuildHandle = Net->OnGuildChanged.AddUObject(this, &UMRUISubsystem::OnNetGuild);
 		NetStatChangeResultHandle = Net->OnStatChangeResult.AddUObject(this, &UMRUISubsystem::OnNetStatChangeResult);
 	}
 }
@@ -375,6 +379,67 @@ void UMRUISubsystem::SetTradeOpen(bool bOpen)
 	ApplyInputMode();
 }
 
+TSharedPtr<SMRSocialWindow> UMRUISubsystem::GetWindow(EMRWindow Window) const
+{
+	return HUD.IsValid() ? HUD->GetWindow(static_cast<int32>(Window)) : nullptr;
+}
+
+void UMRUISubsystem::SetWindowOpen(EMRWindow Window, bool bOpen)
+{
+	if (!HUD.IsValid() || IsWindowOpen(Window) == bOpen)
+	{
+		return;
+	}
+	if (bOpen)
+	{
+		// one window at a time, over the rest of the HUD
+		SetInventoryOpen(false);
+		SetGameMenuOpen(false);
+		SetLookOpen(false);
+		for (int32 i = 0; i < static_cast<int32>(EMRWindow::Count); ++i)
+		{
+			if (i != static_cast<int32>(Window) && IsWindowOpen(static_cast<EMRWindow>(i)))
+			{
+				SetWindowOpen(static_cast<EMRWindow>(i), false);
+			}
+		}
+		OpenWindows |= 1u << static_cast<uint32>(Window);
+	}
+	else
+	{
+		OpenWindows &= ~(1u << static_cast<uint32>(Window));
+		if (Window == EMRWindow::News)
+		{
+			if (UMRNetSubsystem* Net = GetNet(); Net && Net->GetNetWorld().News.bOpen)
+			{
+				Net->CloseNews();
+			}
+		}
+	}
+	HUD->SetWindowOpen(static_cast<int32>(Window), bOpen);
+	ApplyInputMode();
+}
+
+void UMRUISubsystem::OnNetNews()
+{
+	// looking at a news board answers with the board instead of a description (BP_LOOK_NEWSGROUP)
+	const UMRNetSubsystem* Net = GetNet();
+	if (Net && Net->GetNetWorld().News.bOpen && !IsWindowOpen(EMRWindow::News))
+	{
+		SetWindowOpen(EMRWindow::News, true);
+	}
+}
+
+void UMRUISubsystem::OnNetGuild()
+{
+	// a guild creator's offer (UC_GUILD_ASK) opens the founding form
+	const UMRNetSubsystem* Net = GetNet();
+	if (Net && Net->GetNetWorld().GuildCost > 0 && !Net->GetNetWorld().Guild.bValid && !IsWindowOpen(EMRWindow::Guild))
+	{
+		SetWindowOpen(EMRWindow::Guild, true);
+	}
+}
+
 void UMRUISubsystem::CloseTrade()
 {
 	SetTradeOpen(false);
@@ -577,6 +642,8 @@ void UMRUISubsystem::Deinitialize()
 		Net->OnStatChange.Remove(NetStatChangeHandle);
 		Net->OnShop.Remove(NetShopHandle);
 		Net->OnTradeChanged.Remove(NetTradeHandle);
+		Net->OnNewsChanged.Remove(NetNewsHandle);
+		Net->OnGuildChanged.Remove(NetGuildHandle);
 		Net->OnStatChangeResult.Remove(NetStatChangeResultHandle);
 	}
 	Super::Deinitialize();
@@ -684,6 +751,15 @@ void UMRUISubsystem::OpenChat()
 	bChatOpen = true;
 	ApplyInputMode();
 	HUD->OpenChat();
+}
+
+void UMRUISubsystem::OpenChatWith(const FString& Text)
+{
+	OpenChat();
+	if (bChatOpen && HUD.IsValid() && HUD->GetChatLog().IsValid())
+	{
+		HUD->GetChatLog()->SetInputText(Text);
+	}
 }
 
 void UMRUISubsystem::OnChatClosed()
@@ -939,7 +1015,7 @@ void UMRUISubsystem::ApplyInputMode()
 	{
 		return;  // the login screen owns the input (ShowLogin)
 	}
-	if ((bLookOpen || bStatChangeOpen || bTradeOpen) && !bGameMenuOpen)
+	if ((bLookOpen || bStatChangeOpen || bTradeOpen || OpenWindows != 0) && !bGameMenuOpen)
 	{
 		// reading (or writing one's description): the dialog has the keyboard and the mouse
 		FInputModeUIOnly Mode;

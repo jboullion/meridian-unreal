@@ -4,7 +4,7 @@
 # hears it back, takes an exit into another zone, fetches the room through the asset cache, finds
 # itself in the players list, resynchronises, looks, uses and drops items, casts spells and rests, trades in Raza, fights in the Outskirts,
 # travels into a room built at runtime, logs off to the character list and enters again, and logs off
-# (DONE 46/46; 47/47 with -Create, 49/49 with -Create -Death). AGENTS.md "Testing and verification" lists every check.
+# (DONE 54/54; 55/55 with -Create, 57/57 with -Create -Death). AGENTS.md "Testing and verification" lists every check.
 #
 # Needs the server running. For the local Shards stack, in E:\2026_Experiments\meridian-browser:
 #   npm run dev      (blakserv, the gateway on ws://localhost:8059, the game files on http://localhost:5173)

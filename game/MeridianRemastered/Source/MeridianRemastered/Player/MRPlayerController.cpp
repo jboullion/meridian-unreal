@@ -165,6 +165,12 @@ void AMRPlayerController::BuildUIInput()
 	UIContext->MapKey(RestAction, EKeys::R);
 	ApplyAction = MakeAction(TEXT("IA_Apply"), EInputActionValueType::Boolean);
 	UIContext->MapKey(ApplyAction, EKeys::U);
+	WhoAction = MakeAction(TEXT("IA_Who"), EInputActionValueType::Boolean);
+	UIContext->MapKey(WhoAction, EKeys::O);
+	MailAction = MakeAction(TEXT("IA_Mail"), EInputActionValueType::Boolean);
+	UIContext->MapKey(MailAction, EKeys::L);
+	GuildAction = MakeAction(TEXT("IA_Guild"), EInputActionValueType::Boolean);
+	UIContext->MapKey(GuildAction, EKeys::Y);
 }
 
 void AMRPlayerController::SetupInputComponent()
@@ -195,6 +201,9 @@ void AMRPlayerController::SetupInputComponent()
 	Input->BindAction(UseAction, ETriggerEvent::Started, this, &AMRPlayerController::OnUseKey);
 	Input->BindAction(RestAction, ETriggerEvent::Started, this, &AMRPlayerController::OnRestKey);
 	Input->BindAction(ApplyAction, ETriggerEvent::Started, this, &AMRPlayerController::OnApplyKey);
+	Input->BindAction(WhoAction, ETriggerEvent::Started, this, &AMRPlayerController::OnWindowKey, EMRWindow::Who);
+	Input->BindAction(MailAction, ETriggerEvent::Started, this, &AMRPlayerController::OnWindowKey, EMRWindow::Mail);
+	Input->BindAction(GuildAction, ETriggerEvent::Started, this, &AMRPlayerController::OnWindowKey, EMRWindow::Guild);
 }
 
 UMRUISubsystem* AMRPlayerController::GetUI() const
@@ -237,6 +246,22 @@ void AMRPlayerController::OnInventoryKey()
 	{
 		UI->ToggleInventory();
 	}
+}
+
+void AMRPlayerController::OnWindowKey(EMRWindow Window)
+{
+	const UMRNetWorldSubsystem* Net = GetWorld()->GetSubsystem<UMRNetWorldSubsystem>();
+	UMRUISubsystem* UI = GetUI();
+	if (!Net || !Net->IsActive() || !UI)
+	{
+		return;
+	}
+	if (Window == EMRWindow::Guild && !UI->IsWindowOpen(Window))
+	{
+		UI->RunChatLine(TEXT("/guild"));  // asks the server for the guild, then opens
+		return;
+	}
+	UI->ToggleWindow(Window);
 }
 
 void AMRPlayerController::OnChatKey()

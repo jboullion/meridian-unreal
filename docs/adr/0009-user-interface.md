@@ -162,6 +162,30 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
   - Cancel calls the offer off for both sides;
   - the bank has an amount box with Deposit, Withdraw and Balance.
 
+## Chat and the others (2026-10-08, M8 of ADR 0012)
+- **The chat log** (`SMRChatLog`), bottom left:
+  - 280 × 96 px, keeps 120 lines;
+  - lines in the server's colours and styles ("~" codes, as rich text), with timestamps as an option;
+  - tabs All, Chat, Combat and Game;
+  - while typing: the tabs click, the wheel scrolls back, and Up and Down recall earlier lines.
+- **A typed line** is speech unless it's a command (`MRChat::Interpret`, `UMRUISubsystem::RunChatLine`):
+  - a first word that is a command's whole name ("tell", "who", "safety on") runs it;
+  - "/" takes the start of a name, as the original did ("/b" broadcasts);
+  - ":" emotes;
+  - aliases ("alias") stand for commands.
+
+  The original treated every line as a command and needed "say" to speak.
+- **Four windows** (`SMRSocial`), centred stone panels like Look's, one at a time; Esc or Close shuts them:
+  - **Who is on (O):** Tell (fills the chat line), Ignore, and the Ignore everyone, No broadcasts and Timestamps toggles.
+  - **Mail (L):** the kept mail, reading one, New, Reply, Delete and Get new. Writing has To, Subject and the text; names are checked by the server before sending.
+  - **News:** opens when a board is looked at. It has the headings, an article, Post (where allowed) and Refresh.
+  - **Guild (Y):**
+    - **Members:** each with its rank's name; Vote for, Raise, Lower, Exile and Abdicate to, by the guild's rights. Invite takes the target; Renounce and Disband.
+    - **Other guilds:** allies and enemies, and buttons to change them.
+    - **Founding:** a guild creator's offer opens a form for the name and the five ranks.
+- **The Escape menu** has Who Is On, Mail and Guild. F5–F7 wave, point and dance online (`BP_ACTION`).
+- Pictures: `build/net/m8_social.png` (`run_net_test.ps1 -Render`: `who.png`, `mail.png`, `news.png`, `guild.png`).
+
 ## Consequences
 - Inventory and equipment are still **mock data offline** and empty online (M3). Spells don't cast; a "cast" plays the sprite's cast action and a cooldown sweep. Online, the vitals, stats, spells and skills come from the server's stat groups (`docs/research/blakserv-protocol.md`, "Stats"). Offline they come from the attributes and the mock file.
 - Equipment doesn't change the avatar yet (no equipment layers on the sprite body).

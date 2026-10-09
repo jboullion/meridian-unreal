@@ -77,6 +77,12 @@ void FMRNetWorld::Reset()
 	Player = FMRNetPlayer();
 	StatGroups.Reset();
 	Effects.Reset();
+	News = FMRNetNews();
+	Guild = FMRNetGuild();
+	GuildList = FMRNetGuildList();
+	GuildCost = GuildSecretCost = 0;
+	Preferences = 0;
+	bHasPreferences = false;
 }
 
 // ------------------------------------------------------------------------------ FMRNetEffects
@@ -450,6 +456,161 @@ bool MRNetRead::Player(FMRReader& R, const FMRResourceTable& Res, FMRNetPlayer& 
 		D = R.U32();
 	}
 	return R.IsOk();
+}
+
+void MRNetRead::SplitSubject(const FString& Text, FString& OutSubject, FString& OutBody)
+{
+	// mailfile.c: the subject is the first line after "Subject: " (the German client's "Betreff: ")
+	OutSubject.Reset();
+	OutBody = Text;
+	for (const TCHAR* Lead : {TEXT("Subject: "), TEXT("Betreff: ")})
+	{
+		if (Text.StartsWith(Lead, ESearchCase::CaseSensitive))
+		{
+			const FString Rest = Text.Mid(FCString::Strlen(Lead));
+			int32 End = INDEX_NONE;
+			if (!Rest.FindChar(TEXT('\n'), End))
+			{
+				End = Rest.Len();
+			}
+			OutSubject = Rest.Left(End).TrimEnd();
+			OutBody = Rest.Mid(End + 1);
+			return;
+		}
+	}
+}
+
+bool MRNetRead::Mail(FMRReader& R, const FMRResourceTable& Res, FMRNetMail& Out, bool& bEnd)
+{
+	// mailnews.c HandleMail: u32 index, sender, u32 time, u16 recipients (0: no more mail), their names,
+	// then a server message (user.kod: user_show_mail with the text)
+	Out = FMRNetMail();
+	Out.Index = R.U32();
+	Out.From = R.Str();
+	Out.Time = static_cast<int64>(R.U32()) + MRMsg::KodTimeOffset;
+	const int32 N = R.U16();
+	bEnd = N == 0;
+	if (bEnd || !R.IsOk())
+	{
+		return R.IsOk();  // (the end's packet has two bytes more, which the original never reads)
+	}
+	if (N > 20)
+	{
+		return false;  // mail.h MAX_RECIPIENTS
+	}
+	for (int32 i = 0; i < N; ++i)
+	{
+		Out.To.Add(R.Str());
+	}
+	FString Text;
+	if (!MRServerText::Format(Res, R.U32(), R, Text))
+	{
+		return false;
+	}
+	Text.ReplaceInline(TEXT("\r\n"), TEXT("\n"));
+	SplitSubject(Text, Out.Subject, Out.Body);
+	return R.IsOk();
+}
+
+bool MRNetRead::Articles(FMRReader& R, uint16& Group, uint8& Part, uint8& Parts, TArray<FMRNetArticle>& Out)
+{
+	// mailnews.c HandleArticles: u16 group, u8 part, u8 parts, u16 count, each u32 number, u32 time, poster, title
+	Group = R.U16();
+	Part = R.U8();
+	Parts = R.U8();
+	const int32 N = R.U16();
+	for (int32 i = 0; i < N && R.IsOk(); ++i)
+	{
+		FMRNetArticle& A = Out.AddDefaulted_GetRef();
+		A.Num = R.U32();
+		A.Time = static_cast<int64>(R.U32()) + MRMsg::KodTimeOffset;
+		A.Poster = R.Str();
+		A.Title = R.Str();
+	}
+	return R.IsOk();
+}
+
+bool MRNetRead::LookNewsgroup(FMRReader& R, const FMRResourceTable& Res, FMRNetNews& Out)
+{
+	// mailnews.c HandleLookNewsgroup: u16 group, u8 permission, the board (an object), its description
+	Out.Group = R.U16();
+	Out.Permission = R.U8();
+	if (!Object(R, Res, Out.Board))
+	{
+		return false;
+	}
+	return MRServerText::Format(Res, R.U32(), R, Out.Description) && R.IsOk();
+}
+
+bool MRNetRead::LookupNames(FMRReader& R, TArray<uint32>& Out)
+{
+	// HandleLookupNames: u16 count, then each player's id (0: no such player)
+	Out.Reset();
+	const int32 N = R.U16();
+	for (int32 i = 0; i < N && R.IsOk(); ++i)
+	{
+		Out.Add(MRMsg::PlainId(R.U32()));
+	}
+	return R.IsOk();
+}
+
+bool MRNetRead::GuildInfo(FMRReader& R, FMRNetGuild& Out)
+{
+	// merintr.c HandleGuildInfo: name, u8 has password [password], u32 flags, u32 guild, five
+	// (male, female) rank names, u32 current vote, u16 members: u32 id, name, u8 rank, u8 gender
+	Out = FMRNetGuild();
+	Out.Name = R.Str();
+	Out.bHasPassword = R.U8() != 0;
+	if (Out.bHasPassword)
+	{
+		Out.Password = R.Str();
+	}
+	Out.Flags = R.U32();
+	Out.GuildId = MRMsg::PlainId(R.U32());
+	for (int32 i = 0; i < MRMsg::GuildRanks; ++i)
+	{
+		Out.MaleRanks[i] = R.Str();
+		Out.FemaleRanks[i] = R.Str();
+	}
+	Out.CurrentVote = MRMsg::PlainId(R.U32());
+	const int32 N = R.U16();
+	if (N > 400)
+	{
+		return false;  // guild.h MAX_GUILD_USERS
+	}
+	for (int32 i = 0; i < N && R.IsOk(); ++i)
+	{
+		FMRNetGuildMember& M = Out.Members.AddDefaulted_GetRef();
+		M.Id = MRMsg::PlainId(R.U32());
+		M.Name = R.Str();
+		M.Rank = R.U8();
+		M.Gender = R.U8();
+	}
+	Out.bValid = R.IsOk();
+	return Out.bValid;
+}
+
+bool MRNetRead::GuildList(FMRReader& R, FMRNetGuildList& Out)
+{
+	// HandleGuildList: u16 guilds (u32 id, name), then four id lists: our allies, our enemies, and the
+	// guilds that declared us their ally or enemy (user.kod UserGuildSendList)
+	Out = FMRNetGuildList();
+	const int32 N = R.U16();
+	for (int32 i = 0; i < N && R.IsOk(); ++i)
+	{
+		const uint32 Id = MRMsg::PlainId(R.U32());
+		Out.Guilds.Add({Id, R.Str()});
+	}
+	for (TArray<uint32>* L : {&Out.Allies, &Out.Enemies, &Out.DeclaredAllies, &Out.DeclaredEnemies})
+	{
+		const int32 M = R.U16();
+		for (int32 i = 0; i < M && R.IsOk(); ++i)
+		{
+			L->Add(MRMsg::PlainId(R.U32()));
+		}
+	}
+	Out.bValid = R.IsOk();
+	return Out.bValid;
 }
 
 bool MRNetRead::RoomChange(uint8 Type, FMRReader& R, FMRNetRoomChange& Out)

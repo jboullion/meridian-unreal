@@ -39,11 +39,40 @@ struct FMRCharacterSlot
 	bool bNeedsCreation = false;
 };
 
+/** Which tab of the chat log a line belongs to (besides All). */
+enum class EMRChatChannel : uint8
+{
+	Chat,    // speech: say, yell, broadcasts, emotes, tells, the guild, NPCs
+	Combat,  // hits and misses
+	Game,    // the game's other messages
+};
+
 struct FMRChatLine
 {
+	/** Without the style codes. */
 	FString Text;
+	/** As the server sent it, with its "~" codes (MRServerText::Runs). */
+	FString Styled;
 	uint8 Kind = 0;        // MRMsg::SAY_* for speech, 0 for game messages
+	EMRChatChannel Channel = EMRChatChannel::Game;
 	double Time = 0.0;
+	/** The local time it came (the log's timestamps). */
+	FDateTime When;
+};
+
+/**
+ * What the player keeps about others, per character (Saved/MRNet/<server>/social/<name>.json; the
+ * original's config.ini): who is ignored, tell groups, command aliases and the chat options.
+ */
+struct FMRSocial
+{
+	/** Ignored players by name (msgfiltr.c: their speech is dropped, their tells refused). */
+	TArray<FString> Ignored;
+	bool bIgnoreAll = false;
+	bool bNoBroadcast = false;
+	bool bTimestamps = false;
+	TMap<FString, TArray<FString>> Groups;
+	TMap<FString, FString> Aliases;
 };
 
 enum class EMRNetPhase : uint8
@@ -64,6 +93,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetHit, const FMRNetHit&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetResult, bool);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetSound, const FMRNetSound&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMRNetRoomChange, const FMRNetRoomChange&);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnMRNetMailSent, bool /* bSent */, const FString& /* Why not */);
 
 /**
  * The session with a Meridian server (docs/adr/0010-meridian-servers.md): the server list, the
@@ -212,8 +242,66 @@ public:
 	const FMRNetShop& GetShop() const { return World.Shop; }
 	const FMRNetTrade& GetTrade() const { return World.Trade; }
 
+	// --- chat and the others (docs/research/blakserv-protocol.md "Chat and social")
+	/** Speak (BP_SAY_TO): SAY_NORMAL, SAY_YELL, SAY_EVERYONE (a broadcast), SAY_EMOTE or SAY_GUILD. */
+	void SayAs(uint8 Kind, const FString& Text);
+	/** A tell to these players (BP_SAY_GROUP). */
+	void SayTo(const TArray<uint32>& Ids, const FString& Text);
+	/** A mood or a gesture (BP_ACTION, UA_*): the server shows it to everyone. */
+	void DoAction(uint8 Action);
+	/** A plea to the guides (UC_APPEAL); the time of day in Meridian (UC_REQ_TIME); the players list again. */
+	void Appeal(const FString& Text);
+	void RequestTime();
+	void RequestPlayers();
+	/** The server-kept options (CF_*): asked for on entering; SetPreferences sends new ones. */
+	void RequestPreferences();
+	void SetPreferences(uint32 Flags);
+	uint32 GetPreferences() const { return World.Preferences; }
+	bool HasPreferences() const { return World.bHasPreferences; }
+
+	/** Ignoring, groups, aliases and chat options; SaveSocial after changing them. */
+	FMRSocial& GetSocial() { return Social; }
+	const FMRSocial& GetSocial() const { return Social; }
+	void SaveSocial() const;
+	bool IsIgnored(const FString& Name) const;
+	void SetIgnored(const FString& Name, bool bIgnore);
+	/** Logged-on players as (id, name), for tells. */
+	TArray<TPair<uint32, FString>> GetUserNames() const;
+
+	// --- mail (module/mailnews; kept on this computer, as the original kept it)
+	/** Fetch new mail (BP_REQ_GET_MAIL); each message is kept and the server told to delete it. */
+	void RequestMail();
+	const TArray<FMRNetMail>& GetMail() const { return Mailbox; }
+	/** Throw away a kept message. */
+	void DeleteMail(int32 Index);
+	/** Send mail: the names are looked up first (BP_REQ_LOOKUP_NAMES), then it goes (BP_SEND_MAIL); OnMailSent says how it went. */
+	void SendMail(const TArray<FString>& To, const FString& Subject, const FString& Body);
+	bool IsSendingMail() const { return PendingMail.To.Num() > 0; }
+
+	// --- news boards (the one looked at: GetNetWorld().News)
+	void RequestArticles();
+	void ReadArticle(uint32 Num);
+	void PostArticle(const FString& Title, const FString& Body);
+	void DeleteArticle(uint32 Num);
+	void CloseNews();
+
+	// --- guilds (merintr guild*.c; the server checks every right)
+	/** A guild command with no argument (UC_REQ_GUILDINFO, UC_RENOUNCE, UC_DISBAND, UC_REQ_GUILD_LIST) or one id (UC_INVITE, UC_EXILE...). */
+	void GuildCommand(uint8 Command, uint32 Id = 0);
+	void GuildSetRank(uint32 Id, uint8 Rank);
+	/** Found a guild (UC_GUILD_CREATE, after a guild creator's UC_GUILD_ASK): its name and (male, female) rank names, lowest first. */
+	void GuildCreate(const FString& Name, const TArray<FString>& Ranks, bool bSecret);
+	void GuildSetPassword(const FString& Password);
+
 	/** A line of the client's own in the chat log, as the original's GameMessage (e.g. "You can't see your selected target."). */
 	void AddGameMessage(const FString& Text) { AddChat(Text, 0); }
+	/** Tests and UI shots: lines in the chat log as if the server had sent them. */
+	void DebugChat(const FString& Text, uint8 Kind, EMRChatChannel Channel) { AddChat(Text, Kind, Channel); }
+	/** Tests and UI shots: mail, a board, a guild without a server. */
+	void DebugSetMail(const TArray<FMRNetMail>& InMail) { Mailbox = InMail; OnMailChanged.Broadcast(); }
+	void DebugSetNews(const FMRNetNews& InNews) { World.News = InNews; OnNewsChanged.Broadcast(); }
+	void DebugSetGuild(const FMRNetGuild& InGuild, const FMRNetGuildList& InList) { World.Guild = InGuild; World.GuildList = InList; OnGuildChanged.Broadcast(); }
+	void DebugSetUsers(const TMap<uint32, FMRNetUser>& InUsers) { World.Users = InUsers; OnUsersChanged.Broadcast(); }
 	/** The screen effects on the player and the room's weather (BP_EFFECT), counted down each tick. */
 	const FMRNetEffects& GetEffects() const { return World.Effects; }
 	/**
@@ -311,6 +399,15 @@ public:
 	FOnMRNetEvent OnShop;
 	/** The offer under way changed, or ended (GetTrade().bOpen false). */
 	FOnMRNetEvent OnTradeChanged;
+	/** The kept mail changed (new mail came, or one was deleted). */
+	FOnMRNetEvent OnMailChanged;
+	FOnMRNetMailSent OnMailSent;
+	/** A news board was looked at, or its articles or an article came (GetNetWorld().News). */
+	FOnMRNetEvent OnNewsChanged;
+	/** The guild's information, the guild list or a guild creator's offer came. */
+	FOnMRNetEvent OnGuildChanged;
+	/** The server-kept options came (UC_RECEIVE_PREFERENCES). */
+	FOnMRNetEvent OnPreferencesChanged;
 
 private:
 	void LoadServers();
@@ -333,7 +430,13 @@ private:
 	// messages
 	void HandleMessage(const TArray<uint8>& Body);
 	void HandleClosed(const FString& Error);
-	void AddChat(const FString& Text, uint8 Kind);
+	void AddChat(const FString& Text, uint8 Kind, EMRChatChannel Channel = EMRChatChannel::Game);
+	/** A user command's answer (BP_USERCOMMAND). */
+	void HandleUserCommand(FMRReader& R, const TArray<uint8>& Body);
+	/** The character's own files: Saved/MRNet/<server>/<what>/<name>.json. */
+	FString CharacterFile(const TCHAR* What) const;
+	void LoadCharacterData();
+	void SaveMail() const;
 	void SetWaiting(bool bInWaiting);
 	/** The hit messages' format ids in the loaded rsb, by MRNetRead::Hit's kind (found by their Kod text). */
 	const TMap<uint32, int32>& HitFormats();
@@ -366,6 +469,17 @@ private:
 	bool bWaiting = false;
 	int32 RoomsEntered = 0;
 	TArray<FMRChatLine> Chat;
+	FMRSocial Social;
+	TArray<FMRNetMail> Mailbox;
+	/** Mail waiting for its names to be looked up. */
+	struct FPendingMail
+	{
+		TArray<FString> To;
+		FString Text;
+	};
+	FPendingMail PendingMail;
+	/** Whose files Social and Mailbox are (the character's name). */
+	FString LoadedCharacter;
 	FMRNetDescription Description;
 	bool bRequestedStats = false;
 	TSharedPtr<FMRAssetCache> Assets;

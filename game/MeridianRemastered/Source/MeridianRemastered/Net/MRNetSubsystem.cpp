@@ -12,6 +12,9 @@
 #include "Misc/Paths.h"
 #include "Net/MRAssetCache.h"
 #include "Net/MRConnection.h"
+#include "Net/MRChatCommands.h"
+#include "Policies/CondensedJsonPrintPolicy.h"
+#include "Serialization/JsonWriter.h"
 #include "Net/MRProtocol.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -335,10 +338,402 @@ void UMRNetSubsystem::RequestGo()
 
 void UMRNetSubsystem::Say(const FString& Text)
 {
-	const FString Line = Text.TrimStartAndEnd();
+	SayAs(MRMsg::SAY_NORMAL, Text);
+}
+
+void UMRNetSubsystem::SayAs(uint8 Kind, const FString& Text)
+{
+	const FString Line = MRChat::FilterSay(Text);
 	if (Connection.IsValid() && Phase == EMRNetPhase::InGame && !Line.IsEmpty())
 	{
-		Connection->Send(FMRWriter(MRMsg::BP_SAY_TO).U8(MRMsg::SAY_NORMAL).Str(Line.Left(250)));
+		Connection->Send(FMRWriter(MRMsg::BP_SAY_TO).U8(Kind).Str(Line));
+	}
+}
+
+void UMRNetSubsystem::SayTo(const TArray<uint32>& Ids, const FString& Text)
+{
+	// protocol.c PARAM_ID_LIST: u16 count, the ids; then the text
+	const FString Line = MRChat::FilterSay(Text);
+	if (!Connection.IsValid() || Phase != EMRNetPhase::InGame || Line.IsEmpty() || Ids.IsEmpty())
+	{
+		return;
+	}
+	FMRWriter W(MRMsg::BP_SAY_GROUP);
+	W.U16(static_cast<uint16>(Ids.Num()));
+	for (const uint32 Id : Ids)
+	{
+		W.U32(Id);
+	}
+	Connection->Send(W.Str(Line));
+}
+
+void UMRNetSubsystem::DoAction(uint8 Action)
+{
+	if (CanSend())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_ACTION).U8(Action));
+	}
+}
+
+void UMRNetSubsystem::Appeal(const FString& Text)
+{
+	const FString Line = MRChat::FilterSay(Text);
+	if (CanSend() && !Line.IsEmpty())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_USERCOMMAND).U8(MRMsg::UC_APPEAL).Str(Line));
+	}
+}
+
+void UMRNetSubsystem::RequestTime()
+{
+	if (CanSend())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_USERCOMMAND).U8(MRMsg::UC_REQ_TIME));
+	}
+}
+
+void UMRNetSubsystem::RequestPlayers()
+{
+	if (CanSend())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_SEND_PLAYERS));
+	}
+}
+
+void UMRNetSubsystem::RequestPreferences()
+{
+	if (CanSend())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_USERCOMMAND).U8(MRMsg::UC_REQ_PREFERENCES));
+	}
+}
+
+void UMRNetSubsystem::SetPreferences(uint32 Flags)
+{
+	if (CanSend())
+	{
+		World.Preferences = Flags;
+		Connection->Send(FMRWriter(MRMsg::BP_USERCOMMAND).U8(MRMsg::UC_SEND_PREFERENCES).U32(Flags));
+		OnPreferencesChanged.Broadcast();
+	}
+}
+
+// ------------------------------------------------------------------------------ the others: ignore, groups, aliases
+
+FString UMRNetSubsystem::CharacterFile(const TCHAR* What) const
+{
+	return FPaths::Combine(CacheDir(), What, FPaths::MakeValidFileName(LoadedCharacter) + TEXT(".json"));
+}
+
+namespace
+{
+	TSharedRef<FJsonObject> StringsToJson(const TMap<FString, TArray<FString>>& Map)
+	{
+		TSharedRef<FJsonObject> O = MakeShared<FJsonObject>();
+		for (const TPair<FString, TArray<FString>>& P : Map)
+		{
+			TArray<TSharedPtr<FJsonValue>> A;
+			for (const FString& S : P.Value)
+			{
+				A.Add(MakeShared<FJsonValueString>(S));
+			}
+			O->SetArrayField(P.Key, A);
+		}
+		return O;
+	}
+
+	bool WriteJson(const TSharedRef<FJsonObject>& Root, const FString& Path)
+	{
+		FString Text;
+		const TSharedRef<TJsonWriter<>> W = TJsonWriterFactory<>::Create(&Text);
+		FJsonSerializer::Serialize(Root, W);
+		return FFileHelper::SaveStringToFile(Text, *Path, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+	}
+
+	TSharedPtr<FJsonObject> ReadJson(const FString& Path)
+	{
+		FString Text;
+		TSharedPtr<FJsonObject> Root;
+		if (FFileHelper::LoadFileToString(Text, *Path))
+		{
+			FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Root);
+		}
+		return Root;
+	}
+}
+
+void UMRNetSubsystem::LoadCharacterData()
+{
+	const FString Name = Resources.Get(World.Player.NameRsc);
+	if (Name.IsEmpty() || Name == LoadedCharacter)
+	{
+		return;
+	}
+	LoadedCharacter = Name;
+	Social = FMRSocial();
+	if (const TSharedPtr<FJsonObject> Root = ReadJson(CharacterFile(TEXT("social"))))
+	{
+		Root->TryGetStringArrayField(TEXT("ignored"), Social.Ignored);
+		Root->TryGetBoolField(TEXT("ignore_all"), Social.bIgnoreAll);
+		Root->TryGetBoolField(TEXT("no_broadcast"), Social.bNoBroadcast);
+		Root->TryGetBoolField(TEXT("timestamps"), Social.bTimestamps);
+		const TSharedPtr<FJsonObject>* Groups = nullptr;
+		if (Root->TryGetObjectField(TEXT("groups"), Groups))
+		{
+			for (const TPair<FString, TSharedPtr<FJsonValue>>& P : (*Groups)->Values)
+			{
+				TArray<FString>& Members = Social.Groups.Add(P.Key);
+				for (const TSharedPtr<FJsonValue>& V : P.Value->AsArray())
+				{
+					Members.Add(V->AsString());
+				}
+			}
+		}
+		const TSharedPtr<FJsonObject>* Aliases = nullptr;
+		if (Root->TryGetObjectField(TEXT("aliases"), Aliases))
+		{
+			for (const TPair<FString, TSharedPtr<FJsonValue>>& P : (*Aliases)->Values)
+			{
+				Social.Aliases.Add(P.Key, P.Value->AsString());
+			}
+		}
+	}
+	Mailbox.Reset();
+	if (const TSharedPtr<FJsonObject> Root = ReadJson(CharacterFile(TEXT("mail"))))
+	{
+		for (const TSharedPtr<FJsonValue>& V : Root->GetArrayField(TEXT("mail")))
+		{
+			const TSharedPtr<FJsonObject> M = V->AsObject();
+			FMRNetMail& Mail = Mailbox.AddDefaulted_GetRef();
+			Mail.From = M->GetStringField(TEXT("from"));
+			M->TryGetStringArrayField(TEXT("to"), Mail.To);
+			Mail.Time = static_cast<int64>(M->GetNumberField(TEXT("time")));
+			Mail.Subject = M->GetStringField(TEXT("subject"));
+			Mail.Body = M->GetStringField(TEXT("body"));
+		}
+	}
+	UE_LOG(LogMeridian, Log, TEXT("MRNet: %s: %d ignored, %d groups, %d aliases, %d kept mail"), *Name, Social.Ignored.Num(),
+		Social.Groups.Num(), Social.Aliases.Num(), Mailbox.Num());
+	OnMailChanged.Broadcast();
+}
+
+void UMRNetSubsystem::SaveSocial() const
+{
+	if (LoadedCharacter.IsEmpty())
+	{
+		return;
+	}
+	TSharedRef<FJsonObject> Root = MakeShared<FJsonObject>();
+	TArray<TSharedPtr<FJsonValue>> Ignored;
+	for (const FString& S : Social.Ignored)
+	{
+		Ignored.Add(MakeShared<FJsonValueString>(S));
+	}
+	Root->SetArrayField(TEXT("ignored"), Ignored);
+	Root->SetBoolField(TEXT("ignore_all"), Social.bIgnoreAll);
+	Root->SetBoolField(TEXT("no_broadcast"), Social.bNoBroadcast);
+	Root->SetBoolField(TEXT("timestamps"), Social.bTimestamps);
+	Root->SetObjectField(TEXT("groups"), StringsToJson(Social.Groups));
+	TSharedRef<FJsonObject> Aliases = MakeShared<FJsonObject>();
+	for (const TPair<FString, FString>& A : Social.Aliases)
+	{
+		Aliases->SetStringField(A.Key, A.Value);
+	}
+	Root->SetObjectField(TEXT("aliases"), Aliases);
+	WriteJson(Root, CharacterFile(TEXT("social")));
+}
+
+bool UMRNetSubsystem::IsIgnored(const FString& Name) const
+{
+	return Social.Ignored.ContainsByPredicate([&Name](const FString& S) { return S.Equals(Name, ESearchCase::IgnoreCase); });
+}
+
+void UMRNetSubsystem::SetIgnored(const FString& Name, bool bIgnore)
+{
+	Social.Ignored.RemoveAll([&Name](const FString& S) { return S.Equals(Name, ESearchCase::IgnoreCase); });
+	if (bIgnore && !Name.IsEmpty())
+	{
+		Social.Ignored.Add(Name);
+	}
+	SaveSocial();
+	OnUsersChanged.Broadcast();
+}
+
+TArray<TPair<uint32, FString>> UMRNetSubsystem::GetUserNames() const
+{
+	TArray<TPair<uint32, FString>> Out;
+	for (const TPair<uint32, FMRNetUser>& U : World.Users)
+	{
+		Out.Add({U.Key, U.Value.Name});
+	}
+	return Out;
+}
+
+// ------------------------------------------------------------------------------ mail
+
+void UMRNetSubsystem::SaveMail() const
+{
+	if (LoadedCharacter.IsEmpty())
+	{
+		return;
+	}
+	TArray<TSharedPtr<FJsonValue>> List;
+	for (const FMRNetMail& M : Mailbox)
+	{
+		TSharedRef<FJsonObject> O = MakeShared<FJsonObject>();
+		O->SetStringField(TEXT("from"), M.From);
+		TArray<TSharedPtr<FJsonValue>> To;
+		for (const FString& T : M.To)
+		{
+			To.Add(MakeShared<FJsonValueString>(T));
+		}
+		O->SetArrayField(TEXT("to"), To);
+		O->SetNumberField(TEXT("time"), static_cast<double>(M.Time));
+		O->SetStringField(TEXT("subject"), M.Subject);
+		O->SetStringField(TEXT("body"), M.Body);
+		List.Add(MakeShared<FJsonValueObject>(O));
+	}
+	TSharedRef<FJsonObject> Root = MakeShared<FJsonObject>();
+	Root->SetArrayField(TEXT("mail"), List);
+	WriteJson(Root, CharacterFile(TEXT("mail")));
+}
+
+void UMRNetSubsystem::RequestMail()
+{
+	if (CanSend())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_GET_MAIL));
+	}
+}
+
+void UMRNetSubsystem::DeleteMail(int32 Index)
+{
+	if (Mailbox.IsValidIndex(Index))
+	{
+		Mailbox.RemoveAt(Index);
+		SaveMail();
+		OnMailChanged.Broadcast();
+	}
+}
+
+void UMRNetSubsystem::SendMail(const TArray<FString>& To, const FString& Subject, const FString& Body)
+{
+	// mailsend.c: the names (no repeats) go to the server to look up; the answer sends the mail
+	TArray<FString> Names;
+	for (const FString& N : To)
+	{
+		const FString T = N.TrimStartAndEnd();
+		if (!T.IsEmpty() && !Names.ContainsByPredicate([&T](const FString& S) { return S.Equals(T, ESearchCase::IgnoreCase); }))
+		{
+			Names.Add(T);
+		}
+	}
+	if (!CanSend() || Names.IsEmpty() || Names.Num() > 20 || IsSendingMail())
+	{
+		OnMailSent.Broadcast(false, Names.IsEmpty() ? TEXT("Say who it's to.") : Names.Num() > 20 ? TEXT("At most 20 people.") : TEXT("Not now."));
+		return;
+	}
+	PendingMail.To = Names;
+	PendingMail.Text = TEXT("Subject: ") + Subject.Replace(TEXT("\n"), TEXT(" ")).Left(50) + TEXT("\n") + Body;
+	Connection->Send(FMRWriter(MRMsg::BP_REQ_LOOKUP_NAMES).U16(static_cast<uint16>(Names.Num())).Str(FString::Join(Names, TEXT(","))));
+}
+
+// ------------------------------------------------------------------------------ news
+
+void UMRNetSubsystem::RequestArticles()
+{
+	if (CanSend() && World.News.bOpen)
+	{
+		World.News.Articles.Reset();
+		World.News.bHaveArticles = false;
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_ARTICLES).U16(World.News.Group));
+	}
+}
+
+void UMRNetSubsystem::ReadArticle(uint32 Num)
+{
+	if (CanSend() && World.News.bOpen)
+	{
+		World.News.ReadingNum = Num;
+		World.News.bHaveText = false;
+		World.News.ReadingText.Reset();
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_ARTICLE).U16(World.News.Group).U32(Num));
+	}
+}
+
+void UMRNetSubsystem::PostArticle(const FString& Title, const FString& Body)
+{
+	if (CanSend() && World.News.bOpen && !Title.TrimStartAndEnd().IsEmpty())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_POST_ARTICLE).U16(World.News.Group).Str(Title.Left(50)).Str(Body));
+	}
+}
+
+void UMRNetSubsystem::DeleteArticle(uint32 Num)
+{
+	if (CanSend() && World.News.bOpen)
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_DELETE_NEWS).U16(World.News.Group).U32(Num));
+	}
+}
+
+void UMRNetSubsystem::CloseNews()
+{
+	World.News = FMRNetNews();
+	OnNewsChanged.Broadcast();
+}
+
+// ------------------------------------------------------------------------------ guilds
+
+void UMRNetSubsystem::GuildCommand(uint8 Command, uint32 Id)
+{
+	if (!CanSend())
+	{
+		return;
+	}
+	FMRWriter W(MRMsg::BP_USERCOMMAND);
+	W.U8(Command);
+	switch (Command)
+	{
+	case MRMsg::UC_INVITE: case MRMsg::UC_EXILE: case MRMsg::UC_ABDICATE: case MRMsg::UC_VOTE:
+	case MRMsg::UC_MAKE_ALLIANCE: case MRMsg::UC_END_ALLIANCE: case MRMsg::UC_MAKE_ENEMY: case MRMsg::UC_END_ENEMY:
+		W.U32(Id);
+		break;
+	default:
+		break;
+	}
+	Connection->Send(W);
+}
+
+void UMRNetSubsystem::GuildSetRank(uint32 Id, uint8 Rank)
+{
+	if (CanSend())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_USERCOMMAND).U8(MRMsg::UC_SET_RANK).U32(Id).U8(Rank));
+	}
+}
+
+void UMRNetSubsystem::GuildCreate(const FString& Name, const TArray<FString>& Ranks, bool bSecret)
+{
+	// merintr.c user_msg_table: the name, ten rank names (each rank's male then female), u8 secret
+	if (!CanSend() || Ranks.Num() != 2 * MRMsg::GuildRanks)
+	{
+		return;
+	}
+	FMRWriter W(MRMsg::BP_USERCOMMAND);
+	W.U8(MRMsg::UC_GUILD_CREATE).Str(Name.Left(30));
+	for (const FString& R : Ranks)
+	{
+		W.Str(R.Left(20));
+	}
+	Connection->Send(W.U8(bSecret ? 1 : 0));
+}
+
+void UMRNetSubsystem::GuildSetPassword(const FString& Password)
+{
+	if (CanSend())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_USERCOMMAND).U8(MRMsg::UC_GUILD_SET_PASSWORD).Str(Password.Left(30)));
 	}
 }
 
@@ -892,12 +1287,67 @@ void UMRNetSubsystem::OpenSocket()
 
 // ------------------------------------------------------------------------------ messages
 
-void UMRNetSubsystem::AddChat(const FString& Text, uint8 Kind)
+void UMRNetSubsystem::HandleUserCommand(FMRReader& R, const TArray<uint8>& Body)
+{
+	const uint8 Command = R.U8();
+	switch (Command)
+	{
+	case MRMsg::UC_LOOK_PLAYER:
+	{
+		FMRNetDescription D;
+		if (MRNetRead::LookPlayer(R, Resources, D))
+		{
+			Description = MoveTemp(D);
+			OnDescription.Broadcast();
+		}
+		else
+		{
+			UE_LOG(LogMeridian, Warning, TEXT("MRNet: UC_LOOK_PLAYER couldn't be read (%d bytes)"), Body.Num());
+		}
+		break;
+	}
+	case MRMsg::UC_GUILDINFO:
+		if (MRNetRead::GuildInfo(R, World.Guild))
+		{
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: guild %s, %d members, rights %x"), *World.Guild.Name, World.Guild.Members.Num(), World.Guild.Flags);
+			OnGuildChanged.Broadcast();
+		}
+		break;
+	case MRMsg::UC_GUILD_LIST:
+		if (MRNetRead::GuildList(R, World.GuildList))
+		{
+			OnGuildChanged.Broadcast();
+		}
+		break;
+	case MRMsg::UC_GUILD_ASK:
+		// a guild creator offers to found one (merintr.c HandleGuildAsk): two prices
+		World.GuildCost = R.I32();
+		World.GuildSecretCost = R.I32();
+		if (R.IsOk())
+		{
+			OnGuildChanged.Broadcast();
+		}
+		break;
+	case MRMsg::UC_RECEIVE_PREFERENCES:
+		World.Preferences = R.U32();
+		World.bHasPreferences = R.IsOk();
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: preferences %x"), World.Preferences);
+		OnPreferencesChanged.Broadcast();
+		break;
+	default:
+		break;  // halls and shields (docs/parity.md)
+	}
+}
+
+void UMRNetSubsystem::AddChat(const FString& Text, uint8 Kind, EMRChatChannel Channel)
 {
 	FMRChatLine Line;
 	Line.Text = MRServerText::StripStyle(Text);
+	Line.Styled = Text;
 	Line.Kind = Kind;
+	Line.Channel = Channel;
 	Line.Time = FPlatformTime::Seconds();
+	Line.When = FDateTime::Now();
 	UE_LOG(LogMeridian, Log, TEXT("MRNet chat: %s"), *Line.Text);
 	Chat.Add(Line);
 	if (Chat.Num() > MaxChatLines)
@@ -1027,6 +1477,7 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		{
 			bAwaitingRoom = true;
 			World.RoomChanges.Reset();  // the server sends this room's changes next
+			LoadCharacterData();
 			// a new room (or the same one again): the last one's looping sounds end (SF_LOOP)
 			FMRNetSound Stop;
 			Stop.Kind = FMRNetSound::EKind::StopLoops;
@@ -1077,6 +1528,8 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 			Connection->Send(FMRWriter(MRMsg::BP_REQ_INVENTORY));
 			// the spells, skills and enchantments on us (merintr mermain.c, enchant.c EnchantmentsInit)
 			Connection->Send(FMRWriter(MRMsg::BP_SEND_SPELLS));
+			// the server-kept options (merintr.c asks on entering; the safety commands change them)
+			Connection->Send(FMRWriter(MRMsg::BP_USERCOMMAND).U8(MRMsg::UC_REQ_PREFERENCES));
 			Connection->Send(FMRWriter(MRMsg::BP_SEND_SKILLS));
 			Connection->Send(FMRWriter(MRMsg::BP_SEND_ENCHANTMENTS).U8(MRMsg::ENCHANT_PLAYER));
 		}
@@ -1259,14 +1712,32 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		break;
 	case MRMsg::BP_SAID:
 	{
-		R.U32();  // sender
-		R.U32();  // sender's name
+		const uint32 Sender = MRMsg::PlainId(R.U32());
+		const FString SenderName = Resources.Get(R.U32());
 		const uint8 Kind = R.U8();
 		const uint32 FormatId = R.U32();
+		// msgfiltr.c MessageSaid: a player's words are dropped when ignored (or everyone is, or broadcasts
+		// are off); a tell so dropped is reported back (BP_SAY_BLOCKED)
+		const bool bFromPlayer = Kind != MRMsg::SAY_RESOURCE && Sender != World.Player.Id;
+		if (bFromPlayer && (Social.bIgnoreAll || IsIgnored(SenderName) || (Kind == MRMsg::SAY_EVERYONE && Social.bNoBroadcast)))
+		{
+			if (Kind == MRMsg::SAY_GROUP && (Social.bIgnoreAll || IsIgnored(SenderName)))
+			{
+				Connection->Send(FMRWriter(MRMsg::BP_SAY_BLOCKED).U32(Sender));
+			}
+			break;
+		}
 		FString Text;
 		if (MRServerText::Format(Resources, FormatId, R, Text))
 		{
-			AddChat(Text, Kind);
+			AddChat(Text, Kind, EMRChatChannel::Chat);
+			if (Kind == MRMsg::SAY_GROUP && bFromPlayer)
+			{
+				// a tell: the original's ding
+				FMRNetSound Ding;
+				Ding.File = TEXT("imp.ogg");
+				OnSound.Broadcast(Ding);
+			}
 		}
 		break;
 	}
@@ -1285,10 +1756,113 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		FString Text;
 		if (MRServerText::Format(Resources, FormatId, R, Text))
 		{
-			AddChat(Text, 0);
+			AddChat(Text, 0, HitFormats().Contains(FormatId) ? EMRChatChannel::Combat : EMRChatChannel::Game);
+		}
+		else
+		{
+			const FString* Fmt = Resources.Find(FormatId);
+			UE_LOG(LogMeridian, Warning, TEXT("MRNet: message %u couldn't be formatted (%d bytes): \"%s\""), FormatId, Body.Num(), Fmt ? **Fmt : TEXT("not in the rsb"));
 		}
 		break;
 	}
+	case MRMsg::BP_MAIL:
+	{
+		FMRNetMail Mail;
+		bool bEnd = false;
+		if (!MRNetRead::Mail(R, Resources, Mail, bEnd))
+		{
+			UE_LOG(LogMeridian, Warning, TEXT("MRNet: BP_MAIL couldn't be read (%d bytes)"), Body.Num());
+			break;
+		}
+		if (bEnd)
+		{
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: no more new mail (%d kept)"), Mailbox.Num());
+			OnMailChanged.Broadcast();
+			break;
+		}
+		// mailfile.c: kept on this computer, then the server may delete it
+		const uint32 Index = Mail.Index;
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: mail from %s: %s"), *Mail.From, *Mail.Subject);
+		Mailbox.Add(MoveTemp(Mail));
+		SaveMail();
+		Connection->Send(FMRWriter(MRMsg::BP_DELETE_MAIL).U32(Index));
+		OnMailChanged.Broadcast();
+		break;
+	}
+	case MRMsg::BP_LOOKUP_NAMES:
+	{
+		TArray<uint32> Ids;
+		if (!MRNetRead::LookupNames(R, Ids) || !IsSendingMail())
+		{
+			break;
+		}
+		const FPendingMail Mail = MoveTemp(PendingMail);
+		PendingMail = FPendingMail();
+		FString Unknown;
+		for (int32 i = 0; i < Mail.To.Num(); ++i)
+		{
+			if (!Ids.IsValidIndex(i) || Ids[i] == 0)
+			{
+				Unknown = Mail.To[i];
+				break;
+			}
+		}
+		if (!Unknown.IsEmpty() || Ids.Num() != Mail.To.Num())
+		{
+			OnMailSent.Broadcast(false, FString::Printf(TEXT("There is no player named %s."), *Unknown));
+			break;
+		}
+		// protocol.c PARAM_ID_ARRAY: u16 count, the ids; then the text ("Subject: ..." first)
+		FMRWriter W(MRMsg::BP_SEND_MAIL);
+		W.U16(static_cast<uint16>(Ids.Num()));
+		for (const uint32 Id : Ids)
+		{
+			W.U32(Id);
+		}
+		Connection->Send(W.Str(Mail.Text));
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: mail sent to %s"), *FString::Join(Mail.To, TEXT(", ")));
+		OnMailSent.Broadcast(true, FString());
+		break;
+	}
+	case MRMsg::BP_LOOK_NEWSGROUP:
+	{
+		FMRNetNews News;
+		if (MRNetRead::LookNewsgroup(R, Resources, News))
+		{
+			News.bOpen = true;
+			World.News = MoveTemp(News);
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: news board %d (%s), permission %d"), World.News.Group, *World.News.Board.Name, World.News.Permission);
+			OnNewsChanged.Broadcast();
+			if (World.News.Permission & MRMsg::NEWS_READ)
+			{
+				RequestArticles();  // newsread.c: the list comes up at once
+			}
+		}
+		break;
+	}
+	case MRMsg::BP_ARTICLES:
+	{
+		uint16 Group = 0;
+		uint8 Part = 0, Parts = 0;
+		TArray<FMRNetArticle> Got;
+		if (MRNetRead::Articles(R, Group, Part, Parts, Got) && World.News.bOpen && Group == World.News.Group)
+		{
+			if (Part <= 1)
+			{
+				World.News.Articles.Reset();
+			}
+			World.News.Articles.Append(Got);
+			World.News.bHaveArticles = Part >= Parts;
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: news board %d: part %d of %d, %d articles"), Group, Part, Parts, World.News.Articles.Num());
+			OnNewsChanged.Broadcast();
+		}
+		break;
+	}
+	case MRMsg::BP_ARTICLE:
+		World.News.ReadingText = R.Str();
+		World.News.bHaveText = R.IsOk();
+		OnNewsChanged.Broadcast();
+		break;
 	case MRMsg::BP_LOOK:
 	{
 		FMRNetDescription D;
@@ -1304,23 +1878,8 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		break;
 	}
 	case MRMsg::BP_USERCOMMAND:
-	{
-		const uint8 Command = R.U8();
-		if (Command == MRMsg::UC_LOOK_PLAYER)
-		{
-			FMRNetDescription D;
-			if (MRNetRead::LookPlayer(R, Resources, D))
-			{
-				Description = MoveTemp(D);
-				OnDescription.Broadcast();
-			}
-			else
-			{
-				UE_LOG(LogMeridian, Warning, TEXT("MRNet: UC_LOOK_PLAYER couldn't be read (%d bytes)"), Body.Num());
-			}
-		}
-		break;  // the other user commands: guilds, preferences... (docs/parity.md)
-	}
+		HandleUserCommand(R, Body);
+		break;
 	case MRMsg::BP_PLAYER_OVERLAY:
 	{
 		// clientd3d overlay.c SetPlayerOverlay: the object's id is the slot (PWO_*), replaced each time;

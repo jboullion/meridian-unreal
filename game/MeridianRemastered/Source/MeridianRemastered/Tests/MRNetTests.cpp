@@ -5,6 +5,7 @@
 
 #include "Misc/AutomationTest.h"
 #include "Net/MRAssetCache.h"
+#include "Net/MRChatCommands.h"
 #include "Net/MRNetWorld.h"
 #include "Net/MRProtocol.h"
 #include "Net/MRResources.h"
@@ -469,6 +470,155 @@ bool FMRNetTradeTest::RunTest(const FString& Parameters)
 	TArray<FMRNetObject> Items;
 	TestTrue(TEXT("BP_OFFER reads to its end"), MRNetRead::Object(OR, Res, Who) && MRNetRead::ObjectList(OR, Res, Items) && OR.AtEnd()
 		&& Who.Id == 0x600 && Items.Num() == 1 && Items[0].Name == TEXT("torch"));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMRNetChatTest, "Meridian.Net.Chat",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMRNetChatTest::RunTest(const FString& Parameters)
+{
+	using K = FMRTypedLine::EKind;
+	const TMap<FString, FString> NoAliases;
+	auto Is = [&](const TCHAR* Line, K Kind, EMRChatCommand Cmd, const TCHAR* Args)
+	{
+		const FMRTypedLine T = MRChat::Interpret(Line, NoAliases);
+		TestTrue(FString::Printf(TEXT("\"%s\" reads as %s %s \"%s\" (got %d %s \"%s\")"), Line, Kind == K::Say ? TEXT("say") : TEXT("command"),
+			*MRChat::CommandName(Cmd), Args, static_cast<int32>(T.Kind), *MRChat::CommandName(T.Command), *T.Args),
+			T.Kind == Kind && (Kind != K::Command || T.Command == Cmd) && T.Args == Args);
+	};
+	// plain text is said; a command by its whole name; one without words only alone
+	Is(TEXT("hello there"), K::Say, EMRChatCommand::Say, TEXT("hello there"));
+	Is(TEXT("drop it!"), K::Say, EMRChatCommand::Say, TEXT("drop it!"));
+	Is(TEXT("drop"), K::Command, EMRChatCommand::Drop, TEXT(""));
+	Is(TEXT("tell Bob hi"), K::Command, EMRChatCommand::Tell, TEXT("Bob hi"));
+	Is(TEXT("safety off"), K::Command, EMRChatCommand::SafetyOff, TEXT(""));
+	Is(TEXT(":waves"), K::Command, EMRChatCommand::Emote, TEXT("waves"));
+	// "/": the start of a name, the first in the original's order
+	Is(TEXT("/s hi"), K::Command, EMRChatCommand::Say, TEXT("hi"));
+	Is(TEXT("/b news"), K::Command, EMRChatCommand::Broadcast, TEXT("news"));
+	Is(TEXT("/ye loud"), K::Command, EMRChatCommand::Yell, TEXT("loud"));
+	Is(TEXT("/tellg guild words"), K::Command, EMRChatCommand::TellGuild, TEXT("guild words"));
+	Is(TEXT("/gc guild words"), K::Command, EMRChatCommand::TellGuild, TEXT("guild words"));
+	Is(TEXT("/t Sir Bob hi"), K::Command, EMRChatCommand::Tell, TEXT("Sir Bob hi"));
+	TestEqual(TEXT("an unknown / command"), static_cast<int32>(MRChat::Interpret(TEXT("/xyzzy"), NoAliases).Kind), static_cast<int32>(K::Unknown));
+	TestEqual(TEXT("an empty line"), static_cast<int32>(MRChat::Interpret(TEXT("   "), NoAliases).Kind), static_cast<int32>(K::Nothing));
+	// aliases: a whole word, "~~" takes the rest
+	TMap<FString, FString> Aliases;
+	TestEqual(TEXT("alias defined"), MRChat::DefineAlias(Aliases, TEXT("hi = say Hello, ~~!")), FString(TEXT("Alias hi = say Hello, ~~!")));
+	const FMRTypedLine A = MRChat::Interpret(TEXT("hi Bob"), Aliases);
+	TestTrue(TEXT("an alias runs its command"), A.Kind == K::Command && A.Command == EMRChatCommand::Say && A.Args == TEXT("Hello, Bob!"));
+	TestTrue(TEXT("an alias removed"), MRChat::DefineAlias(Aliases, TEXT("hi")).Contains(TEXT("removed")) && Aliases.IsEmpty());
+	// say.c's limits
+	TestEqual(TEXT("control characters go"), MRChat::FilterSay(TEXT("a\tb\x01") TEXT("c")), FString(TEXT("abc")));
+	TestEqual(TEXT("a run of spaces is cut at 10"), MRChat::FilterSay(TEXT("a") + FString::ChrN(20, TEXT(' ')) + TEXT("b")).Len(), 12);
+	TestEqual(TEXT("codes past 4 in a row go (and a space right after them)"), MRChat::FilterSay(TEXT("~r~g~b~y~w~k x")), FString(TEXT("~r~g~b~yx")));
+	TestTrue(TEXT("nothing to say"), MRChat::FilterSay(TEXT("   ")).IsEmpty());
+	// names, tells and groups
+	TestEqual(TEXT("names split"), MRChat::SplitNames(TEXT("Bob, \"Sir Ann\" Cy")), TArray<FString>({TEXT("Bob"), TEXT("Sir Ann"), TEXT("Cy")}));
+	const TArray<TPair<uint32, FString>> Players = {{1, TEXT("Bob")}, {2, TEXT("Bob Smith")}, {3, TEXT("Ann")}, {4, TEXT("Annabel")}};
+	MRChat::FGroups Groups;
+	MRChat::GroupNew(Groups, TEXT("pals"));
+	MRChat::GroupAdd(Groups, TEXT("pals Ann Cy"), [](const FString&) { return false; });
+	MRChat::FTell Tell;
+	TestTrue(TEXT("tell the longest name that fits"), MRChat::ResolveTell(TEXT("Bob Smith hello"), Players, Groups, Tell) && Tell.Ids == TArray<uint32>({2}) && Tell.Text == TEXT("hello"));
+	TestTrue(TEXT("tell a whole name"), MRChat::ResolveTell(TEXT("bob hi"), Players, Groups, Tell) && Tell.Ids == TArray<uint32>({1}));
+	TestTrue(TEXT("a name's start that fits two is ambiguous"), MRChat::ResolveTell(TEXT("An hi"), Players, Groups, Tell) && Tell.Ids.IsEmpty() && Tell.Error.Contains(TEXT("ambiguous")));
+	TestTrue(TEXT("tell a group: those logged on"), MRChat::ResolveTell(TEXT("pals hi all"), Players, Groups, Tell) && Tell.Ids == TArray<uint32>({3}) && Tell.Text == TEXT("hi all"));
+	TestTrue(TEXT("a quoted name"), MRChat::ResolveTell(TEXT("\"Bob\" yo"), Players, Groups, Tell) && Tell.Ids == TArray<uint32>({1}) && Tell.Text == TEXT("yo"));
+	TestFalse(TEXT("nothing to tell"), MRChat::ResolveTell(TEXT("Bob"), Players, Groups, Tell));
+	MRChat::GroupDelete(Groups, TEXT("pals Ann"));
+	TestEqual(TEXT("a name out of the group"), Groups[TEXT("pals")], TArray<FString>({TEXT("Cy")}));
+	MRChat::GroupDelete(Groups, TEXT("pa"));
+	TestTrue(TEXT("the group deleted by its start"), Groups.IsEmpty());
+	TestEqual(TEXT("a spell by its start"), MRChat::FindByName({TEXT("appraise"), TEXT("meditate"), TEXT("mend")}, TEXT("med")), 1);
+	TestEqual(TEXT("an ambiguous start"), MRChat::FindByName({TEXT("appraise"), TEXT("meditate"), TEXT("mend")}, TEXT("me")), -2);
+	// the server's style codes (srvrstr.c)
+	const TArray<FMRTextRun> Runs = MRServerText::Runs(TEXT("a ~rred~n b ~Bbold~B ~zx"));
+	TestEqual(TEXT("style codes make runs"), Runs.Num(), 5);
+	TestTrue(TEXT("~r is dark red"), Runs.IsValidIndex(1) && Runs[1].Text == TEXT("red") && Runs[1].Color.IsSet() && Runs[1].Color->R > 0.1f && Runs[1].Color->G < 0.01f);
+	TestTrue(TEXT("~B toggles bold"), Runs.IsValidIndex(3) && Runs[3].Text == TEXT("bold") && Runs[3].Style == MRServerText::STYLE_BOLD);
+	TestEqual(TEXT("an unknown code stays as typed"), MRServerText::StripStyle(TEXT("a ~rred~n b ~Bbold~B ~zx")), FString(TEXT("a red b bold ~zx")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMRNetSocialTest, "Meridian.Net.Social",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMRNetSocialTest::RunTest(const FString& Parameters)
+{
+	TArray<uint8> Rsb = {'R', 'S', 'C', 1, 5, 0, 0, 0, 0, 0, 0, 0};
+	int32 Count = 0;
+	auto Add = [&Rsb, &Count](uint32 Id, const char* Text)
+	{
+		for (int32 i = 0; i < 4; ++i) Rsb.Add((Id >> (8 * i)) & 0xFF);
+		for (int32 i = 0; i < 4; ++i) Rsb.Add(0);
+		Rsb.Append(reinterpret_cast<const uint8*>(Text), FCStringAnsi::Strlen(Text) + 1);
+		Rsb[8] = static_cast<uint8>(++Count);
+	};
+	Add(30, "%q");  // user.kod user_show_mail
+	Add(31, "Designers' News");
+	Add(32, "news.bgf");
+	Add(33, "A board of the designers' news.");
+	FMRResourceTable Res;
+	TestTrue(TEXT("rsb parses"), Res.Load(Rsb));
+	// BP_MAIL (user.kod UserGetNewMail): index, sender, time, recipients, then user_show_mail with the text
+	FMRWriter M(MRMsg::BP_MAIL);
+	M.U32(3).Str(TEXT("Ann")).U32(1000).U16(2).Str(TEXT("Bob")).Str(TEXT("Cy")).U32(30).Str(TEXT("Subject: Hello\r\nSee you at the inn."));
+	FMRReader MR(M.Bytes, 1);
+	FMRNetMail Mail;
+	bool bEnd = true;
+	TestTrue(TEXT("BP_MAIL reads to its end"), MRNetRead::Mail(MR, Res, Mail, bEnd) && MR.AtEnd() && !bEnd);
+	TestTrue(TEXT("from Ann to Bob and Cy, its subject and body apart"), Mail.Index == 3 && Mail.From == TEXT("Ann") && Mail.To.Num() == 2
+		&& Mail.Subject == TEXT("Hello") && Mail.Body == TEXT("See you at the inn.") && Mail.Time == 1000 + MRMsg::KodTimeOffset);
+	FMRWriter End(MRMsg::BP_MAIL);
+	End.U32(0).U32(0).U16(0).U32(0);  // user.kod: 4,0, 4,0, 2,0, 4,0
+	FMRReader ER(End.Bytes, 1);
+	TestTrue(TEXT("no more mail"), MRNetRead::Mail(ER, Res, Mail, bEnd) && bEnd);
+	// BP_ARTICLES, BP_LOOK_NEWSGROUP, BP_LOOKUP_NAMES
+	FMRWriter A(MRMsg::BP_ARTICLES);
+	A.U16(7).U8(1).U8(1).U16(2).U32(1).U32(50).Str(TEXT("Ann")).Str(TEXT("Welcome")).U32(2).U32(60).Str(TEXT("Bob")).Str(TEXT("Hi"));
+	FMRReader AR(A.Bytes, 1);
+	uint16 Group = 0;
+	uint8 Part = 0, Parts = 0;
+	TArray<FMRNetArticle> Articles;
+	TestTrue(TEXT("BP_ARTICLES reads to its end"), MRNetRead::Articles(AR, Group, Part, Parts, Articles) && AR.AtEnd());
+	TestTrue(TEXT("board 7, two articles"), Group == 7 && Part == 1 && Parts == 1 && Articles.Num() == 2 && Articles[1].Title == TEXT("Hi") && Articles[0].Poster == TEXT("Ann"));
+	FMRWriter L(MRMsg::BP_LOOK_NEWSGROUP);
+	L.U16(7).U8(MRMsg::NEWS_READ).U32(0x700).U32(32).U32(31).U32(0).U8(0).U32(0).U32(0).U8(0).U8(0).U16(0).U8(MRMsg::ANIMATE_NONE).U16(1).U8(0).U32(33);
+	FMRReader LR(L.Bytes, 1);
+	FMRNetNews News;
+	TestTrue(TEXT("BP_LOOK_NEWSGROUP reads to its end"), MRNetRead::LookNewsgroup(LR, Res, News) && LR.AtEnd());
+	TestTrue(TEXT("the board, read only, with its description"), News.Group == 7 && News.Permission == MRMsg::NEWS_READ && News.Board.Name == TEXT("Designers' News")
+		&& News.Description == TEXT("A board of the designers' news."));
+	FMRWriter N(MRMsg::BP_LOOKUP_NAMES);
+	N.U16(2).U32(0x123).U32(0);
+	FMRReader NR(N.Bytes, 1);
+	TArray<uint32> Ids;
+	TestTrue(TEXT("BP_LOOKUP_NAMES: one known, one not"), MRNetRead::LookupNames(NR, Ids) && NR.AtEnd() && Ids == TArray<uint32>({0x123, 0}));
+	// UC_GUILDINFO and UC_GUILD_LIST (after the user command's byte)
+	FMRWriter G(MRMsg::BP_USERCOMMAND);
+	G.U8(MRMsg::UC_GUILDINFO).Str(TEXT("Knights")).U8(0).U32(MRMsg::GC_INVITE | MRMsg::GC_RENOUNCE).U32(0x900);
+	for (int32 i = 0; i < MRMsg::GuildRanks; ++i)
+	{
+		G.Str(FString::Printf(TEXT("Sir %d"), i)).Str(FString::Printf(TEXT("Dame %d"), i));
+	}
+	G.U32(0x501).U16(2).U32(0x500).Str(TEXT("Ann")).U8(5).U8(2).U32(0x501).Str(TEXT("Bob")).U8(1).U8(1);
+	FMRReader GR(G.Bytes, 2);
+	FMRNetGuild Guild;
+	TestTrue(TEXT("UC_GUILDINFO reads to its end"), MRNetRead::GuildInfo(GR, Guild) && GR.AtEnd());
+	TestTrue(TEXT("Knights: Ann the master, Bob voted for"), Guild.Name == TEXT("Knights") && Guild.Members.Num() == 2 && Guild.Members[0].Rank == 5
+		&& Guild.FemaleRanks[4] == TEXT("Dame 4") && Guild.CurrentVote == 0x501 && (Guild.Flags & MRMsg::GC_INVITE));
+	FMRWriter GL(MRMsg::BP_USERCOMMAND);
+	GL.U8(MRMsg::UC_GUILD_LIST).U16(2).U32(0x900).Str(TEXT("Knights")).U32(0x901).Str(TEXT("Rogues")).U16(0).U16(1).U32(0x901).U16(0).U16(1).U32(0x901);
+	FMRReader GLR(GL.Bytes, 2);
+	FMRNetGuildList List;
+	TestTrue(TEXT("UC_GUILD_LIST reads to its end"), MRNetRead::GuildList(GLR, List) && GLR.AtEnd());
+	TestTrue(TEXT("the Rogues are our enemy and call us theirs"), List.Guilds.Num() == 2 && List.Enemies == TArray<uint32>({0x901})
+		&& List.DeclaredEnemies == TArray<uint32>({0x901}) && List.Allies.IsEmpty());
+	FString Subject, Body;
+	MRNetRead::SplitSubject(TEXT("Betreff: Hallo\nText"), Subject, Body);
+	TestTrue(TEXT("the German subject"), Subject == TEXT("Hallo") && Body == TEXT("Text"));
 	return true;
 }
 

@@ -282,6 +282,78 @@ struct FMRNetRoomChange
 	uint8 Flags = 0;
 };
 
+/**
+ * A mail message (BP_MAIL; mailnews.c HandleMail, user.kod UserGetNewMail): the server's index
+ * (BP_DELETE_MAIL once we've kept it), the sender, the time, the recipients, and the text, whose
+ * first line is "Subject: ..." when it has one.
+ */
+struct FMRNetMail
+{
+	uint32 Index = 0;
+	FString From;
+	/** Unix seconds. */
+	int64 Time = 0;
+	TArray<FString> To;
+	FString Subject;
+	FString Body;
+};
+
+/** A news board's article heading (BP_ARTICLES). */
+struct FMRNetArticle
+{
+	uint32 Num = 0;
+	int64 Time = 0;  // Unix seconds
+	FString Poster;
+	FString Title;
+};
+
+/** The news board looked at (BP_LOOK_NEWSGROUP) and what we've read of it (BP_ARTICLES, BP_ARTICLE). */
+struct FMRNetNews
+{
+	bool bOpen = false;
+	uint16 Group = 0;
+	uint8 Permission = 0;  // NEWS_READ, NEWS_POST
+	FMRNetObject Board;
+	FString Description;
+	TArray<FMRNetArticle> Articles;
+	/** The headings came in full (BP_ARTICLES comes in parts). */
+	bool bHaveArticles = false;
+	uint32 ReadingNum = 0;
+	FString ReadingText;
+	bool bHaveText = false;
+};
+
+struct FMRNetGuildMember
+{
+	uint32 Id = 0;
+	FString Name;
+	uint8 Rank = 0;    // 1 (lowest) .. 5 (the guildmaster)
+	uint8 Gender = 0;  // 1 male, 2 female (the rank's name)
+};
+
+/** The player's guild (UC_GUILDINFO; merintr.c HandleGuildInfo, user.kod UserGuildSendInfo). */
+struct FMRNetGuild
+{
+	bool bValid = false;
+	FString Name;
+	bool bHasPassword = false;
+	FString Password;
+	uint32 Flags = 0;  // GC_*: what we may do
+	uint32 GuildId = 0;
+	FString MaleRanks[5];    // MRMsg::GuildRanks
+	FString FemaleRanks[5];
+	uint32 CurrentVote = 0;
+	TArray<FMRNetGuildMember> Members;
+};
+
+/** Every guild and our guild's ties (UC_GUILD_LIST; user.kod UserGuildSendList). */
+struct FMRNetGuildList
+{
+	bool bValid = false;
+	TArray<TPair<uint32, FString>> Guilds;
+	TArray<uint32> Allies, Enemies, DeclaredAllies, DeclaredEnemies;
+};
+
 /** A spell the character knows (BP_SPELLS, BP_SPELL_ADD; merintr.c ExtractNewSpell). */
 struct FMRNetSpell
 {
@@ -409,6 +481,15 @@ struct FMRNetWorld
 	/** The last shop or vault list (BP_BUY_LIST, BP_WITHDRAWAL_LIST), and the offer under way. */
 	FMRNetShop Shop;
 	FMRNetTrade Trade;
+	/** The news board being read, the player's guild, every guild, and the server-kept options. */
+	FMRNetNews News;
+	FMRNetGuild Guild;
+	FMRNetGuildList GuildList;
+	/** The server asked us to found a guild (UC_GUILD_ASK, a guild creator): its two prices. */
+	int32 GuildCost = 0;
+	int32 GuildSecretCost = 0;
+	uint32 Preferences = 0;
+	bool bHasPreferences = false;
 	/** The room's changes since BP_PLAYER, in order: a room still being built takes them all when it's ready. */
 	TArray<FMRNetRoomChange> RoomChanges;
 
@@ -454,6 +535,19 @@ namespace MRNetRead
 	MERIDIANREMASTERED_API bool LookPlayer(FMRReader& R, const FMRResourceTable& Res, FMRNetDescription& Out);
 	/** BP_PLAYER's body after the type byte. */
 	MERIDIANREMASTERED_API bool Player(FMRReader& R, const FMRResourceTable& Res, FMRNetPlayer& Out);
+	/** BP_MAIL: one message, or (no recipients) the end of the new mail (bEnd). */
+	MERIDIANREMASTERED_API bool Mail(FMRReader& R, const FMRResourceTable& Res, FMRNetMail& Out, bool& bEnd);
+	/** BP_ARTICLES: one part of a board's headings, appended to Out (Part and Parts say which). */
+	MERIDIANREMASTERED_API bool Articles(FMRReader& R, uint16& Group, uint8& Part, uint8& Parts, TArray<FMRNetArticle>& Out);
+	/** BP_LOOK_NEWSGROUP: the board, what we may do there and its description. */
+	MERIDIANREMASTERED_API bool LookNewsgroup(FMRReader& R, const FMRResourceTable& Res, FMRNetNews& Out);
+	/** BP_LOOKUP_NAMES: the players' ids for the names asked about, in order; 0 for an unknown name. */
+	MERIDIANREMASTERED_API bool LookupNames(FMRReader& R, TArray<uint32>& Out);
+	/** UC_GUILDINFO and UC_GUILD_LIST (after the user command's byte). */
+	MERIDIANREMASTERED_API bool GuildInfo(FMRReader& R, FMRNetGuild& Out);
+	MERIDIANREMASTERED_API bool GuildList(FMRReader& R, FMRNetGuildList& Out);
+	/** "Subject: x\nbody" (or "Betreff: ") into its subject and the rest. */
+	MERIDIANREMASTERED_API void SplitSubject(const FString& Text, FString& OutSubject, FString& OutBody);
 	/** BP_SECTOR_MOVE, BP_SECTOR_CHANGE or BP_CHANGE_TEXTURE's body (Type: which). */
 	MERIDIANREMASTERED_API bool RoomChange(uint8 Type, FMRReader& R, FMRNetRoomChange& Out);
 	/** One entry of BP_PLAYERS, or BP_PLAYER_ADD's body (the name comes as a string, not a resource). */

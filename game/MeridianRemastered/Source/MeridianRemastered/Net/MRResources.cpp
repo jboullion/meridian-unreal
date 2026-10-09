@@ -199,18 +199,90 @@ bool MRServerText::Format(const FMRResourceTable& Resources, uint32 FormatId, FM
 	return FormatInto(Resources, *Fmt, Reader, Out, 0);
 }
 
+namespace
+{
+	// srvrstr.c code_table: the colour codes (sRGB)
+	struct FCodeColor { TCHAR Code; uint8 R, G, B; };
+	constexpr FCodeColor CodeColors[] = {
+		{'r', 128, 0, 0}, {'f', 200, 0, 0}, {'g', 0, 100, 0}, {'l', 0, 255, 0}, {'b', 0, 0, 255}, {'k', 0, 0, 0},
+		{'w', 255, 255, 255}, {'y', 230, 230, 25}, {'p', 255, 105, 210}, {'o', 255, 150, 0}, {'a', 127, 255, 212},
+		{'c', 46, 234, 250}, {'q', 143, 38, 170}, {'t', 11, 59, 112}, {'s', 60, 60, 60}, {'v', 128, 0, 128},
+		{'m', 205, 0, 205},
+	};
+
+	bool IsCodeChar(TCHAR C) { return C == TEXT('~') || C == TEXT('`'); }
+
+	bool IsStyleCode(TCHAR C) { return C == TEXT('B') || C == TEXT('I') || C == TEXT('U') || C == TEXT('n'); }
+}
+
+bool MRServerText::CodeColor(TCHAR Code, FLinearColor& Out)
+{
+	for (const FCodeColor& C : CodeColors)
+	{
+		if (C.Code == Code)
+		{
+			Out = FLinearColor(FColor(C.R, C.G, C.B));
+			return true;
+		}
+	}
+	return false;
+}
+
+TArray<FMRTextRun> MRServerText::Runs(const FString& In)
+{
+	TArray<FMRTextRun> Out;
+	FMRTextRun Cur;
+	auto Flush = [&Out, &Cur]()
+	{
+		if (!Cur.Text.IsEmpty())
+		{
+			Out.Add(Cur);
+			Cur.Text.Reset();
+		}
+	};
+	for (int32 i = 0; i < In.Len(); ++i)
+	{
+		const TCHAR C = In[i];
+		FLinearColor Color;
+		if (IsCodeChar(C) && i + 1 < In.Len() && (CodeColor(In[i + 1], Color) || IsStyleCode(In[i + 1])))
+		{
+			Flush();
+			const TCHAR Code = In[++i];
+			if (Code == TEXT('n'))
+			{
+				Cur.Color.Reset();
+				Cur.Style = 0;
+			}
+			else if (Code == TEXT('B'))
+			{
+				Cur.Style ^= STYLE_BOLD;
+			}
+			else if (Code == TEXT('I'))
+			{
+				Cur.Style ^= STYLE_ITALIC;
+			}
+			else if (Code == TEXT('U'))
+			{
+				Cur.Style ^= STYLE_UNDERLINE;
+			}
+			else
+			{
+				Cur.Color = Color;
+			}
+			continue;
+		}
+		Cur.Text.AppendChar(C);
+	}
+	Flush();
+	return Out;
+}
+
 FString MRServerText::StripStyle(const FString& In)
 {
 	FString Out;
-	Out.Reserve(In.Len());
-	for (int32 i = 0; i < In.Len(); ++i)
+	for (const FMRTextRun& R : Runs(In))
 	{
-		if (In[i] == TEXT('~') && i + 1 < In.Len())
-		{
-			++i;  // skip the code letter
-			continue;
-		}
-		Out.AppendChar(In[i]);
+		Out += R.Text;
 	}
 	return Out;
 }

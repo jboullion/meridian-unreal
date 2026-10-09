@@ -13,7 +13,7 @@ This file tracks what the Unreal client does compared with the original desktop 
 
 Protocol facts go in [research/blakserv-protocol.md](research/blakserv-protocol.md), each with the blakserv or clientd3d source it came from.
 
-Last survey: 2026-10-08. M0 to M7 done the same day; what they left over is in "Left over from finished milestones" at the end.
+Last survey: 2026-10-08. M0 to M8 done the same day; what they left over is in "Left over from finished milestones" at the end.
 
 ## Session and account
 
@@ -115,15 +115,17 @@ Last survey: 2026-10-08. M0 to M7 done the same day; what they left over is in "
 | Feature | Messages | UE | Shards | M |
 |---|---|---|---|---|
 | Say, and the chat log | `BP_SAY_TO`, `BP_SAID` | Done | Done | — |
-| Yell, broadcast, emote, tell | `BP_SAY_TO` | Missing | Done | M8 |
-| Group chat | `BP_SAY_GROUP` | Missing | Done | M8 |
-| Guild chat | `BP_SAY_TO` (guild) | Missing | Missing | M8 |
-| Chat tabs, timestamps, `~` colours | — | Partial: colours from the rsb | Done | M8 |
-| Who list and ignore | `BP_PLAYERS`, `BP_PLAYER_ADD/REMOVE` | Partial: the list is kept (M0); no window yet | Done | M8 |
-| Mail | `BP_MAIL`, `BP_SEND_MAIL`, `BP_LOOKUP_NAMES`, ... | Missing | Missing | M8 |
-| News boards | `BP_LOOK_NEWSGROUP`, `BP_ARTICLES`, `BP_ARTICLE`, ... | Missing | Missing | M8 |
-| Guilds | `UC_*GUILD*` | Missing | Missing | M8 |
-| Emotes and moods | `BP_ACTION` | Missing: local test keys only | Missing | M8 |
+| Yell, broadcast, emote, tell | `BP_SAY_TO` | Done (broadcast untried online) | Done | M8 |
+| Group chat (tells to a tell group) | `BP_SAY_GROUP` | Done: tell groups kept per character | Done | M8 |
+| Guild chat | `BP_SAY_TO` (guild) | Done (untried: the test character has no guild) | Missing | M8 |
+| Typed commands and aliases | — | Done: the original's list, "/" for a name's start, aliases | Done | M8 |
+| Chat tabs, timestamps, `~` colours | — | Done: All, Chat, Combat, Game; the server's colours and styles (no italic) | Done | M8 |
+| Who list and ignore | `BP_PLAYERS`, `BP_PLAYER_ADD/REMOVE`, `BP_SAY_BLOCKED` | Done: the who window, tell, ignore, ignore everyone, no broadcasts | Done | M8 |
+| Server-kept options | `UC_REQ_PREFERENCES`, `UC_SEND_PREFERENCES` | Done through the commands; the Options dialog is M9 | Done | M8, M9 |
+| Mail | `BP_MAIL`, `BP_SEND_MAIL`, `BP_LOOKUP_NAMES`, ... | Done: kept on this computer, read, reply, write | Done | M8 |
+| News boards | `BP_LOOK_NEWSGROUP`, `BP_ARTICLES`, `BP_ARTICLE`, ... | Done: read and post (posting untried) | Done | M8 |
+| Guilds | `UC_*GUILD*` | Partial: members, ranks, every member action, alliances, founding; no halls or shields | Done | M8 |
+| Emotes and moods | `BP_ACTION` | Done: wave, point, dance, moods (commands, F5–F7) | Missing | M8 |
 
 ## Sound
 
@@ -168,7 +170,7 @@ The server serves about 395 rooms. `ReferenceServers/Server-104/resource/rooms` 
 | M5 | Spells, skills, enchantments, stats (done 2026-10-08) |
 | M6 | NPCs, economy, player trade (done 2026-10-08) |
 | M7 | Server-driven world: sound, light, room changes, texture animation (done 2026-10-08) |
-| M8 | Communication and social |
+| M8 | Communication and social (done 2026-10-08) |
 | M9 | Settings, account, polish |
 | W2 | Baked tier for every room (runs alongside, after M1) |
 | W3 | Authored zones, one at a time |
@@ -194,7 +196,7 @@ Things a finished milestone didn't do, or did without proof. Each lands in the m
 | ☐ | M5 | Retraining that lowers school levels for points | The original module's points rules aren't ported | Any |
 | ☐ | M5 | Try retraining with a real elder (Jasper, Marion, Ko'catan) | Far from the demo | Any |
 | ☐ | M5 | See an enchantment on the player (icon top left) | The test's utility spells put none on the player | Any (a test character with a buff) |
-| ☐ | M5, M6 | Chat commands: "rest", "stand", "cast", "buy", "deposit 100", "withdraw", "balance" | Chat command parsing is M8 | M8 |
+| ☑ | M5, M6 | Chat commands: "rest", "stand", "cast", "buy", "deposit 100", "withdraw", "balance" | Done in M8 | M8 |
 | ☐ | M6 | Try a trade between two players | The test plays one character | Any (two test clients) |
 | ☐ | M6 | List a vault's items without opening Withdraw; check weight and bulk before buying | The server refuses instead | Any |
 | ☐ | M7 | Bitmap animation: walls and sectors with an animation speed cycling their frames, and `BP_WALL_ANIMATE` (a wall's frame, passable or solid) | We draw a bitmap's first frame | Any |
@@ -205,4 +207,14 @@ Things a finished milestone didn't do, or did without proof. Each lands in the m
 | ☐ | M7 | The server's `.mp3` files (cave and temple music, ogre sounds) | We decode `.ogg` only | Any |
 | ☐ | M7 | The player's light measured as the original (distance per wall), and `BP_LIGHT_SHADING`'s sun on runtime rooms | The pixel's depth stands in; our own sun shows | Any |
 | ☐ | M7 | `BP_SET_VIEW` / `BP_RESET_VIEW` (looking through a view globe) | Only the view globe sends them | Any |
+| ☐ | M8 | Guild halls and shields (`UC_GUILD_HALLS`, `UC_GUILD_RENT`, `UC_GUILD_SHIELD(S)`, `UC_CLAIM_SHIELD`) | Not read or shown | Any |
+| ☐ | M8 | Try a guild online: founding (Barloque's guild creator), inviting, ranks, alliances | The test character has no guild; the window is pictured with sample data | Any (a test character in a guild) |
+| ☐ | M8 | Try ignoring, a blocked tell, broadcasts and tells between two players | The test plays one character | Any (two test clients) |
+| ☐ | M8 | Post to a news board, and delete an article | Raza's board is read only for players | Any |
+| ☐ | M8 | Check a mood's changed face (happy, sad, wry) on our sprite and others' | Sent, not checked | Any |
+| ☐ | M8 | The original's way of typing as an option (every line a command), and its profanity filter | Our default is speech; no filter | M9 (Options) |
+| ☐ | M8 | Quick-chat keys (function keys running aliases), moving and resizing the chat log | Not built | M9 |
+| ☐ | M8 | Name colours, guilds and flags in the who list | Names only | Any |
+| ☐ | M8 | Italic text in the chat | The UI's font has no italic face | Any (a font with one) |
+| ☐ | M8 | "suicide" and "password" | They say "not in this version yet" | M9 |
 | ☐ | Tests | `run_move_test.ps1`'s ledge checks read the height a fixed 1.6 s in, so a slow frame catches a fall mid-air (7/8 in about half the runs) | Test timing, not movement | Any |

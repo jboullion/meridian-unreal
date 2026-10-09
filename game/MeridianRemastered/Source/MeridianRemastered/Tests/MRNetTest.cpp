@@ -24,6 +24,7 @@
 #include "UI/MRInventorySource.h"
 #include "UI/SMRLookDialog.h"
 #include "UI/SMRTradeDialog.h"
+#include "UI/SMRSocial.h"
 #include "Engine/LocalPlayer.h"
 #include "UnrealClient.h"
 #include "Zones/MRZoneSubsystem.h"
@@ -980,7 +981,304 @@ void UMRNetTest::Tick()
 			{
 				UI->CloseLook();
 			}
+			Advance(EStep::Social);
+		}
+		break;
+	}
+
+	case EStep::Social:
+	{
+		// M8 (docs/research/blakserv-protocol.md "Chat and social"), in the Inn: its news board, a tell
+		// and an emote through the chat line, mail to ourselves, the time, the options, the guild, a wave
+		const FMRNetWorld& W = Net->GetNetWorld();
+		UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+		const bool bRender = FApp::CanEverRender() && UI && UI->HasHUD();
+		const FString Me = Net->GetSelf() ? Net->GetSelf()->Name : FString();
+		auto Heard = [Net](const FString& Text)
+		{
+			return Net->GetChat().ContainsByPredicate([&Text](const FMRChatLine& L) { return L.Text.Contains(Text); });
+		};
+		auto Run = [UI](const FString& Line)
+		{
+			if (UI)
+			{
+				UI->RunChatLine(Line);  // as typed in the chat line
+			}
+		};
+		const auto Shot = [](const TCHAR* Name)
+		{
+			const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), FString::Printf(TEXT("%s.png"), Name));
+			FScreenshotRequest::RequestScreenshot(File, true, false);
+			UE_LOG(LogMeridian, Display, TEXT("MRNetTest: screenshot %s"), *File);
+		};
+		if (bTimedOut || !UI)
+		{
+			Fail(FString::Printf(TEXT("social: stuck at stage %d%s"), SocialStage, UI ? TEXT("") : TEXT(" (no UI)")));
+			if (UI)
+			{
+				for (int32 i = 0; i < static_cast<int32>(EMRWindow::Count); ++i)
+				{
+					UI->SetWindowOpen(static_cast<EMRWindow>(i), false);
+				}
+			}
 			Advance(EStep::Items);
+			break;
+		}
+		const double Since = Now - SocialAt;
+		// -Render: a picture of the window open now, once it has had a second to draw (true: wait)
+		auto Picture = [&](int32 Index, const TCHAR* Name)
+		{
+			if (!bRender || SocialShot > Index)
+			{
+				return bRender && Since < 0.5;  // (a moment after the picture before closing)
+			}
+			if (Since > 1.0)
+			{
+				Shot(Name);
+				SocialShot = Index + 1;
+				SocialAt = Now;
+			}
+			return true;
+		};
+		switch (SocialStage)
+		{
+		case 0:
+		{
+			// the Inn's news board: looking at it opens it (BP_LOOK_NEWSGROUP), its articles follow
+			const FMRNetObject* Board = nullptr;
+			for (const TPair<uint32, FMRNetObject>& P : Net->GetObjects())
+			{
+				if (P.Value.Name.Contains(TEXT("News")))
+				{
+					Board = &P.Value;
+				}
+			}
+			if (!Board)
+			{
+				Fail(TEXT("social: no news board in the Inn"));
+				SocialStage = 2;
+			}
+			else
+			{
+				Net->RequestLook(Board->Id);
+				SocialStage = 1;
+			}
+			SocialAt = Now;
+			break;
+		}
+		case 1:
+			if (W.News.bOpen && W.News.bHaveArticles && !W.News.bHaveText && W.News.Articles.Num() > 0 && W.News.ReadingNum == 0)
+			{
+				Net->ReadArticle(W.News.Articles.Last().Num);
+			}
+			else if (W.News.bOpen && W.News.bHaveArticles && (W.News.Articles.IsEmpty() || W.News.bHaveText))
+			{
+				if (Picture(0, TEXT("news")))
+				{
+					break;
+				}
+				Pass(FString::Printf(TEXT("read the %s board (BP_LOOK_NEWSGROUP, BP_ARTICLES, BP_ARTICLE): %d articles%s%s"), *W.News.Board.Name,
+					W.News.Articles.Num(), W.News.Articles.Num() ? TEXT(", the last: ") : TEXT(""),
+					W.News.Articles.Num() ? *FString::Printf(TEXT("\"%s\" (%d characters)"), *W.News.Articles.Last().Title, W.News.ReadingText.Len()) : TEXT("")));
+				UI->SetWindowOpen(EMRWindow::News, false);
+				Net->CloseNews();
+				SocialStage = 2;
+				SocialAt = Now;
+			}
+			break;
+		case 2:
+			// a tell to ourselves, typed: the name is found in the players list (BP_SAY_GROUP)
+			SocialText = FString::Printf(TEXT("tell test %d"), FMath::RandRange(100, 999));
+			Run(FString::Printf(TEXT("tell %s %s"), *Me, *SocialText));
+			SocialStage = 3;
+			SocialAt = Now;
+			break;
+		case 3:
+			if (Heard(SocialText))
+			{
+				const FMRChatLine* L = Net->GetChat().FindByPredicate([this](const FMRChatLine& C) { return C.Text.Contains(SocialText); });
+				Pass(FString::Printf(TEXT("typed \"tell %s ...\" and the tell came (BP_SAY_GROUP): \"%s\""), *Me, L ? *L->Text : TEXT("")));
+				SocialText = FString::Printf(TEXT("smiles %d"), FMath::RandRange(100, 999));
+				Run(TEXT(":") + SocialText);
+				SocialStage = 4;
+				SocialAt = Now;
+			}
+			else if (Since > 8.0)
+			{
+				Fail(FString::Printf(TEXT("social: our tell \"%s\" didn't come back"), *SocialText));
+				SocialStage = 4;
+				SocialText = FString::Printf(TEXT("smiles %d"), FMath::RandRange(100, 999));
+				Run(TEXT(":") + SocialText);
+			}
+			break;
+		case 4:
+			if (Heard(SocialText) || Since > 8.0)
+			{
+				if (Heard(SocialText))
+				{
+					Pass(FString::Printf(TEXT("typed \":%s\" and the emote came (SAY_EMOTE)"), *SocialText));
+				}
+				else
+				{
+					Fail(FString::Printf(TEXT("social: the emote \"%s\" didn't come back"), *SocialText));
+				}
+				// mail to ourselves: the name looked up (BP_REQ_LOOKUP_NAMES), then sent (BP_SEND_MAIL)
+				SocialText = FString::Printf(TEXT("Unreal mail %d"), FMath::RandRange(100, 999));
+				MailResult = -1;
+				Net->OnMailSent.AddWeakLambda(this, [this](bool bOk, const FString& Why) { MailResult = bOk ? 1 : 0; MailWhy = Why; });
+				Net->SendMail({Me}, SocialText, TEXT("Sent from the Unreal client's test.\nA second line."));
+				SocialStage = 5;
+				SocialAt = Now;
+			}
+			break;
+		case 5:
+			if (MailResult == 0)
+			{
+				Fail(FString::Printf(TEXT("social: the mail wasn't sent: %s"), *MailWhy));
+				SocialStage = 7;
+			}
+			else if (MailResult == 1)
+			{
+				Net->RequestMail();
+				SocialStage = 6;
+				SocialAt = Now;
+			}
+			break;
+		case 6:
+		{
+			const int32 Index = Net->GetMail().IndexOfByPredicate([this](const FMRNetMail& M) { return M.Subject == SocialText; });
+			if (Index != INDEX_NONE)
+			{
+				if (bRender && !UI->IsWindowOpen(EMRWindow::Mail))
+				{
+					UI->SetWindowOpen(EMRWindow::Mail, true);
+					SocialAt = Now;
+					break;
+				}
+				if (Picture(1, TEXT("mail")))
+				{
+					break;
+				}
+				const FMRNetMail& M = Net->GetMail()[Index];
+				Pass(FString::Printf(TEXT("mailed ourselves (BP_REQ_LOOKUP_NAMES, BP_SEND_MAIL) and got it (BP_MAIL, kept, BP_DELETE_MAIL): \"%s\" from %s, %d lines"),
+					*M.Subject, *M.From, M.Body.Len() ? 1 + M.Body.Replace(TEXT("\r"), TEXT("")).Len() - M.Body.Replace(TEXT("\n"), TEXT("")).Len() : 0));
+				Net->DeleteMail(Index);
+				UI->SetWindowOpen(EMRWindow::Mail, false);
+				SocialStage = 7;
+				SocialAt = Now;
+			}
+			else if (Since > 10.0)
+			{
+				Net->RequestMail();  // (mail can take a moment to arrive)
+				SocialAt = Now;
+			}
+			break;
+		}
+		case 7:
+			Net->OnMailSent.RemoveAll(this);
+			Run(TEXT("/time"));
+			SocialStage = 8;
+			SocialAt = Now;
+			break;
+		case 8:
+			if (!Heard(TEXT("The time in Meridian is")) && Since > 5.0)
+			{
+				Run(TEXT("/time"));  // (asked again: a request while the server saves is dropped)
+				SocialAt = Now;
+			}
+			else if (Heard(TEXT("The time in Meridian is")))
+			{
+				const FMRChatLine* L = Net->GetChat().FindByPredicate([](const FMRChatLine& C) { return C.Text.Contains(TEXT("The time in Meridian is")); });
+				Pass(FString::Printf(TEXT("typed /time (UC_REQ_TIME): \"%s\""), L ? *L->Text : TEXT("")));
+				SocialStage = 9;
+				SocialAt = Now;
+			}
+			break;
+		case 9:
+			// the server-kept options: "spellpower on" sets CF_SPELLPOWER (UC_SEND_PREFERENCES); asked again, the server agrees
+			if (Net->HasPreferences())
+			{
+				PrefsBefore = Net->GetPreferences();
+				Run((PrefsBefore & MRMsg::CF_SPELLPOWER) ? TEXT("/spellpower off") : TEXT("/spellpower on"));
+				Net->RequestPreferences();
+				SocialStage = 10;
+				SocialAt = Now;
+			}
+			break;
+		case 10:
+			if (Since > 1.5 && Net->HasPreferences())
+			{
+				const bool bFlipped = (Net->GetPreferences() ^ PrefsBefore) == MRMsg::CF_SPELLPOWER;
+				if (bFlipped)
+				{
+					Pass(FString::Printf(TEXT("the server's options (UC_RECEIVE_PREFERENCES %x): typed /spellpower and it kept %x"), PrefsBefore, Net->GetPreferences()));
+				}
+				else
+				{
+					Fail(FString::Printf(TEXT("social: options %x, then %x after /spellpower"), PrefsBefore, Net->GetPreferences()));
+				}
+				Net->SetPreferences(PrefsBefore);
+				Run(TEXT("/guild"));
+				SocialStage = 11;
+				SocialAt = Now;
+			}
+			break;
+		case 11:
+			if (Heard(TEXT("You do not belong to a guild")) || W.Guild.bValid)
+			{
+				if (bRender && !W.Guild.bValid && SocialShot == 2)
+				{
+					// the window with a guild to show (the test character has none)
+					FMRNetGuild G;
+					G.bValid = true;
+					G.Name = TEXT("The Unreal Guild");
+					G.Flags = MRMsg::GC_INVITE | MRMsg::GC_EXILE | MRMsg::GC_SET_RANK | MRMsg::GC_RENOUNCE;
+					const TCHAR* Ranks[5] = {TEXT("Initiate"), TEXT("Member"), TEXT("Veteran"), TEXT("Lieutenant"), TEXT("Guildmaster")};
+					for (int32 i = 0; i < 5; ++i)
+					{
+						G.MaleRanks[i] = G.FemaleRanks[i] = Ranks[i];
+					}
+					G.Members = {{1, Me, 5, 1}, {2, TEXT("Ann"), 3, 2}, {3, TEXT("Bob"), 1, 1}};
+					Net->DebugSetGuild(G, FMRNetGuildList());
+					UI->SetWindowOpen(EMRWindow::Guild, true);
+					SocialAt = Now;
+					break;
+				}
+				if (Picture(2, TEXT("guild")))
+				{
+					break;
+				}
+				if (bRender)
+				{
+					Net->DebugSetGuild(FMRNetGuild(), FMRNetGuildList());
+				}
+				UI->SetWindowOpen(EMRWindow::Guild, false);
+				Pass(W.Guild.bValid ? FString::Printf(TEXT("typed /guild: %s"), *W.Guild.Name) : FString(TEXT("typed /guild (UC_REQ_GUILDINFO): \"You do not belong to a guild.\"")));
+				Run(TEXT("/wave"));
+				SocialStage = 12;
+				SocialAt = Now;
+			}
+			break;
+		case 12:
+			if (Heard(TEXT("You wave your hand")))
+			{
+				Pass(TEXT("typed /wave (BP_ACTION UA_WAVE): \"You wave your hand.\""));
+				if (bRender)
+				{
+					UI->SetWindowOpen(EMRWindow::Who, true);
+				}
+				SocialStage = 13;
+				SocialAt = Now;
+			}
+			break;
+		default:
+			if (Picture(3, TEXT("who")))
+			{
+				break;
+			}
+			UI->SetWindowOpen(EMRWindow::Who, false);
+			Advance(EStep::Items);
+			break;
 		}
 		break;
 	}

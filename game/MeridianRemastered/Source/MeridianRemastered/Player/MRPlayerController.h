@@ -4,6 +4,8 @@
 #include "GameFramework/PlayerController.h"
 #include "MRPlayerController.generated.h"
 
+enum class EMRWindow : uint8;
+
 class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
@@ -49,6 +51,8 @@ private:
 	void OnHotbarScroll(const FInputActionValue& Value);
 	void OnSpellKey(int32 Index);
 	void OnInventoryKey();
+	/** O: who is on; L: mail; Y: the guild (online). */
+	void OnWindowKey(EMRWindow Window);
 	void OnChatKey();
 	/** Esc or F10: the Escape menu (in PIE, Esc stops play: use F10 there). */
 	void OnMenuKey();
@@ -76,6 +80,9 @@ private:
 	UPROPERTY(Transient) TArray<TObjectPtr<UInputAction>> SpellActions;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> HotbarScrollAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> InventoryAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> WhoAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> MailAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> GuildAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> ChatAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> MapZoomAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> MenuAction;

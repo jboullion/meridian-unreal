@@ -24,6 +24,8 @@
 #include "EngineUtils.h"
 #include "Monsters/MRMonster.h"
 #include "Net/MRNetWorldSubsystem.h"
+#include "Net/MRNetSubsystem.h"
+#include "Net/MRProtocol.h"
 #include "Zones/MRZoneSubsystem.h"
 #include "HAL/FileManager.h"
 #include "HighResScreenshot.h"
@@ -824,6 +826,19 @@ void AMRCharacter::SetViewEffects(const FVector& EyeOffset, float Roll, float Bl
 
 void AMRCharacter::OnEmote(FName Action)
 {
+	// online: ask the server (BP_ACTION), which shows it to everyone, us included (a BP_CHANGE)
+	const UMRNetWorldSubsystem* NetWorld = GetWorld() ? GetWorld()->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
+	const UGameInstance* GI = GetGameInstance();
+	UMRNetSubsystem* Net = GI ? GI->GetSubsystem<UMRNetSubsystem>() : nullptr;
+	if (NetWorld && NetWorld->IsActive() && Net)
+	{
+		const uint8 UA = Action == TEXT("wave") ? MRMsg::UA_WAVE : Action == TEXT("point") ? MRMsg::UA_POINT : Action == TEXT("dance") ? MRMsg::UA_DANCE : 0;
+		if (UA)
+		{
+			Net->DoAction(UA);
+		}
+		return;
+	}
 	const FName Current = SpriteBody ? SpriteBody->GetAction() : SpriteAction.Action;
 	PlaySpriteAction(Current == Action ? NAME_None : Action);  // the same key again stops (the dance)
 }

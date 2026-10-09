@@ -336,6 +336,70 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
 - **The bank:** `BP_USERCOMMAND` with `UC_DEPOSIT` (35) or `UC_WITHDRAW` (36) and an `i32` amount, or `UC_BALANCE` (37). The room passes it to a banker there (`SomeoneTryUserCommand`), who answers aloud ("You have 10 shilling in your account."); else "can't deposit".
 - **Moving onto a door square:** a door square's middle is often in the door frame, outside every sector. The server snaps such a move back (`UserMove`, `LIR_SECTOR_INSIDE`), and "go" then finds no door. Stand on the room side of the square.
 
+## Chat and social (`module/merintr`: `merintr.c`, `command.c`, `groups.c`, `alias.c`; `clientd3d/msgfiltr.c`, `say.c`, `srvrstr.c`; `module/mailnews`; Kod `user.kod`)
+- **Speaking:** `BP_SAY_TO` (110): `u8` kind, then the text.
+  - **The kinds:** `SAY_NORMAL` 1, `SAY_YELL` 2, `SAY_EVERYONE` 3 (a broadcast), `SAY_EMOTE` 6, `SAY_GUILD` 10.
+  - **Broadcasts** go only when Kod's `TryBroadcast` allows.
+  - **A tell** is `BP_SAY_GROUP` (111): `u16` count, the players' `u32` ids, the text (`protocol.c PARAM_ID_LIST`).
+  - **The sender sees it too:** "You tell X, "...""; the receiver sees "X tells you, "..."" as `SAY_GROUP` (4).
+- **What may be said** (`say.c FilterSayMessage`): no control characters, at most 10 spaces or codes in a row, 4 codes in a row and 20 in all. A space right after too many codes goes too.
+- **Hearing:** `BP_SAID`: `u32` sender, `u32` sender's name resource, `u8` kind, a server message. `SAY_RESOURCE` (5) is an NPC's or an object's.
+  - **Ignoring** (`msgfiltr.c MessageSaid`): a player's words are dropped when they're ignored by name, or everyone is, or (for broadcasts) broadcasts are off.
+  - **A tell so dropped is reported back:** `BP_SAY_BLOCKED` (55), `u32` sender.
+  - **A tell received** plays `imp.ogg`.
+  - The ignore list is the client's (`config.ini`); ours is `Saved/MRNet/<server>/social/<name>.json`.
+- **Style codes** (`srvrstr.c DisplayMessage`): "~" or "`" and a letter.
+  - **Colours:** `r` (128, 0, 0), `f` (200, 0, 0), `g` (0, 100, 0), `l` (0, 255, 0), `b` (0, 0, 255), `k` black, `w` white, `y` (230, 230, 25), `p` (255, 105, 210), `o` (255, 150, 0), `a` (127, 255, 212), `c` (46, 234, 250), `q` (143, 38, 170), `t` (11, 59, 112), `s` (60, 60, 60), `v` (128, 0, 128), `m` (205, 0, 205).
+  - `B`, `I` and `U` toggle bold, italic and underline; `n` goes back to the line's own colour and style.
+  - Any other letter after "~" is shown as typed.
+  - **Timestamps** ("[HH:MM] ") were a client option, in the system colour.
+- **Typed commands** (`merintr.c commands`, `command.c`): the original made every line a command and needed "say" to speak.
+  - **A name's start will do;** the first in its list wins ("s" is say, "b" broadcast).
+  - **Two-word commands** ("safety on") set the server-kept options.
+  - **Tell's name:** a logged-on player by whole name, then a tell group by whole name, then the only player whose name starts so, then a group by its start (`CommandTell`).
+  - **Tell groups** (`groups.c`): up to 30 groups of 100 names, names up to 10 characters; kept by the client.
+  - **Command aliases** (`alias.c`): "~~" takes the rest of the line.
+- **Gestures and moods:** `BP_ACTION` (90): `u8` action, one per second (Kod counts it as an attack, `IsOkayAttackTime`).
+  - **The actions:** `UA_NORMAL` 1, `UA_HAPPY` 2, `UA_SAD` 3, `UA_WRY` 4, `UA_WAVE` 8, `UA_POINT` 9, `UA_DANCE` 10.
+  - **Wave, point and dance:** the server says so ("You wave your hand.") and shows a one-off animation to everyone, us included (`player.kod DoWave`: `BP_CHANGE` with `ANIMATE_ONCE`).
+  - **A mood** changes the face (`SomethingDidAction`, a `BP_CHANGE`).
+- **User commands** (`BP_USERCOMMAND`; blakserv `sprocket.c` lists each one's parameters):
+  - `UC_REQ_PREFERENCES` (7) is answered by `UC_RECEIVE_PREFERENCES` (34, `u32`); `UC_SEND_PREFERENCES` (9, `u32`) sets them.
+  - **The flags (`CF_*`):** `SAFETY_OFF` 1, `TEMPSAFE` 2, `GROUPING` 4, `AUTOLOOT` 8, `AUTOCOMBINE` 16, `BAGS` 32, `SPELLPOWER` 64. The server says what changed ("You will now see the power at which your spells are cast.").
+  - **Ask after the room has come:** a request sent while the client waits for the room (after `BP_PLAYER`) isn't sent at all.
+  - `UC_REQ_TIME` (60) is answered "The time in Meridian is 7:00. It is the 23rd day of the year 0."
+  - `UC_APPEAL` (40) takes a string for the guides.
+- **Kod's times** (mail, news) are Unix seconds less 1,760,000,000 (`ccode.c C_GetTime`, "Offset to Oct 2025"); the original client's date code assumes older offsets.
+- **Mail** (`module/mailnews`; Kod `user.kod UserGetNewMail`, `UserSendMail`). The client keeps the mail: the server holds only what's new.
+  - **Fetching:** `BP_REQ_GET_MAIL` (81) is answered by one `BP_MAIL` (80) per new message.
+    - **Each message:** `u32` index, the sender, `u32` time, `u16` recipients and their names, then a server message: `user_show_mail` "%q" with the text.
+    - **The text** starts "Subject: ...\n" (the German client's "Betreff: ").
+    - **The end:** a `BP_MAIL` with no recipients. Its packet is two bytes longer than the original reads.
+    - **Once kept,** the client sends `BP_DELETE_MAIL` (83, `u32` index).
+  - **Sending:** `BP_REQ_LOOKUP_NAMES` (88, `u16` count, the names joined by commas) is answered by `BP_LOOKUP_NAMES` (190): `u16` count and an id each, 0 for an unknown name.
+    - Then `BP_SEND_MAIL` (82): `u16` count, the ids, the text ("Subject: ...\n" and the body).
+    - **Limits:** at most 20 recipients, a subject of 50 characters.
+    - **The arrival:** the server says "Sending mail." and the receiver gets "You have new mail from X."
+  - **The guardian angel** mails a player who logs off in an unsafe place ("Logging off in an unsafe area").
+- **News boards** (`newslink.kod`, `user.kod SendLookNews`):
+  - **Opening:** looking at a board (`BP_REQ_LOOK`) is answered by `BP_LOOK_NEWSGROUP` (180) instead of a description: `u16` group, `u8` permission (`NEWS_READ` 1, `NEWS_POST` 2), the board (an object), its description (a server message).
+    - **Line of sight:** a board out of sight answers "You cannot see the newsglobe from here."
+  - **The headings:** `BP_REQ_ARTICLES` (85, `u16` group) is answered by `BP_ARTICLES` (181), in parts: `u16` group, `u8` part, `u8` parts, `u16` count, each `u32` number, `u32` time, poster, title.
+  - **An article:** `BP_REQ_ARTICLE` (86, `u16` group, `u32` number) is answered by `BP_ARTICLE` (182): the text.
+  - **Writing:** `BP_POST_ARTICLE` (87): group, title, body. `BP_DELETE_NEWS` (84): group, number.
+  - **Raza's Inn has "Designers' News"** (`NID_ANNOUNCEMENTS`), read only for players and empty on our server.
+- **Guilds** (`merintr guild*.c`; Kod `user.kod UserGuild*`; the server checks every right):
+  - **The guild:** `UC_REQ_GUILDINFO` (10) is answered by `UC_GUILDINFO` (11): name, `u8` has password [password], `u32` flags, `u32` guild, five (male, female) rank names from the lowest, `u32` current vote, `u16` members (`u32` id, name, `u8` rank 1–5, `u8` gender 1 male 2 female).
+    - **Without a guild,** a message: "You do not belong to a guild."
+    - **The flags (`GC_*`) say what we may do:** `INVITE` 1, `EXILE` 2, `RENOUNCE` 4, `VOTE` 0x20, `ABDICATE` 0x40, `MAKE_ALLIANCE` 0x100, `END_ALLIANCE` 0x200, `DECLARE_ENEMY` 0x400, `END_ENEMY` 0x800, `SET_RANK` 0x1000, `DISBAND` 0x2000, `ABANDON` 0x4000.
+  - **Acting on a player** (a `u32` id each): `UC_INVITE` 12, `UC_EXILE` 13, `UC_ABDICATE` 15, `UC_VOTE` 16; `UC_SET_RANK` 17 adds a `u8` rank. `UC_RENOUNCE` 14 and `UC_DISBAND` 20 take nothing.
+  - **Other guilds:** `UC_REQ_GUILD_LIST` (21) is answered by `UC_GUILD_LIST` (22): `u16` guilds (`u32` id, name), then four id lists: our allies, our enemies, the guilds that call us ally, and those that call us enemy.
+    - Only for a guild's members.
+    - `UC_MAKE_ALLIANCE` 23, `UC_END_ALLIANCE` 24, `UC_MAKE_ENEMY` 25, `UC_END_ENEMY` 26 (a guild's id).
+  - **Founding:** a guild creator (Barloque's `gcreator.kod`) sends `UC_GUILD_ASK` (18: `i32` cost, `i32` cost of a secret guild).
+    - The client answers `UC_GUILD_CREATE` (19): the name, ten rank names (each rank's male then female, lowest first), `u8` secret.
+  - **Halls and shields:** `UC_GUILD_HALLS` 27, `UC_GUILD_RENT` 29, `UC_ABANDON_GUILD_HALL` 28, `UC_GUILD_SET_PASSWORD` 30; `UC_GUILD_SHIELD` 31, `UC_GUILD_SHIELDS` 32, `UC_CLAIM_SHIELD` 33.
+
 ## Sound, light and room changes (`clientd3d/server.c`, `roomanim.c`, `draw3d.c`, `bspload.c`, `game.c`, `audio.c`; Kod `user.kod`, `room.kod`)
 - **Sounds:** `BP_PLAY_WAVE` (`server.c HandlePlayWave`): `u32` rsc, `u32` object, `u8` flags, `i32` row, `i32` col, `i32` radius, `i32` max volume.
   - **Where it plays** (`game.c GamePlaySound`): at the object if it's in the room, else at the square (1-based; 0, 0 means none), else 2D. The original ignores the radius and volume.

@@ -111,6 +111,8 @@ public:
 	void SetText(const FString& InText);
 	/** Give it the keyboard. */
 	void Focus();
+	/** The cursor after the text, nothing selected (typing goes on from there). */
+	void MoveToEnd();
 	bool HasFocus() const;
 
 private:
@@ -216,6 +218,10 @@ public:
 	void SetStatChangeOpen(bool bOpen);
 	TSharedPtr<class SMRTradeDialog> GetTradeDialog() const { return TradeDialog; }
 	void SetTradeOpen(bool bOpen);
+	/** The windows for the others (SMRSocial.h): who, mail, news, guild, by EMRWindow. */
+	TSharedPtr<class SMRSocialWindow> GetWindow(int32 Index) const { return Windows.IsValidIndex(Index) ? Windows[Index] : nullptr; }
+	void SetWindowOpen(int32 Index, bool bOpen);
+	TSharedPtr<class SMRChatLog> GetChatLog() const { return ChatLog; }
 
 private:
 	TWeakObjectPtr<UMRUISubsystem> UI;
@@ -224,6 +230,7 @@ private:
 	TSharedPtr<SMRLookDialog> LookDialog;
 	TSharedPtr<class SMRStatChange> StatChange;
 	TSharedPtr<class SMRTradeDialog> TradeDialog;
+	TArray<TSharedPtr<class SMRSocialWindow>> Windows;
 	TSharedPtr<SMRChatLog> ChatLog;
 	TSharedPtr<SWidget> SpellBar;
 	TSharedPtr<SWidget> HotbarArea;

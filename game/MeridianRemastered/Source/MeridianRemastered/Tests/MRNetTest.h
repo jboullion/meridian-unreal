@@ -68,7 +68,7 @@ public:
 	void Start(APlayerController* InController);
 
 private:
-	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Items, Spells, Trade, Combat, Travel, Death, Relog, Logoff, Done };
+	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Social, Items, Spells, Trade, Combat, Travel, Death, Relog, Logoff, Done };
 
 	void Tick();
 	void Pass(const FString& What);
@@ -177,4 +177,12 @@ private:
 	double DeathStart = 0.0;
 	/** When each mummy was last struck: each only now and then, so they gang up rather than die. */
 	TMap<uint32, double> Struck;
+	/** Social: the stage, its start, the marker said, the mail's answer, the options before, the window pictures. */
+	int32 SocialStage = 0;
+	double SocialAt = 0.0;
+	FString SocialText;
+	int32 MailResult = -1;  // -1 waiting, 0 refused, 1 sent
+	FString MailWhy;
+	uint32 PrefsBefore = 0;
+	int32 SocialShot = 0;
 };

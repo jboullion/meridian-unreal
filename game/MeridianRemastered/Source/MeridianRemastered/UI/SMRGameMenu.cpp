@@ -60,6 +60,18 @@ void SMRGameMenu::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 				]
 				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 				[
+					Button(LOCTEXT("Who", "Who Is On (O)"), [Weak]() { if (Weak.IsValid()) Weak->SetWindowOpen(EMRWindow::Who, true); })
+				]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+				[
+					Button(LOCTEXT("Mail", "Mail (L)"), [Weak]() { if (Weak.IsValid()) Weak->SetWindowOpen(EMRWindow::Mail, true); })
+				]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+				[
+					Button(LOCTEXT("Guild", "Guild (Y)"), [Weak]() { if (Weak.IsValid()) Weak->RunChatLine(TEXT("/guild")); })
+				]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+				[
 					Options
 				]
 				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
