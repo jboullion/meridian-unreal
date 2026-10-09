@@ -18,7 +18,9 @@
  * - speed: a quarter square per 85 ms walking, twice that running (6.47 / 12.94 m/s at 2.2 m a
  *   square), times mr.Move.SpeedScale; full speed at once, and full steering while falling;
  * - falling: gravity 5 squares/s/s (11 m/s/s), starting at 2/3 square/s (1.47 m/s) down;
- * - steps up to 24 Kod units (0.825 m), also while falling (HandleImpact).
+ * - steps up to 24 Kod units (0.825 m), also while falling (HandleImpact), when the step climbs onto a floor;
+ * - off a ledge: a flat base keeps its height, and the fall starts 19 cm past the edge (the original's
+ *   53 cm reach less our 34 cm radius), so its jumps go as far: about 4.1 m running, 2.3 m walking.
  */
 UCLASS()
 class MERIDIANREMASTERED_API UMRCharacterMovementComponent : public UCharacterMovementComponent

@@ -1,4 +1,5 @@
 #include "Tests/MRMoveTest.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 #include "Character/MRCharacterMovementComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -149,6 +150,8 @@ void UMRMoveTest::Begin(int32 NewIndex)
 	StepTime = 0.0;
 	SampleStart = -1.0;
 	MeasuredSpeed = 0.0;
+	Flight.Reset();
+	bWasFalling = false;
 	bRunning = true;
 }
 
@@ -174,7 +177,24 @@ void UMRMoveTest::Tick(float DeltaTime)
 		SampleStart = StepTime;
 		SampleFrom = Pawn->GetActorLocation();
 	}
-	if (StepTime >= S.Seconds + 0.3)
+	// judged once it's on the ground again (a slow frame used to catch a jump mid-air), within 2 s more
+	const UCharacterMovementComponent* Move = Pawn->FindComponentByClass<UCharacterMovementComponent>();
+	const bool bInAir = Move && Move->IsFalling();
+	if (StepTime > 0.3 && bInAir != bWasFalling && Flight.Len() < 200)
+	{
+		const FVector P = Pawn->GetActorLocation();
+		if (bInAir)
+		{
+			TakeOffX = P.X - Rig.X;
+		}
+		else
+		{
+			Flight += FString::Printf(TEXT("%sfell from %.0f to %.0f cm past the ledge, down to feet %.0f"), Flight.IsEmpty() ? TEXT("") : TEXT("; "),
+				TakeOffX, P.X - Rig.X, FeetZ());
+		}
+		bWasFalling = bInAir;
+	}
+	if (StepTime >= S.Seconds + 0.3 && (!bInAir || StepTime >= S.Seconds + 2.3))
 	{
 		if (SampleStart >= 0.0)
 		{
@@ -192,6 +212,10 @@ void UMRMoveTest::Finish()
 	const bool bPass = S.Check(Detail);
 	Passed += bPass ? 1 : 0;
 	UE_LOG(LogMeridian, Display, TEXT("MRMoveTest: %s  %s  (%s)"), bPass ? TEXT("PASS") : TEXT("FAIL"), *S.Label, *Detail);
+	if (!Flight.IsEmpty())
+	{
+		UE_LOG(LogMeridian, Display, TEXT("MRMoveTest:     %s"), *Flight);
+	}
 	if (UMRCharacterMovementComponent* Move = Controller->GetPawn()->FindComponentByClass<UMRCharacterMovementComponent>())
 	{
 		Move->SetWantsToWalk(false);

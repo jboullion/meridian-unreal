@@ -68,7 +68,7 @@ public:
 	void Start(APlayerController* InController);
 
 private:
-	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Social, Settings, Items, Spells, Trade, Combat, Travel, Death, Relog, Delete, Logoff, Done };
+	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Social, Settings, Pair, Items, Spells, Trade, Combat, Travel, Death, Relog, Delete, Logoff, Done };
 
 	void Tick();
 	void Pass(const FString& What);
@@ -193,4 +193,11 @@ private:
 	int32 WavesBefore = 0;
 	FString HotbarKey;
 	FString MapNote;
+	/** Pair (-MRNetPal=<name>): the second player's name and id, the stage and what was asked of it. */
+	FString PalName;
+	uint32 PalId = 0;
+	int32 PairStage = 0;
+	FString PairText;
+	uint32 CoinsBeforeTrade = 0;
+	bool bPalAnimated = false;
 };

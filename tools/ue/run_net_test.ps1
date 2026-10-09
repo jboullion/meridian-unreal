@@ -4,7 +4,7 @@
 # hears it back, takes an exit into another zone, fetches the room through the asset cache, finds
 # itself in the players list, resynchronises, looks, uses and drops items, casts spells and rests, trades in Raza, fights in the Outskirts,
 # travels into a room built at runtime, logs off to the character list and enters again, and logs off
-# (DONE 58/58; 60/60 with -Create, 62/62 with -Create -Death). AGENTS.md "Testing and verification" lists every check.
+# (DONE 58/58; 60/60 with -Create, 65/65 with -Pair, 62/62 with -Create -Death). AGENTS.md "Testing and verification" lists every check.
 #
 # Needs the server running. For the local Shards stack, in E:\2026_Experiments\meridian-browser:
 #   npm run dev      (blakserv, the gateway on ws://localhost:8059, the game files on http://localhost:5173)
@@ -15,6 +15,8 @@
 #                                                               # screenshots (Saved/Screenshots/MRNet/)
 #   powershell -File tools/ue/run_net_test.ps1 -Create          # a fresh account: makes a character through
 #                                                               # the creator's path and checks its face
+#   powershell -File tools/ue/run_net_test.ps1 -Pair            # with a second player (tools/ue/second_player.ts):
+#                                                               # tells, ignoring, broadcasts, its wave, a trade
 #   powershell -File tools/ue/run_net_test.ps1 -Create -Death   # also dies (the Forest of Farol's spiders), checks
 #                                                               # the Underworld and walks back to Raza
 #
@@ -26,6 +28,8 @@ param(
     [switch]$Render,
     [switch]$Create,
     [switch]$Death,
+    # a second player (tools/ue/second_player.ts, a scripted Shards client as uenetpal) for the Pair step
+    [switch]$Pair,
     [string]$User = "uenettest",
     [string]$Pass = "uenettest-local",
     [int]$TimeoutSeconds = 240
@@ -56,6 +60,13 @@ if ($Server -eq "Local") {
 
 $common = "-MRNetTest -MRServer=$Server -MRNetUser=$User -MRNetPass=$Pass -MRNetHold=$Hold -abslog=`"$log`""
 if ($Death) { $common += " -MRNetDeath" }
+$pal = $null
+if ($Pair) {
+    $palLog = Join-Path $logs "pal-$stamp.log"
+    $pal = Start-Process -FilePath "node" -PassThru -WindowStyle Hidden -RedirectStandardOutput $palLog -RedirectStandardError "$palLog.err" `
+        -ArgumentList "`"$(Join-Path $repo 'tools\ue\second_player.ts')`" --stay $TimeoutSeconds"
+    $common += " -MRNetPal=Unrealpal"
+}
 if ($Render) {
     $exe = Join-Path (Split-Path -Parent $Engine) "UnrealEditor.exe"
     $game = Start-Process -FilePath $exe -PassThru -ArgumentList `
@@ -72,6 +83,7 @@ while ((Get-Date) -lt $deadline -and -not $game.HasExited) {
 }
 Start-Sleep -Seconds 3
 Stop-Process -Id $game.Id -Force -ErrorAction SilentlyContinue
+if ($pal) { Stop-Process -Id $pal.Id -Force -ErrorAction SilentlyContinue }
 
 if (Test-Path $log) {
     Select-String -Path $log -Pattern "LogMeridian.*(MRNetTest|MRNet:)" | ForEach-Object { $_.Line -replace '^\[[^\]]*\]\[[^\]]*\]', '' }

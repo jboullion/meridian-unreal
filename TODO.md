@@ -2,8 +2,19 @@
 
 ## Current TODOs
 
+- Update our project to be called "Unreal Meridian" or "Meridian Unreal", not sure which one sounds better.
+  - This includes updating our gateway origin for our server from app://meridian-remastered to app://meridian-unreal
+
+## Loading Screens
+
+  - We might want to put the Near Death Studios logo on the login screen to give credit where it is due.
+    - Or use the NDS splash screen when we load the game before the login screen. Or at least the very first time they open the application so they can always get to the login screen quickly afterwards.
+    - Perhaps also once every version update first open?
+  - 
+
 ### UI
 
+- About Meridian had a cut off NDS image. Investigate if this is still the case
 
 ### Props
 
@@ -16,34 +27,29 @@
 
 ### Server
 
+- What would it take to add new features to the game? Investigate the adding of new features / removal of old ones.
+  - If it is a simple process I might want to maintain my own server if possible with custom updates? 
+  - It is nice to have the benefit of the other users on server 104. Especially since there will likely be a 104 longer than I will be playing.
+  - Perhaps we can set up the Server-104 repo, create feature branches (which have sub branches) and then PR those feature branches?
+  - Thoes branches could then also coincide with releases of all four clients? Original, Ogre, Election, and Unreal?
+    - How much actually has to be done on the client side?
 
 
 
 ### Character
 
-- Creator Notes
-  - Dialog
-    - In stats, spells, and skills let's increase the remaining points bar to match the height of the green statistics bars
-    - Let's update the font size of all the information text by about 30% so they are easier to read
-  - Name
-    - 
-  - Appearance
-    - Let's keep the body turn code for the inventory (great idea), but let's remove it for the creator for now.
-    - Let's use the extra space to make the face window larger. Can we also add a "turn" / "Rotate" function on just the head area so the user can see all sides of the head.
-    - Let's change the skin from a gold bar to more of a slider mechanic with a gold line and four tick marks
-  - Statistics
-    - Let's add 10px spacing between the suggestions and the stat points left bar
-  - Spells
-    - Let's move the "Shal'lle and qor..." text to be left aligned / located under the available spells window.
-    - Let's move the points left down about 10 pixels to give it a little more space.
+- In first person the weapon and off hand should be just on either side of the central ui. Right now it feels too wide.
+  - We will likely also want to increase the size of the hands by like 50%.
 
+
+- Color Grading
+  - The sprites for the characters and the monsters appear a little too bright for me. Would it be possible to directly affect the sprites so they aren't quite so bright. Potentially also tweak the contrast / color grading of the sprites to really make them "pop".
 
 
 ### Animations
 
-- The mummy (the only monster I have seen) seems to bounce back and forth a bit as their walk animation plays. I think perhaps there is an offset between sheets with the sprites being different sizes making its flipbook cause this strnage jitter effect.
 
 ## Admins and Guides
 
-- We will need to have some accounts be able to be "mods" or "guides" who have access to the various god powers and skills for admin purposes.
-  - These users should also be able to teleport to players. Start events. etc.
+- admin console
+

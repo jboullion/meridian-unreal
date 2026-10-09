@@ -2,7 +2,7 @@
 
 These are our own notes on the original room files, written from reading `ReferenceServers/Server-104/clientd3d/bspload.c` (`LoadRoomFile`, `LoadNodes`, `LoadWalls`, `LoadSidedefs`, `LoadSectors`, `LoadSlopeInfo`, `LoadThings`) and `clientd3d/bsp.h`. The C++ reader is `World/MRRooFile` ([ADR 0012](../adr/0012-client-parity-and-world-coverage.md)); `tools/roo2gltf` reads the same files in Python.
 
-Never copy or translate code from Server-104 or Meridian Shards (both GPL). Write the facts here and implement from this page.
+Never copy or translate code from Server-104, or Meridian Shards' `roo.ts` (a port of `bspload.c`): both are the Meridian 59 authors' GPL code, which our Unreal Engine linking exception can't cover. Write the facts here and implement from this page.
 
 ## Units
 - Positions are **ROO units**: 1024 per grid square. X grows east, Y grows south.

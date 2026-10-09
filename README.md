@@ -20,7 +20,7 @@ What works now:
 
 What's next: combat, inventory, spells and skills from the server, the full character creator, player looks, and the rest of the world.
 
-Once the remaster is in a working state, we'll open-source as much of it as we're allowed.
+The code is open source under the GPLv2 (see [License](#license)).
 
 ## Ground rules
 
@@ -85,6 +85,12 @@ More detail on building, testing and the tools is in [AGENTS.md](AGENTS.md).
 - [Time, weather and atmosphere](docs/adr/0005-time-weather-and-atmosphere.md)
 - [Audio](docs/adr/0006-audio.md)
 - [Characters](docs/adr/0008-sprite-characters.md): players and monsters drawn as sprites, like the original
+
+## License
+
+The code is GPLv2 ([LICENSE](LICENSE)), like the Meridian 59 source, with an exception that lets it be combined and shipped with Unreal Engine ([LICENSE-EXCEPTION.md](LICENSE-EXCEPTION.md)). The exception only covers our own code, so please don't contribute code copied or ported from the Meridian 59 source or from other GPL projects. Describe what it does and write it fresh instead.
+
+The original game's art, music and rooms aren't covered by either and aren't in this repo.
 
 ## Thanks
 

@@ -65,4 +65,8 @@ private:
 	FVector SampleFrom = FVector::ZeroVector;
 	double SampleStart = -1.0;
 	double MeasuredSpeed = 0.0;
+	/** The step's first fall: where it left the ground and where it was next on the ground (cm past the rig; feet, cm). */
+	FString Flight;
+	double TakeOffX = 0.0;
+	bool bWasFalling = false;
 };

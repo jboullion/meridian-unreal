@@ -77,6 +77,7 @@ void UMRNetTest::Start(APlayerController* InController)
 	FParse::Value(FCommandLine::Get(), TEXT("MRNetPass="), Pass);
 	FParse::Value(FCommandLine::Get(), TEXT("MRNetHold="), HoldSeconds);
 	TestPassword = Pass;
+	FParse::Value(FCommandLine::Get(), TEXT("MRNetPal="), PalName);
 	bDeath = FParse::Param(FCommandLine::Get(), TEXT("MRNetDeath"));
 	int32 Server = INDEX_NONE;
 	for (int32 i = 0; Net && i < Net->GetServers().Num(); ++i)
@@ -1525,10 +1526,235 @@ void UMRNetTest::Tick()
 				Fail(TEXT("settings: nothing kept on the hotbar's last slot"));
 			}
 			Net->OnPasswordChanged.RemoveAll(this);
-			Advance(EStep::Items);
+			Advance(PalName.IsEmpty() ? EStep::Items : EStep::Pair);
 			break;
 		}
 		default:
+			break;
+		}
+		break;
+	}
+
+	case EStep::Pair:
+	{
+		// a second player (tools/ue/second_player.ts, run_net_test.ps1 -Pair): who's on, tells both ways,
+		// ignoring and a blocked tell, broadcasts and turning them off, its wave, and a trade between players.
+		// It obeys our tells that start "pal:".
+		UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+		const double Since = Now - SocialAt;
+		// a line the second player said (not our own echo of the order, "You tell Unrealpal, ...")
+		auto HeardFrom = [this, Net](const FString& Text, uint8 Kind)
+		{
+			return Net->GetChat().ContainsByPredicate([&](const FMRChatLine& L)
+			{
+				return L.Kind == Kind && L.Text.StartsWith(PalName) && L.Text.Contains(Text);
+			});
+		};
+		auto Order = [this, Net, UI](const FString& What)
+		{
+			// as typed: "tell <name> pal: ..."
+			if (UI)
+			{
+				UI->RunChatLine(FString::Printf(TEXT("tell %s pal: %s"), *PalName, *What));
+			}
+			else
+			{
+				Net->SayTo({PalId}, TEXT("pal: ") + What);
+			}
+		};
+		auto Coins = [Net]()
+		{
+			uint32 N = 0;
+			for (const FMRNetObject& O : Net->GetInventory())
+			{
+				N += O.Icon.Equals(TEXT("coin.bgf"), ESearchCase::IgnoreCase) ? O.Amount : 0;
+			}
+			return N;
+		};
+		if (bTimedOut)
+		{
+			Fail(FString::Printf(TEXT("pair: stuck at stage %d"), PairStage));
+			Advance(EStep::Items);
+			break;
+		}
+		switch (PairStage)
+		{
+		case 0:
+			for (const TPair<uint32, FMRNetUser>& U : Net->GetUsers())
+			{
+				if (U.Value.Name.Equals(PalName, ESearchCase::IgnoreCase))
+				{
+					PalId = U.Key;
+				}
+			}
+			if (PalId)
+			{
+				Pass(FString::Printf(TEXT("the players list has a second player: %s (%d on)"), *PalName, Net->GetUsers().Num()));
+				PairText = FString::Printf(TEXT("hello %d"), FMath::RandRange(100, 999));
+				Order(TEXT("tell ") + PairText);
+				PairStage = 1;
+				SocialAt = Now;
+			}
+			else if (Since > 20.0)
+			{
+				Fail(FString::Printf(TEXT("pair: %s never logged on"), *PalName));
+				Advance(EStep::Items);
+			}
+			break;
+		case 1:
+			if (HeardFrom(PairText, MRMsg::SAY_GROUP))
+			{
+				Pass(FString::Printf(TEXT("told %s and was told back (BP_SAY_GROUP): \"%s\""), *PalName, *PairText));
+				// ignored: its tell never shows, and the server hears it was blocked (BP_SAY_BLOCKED)
+				Net->SetIgnored(PalName, true);
+				PairText = FString::Printf(TEXT("secret %d"), FMath::RandRange(100, 999));
+				Order(TEXT("tell ") + PairText);
+				PairStage = 2;
+				SocialAt = Now;
+			}
+			else if (Since > 8.0)
+			{
+				Fail(FString::Printf(TEXT("pair: no tell came back from %s"), *PalName));
+				PairStage = 2;
+				SocialAt = Now;
+			}
+			break;
+		case 2:
+			if (Since > 4.0)
+			{
+				if (HeardFrom(PairText, MRMsg::SAY_GROUP))
+				{
+					Fail(TEXT("pair: an ignored player's tell showed"));
+				}
+				else
+				{
+					Pass(FString::Printf(TEXT("ignored %s: its tell \"%s\" didn't show (BP_SAY_BLOCKED went back)"), *PalName, *PairText));
+				}
+				Net->SetIgnored(PalName, false);
+				PairText = FString::Printf(TEXT("news %d"), FMath::RandRange(100, 999));
+				Order(TEXT("broadcast ") + PairText);
+				PairStage = 3;
+				SocialAt = Now;
+			}
+			break;
+		case 3:
+			if (HeardFrom(PairText, MRMsg::SAY_EVERYONE))
+			{
+				Pass(FString::Printf(TEXT("heard %s's broadcast (SAY_EVERYONE): \"%s\""), *PalName, *PairText));
+				Net->GetSocial().bNoBroadcast = true;
+				PairText = FString::Printf(TEXT("quiet %d"), FMath::RandRange(100, 999));
+				Order(TEXT("broadcast ") + PairText);
+				PairStage = 4;
+				SocialAt = Now;
+			}
+			else if (Since > 8.0)
+			{
+				Fail(FString::Printf(TEXT("pair: %s's broadcast didn't come"), *PalName));
+				PairStage = 5;
+				SocialAt = Now;
+			}
+			break;
+		case 4:
+			if (Since > 4.0)
+			{
+				if (HeardFrom(PairText, MRMsg::SAY_EVERYONE))
+				{
+					Fail(TEXT("pair: a broadcast showed with broadcasts off"));
+				}
+				else
+				{
+					Pass(TEXT("with broadcasts off, the next one didn't show"));
+				}
+				Net->GetSocial().bNoBroadcast = false;
+				Net->SaveSocial();
+				PairStage = 5;
+				SocialAt = Now;
+			}
+			break;
+		case 5:
+		{
+			// in the same room (the Inn): its wave on its sprite, and a trade
+			const FMRNetObject* Pal = Net->FindObject(PalId);
+			if (!Pal)
+			{
+				UE_LOG(LogMeridian, Display, TEXT("MRNetTest: %s isn't in %s: no wave or trade to try"), *PalName, *Net->GetPlayer().RoomName);
+				PairStage = 9;
+				break;
+			}
+			// its wave comes as a BP_CHANGE with a one-off animation on its arm (player.kod DoWave)
+			bPalAnimated = false;
+			Net->OnObjectChanged.AddWeakLambda(this, [this, Net](uint32 Id)
+			{
+				const FMRNetObject* O = Id == PalId ? Net->FindObject(Id) : nullptr;
+				if (O && (O->Animation.Type == MRMsg::ANIMATE_ONCE
+					|| O->OverlayParts.ContainsByPredicate([](const FMRNetOverlay& Ov) { return Ov.Animation.Type == MRMsg::ANIMATE_ONCE; })))
+				{
+					bPalAnimated = true;
+				}
+			});
+			Order(TEXT("wave"));
+			PairStage = 6;
+			SocialAt = Now;
+			break;
+		}
+		case 6:
+		{
+			const AMRNetObject* A = NetWorld->FindActor(PalId);
+			const FName Action = A && A->GetSpriteBody() ? A->GetSpriteBody()->GetAction() : NAME_None;
+			if (bPalAnimated)
+			{
+				Pass(FString::Printf(TEXT("%s waved (BP_ACTION; its BP_CHANGE brought a one-off animation%s)"), *PalName,
+					Action.IsNone() ? TEXT("") : *FString::Printf(TEXT(", its sprite plays %s"), *Action.ToString())));
+			}
+			else if (Since < 5.0)
+			{
+				break;
+			}
+			else
+			{
+				Fail(FString::Printf(TEXT("pair: no wave came from %s"), *PalName));
+			}
+			Net->OnObjectChanged.RemoveAll(this);
+			CoinsBeforeTrade = Coins();
+			Order(TEXT("offer"));
+			PairStage = 7;
+			SocialAt = Now;
+			break;
+		}
+		case 7:
+		{
+			// it offers us a shilling (BP_OFFER); we answer with nothing; it accepts
+			const FMRNetTrade& T = Net->GetTrade();
+			if (T.bOpen && !T.bOurs && T.WithId == PalId && !T.bCountered)
+			{
+				Net->Counteroffer({});
+				PairStage = 8;
+				SocialAt = Now;
+			}
+			else if (Since > 8.0)
+			{
+				Fail(FString::Printf(TEXT("pair: no offer came from %s"), *PalName));
+				PairStage = 9;
+			}
+			break;
+		}
+		case 8:
+			if (Coins() > CoinsBeforeTrade && !Net->GetTrade().bOpen)
+			{
+				Pass(FString::Printf(TEXT("traded with %s (BP_OFFER, BP_REQ_COUNTEROFFER, its accept): %u shillings, from %u"), *PalName,
+					Coins(), CoinsBeforeTrade));
+				PairStage = 9;
+			}
+			else if (Since > 8.0)
+			{
+				Fail(FString::Printf(TEXT("pair: the trade with %s didn't finish (open %d, shillings %u)"), *PalName, Net->GetTrade().bOpen, Coins()));
+				Net->CancelOffer();
+				PairStage = 9;
+			}
+			break;
+		default:
+			Order(TEXT("quit"));
+			Advance(EStep::Items);
 			break;
 		}
 		break;
@@ -2359,8 +2585,10 @@ void UMRNetTest::Tick()
 					PC->SetControlRotation(FRotator(FMath::Clamp((A->GetActorLocation() - Eye).Rotation().Pitch, -45.0, 0.0) + 8.0, Dir.Rotation().Yaw, 0.0));
 				}
 				NetWorld->SetTarget(FoeId);
-				// the attack key's choice (the target, in view); without a view (-nullrhi) straight to the server
-				if (NetWorld->Attack() == FoeId)
+				// the attack key's choice (the target, in view); without a view (-nullrhi) straight to the
+				// server: the key's sight check would fail and say "You can't see your selected target.", the
+				// server's own words, which turn the approach to another side
+				if (FApp::CanEverRender() && NetWorld->Attack() == FoeId)
 				{
 					++AimedAttacks;
 				}

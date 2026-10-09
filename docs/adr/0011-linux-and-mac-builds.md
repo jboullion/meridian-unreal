@@ -28,6 +28,12 @@ The Launcher's Linux component was installed and `tools/ue/package.ps1 -Platform
 - **Packaged builds need `Data/`.** The game reads JSON from `<project>/Data` (`UMRZoneSubsystem::GetDataDir`) and only falls back to the repo's `data/` in development; nothing created that folder, so a package had no zone data. `package.ps1` now mirrors `data/` (without `aigen/`) into `game/MeridianRemastered/Data/` (git-ignored) before packaging. `package_mac.sh` still needs the same step.
 - **Smoke test under WSL2 (Ubuntu, `-nullrhi -nosound -MROffline`):** the binary starts and stays up for 90 s with no crash or missing-library error. A Shipping build prints almost nothing, so this proves little beyond "it launches". It does not test rendering, zones or the network. A real test needs a Linux machine, and a Development build (`-Config Development`) if you want logs.
 
+## First Win64 package with the online client (2026-10-08, after M9)
+`tools/ue/package.ps1 -Platform Win64 -Config Development` built a package with everything since M1: `build/package/Win64/` (2.1 GB). The first run took about 15 minutes (the editor had already compiled most shaders), a rerun about 6.
+- **Folders loaded by path must be cooked by name.** The cook only follows references from the map, and the sprites, UI art, sounds, materials and rain kit are loaded by path at run time. `DefaultGame.ini` lists them in `DirectoriesToAlwaysCook` (`/Game/Generated/Runtime`, `Sprites`, `UI`, `Audio`, `Environment/Materials`, `Environment/Kit/SM_Precip`). The first package without them had no sprites, icons, minimap or runtime-room material.
+- **The packaged game passes the online test:** run with the same flags as `run_net_test.ps1` (`MeridianRemastered.exe /Game/Generated/Maps/L_World -MRNetTest -MRServer=Local ...`), it reports `DONE 58/58` headless (`-nullrhi`) and in a window (`build/package/pkg_nettest*.log`, pictures in `build/package/win64_package_shots.png`).
+- **From Git Bash, set `MSYS_NO_PATHCONV=1`.** Otherwise Bash turns `/Game/Generated/Maps/L_World` into `C:/Program Files/Git/Game/...` and the game starts on the wrong map.
+
 ## To do when a machine is available
 Linux (real machine, or a Steam Deck in desktop mode):
 1. Finish the Launcher step above, then run `tools/ue/package.ps1 -Platform Linux`.

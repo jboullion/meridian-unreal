@@ -106,7 +106,7 @@ Last survey: 2026-10-08. M0 to M9 done the same day; what they left over is in "
 |---|---|---|---|---|
 | Buy from an NPC | `BP_REQ_BUY`, `BP_BUY_LIST`, `BP_REQ_BUY_ITEMS` | Done: Look's Buy; a list with prices, amounts for number items, a total | Done | M6 |
 | Sell (offer) | `BP_REQ_OFFER`, `BP_OFFERED`, `BP_COUNTEROFFER`, ... | Done: Look's Sell; the NPC's price, Accept or Cancel | Done | M6 |
-| Trade with players | `BP_OFFER`, `BP_REQ_COUNTEROFFER`, `BP_COUNTEROFFERED` | Partial: Look's Offer; an offer to us shows with what to give back; not tried between two players yet | Partial | M6 |
+| Trade with players | `BP_OFFER`, `BP_REQ_COUNTEROFFER`, `BP_COUNTEROFFERED` | Done: Look's Offer; an offer to us shows with what to give back; tried with a second player (`run_net_test.ps1 -Pair`) | Partial | M6 |
 | Vault | `BP_REQ_WITHDRAWAL`, `BP_WITHDRAWAL_LIST`, `BP_REQ_DEPOSIT` | Done: Look's Withdraw and Deposit on a vault keeper | Done | M6 |
 | Bank money | `UC_DEPOSIT`, `UC_WITHDRAW`, `UC_BALANCE` | Done: Look's Bank on a banker: an amount in or out, the balance | Done | M6 |
 
@@ -181,7 +181,7 @@ Things a finished milestone didn't do, or did without proof. Each lands in the m
 
 | ☐ | From | What | Why it waited | Goes to |
 |---|---|---|---|---|
-| ☐ | M1 | Package a build with the runtime-room code (the `GeometryFramework` plugin, the cook directory) and play it | A package build takes over an hour; only the editor build has run | M9 (or the next package) |
+| ☑ | M1 | Package a build with the runtime-room code (the `GeometryFramework` plugin, the cook directory) and play it | Done after M9: Win64 Development, the online test 58/58 (ADR 0011) | M9 |
 | ☑ | M1 | Room geometry grouped by sector, so lifts and doors can move | M7 rebuilds the room instead (see M7's cost below) | M7 |
 | ☐ | M1, M7 | Light on objects: sprites drawn from bitmaps are full bright; our converted sprites don't take the room's light model | M7 lit the room's surfaces only | Any |
 | ☐ | M2b | Items' own colour translations on worn pieces stored below their own pixels (a red-tinted shield) | Those pieces have no colour-ramp atlas | Any |
@@ -197,7 +197,7 @@ Things a finished milestone didn't do, or did without proof. Each lands in the m
 | ☐ | M5 | Try retraining with a real elder (Jasper, Marion, Ko'catan) | Far from the demo | Any |
 | ☐ | M5 | See an enchantment on the player (icon top left) | The test's utility spells put none on the player | Any (a test character with a buff) |
 | ☑ | M5, M6 | Chat commands: "rest", "stand", "cast", "buy", "deposit 100", "withdraw", "balance" | Done in M8 | M8 |
-| ☐ | M6 | Try a trade between two players | The test plays one character | Any (two test clients) |
+| ☑ | M6 | Try a trade between two players | Done: `run_net_test.ps1 -Pair` (a second player, `tools/ue/second_player.ts`, offers a shilling) | Any |
 | ☐ | M6 | List a vault's items without opening Withdraw; check weight and bulk before buying | The server refuses instead | Any |
 | ☐ | M7 | Bitmap animation: walls and sectors with an animation speed cycling their frames, and `BP_WALL_ANIMATE` (a wall's frame, passable or solid) | We draw a bitmap's first frame | Any |
 | ☐ | M7 | Room changes on authored zones (lifts, doors, textures) | Needs sector-tagged pieces from `roo2gltf` | W2.3 |
@@ -209,7 +209,7 @@ Things a finished milestone didn't do, or did without proof. Each lands in the m
 | ☐ | M7 | `BP_SET_VIEW` / `BP_RESET_VIEW` (looking through a view globe) | Only the view globe sends them | Any |
 | ☐ | M8 | Guild halls and shields (`UC_GUILD_HALLS`, `UC_GUILD_RENT`, `UC_GUILD_SHIELD(S)`, `UC_CLAIM_SHIELD`) | Not read or shown | Any |
 | ☐ | M8 | Try a guild online: founding (Barloque's guild creator), inviting, ranks, alliances | The test character has no guild; the window is pictured with sample data | Any (a test character in a guild) |
-| ☐ | M8 | Try ignoring, a blocked tell, broadcasts and tells between two players | The test plays one character | Any (two test clients) |
+| ☑ | M8 | Try ignoring, a blocked tell, broadcasts and tells between two players | Done: `run_net_test.ps1 -Pair` (and the second player's wave) | Any |
 | ☐ | M8 | Post to a news board, and delete an article | Raza's board is read only for players | Any |
 | ☐ | M8 | Check a mood's changed face (happy, sad, wry) on our sprite and others' | Sent, not checked | Any |
 | ☑ | M8 | The original's way of typing as an option (every line a command) | Done in M9 (Options > Game) | M9 |
@@ -223,4 +223,4 @@ Things a finished milestone didn't do, or did without proof. Each lands in the m
 | ☐ | M9 | Admin and guide commands (`BP_REQ_ADMIN`, `BP_REQ_DM`) | Optional in the plan | Any |
 | ☐ | M9 | Options: a separate Lumen switch; a hand-set quality shown as such; binding the left mouse button outside the presets | The dialog's limits | Any |
 | ☐ | M9 | The original's keys typing letters straight into the chat line | The Original preset maps the moves only | Any |
-| ☐ | Tests | `run_move_test.ps1`'s ledge checks read the height a fixed 1.6 s in, so a slow frame catches a fall mid-air (7/8 in about half the runs) | Test timing, not movement | Any |
+| ☑ | Tests | `run_move_test.ps1`'s 3.9 m ledge jump failing in about half the runs | Done after M9: it was the movement, not the test (the round capsule bottom rolled off the ledge and lost 20 cm; ADR 0012 log); 8/8 in ten runs since | Any |

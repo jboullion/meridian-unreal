@@ -29,6 +29,7 @@ venv/
 game/**/Binaries/
 game/**/Intermediate/
 game/**/Saved/
+game/**/Build/*/FileOpenOrder/
 # synced copy of data/ for packaging (tools/ue/package.ps1)
 game/*/Data/
 game/**/DerivedDataCache/

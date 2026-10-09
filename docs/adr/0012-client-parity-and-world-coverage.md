@@ -567,6 +567,18 @@ The existing movement, UI-shot and look-dev runs stay green. Look-dev compares r
 - `-Render` adds `options_graphics.png`, `options_controls.png`, `options_account.png` and `map.png` (`build/net/m9_options.png`).
 - **Found on the way:** `FMRWriter::Raw` writes a length before the bytes. The first password message carried two lengths, and blakserv dropped it without a word.
 
+### After M9: the package and a second player (2026-10-08)
+- **The package** (ADR 0011): Win64 Development, 2.1 GB, with the runtime rooms. The packaged game passes the online test (58/58, headless and in a window) once the folders loaded by path are cooked by name. M1's leftover is done.
+- **A second player** (`run_net_test.ps1 -Pair`, `tools/ue/second_player.ts`): a scripted Shards client, taking orders by tell, closes the two-player leftovers of M6 and M8: tells both ways, ignoring (its tell never shows), broadcasts and turning them off, its wave (the server's one-off animation on it), and a trade (it offers a shilling, we answer with nothing, it accepts). `DONE 65/65`.
+  - Found on the way: our own echo of an order ("You tell Unrealpal, ...") holds the order's words, so a check for the other player's line must look at who said it.
+- **Test fixes:** the combat step no longer sends a second attack where the aim already sent one in a headless run; the movement test waits for a ledge jump to land before judging it, and logs each fall (where it left the ground, where it next stood).
+- **Ledge jumps fixed** (`UMRCharacterMovementComponent`). The movement test's 3.9 m jump failed in about half the runs, and the fall trace showed why:
+  - **The round capsule bottom rolled off the edge** and lost about 20 cm before the fall began, so the far wall sometimes needed an 85.5 cm step (the limit is 82.5). The floor checks now use a flat base, as the original keeps its height until it leaves the floor.
+  - **Where the fall starts:** the pawn may stand on an edge only within 19 cm of its centre (`PerchRadiusThreshold` 15 of a 34 cm radius). The original stops 53 cm short of a wall, so our jumps cover its distances: about 4.1 m running, 2.3 m walking. The mid-air step onto the far rim ignores that limit, as the original steps as soon as it gets there.
+  - **A mid-air step that climbed nothing** used to count, and set the pawn walking in the air: it could hang against a wall 85 cm above the floor. Only a step that ends higher, on a walkable floor, counts now.
+  - **Movement runs in 1/120 s steps** (up to 16 a frame), so where the fall starts doesn't hang on the frame rate.
+  - `run_move_test.ps1` 8/8 in ten runs in a row; the online test 58/58 and 65/65 with `-Pair` after it.
+
 ## Alternatives considered
 
 - **Bake every room before allowing travel:** no runtime code, but hours of GPU texture work and hundreds of levels to import before anyone can leave Raza. A room changed on the server would also break until rebuilt.

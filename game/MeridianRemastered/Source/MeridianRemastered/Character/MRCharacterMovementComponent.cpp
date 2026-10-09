@@ -23,6 +23,17 @@ UMRCharacterMovementComponent::UMRCharacterMovementComponent()
 	NavAgentProps.bCanJump = false;
 	// the original's step: 24 Kod units, also while falling (HandleImpact)
 	MaxStepHeight = OriginalStepCm;
+	// Off a ledge, the original keeps its full height until its centre leaves the floor, and stops 53 cm
+	// short of a wall (move.c min_distance); our capsule's radius is 34. A round capsule bottom rolled
+	// off the edge first and lost about 20 cm (the 3.9 m ledge jump a coin toss), so the base is flat;
+	// and the pawn may stand on an edge only within 19 cm of its centre (53 - 34), so a jump covers the
+	// original's distance: about 4.1 m running, 2.3 m walking.
+	bUseFlatBaseForFloorChecks = true;
+	PerchRadiusThreshold = 15.f;
+	// short steps, so the fall starts within a few cm of that point at any frame rate (a 60 fps frame
+	// runs 22 cm, more than the walking jump's margin)
+	MaxSimulationTimeStep = 1.f / 120.f;
+	MaxSimulationIterations = 16;
 	// the original's gravity (UE's default is 980 cm/s/s)
 	GravityScale = OriginalGravityCms2 / 980.f;
 	// the original moves at full speed at once, stops at once, and steers fully while falling
@@ -69,10 +80,23 @@ void UMRCharacterMovementComponent::HandleImpact(const FHitResult& Hit, float Ti
 		if (!Across.IsNearlyZero())
 		{
 			TGuardValue<bool> Guard(bSteppingUpInAir, true);
+			const double FromZ = UpdatedComponent->GetComponentLocation().Z;
+			FScopedMovementUpdate ScopedStep(UpdatedComponent, EScopedUpdate::DeferredUpdates);
+			FStepDownResult StepDown;
 			bool bStepped = false;
 			{
 				TGuardValue<TEnumAsByte<EMovementMode>> AsWalking(MovementMode, MOVE_Walking);
-				bStepped = StepUp(GetGravityDirection(), Across * (1.f - Hit.Time), Hit);
+				// onto the far rim the original steps as soon as it reaches it: no perch limit there
+				TGuardValue<float> AnyPerch(PerchRadiusThreshold, 0.f);
+				bStepped = StepUp(GetGravityDirection(), Across * (1.f - Hit.Time), Hit, &StepDown);
+			}
+			// only a step that climbed onto a floor: a "step" that ends no higher (onto nothing, or down
+			// to a floor far below) made the pawn walk in mid-air and hang against the wall
+			if (bStepped && !(StepDown.bComputedFloor && StepDown.FloorResult.IsWalkableFloor()
+				&& UpdatedComponent->GetComponentLocation().Z > FromZ + 1.0))
+			{
+				ScopedStep.RevertMove();
+				bStepped = false;
 			}
 			if (bStepped)
 			{
