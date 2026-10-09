@@ -385,7 +385,90 @@ Sheet: `build/lookdev/props_round2_sheet.png` (labels `props3_day`, `props3_nigh
 The Hall's chandelier stood on the floor. The original pins `OF_HANGING` objects to the ceiling (docs/findings.md "Walking"). props.json `"hanging": true` on `Chandelier`: `build_world.py` `hanging_y` puts the mesh's top at the object's `ceiling_y` (4.4 m in the Hall), as the chandelier's sprite fills its frame to the top. Sheet: `build/lookdev/compare_props_day_hang_day.png`.
 - The Hall's room light (a DynamicLight on the chandelier's spot) stayed 1.8 m up and showed as a glowing ball under it. `"lights_at_m": 1.1` (the candles, above the mesh's origin) moves a DynamicLight within 0.5 m of a hanging prop up there (`build_world.py` `lights_to_hanging`). Sheet: `build/lookdev/compare_hang_day_hang_light.png`.
 
+## World batch (2026-10-08)
+With the client near parity, the user asked for every static prop in the world, not just Raza's.
+
+**Survey.** `python tools/aigen/inventory.py --world` reads the `Create(&Class ...)` calls in all 457 room `.kod` files (`object/active/holder/room/`), resolves each class to its sprite and counts the sprite's frames: `data/aigen/inventory_world.json`. The kind now comes from the full inheritance chain. The old rule, which used only the chain up to the first icon, called priestesses, watchers and wanderers "props"; items placed in rooms (herbs, apples, coins) are now "item". "Static" means one bitmap, or one per direction (8 groups).
+- About 227 prop sprites in all; 61 done for Raza.
+- 63 static props not done. `forge` was dropped: its sprite is only the flame, the forge itself is part of the room.
+- 42 multi-frame "state" props are left for later: chests, levers, looms, anvils, tanning racks, tombstones, candelabra, the `hist_*` museum pieces, statues (`bta`).
+
+**The user's decisions:**
+- Assets only for now. Online, rooms built at runtime still draw each object's bitmap (`UMRNetWorldSubsystem::AttachBgfSprite`); showing these meshes there is a later task.
+- `tripo.DEFAULT_POLYCOUNT` is 2000, and 1000 for simple shapes (jugs, vases, bottles, barrels, buckets, bags, skulls, dice, the quill, the bell; `inventory.SIMPLE`).
+- Front image only (variant `C`, `restyle.views: ["front"]`), even for sprites that draw their own angles. Multi-view reruns come later, judged from the sheets.
+- Leafy trees and shrubs go to the Blender kit. Leafless trees (`feytree`, `nectree2-4`, `spdrtree`) go to Tripo, like `nectree1` (4000 polycount, for the thin limbs).
+
+**Manifests.** `inventory.py --world --manifests` drafted one per static prop not done: front only, the polycount by shape, `placed` and `rooms` for ordering the waves. Each `describe` was written from the upscale (`build/aigen/overview_openai_front.png`). The lying ones (mummy, dice, broken skulls) and the hanging ones (goose, the Jasper lanterns, the bell) have a `restyle.extra`. `props.json` got an entry for every class spelling and OO type that places them (`Firepit` and `FirePit`, `ManaNode`, `FeyNode` and `AvarNode`, and so on); `build_world` skips them until their meshes exist. Hanging: the goose, the Jasper lanterns and the bell. Blocking: pillars, fountain, altar, barrels, cauldron, the stone seat, stump, table, washstand, shrine, trophy and urns, plus the graves and the snake crate as boxes, and posts for the skull poles, the Kocatan lamp and the sign.
+
+**Restyle.** 62 + 5 front views in two OpenAI batches (`batch_6ac86565…`, `batch_6ac865cc…`), about 20 minutes, no misses (`build/aigen/overview_openai_front.png`).
+
+**Tripo (2026-10-08/09).** 68 jobs, 3,060 credits (19,575 → 16,515): the 67, plus a resubmit of the spider tree, whose first job hung on "Generating… 1s" (it finished later; the manifest keeps it as `stuck_task`).
+- The five bare trees went one by one at 4000. The props went through **Batch Images to 3D** (the third input tab, up to 30 images, the panel's polycount applies to all), one run per polycount: 26 at 1000, then 30 + 6 at 2000. Uploads go in chunks under 10 MB; each chunk adds to the dialog.
+- Studio forgets the file names (every input is `input.png`). Jobs were matched to props by Tripo's own caption of the image and its face limit, read from `api.tripo3d.ai/v2/studio/assets/v2` and `/project/detail/v3/<id>` from the page. That got all but one pair right: the two barrels (light and dark oak, captioned alike) came out swapped and were fixed from the review sheets. Neither the grid order nor the list is submission order. `tools/aigen/record_tasks.py` writes the ids into the manifests.
+- Collecting: 63 over the bridge with `aigen.py bridge-collect all`, about 18 s a model. 16 sends were lost while the Chrome window was covered (`document.visibilityState` "hidden"); they went through once it was back in front. One model (`necglobe`) never showed in the Assets grid; opening its URL reloaded the page and dropped the bridge, so it went last.
+- Normalised: all 67 as `SM_AI_*`; review sheets `05_review/sheet2_tripo.png` per asset and `build/aigen/overview_05_review_normalized_front.png`.
+
+**Results.** Most match their sprites well, including the totems, graves, urns and jugs at 1000–2000 triangles, and the bare trees at 4000. Misses:
+- `potplant` and `roompla1` (the same sprite): a dark crumpled shard, no urn;
+- `necglobe`: a plain purple ball, the swirled mist lost;
+- smaller: `necvase` lost its relief at 1000, `firepit` its embers (the fire effect may cover that), `hist_ornhelma` its gold flare.
+
+**Trees in the Blender kit.** 16 leafy species added to `build_tree_kit.py` `TREES` and `make_tree_textures.py`, measured off their sprites at 0.0344 m per texel ÷ shrink (`midtree2`: 4.92 m from 716 px at shrink 5):
+- round crowns `Mid1`, `Mid3`, `Mid4`; tall `Tall1-3`;
+- `Jungle1-3` (`tree1-3`): thick buttressed trunks with hanging vines, the canopy a flat cap at the top (the sprites show only its underside); all three take their leaves from `tree2`'s canopy band (`canopy_bgf`);
+- `Yrxl`, a vine-wrapped trunk with moss;
+- shrubs `RazaShrub`, `Bush`, `Topiary` (cone), `Cypress` (`tallbush`, a tall column) and `Fern` (`palm`, a knee-high fern).
+
+New kit options:
+- `"taper"`: the crown narrows towards its top;
+- `"flare"`: a wider foot;
+- `"roots"`: buttress roots;
+- `"vines"`: hanging vines.
+
+None of them draw random numbers when unset, so the earlier trees rebuild byte-identical (checked by hash). Review: `tools/blender/render_tree_kit.py` renders every tree textured from the side, and `tools/blender/tree_sheet.py` puts each beside its sprite at one scale: `build/environment/tree_review/sheet.png`. `Mid4`, `Tall1` and `Tall3` came out wider than their sprites and were narrowed. `props.json` points the OO types (30, 44, 45, 81, 115, 168, 191, 193–197) and the `YrxlTree`, `Shrub` and `Tallbush` classes at them, with trunk blockers.
+
+**Reruns (2026-10-09).** At the user's go-ahead, single image at 4000 (5 jobs, 225 credits; `build/aigen/rerun_review.jpg`):
+- `potplant` (`C4k`): fixed, a leafy shrub in its stone urn. `roompla1` is the same sprite and takes the same model.
+- `necvase` (`C4k`): the relief is back.
+- `hist_ornhelma` (`C4k`): about the same, kept.
+- `firepit`: no better at 4000; it stays on `C`.
+- `necglobe` (`C4kL`, Remove Lighting off): still a plain ball, now lilac. Tripo won't make mist inside glass; it wants our own sphere with a swirling glass material (Open).
+
+## Prop gallery (2026-10-09)
+Most of the world batch belongs to rooms that only exist online, where the server's bitmaps are drawn, so the user asked for a place to see the props in game. Rather than a separate project or an exported Raza (neither has our materials, lighting or moods), the gallery is one more zone of the same world:
+- `python tools/environment/prop_gallery.py` writes `data/environment/prop_gallery.json`: zone 9000 `PropGallery`, 4 km north-west of Raza. Its `objects` use zone_layout.json's format, one per mesh each props.json entry can show: the custom model, the HD model and every `mesh_options` variant, with the trees' variants side by side. Each object names its exact `mesh` and faces south. Rows of small, medium and large props, then the trees, each entry its original sprite first, then its meshes, a label under each. The floor is Raza's stone path (`build/zones/9000_PropGallery.glb`).
+- `build_world.py` builds it with the zones' own code (`zone_props`, `build_zone_level`): the same materials, ambient floor (a fixed `sector_light` 0.5, Raza outdoors), glow, lights, fires, blockers and hanging. Plus the sprite billboards (`M_GallerySprite`: the sprite lit, matte, two-sided, cut out on its alpha, at the sprite's true size) and TextRender labels. The level is in `L_World` but loads only when the game asks for it.
+- In game: `-MRGallery` registers the zone (`UMRZoneSubsystem::AddGalleryZone`), plays offline and starts at its south edge looking along the rows. The real sky, day and night, moods, weather and seasons apply (`-MRGameHour`, `-MRWeather`, `-MRSeason`).
+- Look-dev: `tools/ue/run_lookdev.ps1 -Label <name> -Gallery` renders `data/environment/gallery_cameras.json` (65 cameras along the rows; `-MRLookDevCameras=<file>`).
+- Rerun the generator after a batch adds or changes meshes, then the world build.
+- First captures: labels gallery1 (day, 92 cameras) and gallery1_night (hour 23); sheets `build/lookdev/gallery_day_1..4.jpg` and `gallery_night.jpg`. Every mesh stands beside its sprite at true scale, under the real sun and night sky; labels read from the cameras.
+- Found while building it: development runs read JSON from the copy `package.ps1` leaves in `game/MeridianRemastered/Data/`, not from `data/` (AGENTS.md "Known traps"); fixed in `UMRZoneSubsystem::GetDataDir`. The movement test passes after the change (8/8). The online smoke test wasn't run (it needs the Shards dev stack).
+
+## Gallery review: symmetrical props, creatures, sprites (2026-10-09)
+The user walked the prop gallery and sorted what needed another pass.
+
+**A rule:** what moves or can be used stays a sprite, as the original drew it; static scenery is 3D, so a sprite in the world tells you it's alive or interactive. Animated props wait for later. So `necglobe` (TargetGlobe, ViewpointGlobe) and `node` (ManaNode, FeyNode, AvarNode) left `props.json`. Their manifests say `"status": "sprite"`, and online the game draws the server's bitmap for them.
+
+**Creatures (the museum figures):** 4 views from each sprite's own angle frames, at 4000 (`MV4k`), kept as custom models.
+- `modspdr`'s `MV4k` from 2026-10-06 was good and had never been switched on.
+- `modfung`, `modlupog` and `modant` were rerun (135 credits). The fungus beast and the ant now have bodies behind their faces, and the lupogg's profile follows its side frames.
+- The 1000-triangle `MV1k` versions were not good enough: the spider collapsed into a lump.
+- Sheets: `build/aigen/creatures_mv_review.jpg` and `creatures_mv4k_b.jpg`.
+
+**Symmetrical props:** manifest `"symmetrical": true` (`tripo.SYMMETRICAL_VIEWS`) puts the front restyle in Studio's Front slot and the same image, mirrored, in the Back slot. Nothing new is painted, and Tripo builds a real back instead of a flat or invented one.
+- Set on `skulbrok`, `skulhorn`, `skulnorm`, `hist_ornhelma`, `modnode`, `necslime`, `boxsnak4`, `orcfire`, `flaskgrn` and `3bolts`. A source ending in `:mirror` flips its image (`aigen.resolve_input`).
+- First, before the user's correction, the backs were painted by OpenAI (`FB`, and `FL` for the two profiles; 450 credits). Those runs are kept, unused.
+- Then the identical front in both slots (`SYM`, 450 credits): every back now carries the front's detail (`build/aigen/symmetrical_review.jpg`). These are the custom models for now.
+- The user then pointed out that the back should be the front mirrored; variant `SYMM` (450 credits). It wins where it should: the profile props come out bilateral (`skulhorn` reads as a horned skull head-on, `skulnorm` gets a face in its side view, `skulbrok` a coherent skull), and the rest match `SYM`. `SYMM` is the custom model for all ten (`build/aigen/symmetrical_mirror_review.jpg`).
+- Studio's HD multi-view takes two of its four slots. A slot upload sometimes doesn't take: check both thumbnails before Generate; a Generate with a slot missing starts nothing and costs nothing.
+
 ## Open
+- `necglobe` (TargetGlobe, ViewpointGlobe): a sphere with our own swirling glass material instead of the Tripo model.
+- World batch: the user's picks of reruns (the plant, the orb, maybe `necvase` at 2000, multi-view where a back was invented), then a world build and look-dev for the props that authored zones place.
+- World batch: multi-frame "state" props (42; `inventory_world.json` kind prop, not static), from their resting frames.
+- Runtime props: online rooms built at runtime draw the bitmap. Map icon → `SM_AI_*` / `SM_Tree_*`, spawn the mesh instead and import kit meshes that no authored zone places.
+- Trees: `nectree3`'s glowing moss, `spdrtree`'s webs (now in their Tripo `describe`); the `Tree` class (273 placed, its icon chosen per object) isn't mapped yet.
 - Trees: the Outskirts tree lines (ADR 0003 2g).
 - Emissive parts on AI meshes other than lamp glass (embers): props.json `"glow"` covers pale glass only.
 - The API backend (phase 3), once the user tops up the API wallet; Studio plus the bridge covers batches until then.

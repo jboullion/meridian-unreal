@@ -26,6 +26,10 @@ void AMRGameMode::InitGame(const FString& MapName, const FString& Options, FStri
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 	int32 Override = 0;
+	if (FParse::Param(FCommandLine::Get(), TEXT("MRGallery")))
+	{
+		StartZone = UMRZoneSubsystem::GalleryRid;  // the prop gallery (UMRZoneSubsystem::AddGalleryZone)
+	}
 	if (FParse::Value(FCommandLine::Get(), TEXT("MRStartZone="), Override) && Override > 0)
 	{
 		UE_LOG(LogMeridian, Log, TEXT("Start zone overridden: %d"), Override);

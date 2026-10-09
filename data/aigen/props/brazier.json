@@ -1,5 +1,5 @@
 {
-  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007). Hand-set: class, bgf, frame, describe, mesh, model (optional: hd default, smart_mesh, custom), polycount (optional; default 4000), retopology (optional: true or {polycount, topology}), custom (optional), restyle, tripo.variants (variant -> {view: source}; source 'upscale' or a restyle output's name, e.g. 'vertex', 'fal-flux-pro-kontext'). The pipeline writes height_m, sprite_px, restyle_runs, tripo.runs/chosen and normalized.",
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007). Hand-set: class, bgf, frame, describe, mesh, model (optional: hd default, smart_mesh, custom), polycount (optional; default 2000, tripo.DEFAULT_POLYCOUNT), retopology (optional: true or {polycount, topology}), custom (optional), restyle, tripo.variants (variant -> {view: source}; source 'upscale' or a restyle output's name, e.g. 'vertex', 'fal-flux-pro-kontext'). The pipeline writes height_m, sprite_px, restyle_runs, tripo.runs/chosen and normalized.",
   "name": "brazier",
   "kind": "props",
   "class": "Brazier",

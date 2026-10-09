@@ -157,15 +157,67 @@ void UMRZoneSubsystem::LoadAllZoneLevels(bool bBlock)
 
 // -------------------------------------------------------------------------------- data
 
+void UMRZoneSubsystem::AddGalleryZone(const FString& Dir)
+{
+	// The prop gallery (tools/environment/prop_gallery.py, docs/adr/0007 "Prop gallery"): every prop
+	// and tree mesh beside its sprite, a zone of its own with no exits. Its level is in L_World but
+	// only this registers it, so only -MRGallery loads it (LoadAllZoneLevels).
+	const TSharedPtr<FJsonValue> Root = LoadJson(FPaths::Combine(Dir, TEXT("environment"), TEXT("prop_gallery.json")));
+	const TSharedPtr<FJsonObject> G = Root.IsValid() ? Root->AsObject() : nullptr;
+	if (!G.IsValid())
+	{
+		UE_LOG(LogMeridian, Warning, TEXT("-MRGallery: data/environment/prop_gallery.json not found (run tools/environment/prop_gallery.py)"));
+		return;
+	}
+	FMRZoneInfo Info;
+	Info.Rid = IntField(G, TEXT("rid"), GalleryRid);
+	Info.Name = G->GetStringField(TEXT("name"));
+	Info.KodClass = G->GetStringField(TEXT("class"));
+	Info.GeometryRid = Info.Rid;
+	const TArray<TSharedPtr<FJsonValue>>& O = G->GetArrayField(TEXT("world_origin_cm"));
+	Info.Origin = FVector(O[0]->AsNumber(), O[1]->AsNumber(), O[2]->AsNumber());
+	const TSharedPtr<FJsonObject>* Bounds = nullptr;
+	if (G->TryGetObjectField(TEXT("bounds_m"), Bounds))
+	{
+		const TArray<TSharedPtr<FJsonValue>>& Min = (*Bounds)->GetArrayField(TEXT("min"));
+		const TArray<TSharedPtr<FJsonValue>>& Max = (*Bounds)->GetArrayField(TEXT("max"));
+		const FVector A = Info.Origin + MRUnits::LayoutToLocal(Min[0]->AsNumber(), Min[1]->AsNumber(), Min[2]->AsNumber());
+		const FVector B = Info.Origin + MRUnits::LayoutToLocal(Max[0]->AsNumber(), Max[1]->AsNumber(), Max[2]->AsNumber());
+		Info.BoundsWorld = FBox2D(FVector2D(FMath::Min(A.X, B.X), FMath::Min(A.Y, B.Y)), FVector2D(FMath::Max(A.X, B.X), FMath::Max(A.Y, B.Y)));
+		Info.GridSizeRoo = FVector2D(FMath::Abs(B.X - A.X), FMath::Abs(B.Y - A.Y)) / MRUnits::CmPerRoo;
+	}
+	const TSharedPtr<FJsonObject>* Start = nullptr;
+	const TArray<TSharedPtr<FJsonValue>>* Pos = nullptr;
+	if (G->TryGetObjectField(TEXT("start"), Start) && (*Start)->TryGetArrayField(TEXT("pos"), Pos) && Pos->Num() == 3)
+	{
+		Info.TeleportLocal = MRUnits::LayoutToLocal((*Pos)[0]->AsNumber(), (*Pos)[1]->AsNumber(), (*Pos)[2]->AsNumber());
+		Info.bHasTeleportLocal = true;
+		double Yaw = 0.0;
+		(*Start)->TryGetNumberField(TEXT("yaw"), Yaw);
+		Info.TeleportYaw = static_cast<float>(Yaw);
+	}
+	Info.Flags.Add(TEXT("ROOM_NO_COMBAT"));
+	Info.bNoCombat = true;
+	UE_LOG(LogMeridian, Log, TEXT("-MRGallery: zone %d %s registered"), Info.Rid, *Info.Name);
+	Zones.Add(Info.Rid, MoveTemp(Info));
+}
+
 FString UMRZoneSubsystem::GetDataDir()
 {
-	// Packaged / synced copy first, then the repo's data/ folder during development.
+	// Development (uncooked: the editor, or -game from it) reads the repo's data/; a packaged game
+	// reads the copy tools/ue/package.ps1 puts in <project>/Data. That copy stays behind after
+	// packaging, so preferring it in development read stale JSON (found 2026-10-09).
+	const FString Repo = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectDir(), TEXT("../../data")));
+	if (!FPlatformProperties::RequiresCookedData() && IFileManager::Get().FileExists(*FPaths::Combine(Repo, TEXT("zone_layout.json"))))
+	{
+		return Repo;
+	}
 	const FString Local = FPaths::Combine(FPaths::ProjectDir(), TEXT("Data"));
 	if (IFileManager::Get().FileExists(*FPaths::Combine(Local, TEXT("zone_layout.json"))))
 	{
 		return Local;
 	}
-	return FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectDir(), TEXT("../../data")));
+	return Repo;
 }
 
 bool UMRZoneSubsystem::LoadData()
@@ -312,6 +364,11 @@ bool UMRZoneSubsystem::LoadData()
 		}
 		Zones.Add(Info.Rid, MoveTemp(Info));
 	}
+	if (FParse::Param(FCommandLine::Get(), TEXT("MRGallery")))
+	{
+		AddGalleryZone(Dir);
+	}
+
 	// the streaming level's name: L_Zone_<geometry rid>_<its Kod class>, e.g. L_Zone_307_RazaBar
 	// (tools/ue/build_world.py zone_level_path); the Outskirts use the town's, L_Zone_300_Raza
 	for (TPair<int32, FMRZoneInfo>& Pair : Zones)

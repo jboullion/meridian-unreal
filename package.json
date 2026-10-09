@@ -1,0 +1,36 @@
+{
+  "name": "meridian-remastered",
+  "private": true,
+  "description": "Task shortcuts for Meridian Remastered: `npm run` lists them. Nothing to install; each runs a script in tools/. Pass options after --, e.g. npm run lookdev -- -Label mytest -Compare baseline",
+  "scripts": {
+    "play": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/play.ps1",
+    "play:online": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/play.ps1 -Online",
+    "editor": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/play.ps1 -Editor",
+    "prop-gallery": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/play_gallery.ps1",
+    "prop-gallery:night": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/play_gallery.ps1 -GameHour 23",
+    "prop-gallery:rebuild": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/play_gallery.ps1 -Rebuild",
+
+    "test": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_tests.ps1",
+    "test:all": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_tests.ps1 -Online",
+    "test:unit": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_unit_tests.ps1",
+    "test:move": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_move_test.ps1",
+    "test:net": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_net_test.ps1",
+    "test:net:create": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_net_test.ps1 -Create",
+    "test:net:pair": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_net_test.ps1 -Pair",
+    "test:net:death": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_net_test.ps1 -Create -Death",
+    "test:ui": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_ui_shots.ps1 -Label latest",
+
+    "compile": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/compile.ps1",
+    "world": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/build_world.ps1",
+    "world:clean": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/build_world.ps1 -Clean",
+    "lookdev": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_lookdev.ps1",
+    "lookdev:gallery": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_lookdev.ps1 -Label gallery -Gallery",
+    "package": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/package.ps1",
+    "setup": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/setup.ps1",
+
+    "data": "python tools/kod_extract/extract.py",
+    "props:inventory": "python tools/aigen/inventory.py --world",
+    "props:gallery-layout": "python tools/environment/prop_gallery.py",
+    "props:overview": "python tools/aigen/aigen.py overview all 05_review/normalized/front.png"
+  }
+}

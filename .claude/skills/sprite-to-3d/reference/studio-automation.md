@@ -20,7 +20,15 @@ This is how Claude runs the Tripo step without the user: Studio in the user's Ch
 4. Upload without clicking: `find` "image file input in Generate Model upload area", then `file_upload` the PNG from `03_tripo_in/` to that ref.
 5. Click **Generate**. Jobs run **in parallel**: remove the image (the bin icon on the thumbnail), upload the next one and Generate again.
 6. Each job gets a page `…/workspace/generate/<task id>`. Note which task id belongs to which variant from the URL right after clicking Generate.
-7. For many images, the third input tab is **Batch Images to 3D** (up to 30 images).
+7. For many images, the third input tab is **Batch Images to 3D** (up to 30 images). This is how the world batch ran (ADR 0007 "World batch"):
+   - Group the assets by polycount: the Geometry & Texture panel's count applies to the whole run. Check it in `localStorage` key `tripo-generate-settings-hd-v5:<user id>` (`faceLimit`, `privateMode`) without reopening the panel.
+   - Copy each `03_tripo_in/C_front.png` to `build/aigen/tripo_batches/<wave>/<asset>.png`. Upload in chunks under 10 MB (`file_upload`'s limit); each chunk adds to the dialog ("Batch Images to 3D (n / 30)"). The Generate button shows n × 45.
+   - Clear the slot (the bin on the stacked thumbnail) before the next wave, or the last run's images go again.
+   - **Studio drops file names** (every input becomes `input.png`). Match jobs to assets from the page:
+     - `GET https://api.tripo3d.ai/v2/studio/assets/v2` (params `offset`, `size`, plus the page's own) lists projects;
+     - `/v2/studio/project/detail/v3/<id>` gives `operator.image_to_model.prompt` (Tripo's caption of the image) and `face_limit`.
+     - Match by caption and face limit, then check look-alikes (two barrels in different woods) on the review sheets. Grid and list order are not submission order.
+   - `python tools/aigen/record_tasks.py tasks.json --settings "..."` writes the ids into the manifests.
 
 ## Multi-view and Smart Mesh
 - **Multi-view** is the second input tab (the cube icon), with Front, Left, Right and Back slots. `find` "file inputs for Front, Left, Right, Back image slots" and `file_upload` each one.
@@ -78,5 +86,7 @@ This is how Claude runs the Tripo step without the user: Studio in the user's Ch
 - **Nothing arrives:** the bridge disconnected (a page reload), the window was hidden, or the click landed before the model loaded. Check the tail of `%TEMP%\tripo3d_blender_bridge.log`.
 - **The wrong model arrives:** never rely on arrival order. The collector matches by task id, and finds the import by the exact name the bridge log says it got. Tripo reuses names, and Blender adds `.001` to the second copy.
 - **A big model (20k) is missed:** give it about 10 s to load before Export.
+- **Sends stop when the window is covered:** check `document.visibilityState` in the page; while "hidden", Send To does nothing. 8 s after each send (not 6) kept the losses near zero.
+- **A model missing from the Assets grid:** `__open` can't reach it. Opening its URL reloads the page and drops the bridge: do it last, then turn Blender back on in DCC Bridge.
 - **The tab jumps to another model:** Studio follows new jobs on the account. Check the URL's task id.
 - **A click selects the model in the viewport** (a gizmo appears): the Export panel had closed. Press Escape and reopen Export.

@@ -214,8 +214,12 @@ public:
 	/** Directory holding zones.json / zone_layout.json. */
 	static FString GetDataDir();
 
+	/** The prop gallery's zone (data/environment/prop_gallery.json), registered only with -MRGallery. */
+	static constexpr int32 GalleryRid = 9000;
+
 private:
 	bool LoadData();
+	void AddGalleryZone(const FString& Dir);
 	int32 GetPawnZone(const APawn* Pawn) const;
 	void SetPawnZone(APawn* Pawn, int32 Rid) const;
 

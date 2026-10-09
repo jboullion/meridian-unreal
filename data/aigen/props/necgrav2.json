@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "necgrav2",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 96,
+  "oo_const": "OO_NECGRAVE2",
+  "bgf": "necgrav2",
+  "frame": 0,
+  "describe": "a tapered grey stone grave marker carved in low relief with a grinning skull and a crouching skeletal figure",
+  "mesh": "SM_AI_Necgrav2",
+  "size_by": "height",
+  "placed": 6,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "71e14155-df20-4802-892f-b039b827862e",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "stone tombstone 3d model",
+        "tris_raw": 1969,
+        "file": "build/aigen/props/necgrav2/04_tripo_out/C.glb",
+        "digest": "27c66b0276eb5364",
+        "tris": 1969,
+        "size_m": [0.7356, 0.2215, 0.9782]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/necgrav2/04_tripo_out/C.glb",
+      "tripo_task": "71e14155-df20-4802-892f-b039b827862e",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "stone tombstone 3d model",
+      "tris_raw": 1969,
+      "digest": "27c66b0276eb5364",
+      "tris": 1969,
+      "size_m": [0.7356, 0.2215, 0.9782]
+    }
+  },
+  "height_m": 1.4266,
+  "width_m": 1.1,
+  "lift_m": 0.0,
+  "sprite_px": [64, 83],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/necgrav2/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Necgrav2.glb",
+    "tris": 1969,
+    "size_m": [1.0728, 0.323, 1.4266],
+    "scale": 1.45833
+  }
+}

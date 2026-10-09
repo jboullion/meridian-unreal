@@ -1,0 +1,55 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "feytree",
+  "kind": "props",
+  "class": "FeyTree",
+  "bgf": "feytree",
+  "frame": 0,
+  "describe": "a slender leafless tree of pale silver-grey bark, its thin trunk and limbs twisting and curling in loops like smoke, many fine crooked twigs, a tuft of grass at its foot",
+  "mesh": "SM_AI_Feytree",
+  "size_by": "height",
+  "placed": 78,
+  "rooms": 9,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "38276a51-b5fc-419b-8b65-ad1bbf4a7e09",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image (45 credits)",
+        "file": "build/aigen/props/feytree/04_tripo_out/C.glb",
+        "digest": "519b78bf5f62a21c",
+        "tris": 3800,
+        "size_m": [0.4826, 0.3552, 0.97]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/feytree/04_tripo_out/C.glb",
+      "tripo_task": "38276a51-b5fc-419b-8b65-ad1bbf4a7e09",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image (45 credits)",
+      "digest": "519b78bf5f62a21c",
+      "tris": 3800,
+      "size_m": [0.4826, 0.3552, 0.97]
+    }
+  },
+  "polycount": 4000,
+  "height_m": 4.2453,
+  "width_m": 2.1656,
+  "lift_m": 0.0,
+  "sprite_px": [128, 256],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac865ccc59c8190a354b40df22bc4fe",
+      "file": "build/aigen/props/feytree/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Feytree.glb",
+    "tris": 3800,
+    "size_m": [2.112, 1.5544, 4.2453],
+    "scale": 4.37645
+  }
+}

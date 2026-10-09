@@ -1,0 +1,121 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "hist_ornhelma",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 185,
+  "oo_const": "OO_HIST_ORNHELMA",
+  "bgf": "hist_ornhelma",
+  "frame": 0,
+  "describe": "an ornate steel helmet with an engraved swirling pattern, a gold trim along its crest and a gold flared cheek guard, resting on its side",
+  "mesh": "SM_AI_HistOrnhelma",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {
+      "C": {"front": "openai"},
+      "C4k": {"front": "openai"},
+      "FL": {"front": "openai@back", "left": "openai@front"},
+      "SYMM": {"front": "openai", "back": "openai@front:mirror"}
+    },
+    "runs": {
+      "C": {
+        "tripo_task": "08d7d9b1-76ec-4c80-93c3-fab52ca9d2b6",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "medieval helmet 3d model",
+        "tris_raw": 1911,
+        "file": "build/aigen/props/hist_ornhelma/04_tripo_out/C.glb",
+        "digest": "d29051b94c0dfee3",
+        "tris": 1911,
+        "size_m": [0.9853, 0.868, 0.9833]
+      },
+      "C4k": {
+        "tripo_task": "70b738ff-d8b9-439d-b4a1-e42cec4308c4",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image (45 credits); rerun of C (2026-10-09)",
+        "tripo_name": "medieval helmet 3d model",
+        "tris_raw": 3533,
+        "file": "build/aigen/props/hist_ornhelma/04_tripo_out/C4k.glb",
+        "digest": "1ed54f2638e2a087",
+        "tris": 3533,
+        "size_m": [0.9789, 0.8872, 0.9939]
+      },
+      "FL": {
+        "tripo_task": "b49cceb2-2d8e-4a75-9644-06986223b30e",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view Front (painted face-on view) + Left (the sprite's profile) (45 credits; 2026-10-09)"
+      },
+      "SYM": {
+        "tripo_task": "4f3c7cc6-7921-4144-8188-13553a084cf0",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in both the Front and Back slots (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/hist_ornhelma/04_tripo_out/SYM.glb",
+        "digest": "aa42f42792ca5f89",
+        "tris": 3906,
+        "size_m": [0.98, 0.8991, 0.9749]
+      },
+      "SYMM": {
+        "tripo_task": "b785ef3e-35a0-468e-a53e-1ae075ff1153",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/hist_ornhelma/04_tripo_out/SYMM.glb",
+        "digest": "b0e7a32bbc9dba10",
+        "tris": 3500,
+        "size_m": [0.9686, 0.8633, 0.981]
+      }
+    },
+    "chosen": {
+      "variant": "C4k",
+      "file": "build/aigen/props/hist_ornhelma/04_tripo_out/C4k.glb",
+      "tripo_task": "70b738ff-d8b9-439d-b4a1-e42cec4308c4",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image (45 credits); rerun of C (2026-10-09)",
+      "tripo_name": "medieval helmet 3d model",
+      "tris_raw": 3533,
+      "digest": "a336649b3d5caf46",
+      "tris": 3533,
+      "size_m": [0.9789, 0.8872, 0.9939]
+    }
+  },
+  "height_m": 0.3065,
+  "width_m": 0.2979,
+  "lift_m": 0.0,
+  "sprite_px": [104, 107],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/hist_ornhelma/02_restyle/openai_front.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac8efb6ab288190b451d8c3f99e2958",
+      "file": "build/aigen/props/hist_ornhelma/02_restyle/openai_back.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_HistOrnhelma.glb",
+    "tris": 3533,
+    "size_m": [0.3019, 0.2736, 0.3065],
+    "scale": 0.30839
+  },
+  "polycount": 4000,
+  "notes": [
+    "2026-10-09: the sprite is a profile, so its painted \"back\" is the face-on view: Tripo variant FL puts that in Front and the sprite in Left."
+  ],
+  "symmetrical": true,
+  "custom": {
+    "variant": "SYMM",
+    "file": "build/aigen/props/hist_ornhelma/04_tripo_out/SYMM.glb",
+    "tripo_task": "b785ef3e-35a0-468e-a53e-1ae075ff1153",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+    "digest": "b0e7a32bbc9dba10",
+    "tris": 3500,
+    "size_m": [0.9686, 0.8633, 0.981],
+    "normalized": {
+      "file": "build/environment/kit/SM_AI_HistOrnhelma_Custom.glb",
+      "tris": 3500,
+      "size_m": [0.3026, 0.2698, 0.3065],
+      "scale": 0.31245
+    }
+  }
+}

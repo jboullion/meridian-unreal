@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "necgrav1",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 95,
+  "oo_const": "OO_NECGRAVE1",
+  "bgf": "necgrav1",
+  "frame": 0,
+  "describe": "a weathered grey stone gravestone with a rounded top and an iron-studded border, carved with a skull and crossed bones",
+  "mesh": "SM_AI_Necgrav1",
+  "size_by": "height",
+  "placed": 4,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "9319ca44-cc86-4784-8c8a-ed4234b4e35f",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "stone grave marker 3d model",
+        "tris_raw": 1938,
+        "file": "build/aigen/props/necgrav1/04_tripo_out/C.glb",
+        "digest": "6608328807574e07",
+        "tris": 1938,
+        "size_m": [0.8296, 0.3308, 0.9789]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/necgrav1/04_tripo_out/C.glb",
+      "tripo_task": "9319ca44-cc86-4784-8c8a-ed4234b4e35f",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "stone grave marker 3d model",
+      "tris_raw": 1938,
+      "digest": "6608328807574e07",
+      "tris": 1938,
+      "size_m": [0.8296, 0.3308, 0.9789]
+    }
+  },
+  "height_m": 1.2375,
+  "width_m": 1.0656,
+  "lift_m": 0.0,
+  "sprite_px": [62, 72],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/necgrav1/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Necgrav1.glb",
+    "tris": 1938,
+    "size_m": [1.0488, 0.4182, 1.2375],
+    "scale": 1.26416
+  }
+}

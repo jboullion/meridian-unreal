@@ -1,0 +1,86 @@
+{
+ "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+ "name": "node",
+ "kind": "props",
+ "class": "ManaNode",
+ "bgf": "node",
+ "frame": 0,
+ "describe": "a magical mana node: a glowing sphere of deep sky blue, veined with branching bright green and yellow energy like lightning",
+ "mesh": "SM_AI_Node",
+ "size_by": "height",
+ "placed": 14,
+ "rooms": 14,
+ "restyle": {
+  "providers": [
+   "openai"
+  ],
+  "views": [
+   "front"
+  ]
+ },
+ "tripo": {
+  "variants": {
+   "C": {
+    "front": "openai"
+   }
+  },
+  "runs": {
+   "C": {
+    "tripo_task": "08c37414-2f8a-4f4b-8a64-1746fb18839f",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+    "tripo_name": "glowing planet sphere 3d model",
+    "tris_raw": 1878,
+    "file": "build/aigen/props/node/04_tripo_out/C.glb",
+    "digest": "de4c3253a08ced8f",
+    "tris": 1878,
+    "size_m": [
+     0.9791,
+     0.96,
+     0.98
+    ]
+   }
+  },
+  "chosen": {
+   "variant": "C",
+   "file": "build/aigen/props/node/04_tripo_out/C.glb",
+   "tripo_task": "08c37414-2f8a-4f4b-8a64-1746fb18839f",
+   "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+   "tripo_name": "glowing planet sphere 3d model",
+   "tris_raw": 1878,
+   "digest": "de4c3253a08ced8f",
+   "tris": 1878,
+   "size_m": [
+    0.9791,
+    0.96,
+    0.98
+   ]
+  }
+ },
+ "height_m": 1.4667,
+ "width_m": 1.4667,
+ "lift_m": 0.0,
+ "sprite_px": [
+  128,
+  128
+ ],
+ "restyle_runs": {
+  "openai_front": {
+   "model": "gpt-image-2.5-sunburst",
+   "seconds": null,
+   "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+   "file": "build/aigen/props/node/02_restyle/openai_front.png"
+  }
+ },
+ "normalized": {
+  "file": "build/environment/kit/SM_AI_Node.glb",
+  "tris": 1878,
+  "size_m": [
+   1.4652,
+   1.4367,
+   1.4667
+  ],
+  "scale": 1.49657
+ },
+ "status": "sprite",
+ "note": "Kept as its original sprite in game (the user, 2026-10-09: a sprite marks something that moves or can be used; static scenery is 3D). Its Tripo models stay in art_src/ and build/."
+}

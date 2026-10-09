@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "roompla2",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 153,
+  "oo_const": "OO_RR_PLANT2",
+  "bgf": "roompla2",
+  "frame": 0,
+  "describe": "a broad-leafed potted plant with long variegated yellow-green leaves arching out of a round terracotta pot painted with red bands",
+  "mesh": "SM_AI_Roompla2",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "d8742076-68bb-40ec-bf83-36dfcc899e41",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "potted plant 3d model",
+        "tris_raw": 1968,
+        "file": "build/aigen/props/roompla2/04_tripo_out/C.glb",
+        "digest": "50bb3e61684deec6",
+        "tris": 1968,
+        "size_m": [0.9485, 0.771, 0.9778]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/roompla2/04_tripo_out/C.glb",
+      "tripo_task": "d8742076-68bb-40ec-bf83-36dfcc899e41",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "potted plant 3d model",
+      "tris_raw": 1968,
+      "digest": "50bb3e61684deec6",
+      "tris": 1968,
+      "size_m": [0.9485, 0.771, 0.9778]
+    }
+  },
+  "height_m": 1.5354,
+  "width_m": 1.3865,
+  "lift_m": 0.0,
+  "sprite_px": [127, 134],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/roompla2/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Roompla2.glb",
+    "tris": 1968,
+    "size_m": [1.4895, 1.2107, 1.5354],
+    "scale": 1.57029
+  }
+}

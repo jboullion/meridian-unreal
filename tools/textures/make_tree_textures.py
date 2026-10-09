@@ -16,7 +16,8 @@ python tools/bgf2png/bgf2png.py <bgf>) and writes into build/textures_placeholde
   teardrop (pear), shaded from the sprite's own fruit colours.
 - T_TreeBark_<Name>.png: a tileable bark strip in the colours of the sprite's trunk (vertical
   streaks from stretched, wrapped noise); `trunk_bgf` takes them from another sprite (the shrub
-  shows no trunk). A tree with no `canopy` (leafless) gets bark only.
+  shows no trunk); `canopy_bgf` likewise takes the leaves from another sprite. A tree with no
+  `canopy` (leafless) gets bark only.
 
 Deterministic (seeded); skipped when the output is newer than the sprite and this script.
 """
@@ -51,6 +52,35 @@ TREES = {
                "leaves": 110, "fruit": {"shape": "round", "count": (0, 2), "size": (46, 58)}},
     # raztree1 (OrnamentalObject 116, OO_RAZA_TREE1): a broad yellow-green crown on a stout trunk
     "Raza": {"bgf": "raztree1", "canopy": (8, 6, 182, 160), "trunk": (88, 185, 104, 250), "seed": 43, "leaves": 120},
+    # the world batch (docs/adr/0007 "World batch"); boxes measured off each sprite: the crown's
+    # rows inset by a sixth, the trunk where it runs clear below the crown
+    "Mid1": {"bgf": "midtree1", "canopy": (91, 105, 419, 362), "trunk": (247, 588, 266, 618), "seed": 53},
+    "Mid3": {"bgf": "midtree3", "canopy": (42, 87, 213, 255), "trunk": (128, 413, 142, 443), "seed": 59},
+    "Mid4": {"bgf": "midtree4", "canopy": (85, 196, 426, 632), "trunk": (248, 918, 266, 948), "seed": 61},
+    "Tall1": {"bgf": "talltree1", "canopy": (85, 123, 426, 581), "trunk": (226, 901, 253, 931), "seed": 67},
+    "Tall2": {"bgf": "talltree2", "canopy": (42, 110, 213, 401), "trunk": (122, 613, 138, 643), "seed": 71},
+    "Tall3": {"bgf": "talltree3", "canopy": (42, 150, 213, 430), "trunk": (129, 625, 144, 655), "seed": 73},
+    # the jungle trunks show only a thin band of canopy at their top edge; all three take their
+    # leaves from tree2's (`canopy_bgf`), the deepest band, in smaller leaves
+    "Jungle1": {"bgf": "tree1", "canopy_bgf": "tree2", "canopy": (40, 1, 215, 28), "trunk": (114, 294, 148, 318),
+                "seed": 79, "leaf_len": (24, 38), "leaves": 200},
+    "Jungle2": {"bgf": "tree2", "canopy": (40, 1, 215, 28), "trunk": (114, 294, 150, 318), "seed": 83,
+                "leaf_len": (24, 38), "leaves": 200},
+    "Jungle3": {"bgf": "tree3", "canopy_bgf": "tree2", "canopy": (40, 1, 215, 28), "trunk": (98, 294, 132, 318),
+                "seed": 89, "leaf_len": (24, 38), "leaves": 200},
+    "Yrxl": {"bgf": "yrxltree", "canopy": (45, 8, 75, 40), "trunk": (48, 141, 63, 165), "seed": 97,
+             "leaf_len": (18, 28), "leaves": 220},
+    # shrubs: no trunk shows, so midtree2's bark, as for Shrub
+    "RazaShrub": {"bgf": "razshrub", "canopy": (21, 18, 105, 96), "trunk_bgf": "midtree2", "trunk": (246, 520, 268, 715),
+                  "seed": 101, "leaves": 230, "leaf_len": (24, 38)},
+    "Bush": {"bgf": "shrub", "canopy": (21, 18, 105, 96), "trunk_bgf": "midtree2", "trunk": (246, 520, 268, 715),
+             "seed": 103, "leaves": 230, "leaf_len": (24, 38)},
+    "Topiary": {"bgf": "roundshrub", "canopy": (58, 127, 188, 312), "trunk_bgf": "midtree2", "trunk": (246, 520, 268, 715),
+                "seed": 107, "leaves": 230, "leaf_len": (24, 38)},
+    "Cypress": {"bgf": "tallbush", "canopy": (11, 50, 55, 185), "trunk": (30, 242, 39, 254), "seed": 109,
+                "leaves": 230, "leaf_len": (24, 38)},
+    "Fern": {"bgf": "palm", "canopy": (18, 14, 91, 49), "trunk_bgf": "midtree2", "trunk": (246, 520, 268, 715),
+             "seed": 113, "leaves": 160, "leaf_len": (40, 64)},
 }
 
 CELL = 512          # atlas cell, px (the atlas is 2x2 cells)
@@ -262,7 +292,7 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     me = os.path.getmtime(__file__)
     for name, cfg in TREES.items():
-        src = os.path.join(REPO, "build", "bgf", cfg["bgf"], "frame_00.png")
+        src = os.path.join(REPO, "build", "bgf", cfg.get("canopy_bgf", cfg["bgf"]), "frame_00.png")
         if not os.path.exists(src):
             print("[make_tree_textures] missing %s (run python tools/bgf2png/bgf2png.py %s)" % (src, cfg["bgf"]))
             sys.exit(1)

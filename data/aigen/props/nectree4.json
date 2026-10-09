@@ -1,0 +1,57 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "nectree4",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 94,
+  "oo_const": "OO_NECTREE4",
+  "bgf": "nectree4",
+  "frame": 0,
+  "describe": "a dead leafless tree with a thick dark grey-brown trunk wrapped in creeping green vines, many crooked limbs, a few pale ragged leaves hanging from the vines",
+  "mesh": "SM_AI_Nectree4",
+  "size_by": "height",
+  "placed": 6,
+  "rooms": 4,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "c813818f-d527-46fe-90a0-1b9d8f5f2622",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image (45 credits)",
+        "file": "build/aigen/props/nectree4/04_tripo_out/C.glb",
+        "digest": "fc0c88db96f341cd",
+        "tris": 3871,
+        "size_m": [0.6347, 0.5074, 0.9743]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/nectree4/04_tripo_out/C.glb",
+      "tripo_task": "c813818f-d527-46fe-90a0-1b9d8f5f2622",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image (45 credits)",
+      "digest": "fc0c88db96f341cd",
+      "tris": 3871,
+      "size_m": [0.6347, 0.5074, 0.9743]
+    }
+  },
+  "polycount": 4000,
+  "height_m": 4.2367,
+  "width_m": 2.6727,
+  "lift_m": 0.0,
+  "sprite_px": [320, 500],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac865ccc59c8190a354b40df22bc4fe",
+      "file": "build/aigen/props/nectree4/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Nectree4.glb",
+    "tris": 3871,
+    "size_m": [2.7602, 2.2067, 4.2367],
+    "scale": 4.34857
+  }
+}

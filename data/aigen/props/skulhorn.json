@@ -1,0 +1,110 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "skulhorn",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 102,
+  "oo_const": "OO_SKULL10",
+  "bgf": "skulhorn",
+  "frame": 0,
+  "describe": "a horned beast skull with a single long curved horn sweeping up and back, bleached white bone",
+  "mesh": "SM_AI_Skulhorn",
+  "size_by": "height",
+  "placed": 2,
+  "rooms": 2,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {
+      "C": {"front": "openai"},
+      "FL": {"front": "openai@back", "left": "openai@front"},
+      "SYMM": {"front": "openai", "back": "openai@front:mirror"}
+    },
+    "runs": {
+      "C": {
+        "tripo_task": "06081975-1132-47e2-a62d-abf6f7e8c859",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "dinosaur skull 3d model",
+        "tris_raw": 956,
+        "file": "build/aigen/props/skulhorn/04_tripo_out/C.glb",
+        "digest": "ed07dde5c7ae750c",
+        "tris": 956,
+        "size_m": [0.939, 0.9731, 0.9041]
+      },
+      "FL": {
+        "tripo_task": "14cd04b9-4dce-4f18-bf71-1217d2dd1706",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view Front (painted face-on view) + Left (the sprite's profile) (45 credits; 2026-10-09)"
+      },
+      "SYM": {
+        "tripo_task": "b82931df-2256-4399-a865-acab681290d5",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in both the Front and Back slots (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/skulhorn/04_tripo_out/SYM.glb",
+        "digest": "fa2ba52c6cef0558",
+        "tris": 3804,
+        "size_m": [0.834, 0.9816, 0.953]
+      },
+      "SYMM": {
+        "tripo_task": "bfb3a8dd-bb3f-4fd7-a07d-a1a9d557569f",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+        "file": "build/aigen/props/skulhorn/04_tripo_out/SYMM.glb",
+        "digest": "95756b262fba02b4",
+        "tris": 3944,
+        "size_m": [0.8021, 0.8793, 0.981]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/skulhorn/04_tripo_out/C.glb",
+      "tripo_task": "06081975-1132-47e2-a62d-abf6f7e8c859",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "dinosaur skull 3d model",
+      "tris_raw": 956,
+      "digest": "f2b994a65921c14a",
+      "tris": 956,
+      "size_m": [0.939, 0.9731, 0.9041]
+    }
+  },
+  "polycount": 4000,
+  "height_m": 0.4927,
+  "width_m": 0.4583,
+  "lift_m": 0.0,
+  "sprite_px": [40, 43],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/skulhorn/02_restyle/openai_front.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac8efb6ab288190b451d8c3f99e2958",
+      "file": "build/aigen/props/skulhorn/02_restyle/openai_back.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Skulhorn.glb",
+    "tris": 956,
+    "size_m": [0.5117, 0.5303, 0.4927],
+    "scale": 0.54497
+  },
+  "notes": [
+    "2026-10-09: the sprite is a profile, so its painted \"back\" is the face-on view: Tripo variant FL puts that in Front and the sprite in Left."
+  ],
+  "symmetrical": true,
+  "custom": {
+    "variant": "SYMM",
+    "file": "build/aigen/props/skulhorn/04_tripo_out/SYMM.glb",
+    "tripo_task": "bfb3a8dd-bb3f-4fd7-a07d-a1a9d557569f",
+    "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view: the front sprite in Front and the same image mirrored left to right in Back (symmetrical) (45 credits; 2026-10-09)",
+    "digest": "95756b262fba02b4",
+    "tris": 3944,
+    "size_m": [0.8021, 0.8793, 0.981],
+    "normalized": {
+      "file": "build/environment/kit/SM_AI_Skulhorn_Custom.glb",
+      "tris": 3944,
+      "size_m": [0.4028, 0.4416, 0.4927],
+      "scale": 0.50222
+    }
+  }
+}

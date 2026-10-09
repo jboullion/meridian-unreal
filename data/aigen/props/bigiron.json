@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "bigiron",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 53,
+  "oo_const": "OO_BIGIRON",
+  "bgf": "bigiron",
+  "frame": 0,
+  "describe": "a large black cast-iron cauldron with a rounded belly, a wide rim and a thin arched carrying handle, standing on three curled iron legs",
+  "mesh": "SM_AI_Bigiron",
+  "size_by": "height",
+  "placed": 2,
+  "rooms": 2,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "35a32831-a103-416a-9d80-049959af1836",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "cauldron 3d model",
+        "tris_raw": 1904,
+        "file": "build/aigen/props/bigiron/04_tripo_out/C.glb",
+        "digest": "8f6b49f116706f6c",
+        "tris": 1904,
+        "size_m": [0.692, 0.7182, 0.9802]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/bigiron/04_tripo_out/C.glb",
+      "tripo_task": "35a32831-a103-416a-9d80-049959af1836",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "cauldron 3d model",
+      "tris_raw": 1904,
+      "digest": "8f6b49f116706f6c",
+      "tris": 1904,
+      "size_m": [0.692, 0.7182, 0.9802]
+    }
+  },
+  "height_m": 1.1,
+  "width_m": 0.7133,
+  "lift_m": 0.0,
+  "sprite_px": [88, 128],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/bigiron/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Bigiron.glb",
+    "tris": 1904,
+    "size_m": [0.7766, 0.806, 1.1],
+    "scale": 1.12219
+  }
+}

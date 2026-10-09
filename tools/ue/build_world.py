@@ -65,10 +65,11 @@ import chimneys  # noqa: E402
 import fires  # noqa: E402
 import scatter  # noqa: E402
 from build_cache import file_digest, source  # noqa: E402
-from environment_materials import ENV as ENVIRONMENT_DIR, ZoneMaterials, ai_prop_material, assign_materials, build_runtime_room_material, tree_materials  # noqa: E402
+from environment_materials import ENV as ENVIRONMENT_DIR, ZoneMaterials, ai_prop_material, assign_materials, build_runtime_room_material, gallery_sprite_material, tree_materials  # noqa: E402
 from zone_mood import MOODS, apply_level_mood  # noqa: E402
 
 LAYOUT = os.path.join(REPO, "data", "zone_layout.json")
+GALLERY = os.path.join(REPO, "data", "environment", "prop_gallery.json")  # tools/environment/prop_gallery.py
 PROPS = os.path.join(REPO, "data", "environment", "props.json")
 GENERATED = "/Game/Generated"
 WORLD_PATH = GENERATED + "/Maps/L_World"
@@ -570,6 +571,11 @@ def zone_props(zone, materials, prop_materials):
         # one placed object's own settings (props.json "placed", by its actor label), over its entry's
         placed = props.get("placed", {}).get(label, {})
         cfg = dict(cfg, **{k: v for k, v in placed.items() if k != "facing"})
+        if obj.get("gallery"):
+            # the prop gallery (tools/environment/prop_gallery.py) names the exact mesh to show, facing south
+            g = obj["gallery"]
+            cfg = dict(cfg, mesh=g["mesh"], mesh_custom=None, mesh_options=None, random_yaw=g.get("random_yaw", False))
+            placed = {"facing": g.get("facing", "south")}
         ordinals[kind] = ordinals.get(kind, -1) + 1
         mesh_name = prop_mesh_name(cfg, label, ordinals[kind])  # None: not generated yet
         scale = 1.0
@@ -593,7 +599,12 @@ def zone_props(zone, materials, prop_materials):
             fire = fire_spec(materials, preset, (cfg["fire"].get("base_m", 0.0) + entry.get("flame_m", [0, 0])[1] / 2) * 100.0)
         if not (mesh or light or fire):
             continue
-        sector = round(blockout.floor_light(os.path.join(REPO, zone["mesh"]), x, z, y), 3) if mesh else 1.0
+        if not mesh:
+            sector = 1.0
+        elif "sector_light" in zone:  # the prop gallery: no original room to read it from
+            sector = float(zone["sector_light"])
+        else:
+            sector = round(blockout.floor_light(os.path.join(REPO, zone["mesh"]), x, z, y), 3)
         if mesh and cfg.get("hanging"):
             y = hanging_y(mesh, scale, obj, y, label)
             if cfg.get("lights_at_m") is not None:
@@ -792,7 +803,7 @@ def open_level(path, maps):
         raise RuntimeError("could not create " + path)
 
 
-def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, props, maps, effects=(), atmosphere=None):
+def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, props, maps, effects=(), atmosphere=None, gallery=None):
     """Rebuild L_Zone_<rid>_<KodClass> when what it places changed (not when a mesh it places was re-imported:
     actors reference the asset, so they show the new mesh as is)."""
     path = zone_level_path(zone)
@@ -801,7 +812,8 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
               "props": props, "light_scale": light_scale(), "code": source(build_zone_level, spawn_fire, spawn_blocker),
               "fire_actor": hasattr(unreal, "MRFireActor"),
               "effects": list(effects), "effect_scale": EFFECT_SCALE, "effect_bounds": EFFECT_BOUNDS,
-              "atmosphere": {k: v for k, v in (atmosphere or {}).items() if k != "ambient"}}
+              "atmosphere": {k: v for k, v in (atmosphere or {}).items() if k != "ambient"},
+              "gallery": gallery, "gallery_code": source(spawn_gallery) if gallery else None}
     key = cache.key(recipe, deps=False)
     if cache.fresh(path, key):
         cache.done(path, key, "levels", False)
@@ -903,10 +915,41 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
         comp.set_editor_property("bounds_scale", EFFECT_BOUNDS[kind])
         comp.set_material(0, eal.load_asset(atmosphere[kind]))
         a.tags = [unreal.Name("ZoneEffect"), unreal.Name("Zone%d" % zone["rid"])]
+    if gallery:
+        spawn_gallery(origin, gallery, zone["rid"])
     if not level_sub.save_current_level():
         raise RuntimeError("could not save " + path)
     cache.done(path, key, "levels", True)
     return path, True
+
+
+GALLERY_TEXT_CM = 14.0  # label letter height
+
+
+def spawn_gallery(origin, gallery, zone_rid):
+    """The prop gallery's sprite billboards (an upright quad per original sprite, unlit, at true scale)
+    and the labels under each mesh (TextRenderActors, read from the south)."""
+    for label, mesh, (x, y, z) in gallery["sprites"]:
+        a = actors.spawn_actor_from_object(eal.load_asset(mesh), origin + unreal.Vector(x, y, z), unreal.Rotator(0, 0, 0))
+        a.set_actor_label(label)
+        comp = a.get_component_by_class(unreal.StaticMeshComponent)
+        comp.set_mobility(unreal.ComponentMobility.STATIC)
+        comp.set_collision_profile_name("NoCollision")
+        comp.set_cast_shadow(False)
+        a.tags = [unreal.Name("GallerySprite"), unreal.Name("Zone%d" % zone_rid)]
+    for i, (text, (x, y, z)) in enumerate(gallery["labels"]):
+        # upright, facing south (a TextRender faces +X; yaw 90 turns it to +Y), just above the floor
+        t = actors.spawn_actor_from_class(unreal.TextRenderActor, origin + unreal.Vector(x, y, z + 25.0),
+                                          unreal.Rotator(roll=0.0, pitch=0.0, yaw=90.0))
+        t.set_actor_label("Gallery_Label_%d" % i)
+        tc = t.text_render
+        tc.set_editor_property("text", text)
+        tc.set_editor_property("horizontal_alignment", unreal.HorizTextAligment.EHTA_CENTER)
+        tc.set_editor_property("vertical_alignment", unreal.VerticalTextAligment.EVRTA_TEXT_CENTER)
+        tc.set_editor_property("world_size", GALLERY_TEXT_CM)
+        tc.set_editor_property("text_render_color", unreal.Color(r=235, g=235, b=235, a=255))
+        tc.set_mobility(unreal.ComponentMobility.STATIC)
+        t.tags = [unreal.Name("GalleryLabel"), unreal.Name("Zone%d" % zone_rid)]
 
 
 BLOCKER_MESH = "/Engine/BasicShapes/Cylinder"  # 100 cm across and tall, pivot at its centre
@@ -1075,6 +1118,9 @@ def main(args):
             prune_art(z, parts)
             if rebuilt:
                 log("zone %d %s: level rebuilt (%s)" % (z["rid"], z["class"], summary))
+        gallery_level = build_gallery(materials, prop_materials, maps)
+        if gallery_level:
+            zone_levels.append(gallery_level)
         build_persistent_level(zone_levels, maps, materials.night_sky)
         remove_stale_levels(zone_levels)
     finally:
@@ -1083,6 +1129,34 @@ def main(args):
         raise RuntimeError("%d zone meshes imported with the wrong orientation" % bad)
     maps.restore()
     log("done in %.0f s; rebuilt/total: %s" % (time.time() - started, cache.summary()))
+
+
+def build_gallery(materials, prop_materials, maps):
+    """The prop gallery (docs/adr/0007 "Prop gallery"): data/environment/prop_gallery.json as one more
+    zone level, L_Zone_9000_PropGallery, built with the real zones' code (its objects name their
+    mesh), plus its sprite billboards and labels. Registered in L_World but loaded only when the game
+    runs with -MRGallery (UMRZoneSubsystem). Returns the level path, or None without the file."""
+    if not os.path.exists(GALLERY):
+        return None
+    zone = json.load(open(GALLERY, encoding="utf-8"))
+    parts, _ = import_zone_parts(zone, materials)
+    props = zone_props(zone, materials, prop_materials)
+    sprites = []
+    for sp in zone["sprites"]:
+        glb = os.path.join(REPO, "build", "environment", "gallery", sp["mesh"] + ".glb")
+        if not os.path.exists(glb):
+            continue
+        mesh = import_zone_mesh(glb, "%s/Gallery/%s" % (GENERATED, sp["mesh"]), collision=False)
+        mi = gallery_sprite_material(sp["texture"])
+        assign_materials(mesh, lambda slot, mi=mi: (mi, 1) if mi else (None, 2))
+        x, y, z = sp["pos"]
+        sprites.append((sp["label"], mesh, [x * 100.0, z * 100.0, y * 100.0]))
+    labels = [(lb["text"], [lb["pos"][0] * 100.0, lb["pos"][2] * 100.0, lb["pos"][1] * 100.0]) for lb in zone["labels"]]
+    path, rebuilt = build_zone_level(zone, parts, [], None, lambda: [], props, maps,
+                                     gallery={"sprites": sprites, "labels": labels})
+    if rebuilt:
+        log("prop gallery: level rebuilt (%d props, %d sprites)" % (len(props), len(sprites)))
+    return path
 
 
 def _launched_for_this_script():

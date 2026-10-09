@@ -1,0 +1,61 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "necbottl",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 110,
+  "oo_const": "OO_NECBOTTLE",
+  "bgf": "necbottl",
+  "frame": 0,
+  "describe": "a tall slender potion bottle of deep blue glass with a long thin neck and a round foot, a small gold stopper",
+  "mesh": "SM_AI_Necbottl",
+  "size_by": "height",
+  "placed": 2,
+  "rooms": 2,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "79baa18c-0c0f-4d4e-b7d1-9c7d18d8fd49",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "blue glass vase 3d model",
+        "tris_raw": 964,
+        "file": "build/aigen/props/necbottl/04_tripo_out/C.glb",
+        "digest": "a422f2d5375efaf6",
+        "tris": 964,
+        "size_m": [0.2684, 0.2672, 0.9659]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/necbottl/04_tripo_out/C.glb",
+      "tripo_task": "79baa18c-0c0f-4d4e-b7d1-9c7d18d8fd49",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "blue glass vase 3d model",
+      "tris_raw": 964,
+      "digest": "a422f2d5375efaf6",
+      "tris": 964,
+      "size_m": [0.2684, 0.2672, 0.9659]
+    }
+  },
+  "polycount": 1000,
+  "height_m": 0.55,
+  "width_m": 0.1504,
+  "lift_m": 0.0,
+  "sprite_px": [35, 128],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/necbottl/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Necbottl.glb",
+    "tris": 964,
+    "size_m": [0.1529, 0.1521, 0.55],
+    "scale": 0.56945
+  }
+}

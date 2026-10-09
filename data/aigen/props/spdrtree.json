@@ -1,0 +1,61 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "spdrtree",
+  "kind": "props",
+  "class": "SpiderTree",
+  "bgf": "spdrtree",
+  "frame": 0,
+  "describe": "a dead hollow tree: a broad twisted reddish-brown stump with a dark hollow opening at its base and sprawling crooked bare limbs, draped in thick grey-white spider webs and sheets of silk between the branches",
+  "mesh": "SM_AI_Spdrtree",
+  "size_by": "height",
+  "placed": 3,
+  "rooms": 3,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "43d9503f-8ad9-4f2b-8f30-868386b42ae0",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image (45 credits)",
+        "stuck_task": "9db9a139-5cbf-41a7-8e62-6dc339b3e5f3",
+        "tripo_name": "gnarled tree 3d model",
+        "tris_raw": 3576,
+        "file": "build/aigen/props/spdrtree/04_tripo_out/C.glb",
+        "digest": "f4c5b26c7346c164",
+        "tris": 3576,
+        "size_m": [0.9002, 0.4954, 0.9322]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/spdrtree/04_tripo_out/C.glb",
+      "tripo_task": "43d9503f-8ad9-4f2b-8f30-868386b42ae0",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image (45 credits)",
+      "stuck_task": "9db9a139-5cbf-41a7-8e62-6dc339b3e5f3",
+      "tripo_name": "gnarled tree 3d model",
+      "tris_raw": 3576,
+      "digest": "f4c5b26c7346c164",
+      "tris": 3576,
+      "size_m": [0.9002, 0.4954, 0.9322]
+    }
+  },
+  "polycount": 4000,
+  "height_m": 5.5,
+  "width_m": 5.1562,
+  "lift_m": 0.0,
+  "sprite_px": [300, 320],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac865ccc59c8190a354b40df22bc4fe",
+      "file": "build/aigen/props/spdrtree/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Spdrtree.glb",
+    "tris": 3576,
+    "size_m": [5.3111, 2.9226, 5.5],
+    "scale": 5.89989
+  }
+}

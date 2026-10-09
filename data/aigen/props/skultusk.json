@@ -1,0 +1,61 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "skultusk",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 101,
+  "oo_const": "OO_SKULL9",
+  "bgf": "skultusk",
+  "frame": 0,
+  "describe": "a bleached animal skull with long tusks",
+  "mesh": "SM_AI_Skultusk",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"], "extra": "lying on its side on the ground"},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "d7dffbb0-b8ba-4f64-b7cc-08a1f344b634",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "prehistoric skull 3d model",
+        "tris_raw": 994,
+        "file": "build/aigen/props/skultusk/04_tripo_out/C.glb",
+        "digest": "94d9d64616f69c9e",
+        "tris": 994,
+        "size_m": [0.9719, 0.5855, 0.6013]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/skultusk/04_tripo_out/C.glb",
+      "tripo_task": "d7dffbb0-b8ba-4f64-b7cc-08a1f344b634",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "prehistoric skull 3d model",
+      "tris_raw": 994,
+      "digest": "94d9d64616f69c9e",
+      "tris": 994,
+      "size_m": [0.9719, 0.5855, 0.6013]
+    }
+  },
+  "polycount": 1000,
+  "height_m": 0.2635,
+  "width_m": 0.4354,
+  "lift_m": 0.0,
+  "sprite_px": [38, 24],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/skultusk/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Skultusk.glb",
+    "tris": 994,
+    "size_m": [0.4259, 0.2566, 0.2635],
+    "scale": 0.43818
+  }
+}

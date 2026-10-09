@@ -1,0 +1,61 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "bagbean4",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 3,
+  "oo_const": "OO_BAG_OF_BEANS",
+  "bgf": "bagbean4",
+  "frame": 0,
+  "describe": "a fat sack of coarse brown woven burlap, tied shut at the top, slumped and lumpy, full of dried beans",
+  "mesh": "SM_AI_Bagbean4",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "5eaecb71-2a62-4a5a-b43e-e3271d8b651b",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "burlap sack 3d model",
+        "tris_raw": 880,
+        "file": "build/aigen/props/bagbean4/04_tripo_out/C.glb",
+        "digest": "db3f757aba35b0a9",
+        "tris": 880,
+        "size_m": [0.7317, 0.684, 0.9809]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/bagbean4/04_tripo_out/C.glb",
+      "tripo_task": "5eaecb71-2a62-4a5a-b43e-e3271d8b651b",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "burlap sack 3d model",
+      "tris_raw": 880,
+      "digest": "db3f757aba35b0a9",
+      "tris": 880,
+      "size_m": [0.7317, 0.684, 0.9809]
+    }
+  },
+  "polycount": 1000,
+  "height_m": 0.6875,
+  "width_m": 0.5156,
+  "lift_m": 0.0172,
+  "sprite_px": [76, 82],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/bagbean4/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Bagbean4.glb",
+    "tris": 880,
+    "size_m": [0.5129, 0.4794, 0.6875],
+    "scale": 0.70089
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "hist_leathamr",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 181,
+  "oo_const": "OO_HIST_LEATHAMR",
+  "bgf": "hist_leathamr",
+  "frame": 0,
+  "describe": "a leather armour jerkin displayed upright: rich brown boiled leather studded with rows of round brass rivets, laced at the neck",
+  "mesh": "SM_AI_HistLeathamr",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "89fce20d-257e-4d95-a7ea-c37d24c460fb",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "medieval leather armor 3d model",
+        "tris_raw": 1970,
+        "file": "build/aigen/props/hist_leathamr/04_tripo_out/C.glb",
+        "digest": "4f324b3cc6e8e057",
+        "tris": 1970,
+        "size_m": [0.9118, 0.5868, 0.9809]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/hist_leathamr/04_tripo_out/C.glb",
+      "tripo_task": "89fce20d-257e-4d95-a7ea-c37d24c460fb",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "medieval leather armor 3d model",
+      "tris_raw": 1970,
+      "digest": "4f324b3cc6e8e057",
+      "tris": 1970,
+      "size_m": [0.9118, 0.5868, 0.9809]
+    }
+  },
+  "height_m": 0.5844,
+  "width_m": 0.5385,
+  "lift_m": 0.0,
+  "sprite_px": [47, 51],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6ac86565d3ac8190b2c09bed03cf07f2",
+      "file": "build/aigen/props/hist_leathamr/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_HistLeathamr.glb",
+    "tris": 1970,
+    "size_m": [0.5432, 0.3496, 0.5844],
+    "scale": 0.59576
+  }
+}
