@@ -6,6 +6,18 @@ The goal is simple: walk back into Meridian and have it feel like home, only bet
 
 > Unreal Meridian is a fan project. It is not affiliated with or endorsed by the owners of the Meridian 59 trademark. It's built on the open-source Server 104 ruleset, with the blessing of the Server 103 and 104 teams.
 
+## What it looks like
+
+The town of Raza on a sunny afternoon in Unreal Meridian, and the same spot in the original client:
+
+| Unreal Meridian | The original |
+|---|---|
+| ![Raza by day in Unreal Meridian](docs/images/raza-day.png) | ![Raza in the original Meridian 59 client](docs/images/original-raza.png) |
+
+The same place at night, under the stars, with lit windows, lamps and chimney smoke:
+
+![Raza by night in Unreal Meridian](docs/images/raza-night.png)
+
 ## Where it stands
 
 We're early. Today the project is essentially a port: the original's data, maps, textures and sounds brought into Unreal, playing online on a real Meridian server (the same one as our browser client, Meridian Shards). The first playable demo covers the town of **Raza** and the zones around it.
