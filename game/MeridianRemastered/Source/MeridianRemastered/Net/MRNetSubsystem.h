@@ -60,6 +60,14 @@ struct FMRChatLine
 	FDateTime When;
 };
 
+/** A note on the large map (the original's map annotations): where in the room (UE cm from the room's origin), and the text. */
+struct FMRMapNote
+{
+	double X = 0.0;
+	double Y = 0.0;
+	FString Text;
+};
+
 /**
  * What the player keeps about others, per character (Saved/MRNet/<server>/social/<name>.json; the
  * original's config.ini): who is ignored, tell groups, command aliases and the chat options.
@@ -73,6 +81,20 @@ struct FMRSocial
 	bool bTimestamps = false;
 	TMap<FString, TArray<FString>> Groups;
 	TMap<FString, FString> Aliases;
+	/**
+	 * The quick chat: F1-F12's lines (F10 is the menu's) and whether each runs at once or waits in
+	 * the chat line (the original's alias.c, its defaults: help, rest, stand, the moods, wave, point, mail).
+	 */
+	FString QuickChat[12];
+	bool QuickRun[12] = {};
+	/** The hotbar (each slot's item as "icon|name") and the spell bar (spell names), kept between sessions. */
+	TArray<FString> Hotbar;
+	TArray<FString> SpellBar;
+	/** Notes on the large map, by room file (lower case). */
+	TMap<FString, TArray<FMRMapNote>> MapNotes;
+
+	/** The quick chat as the original client shipped it (F12 is "who" here, not "quit"). */
+	void DefaultQuickChat();
 };
 
 enum class EMRNetPhase : uint8
@@ -268,6 +290,20 @@ public:
 	/** Logged-on players as (id, name), for tells. */
 	TArray<TPair<uint32, FString>> GetUserNames() const;
 
+	// --- the account (docs/research/blakserv-protocol.md "Account")
+	/**
+	 * Change the account's password (BP_CHANGE_PASSWORD: the old and new ones as at login); the
+	 * server answers OK or not (OnPasswordChanged). Returns why not, if the new one isn't acceptable.
+	 */
+	FString ChangePassword(const FString& Old, const FString& New);
+	/** The password this session logged in with (the delete confirmation compares with it). */
+	bool IsLoginPassword(const FString& Password) const;
+	/**
+	 * Destroy this character (UC_SUICIDE, the original's "suicide"): the server resets it to a
+	 * slot to create anew and sends us to the character list, or says why not.
+	 */
+	void DeleteCharacter();
+
 	// --- mail (module/mailnews; kept on this computer, as the original kept it)
 	/** Fetch new mail (BP_REQ_GET_MAIL); each message is kept and the server told to delete it. */
 	void RequestMail();
@@ -408,6 +444,10 @@ public:
 	FOnMRNetEvent OnGuildChanged;
 	/** The server-kept options came (UC_RECEIVE_PREFERENCES). */
 	FOnMRNetEvent OnPreferencesChanged;
+	/** The server's answer to ChangePassword: true BP_PASSWORD_OK, false BP_PASSWORD_NOT_OK (the old one was wrong). */
+	FOnMRNetResult OnPasswordChanged;
+	/** The character's own files were read (GetSocial): the layouts and the quick chat. */
+	FOnMRNetEvent OnCharacterDataLoaded;
 
 private:
 	void LoadServers();
@@ -448,6 +488,8 @@ private:
 	int32 ServerIndex = INDEX_NONE;
 	FString PendingUser;
 	FString PendingPassword;
+	/** The login password's digest (as sent), to confirm a delete. */
+	TArray<uint8> LoginDigest;
 	TSharedPtr<FMRConnection> Connection;
 	/** Closed connections are released on the next tick, never inside their own callbacks. */
 	TArray<TSharedPtr<FMRConnection>> Retired;

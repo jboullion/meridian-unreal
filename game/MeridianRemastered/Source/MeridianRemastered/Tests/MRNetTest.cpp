@@ -25,6 +25,8 @@
 #include "UI/SMRLookDialog.h"
 #include "UI/SMRTradeDialog.h"
 #include "UI/SMRSocial.h"
+#include "UI/SMROptions.h"
+#include "UI/MRInventorySource.h"
 #include "Engine/LocalPlayer.h"
 #include "UnrealClient.h"
 #include "Zones/MRZoneSubsystem.h"
@@ -74,6 +76,7 @@ void UMRNetTest::Start(APlayerController* InController)
 	FParse::Value(FCommandLine::Get(), TEXT("MRNetUser="), User);
 	FParse::Value(FCommandLine::Get(), TEXT("MRNetPass="), Pass);
 	FParse::Value(FCommandLine::Get(), TEXT("MRNetHold="), HoldSeconds);
+	TestPassword = Pass;
 	bDeath = FParse::Param(FCommandLine::Get(), TEXT("MRNetDeath"));
 	int32 Server = INDEX_NONE;
 	for (int32 i = 0; Net && i < Net->GetServers().Num(); ++i)
@@ -1277,7 +1280,255 @@ void UMRNetTest::Tick()
 				break;
 			}
 			UI->SetWindowOpen(EMRWindow::Who, false);
+			Advance(EStep::Settings);
+			break;
+		}
+		break;
+	}
+
+	case EStep::Settings:
+	{
+		// M9: the Options pages, the large map and a note, the quick chat, the password (changed and
+		// back), deleting a character (refused so soon: only -Create), and a hotbar kept for the relog
+		UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+		const bool bRender = FApp::CanEverRender() && UI && UI->HasHUD();
+		const double Since = Now - SocialAt;
+		const auto Shot = [](const TCHAR* Name)
+		{
+			const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), FString::Printf(TEXT("%s.png"), Name));
+			FScreenshotRequest::RequestScreenshot(File, true, false);
+			UE_LOG(LogMeridian, Display, TEXT("MRNetTest: screenshot %s"), *File);
+		};
+		auto Count = [Net](const TCHAR* Text)
+		{
+			int32 N = 0;
+			for (const FMRChatLine& L : Net->GetChat())
+			{
+				N += L.Text.Contains(Text) ? 1 : 0;
+			}
+			return N;
+		};
+		if (bTimedOut || !UI)
+		{
+			Fail(FString::Printf(TEXT("settings: stuck at stage %d"), SettingsStage));
+			if (UI)
+			{
+				UI->SetWindowOpen(EMRWindow::Options, false);
+				UI->SetWindowOpen(EMRWindow::Map, false);
+			}
 			Advance(EStep::Items);
+			break;
+		}
+		if (SettingsStage == 0)
+		{
+			Net->OnPasswordChanged.AddWeakLambda(this, [this](bool bOk) { ++PasswordAnswers; bLastPasswordOk = bOk; });
+			SettingsStage = bRender ? 1 : 10;
+			SocialAt = Now;
+			break;
+		}
+		// -Render: the Options pages and the map, a second each
+		const TCHAR* Pages[] = {TEXT("Graphics"), TEXT("Controls"), TEXT("Account")};
+		if (SettingsStage >= 1 && SettingsStage <= 3)
+		{
+			if (Since < 0.2)
+			{
+				break;
+			}
+			if (!UI->IsWindowOpen(EMRWindow::Options) || StaticCastSharedPtr<SMROptionsDialog>(UI->GetWindow(EMRWindow::Options))->GetTab() != Pages[SettingsStage - 1])
+			{
+				UI->ShowOptions(Pages[SettingsStage - 1]);
+				SocialAt = Now;
+				break;
+			}
+			if (Since > 1.0)
+			{
+				Shot(*FString::Printf(TEXT("options_%s"), *FString(Pages[SettingsStage - 1]).ToLower()));
+				++SettingsStage;
+				SocialAt = Now;
+			}
+			break;
+		}
+		if (SettingsStage == 4)
+		{
+			UI->SetWindowOpen(EMRWindow::Options, false);
+			SettingsStage = 10;
+			SocialAt = Now;
+			break;
+		}
+		switch (SettingsStage)
+		{
+		case 10:
+		{
+			// the large map, and a note where we stand (kept per character and room)
+			UI->SetWindowOpen(EMRWindow::Map, true);
+			MapNote = FString::Printf(TEXT("note %d"), FMath::RandRange(100, 999));
+			if (TSharedPtr<SMRSocialWindow> W = UI->GetWindow(EMRWindow::Map))
+			{
+				StaticCastSharedPtr<SMRMapWindow>(W)->AddNote(MapNote);
+			}
+			else
+			{
+				// (no HUD: as the window would)
+				FMRSocial& S = Net->GetSocial();
+				S.MapNotes.FindOrAdd(Net->GetPlayer().RoomFile.ToLower()).Add({0.0, 0.0, MapNote});
+				Net->SaveSocial();
+			}
+			SettingsStage = 11;
+			SocialAt = Now;
+			break;
+		}
+		case 11:
+		{
+			if (bRender && Since < 1.2)
+			{
+				break;
+			}
+			if (bRender)
+			{
+				Shot(TEXT("map"));
+			}
+			TArray<FMRMapNote>* Notes = Net->GetSocial().MapNotes.Find(Net->GetPlayer().RoomFile.ToLower());
+			const int32 At = Notes ? Notes->IndexOfByPredicate([this](const FMRMapNote& N) { return N.Text == MapNote; }) : INDEX_NONE;
+			if (At != INDEX_NONE)
+			{
+				Pass(FString::Printf(TEXT("a note on the large map of %s (\"%s\"), kept with the character"), *Net->GetPlayer().RoomName, *MapNote));
+			}
+			else
+			{
+				Fail(TEXT("settings: the map note wasn't kept"));
+			}
+			SettingsStage = 12;
+			SocialAt = Now;
+			break;
+		}
+		case 12:
+			if (Since < 1.5)
+			{
+				break;  // (a gesture counts as an attack: one a second, and /wave was just now)
+			}
+			UI->SetWindowOpen(EMRWindow::Map, false);
+			if (TArray<FMRMapNote>* Notes = Net->GetSocial().MapNotes.Find(Net->GetPlayer().RoomFile.ToLower()))
+			{
+				Notes->RemoveAll([this](const FMRMapNote& N) { return N.Text == MapNote; });  // (tidy, after the picture)
+				Net->SaveSocial();
+			}
+			// the quick chat: F8 is "wave" (the original's default)
+			WavesBefore = Count(TEXT("You wave your hand"));
+			UI->RunQuickChat(7);
+			SettingsStage = 13;
+			SocialAt = Now;
+			break;
+		case 13:
+			if (Count(TEXT("You wave your hand")) > WavesBefore)
+			{
+				Pass(FString::Printf(TEXT("F8, the quick chat's \"%s\", waved"), *Net->GetSocial().QuickChat[7]));
+				SettingsStage = 14;
+				SocialAt = Now;
+			}
+			else if (Since > 5.0)
+			{
+				Fail(FString::Printf(TEXT("settings: F8's \"%s\" didn't wave"), *Net->GetSocial().QuickChat[7]));
+				SettingsStage = 14;
+				SocialAt = Now;
+			}
+			break;
+		case 14:
+		{
+			// the password: a wrong old one is refused; the right one changes it, and back again
+			if (Since < 1.0)
+			{
+				break;  // (one attack time after the wave)
+			}
+			PasswordAnswers = 0;
+			const FString Why = Net->ChangePassword(TestPassword + TEXT("-wrong"), TestPassword + TEXT("-new"));
+			if (!Why.IsEmpty())
+			{
+				Fail(TEXT("settings: ") + Why);
+				SettingsStage = 18;
+			}
+			else
+			{
+				SettingsStage = 15;
+			}
+			SocialAt = Now;
+			break;
+		}
+		case 15:
+			if (PasswordAnswers == 1)
+			{
+				if (bLastPasswordOk)
+				{
+					Fail(TEXT("settings: the server took a wrong old password"));
+					SettingsStage = 16;  // (changed: change it back below)
+				}
+				else
+				{
+					PasswordAnswers = 0;
+					Net->ChangePassword(TestPassword, TestPassword + TEXT("-new"));
+					SettingsStage = 16;
+				}
+				SocialAt = Now;
+			}
+			break;
+		case 16:
+			if (PasswordAnswers >= 1)
+			{
+				const bool bChanged = bLastPasswordOk;
+				PasswordAnswers = 0;
+				Net->ChangePassword(TestPassword + TEXT("-new"), TestPassword);
+				SettingsStage = bChanged ? 17 : 18;
+				if (!bChanged)
+				{
+					Fail(TEXT("settings: the password change was refused"));
+				}
+				SocialAt = Now;
+			}
+			break;
+		case 17:
+			if (PasswordAnswers >= 1)
+			{
+				if (bLastPasswordOk)
+				{
+					Pass(TEXT("the password (BP_CHANGE_PASSWORD): a wrong old one refused (BP_PASSWORD_NOT_OK), changed and changed back (BP_PASSWORD_OK)"));
+				}
+				else
+				{
+					Fail(FString::Printf(TEXT("settings: the password couldn't be changed back: it is now \"%s-new\""), *TestPassword));
+				}
+				SettingsStage = 18;
+				SocialAt = Now;
+			}
+			break;
+		case 18:
+			SettingsStage = 20;  // (deleting the character: the Delete step, at the end of a -Create run)
+			break;
+		case 20:
+		{
+			// a carried item on the hotbar's last slot: kept with the character, for the relog to find
+			// (a stack: shillings or reagents, which nothing wields later)
+			UMRInventorySource* Source = UI->GetSource();
+			int32 Pick = INDEX_NONE;
+			for (int32 i = 0; Source && i < 40 && Pick == INDEX_NONE; ++i)
+			{
+				const FMRSlotContent C = Source->Get(FMRSlotRef(EMRSlotArea::Bag, i));
+				const FMRNetObject* O = C.ObjectId ? Net->FindInventory(C.ObjectId) : nullptr;
+				Pick = O && O->bNumber ? i : INDEX_NONE;
+			}
+			if (Source && Pick != INDEX_NONE)
+			{
+				Source->SwapWithHotbar(FMRSlotRef(EMRSlotArea::Bag, Pick), 8);
+			}
+			const FMRSocial& S = Net->GetSocial();
+			HotbarKey = S.Hotbar.IsValidIndex(8) ? S.Hotbar[8] : FString();
+			if (HotbarKey.IsEmpty())
+			{
+				Fail(TEXT("settings: nothing kept on the hotbar's last slot"));
+			}
+			Net->OnPasswordChanged.RemoveAll(this);
+			Advance(EStep::Items);
+			break;
+		}
+		default:
 			break;
 		}
 		break;
@@ -2450,10 +2701,22 @@ void UMRNetTest::Tick()
 			UE_LOG(LogMeridian, Display, TEXT("MRNetTest: back at the character list (%d slots); entering as %s again"), Net->GetCharacters().Num(), *Named->Name);
 			Net->UseCharacter(Named->Id);
 		}
-		else if (bSaid && Net->GetPhase() == EMRNetPhase::InGame && NetWorld->GetRid() && PC->GetPawn())
+		else if (bSaid && Net->GetPhase() == EMRNetPhase::InGame && NetWorld->GetRid() && PC->GetPawn() && Net->GetNetWorld().bHasInventory)
 		{
 			Pass(FString::Printf(TEXT("logged off to the character list and entered again (%s)"), *Net->GetPlayer().RoomName));
-			Advance(EStep::Logoff);
+			// the hotbar kept with the character (M9): its last slot holds the item placed before
+			const UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+			const FMRSlotContent Kept = UI && UI->GetSource() ? UI->GetSource()->Get(FMRSlotRef(EMRSlotArea::Hotbar, 8)) : FMRSlotContent();
+			const FMRNetObject* O = Kept.ObjectId ? Net->FindInventory(Kept.ObjectId) : nullptr;
+			if (!HotbarKey.IsEmpty() && O && O->Icon + TEXT("|") + O->Name == HotbarKey)
+			{
+				Pass(FString::Printf(TEXT("the hotbar came back with the character: %s on its last slot"), *O->Name));
+			}
+			else if (!HotbarKey.IsEmpty())
+			{
+				Fail(FString::Printf(TEXT("relog: the hotbar's last slot holds %s, not %s"), O ? *O->Name : TEXT("nothing"), *HotbarKey));
+			}
+			Advance(bCreated ? EStep::Delete : EStep::Logoff);
 		}
 		else if (bTimedOut || Net->GetPhase() == EMRNetPhase::Offline)
 		{
@@ -2462,6 +2725,48 @@ void UMRNetTest::Tick()
 			Advance(EStep::Logoff);
 		}
 		break;
+
+	case EStep::Delete:
+	{
+		// -Create, last: delete the new character (UC_SUICIDE, as typed "suicide" and confirmed with the
+		// password): the server resets it and sends us to the character list (UC_SEND_QUIT), its slot to make anew
+		const FString Name = Net->GetSelf() ? Net->GetSelf()->Name : FString();
+		if (!bAsked)
+		{
+			bAsked = true;
+			SayText = Name;
+			if (!Net->IsLoginPassword(TestPassword) || Net->IsLoginPassword(TestPassword + TEXT("x")))
+			{
+				Fail(TEXT("delete: the password check is wrong"));
+			}
+			Net->DeleteCharacter();
+		}
+		else if (Net->GetPhase() == EMRNetPhase::Characters && Net->GetStatus().IsEmpty())
+		{
+			const bool bGone = !Net->GetCharacters().ContainsByPredicate([this](const FMRCharacterSlot& C) { return C.Name == SayText; });
+			const bool bSlot = Net->GetCharacters().ContainsByPredicate([](const FMRCharacterSlot& C) { return C.bNeedsCreation; });
+			if (bGone && bSlot)
+			{
+				Pass(FString::Printf(TEXT("deleted %s (UC_SUICIDE): back at the character list (UC_SEND_QUIT), the slot to create anew"), *SayText));
+			}
+			else
+			{
+				Fail(FString::Printf(TEXT("delete: back at the list, but %s is %s"), *SayText, bGone ? TEXT("gone and no slot is free") : TEXT("still there")));
+			}
+			Advance(EStep::Logoff);
+		}
+		else if (Net->GetChat().ContainsByPredicate([](const FMRChatLine& L) { return L.Text.Contains(TEXT("kill yourself")) || L.Text.Contains(TEXT("only just begun")); }))
+		{
+			Pass(TEXT("asked to delete the character (UC_SUICIDE): the server refused, as Kod's rules say"));
+			Advance(EStep::Logoff);
+		}
+		else if (bTimedOut)
+		{
+			Fail(TEXT("delete: no answer"));
+			Advance(EStep::Logoff);
+		}
+		break;
+	}
 
 	case EStep::Logoff:
 		if (!bAsked)

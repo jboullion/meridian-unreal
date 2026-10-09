@@ -33,8 +33,7 @@ void SMRGameMenu::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 			];
 	};
 	// Options: M9 (docs/parity.md)
-	TSharedRef<SWidget> Options = Button(LOCTEXT("Options", "Options"), []() {}, false);
-	Options->SetToolTipText(LOCTEXT("OptionsSoon", "Not in this version yet"));
+	TSharedRef<SWidget> Options = Button(LOCTEXT("Options", "Options"), [Weak]() { if (Weak.IsValid()) Weak->ShowOptions(TEXT("Graphics")); });
 	TSharedRef<SWidget> LogOff = Button(LOCTEXT("LogOff", "Log Off"), [Weak]() { if (Weak.IsValid()) Weak->LogOffToCharacters(); });
 	LogOff->SetVisibility(TAttribute<EVisibility>::CreateLambda([Weak]()
 	{

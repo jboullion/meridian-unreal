@@ -91,6 +91,29 @@ private:
 	TSharedPtr<SMRTextBox> BodyBox;
 };
 
+/**
+ * The large map ("map", M): the whole room with the player's notes on it (the original's map
+ * annotations), kept per character and room. A click on the map marks where the next note goes.
+ */
+class MERIDIANREMASTERED_API SMRMapWindow : public SMRSocialWindow
+{
+public:
+	SLATE_BEGIN_ARGS(SMRMapWindow) {}
+	SLATE_END_ARGS()
+	void Construct(const FArguments& InArgs, UMRUISubsystem* InUI);
+	virtual void Rebuild() override;
+	virtual void OnOpened() override;
+	/** Add a note (tests): at Where (room cm), or at the player. */
+	void AddNote(const FString& Text, TOptional<FVector2D> Where = TOptional<FVector2D>());
+
+private:
+	/** The room's notes (by its .roo), and its origin in the world. */
+	TArray<struct FMRMapNote>* Notes() const;
+	FVector Origin() const;
+	TOptional<FVector2D> Marked;
+	TSharedPtr<SMRTextField> NoteField;
+};
+
 /** The guild (UC_GUILDINFO, UC_GUILD_LIST), or founding one (UC_GUILD_ASK). */
 class MERIDIANREMASTERED_API SMRGuildDialog : public SMRSocialWindow
 {

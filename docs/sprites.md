@@ -116,7 +116,7 @@ The sections below describe the upscale and the in-betweens as they were built a
 | Runtime colour (Phase 5) | Each part is stored once, untranslated; the GPU applies the look's palette translations. 26 atlases, 469 MB uncompressed (≈117 MB BC7), down from 1.1 GB for the same 5 looks with baked colours. The cost stays flat for any number of colour combinations: a 50-player crowd with random creator colours runs as fast as before. | `sprites/tour/crowd_v2/` |
 | AI hair (Phase 5) | One prompt gave 6 consistent views of a new style. It takes every creator hair colour and sits on the head at all 8 angles. | `sprites/ai_hair/`, `sprites/preview/ai_hair_heads.png` |
 | Heights (Phase 6) | 90–110 % (server-clamped) scales the drawing and the first-person eyes; the capsule doesn't change. | `sprites/tour/crowd_v2/` |
-| Multiplayer | Look, creator colours, height and the current action replicate (`FMRSpriteAppearance`, `FMRSpriteActionState`). Dedicated server plus 2 clients: client B sees client A's `test_sword`, colours, 105 % height and dance (`tools/ue/run_sprite_net_test.ps1`: PASS). | `Saved/Logs/spritenet-*.log` |
+| Multiplayer | Look, creator colours, height and the current action replicate (`FMRSpriteAppearance`, `FMRSpriteActionState`). Checked with a UE dedicated server and two clients until that path was retired (2026-10-08, M9 of ADR 0012): online, the Meridian server decides how others look (`MRNetLook`). | — |
 
 ## Colour at runtime
 
@@ -191,7 +191,6 @@ Lit sprites (the default) take the world's lights, sun, moods, torches and futur
 | Import into UE | `powershell -File tools/ue/import_sprites.ps1` | `/Game/Generated/Sprites` (atlases, lookups, `M_SpriteBody`, `M_SpriteBodyUnlit`) |
 | Visual tour / crowd / monsters | `powershell -File tools/sprites/run_sprite_tour.ps1 -Label x [-Crowd \| -Monsters] [-Look l] [-Zone 301] [-Hour h] [-Cvars "..."]` | `build/sprites/tour/<label>/` |
 | Smoothing clips | `powershell -File tools/sprites/run_sprite_clips.ps1 -Clip walk\|dance\|wave\|weapon_attack [-Look l] [-Variants a,b] [-View 0]` (`-View`: 90 the side, 0 from behind; variants `old_attack`, `new_attack` compare the one-shot changes) | `build/sprites/clips/<clip>.gif` |
-| Multiplayer check | `powershell -File tools/ue/run_sprite_net_test.ps1` | PASS / FAIL |
 
 Notes:
 - Test looks are in `data/sprites/looks.json`. `player_male` and `player_female` are the bases players are drawn on; their bounds hold every creator hair.
@@ -223,7 +222,7 @@ Notes:
 
 **Tests:**
 - Automation: `Meridian.Sprites.Angles|Tracks|Placement|Tweens|Colours|Monsters`.
-- Network: `run_sprite_net_test.ps1`.
+- Online: `tools/ue/run_net_test.ps1` ("we wear what the server says").
 - In game: `-MRScreenshots` (8-angle orbit, `view_behind`, `view_front`), `-MRProfile` (a crowd with random looks, colours and heights), `-MRSpriteClip=<clip>`.
 
 **Console variables:**
@@ -329,7 +328,6 @@ Monsters and NPCs are drawn by the same `UMRSpriteBodyComponent` as players. A m
   - then a chase: an aggressive mummy and a provoked bunny with AI on, logged with distance and attacks
 - `run_sprite_tour.ps1 -Label x -Monsters -Zone 306|330|331`: moves next to four monsters the spawner placed and photographs them, logging the spawn heights.
 - Automation: `Meridian.Sprites.Monsters` (every class has its look and corpse; the rat's Kod animations; the cow has no attack; mummies are aggressive).
-- `run_sprite_net_test.ps1` also checks that client B receives the server's monsters with their looks.
 
 **Fixed along the way:** a sprite whose atlas wasn't ready on its first draw stayed blank. In an editor build a just-loaded texture shows a placeholder while it compiles. Such a draw is no longer cached, so it is retried.
 

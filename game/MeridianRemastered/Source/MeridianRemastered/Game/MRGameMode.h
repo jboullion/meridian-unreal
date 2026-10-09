@@ -4,7 +4,6 @@
 #include "GameFramework/GameModeBase.h"
 #include "MRGameMode.generated.h"
 
-class UMRZoneSmokeTest;
 
 /**
  * Server rules. Players start in their home zone (the Raza Inn for new characters, as in
@@ -34,8 +33,4 @@ public:
 private:
 	/** Players waiting for their client to stream the start zone before spawning. */
 	TMap<TWeakObjectPtr<AController>, double> SpawnWaitStart;
-
-	/** Created when the server runs with -MRZoneTest. */
-	UPROPERTY()
-	TObjectPtr<UMRZoneSmokeTest> ZoneSmokeTest;
 };

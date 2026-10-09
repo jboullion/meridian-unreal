@@ -133,20 +133,13 @@ public:
 	/** True if the zone's geometry is loaded and visible in this world. */
 	bool IsZoneVisibleLocally(int32 Rid) const;
 
-	/**
-	 * Server: true if Controller can be put into the zone right now. For a remote player this
-	 * means its client has reported the zone's level as visible; for anything else, that the
-	 * level is visible on the server.
-	 */
+	/** True if Controller can be put into the zone right now: its level is in and visible. */
 	bool IsZoneReadyFor(const AController* Controller, int32 Rid) const;
-
-	/** Client: make exactly these zones' levels loaded and visible, unloading the rest. */
-	void SetClientStreamingTarget(const TSet<int32>& ZoneRids);
 
 	/** Server: load every zone level; bBlock waits until they are all in. */
 	void LoadAllZoneLevels(bool bBlock);
 
-	/** How long the server waits for a client to stream a destination before moving it anyway. */
+	/** How long a spawn or a teleport waits for its zone's level before going anyway. */
 	static constexpr double StreamWaitTimeoutSeconds = 8.0;
 
 	bool IsLoaded() const { return Zones.Num() > 0; }

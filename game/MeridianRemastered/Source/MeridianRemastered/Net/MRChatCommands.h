@@ -43,8 +43,10 @@ namespace MRChat
 	 *   whole name. A command that takes no words counts only when typed alone, so "drop it!" is said.
 	 * - A command alias ("alias" command) runs in place of the line when its first word is the alias
 	 *   (after "/", the start of one will do); "~~" in the alias takes the rest of the line.
+	 * bOriginal (the option mr.Chat.OriginalTyping): every line is a command, as in the original
+	 * client ("say" to speak), as if it began with "/".
 	 */
-	MERIDIANREMASTERED_API FMRTypedLine Interpret(const FString& Line, const TMap<FString, FString>& Aliases);
+	MERIDIANREMASTERED_API FMRTypedLine Interpret(const FString& Line, const TMap<FString, FString>& Aliases, bool bOriginal = false);
 
 	/** The command a "/" line names: a whole name first, else the first (in the original's order) its word starts. */
 	MERIDIANREMASTERED_API bool FindCommand(const FString& Text, EMRChatCommand& Out, FString& OutArgs);

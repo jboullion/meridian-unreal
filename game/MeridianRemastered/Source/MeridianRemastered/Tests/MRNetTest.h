@@ -68,7 +68,7 @@ public:
 	void Start(APlayerController* InController);
 
 private:
-	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Social, Items, Spells, Trade, Combat, Travel, Death, Relog, Logoff, Done };
+	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Social, Settings, Items, Spells, Trade, Combat, Travel, Death, Relog, Delete, Logoff, Done };
 
 	void Tick();
 	void Pass(const FString& What);
@@ -185,4 +185,12 @@ private:
 	FString MailWhy;
 	uint32 PrefsBefore = 0;
 	int32 SocialShot = 0;
+	/** Settings: the stage, the login password, the password answers, the hotbar item kept for the relog. */
+	int32 SettingsStage = 0;
+	FString TestPassword;
+	int32 PasswordAnswers = 0;
+	bool bLastPasswordOk = false;
+	int32 WavesBefore = 0;
+	FString HotbarKey;
+	FString MapNote;
 };

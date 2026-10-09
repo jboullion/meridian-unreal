@@ -57,7 +57,7 @@ try {
     Step "minimap walls" { python tools/roo2gltf/roo2gltf.py --walls-only }
     Step "capture minimaps" { powershell -NoProfile -File tools/ue/run_map_capture.ps1 }
     Step "import UI art" { powershell -NoProfile -File tools/ue/import_ui.ps1 -Headless }
-    Write-Host "== done. Run tools/ue/run_zone_test.ps1 to verify."
+    Write-Host "== done. Run tools/ue/run_move_test.ps1 (offline) or tools/ue/run_net_test.ps1 (with the Shards dev stack) to verify."
 }
 finally {
     Pop-Location

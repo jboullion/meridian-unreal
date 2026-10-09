@@ -10,7 +10,6 @@
 #include "Player/MRHUD.h"
 #include "Player/MRPlayerController.h"
 #include "Player/MRPlayerState.h"
-#include "Tests/MRZoneSmokeTest.h"
 #include "TimerManager.h"
 #include "Zones/MRZoneSubsystem.h"
 
@@ -61,8 +60,8 @@ void AMRGameMode::RestartPlayer(AController* NewPlayer)
 		PS->SetZoneId(StartZone);
 	}
 
-	// Spawn only once the client has the start zone's geometry, so nobody drops through an
-	// unloaded floor. Retry shortly; after the timeout spawn anyway.
+	// Spawn only once the start zone's geometry is in, so nobody drops through an unloaded floor.
+	// Retry shortly; after the timeout spawn anyway.
 	const double Now = FPlatformTime::Seconds();
 	const double* WaitStart = SpawnWaitStart.Find(NewPlayer);
 	if (!Zones->IsZoneReadyFor(NewPlayer, StartZone))
@@ -84,11 +83,11 @@ void AMRGameMode::RestartPlayer(AController* NewPlayer)
 			}), 0.1f, false);
 			return;
 		}
-		UE_LOG(LogMeridian, Warning, TEXT("MRStreaming: client never streamed start zone %d; spawning anyway"), StartZone);
+		UE_LOG(LogMeridian, Warning, TEXT("MRStreaming: start zone %d never loaded; spawning anyway"), StartZone);
 	}
 	if (WaitStart)
 	{
-		UE_LOG(LogMeridian, Log, TEXT("MRStreaming: start zone %d ready on client after %.0f ms"), StartZone, (Now - *WaitStart) * 1000.0);
+		UE_LOG(LogMeridian, Log, TEXT("MRStreaming: start zone %d ready after %.0f ms"), StartZone, (Now - *WaitStart) * 1000.0);
 		SpawnWaitStart.Remove(NewPlayer);
 	}
 	RestartPlayerAtTransform(NewPlayer, Zones->GetStartTransform(StartZone));
@@ -106,11 +105,5 @@ void AMRGameMode::RestartPlayer(AController* NewPlayer)
 			}
 		}), 0.25f, false);
 		return;
-	}
-
-	if (!ZoneSmokeTest && UMRZoneSmokeTest::IsRequested() && NewPlayer->GetPawn())
-	{
-		ZoneSmokeTest = NewObject<UMRZoneSmokeTest>(this);
-		ZoneSmokeTest->Start(NewPlayer->GetPawn());
 	}
 }

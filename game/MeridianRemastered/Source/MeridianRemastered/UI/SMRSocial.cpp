@@ -9,6 +9,8 @@
 #include "Net/MRNetWorld.h"
 #include "Net/MRNetWorldSubsystem.h"
 #include "Net/MRProtocol.h"
+#include "UI/SMRMinimap.h"
+#include "Zones/MRZoneSubsystem.h"
 #include "UI/MRUIStyle.h"
 #include "UI/MRUISubsystem.h"
 #include "UI/SMRControls.h"
@@ -516,6 +518,134 @@ void SMRNewsDialog::Rebuild()
 		]
 		+ SVerticalBox::Slot().AutoHeight()[Buttons],
 		280.f);
+}
+
+// ------------------------------------------------------------------------------ map
+
+void SMRMapWindow::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+{
+	Init(InUI, EMRWindow::Map);
+	// (built when opened: OnOpened; SharedThis isn't ready inside Construct)
+}
+
+void SMRMapWindow::OnOpened()
+{
+	Marked.Reset();
+	Rebuild();
+}
+
+TArray<FMRMapNote>* SMRMapWindow::Notes() const
+{
+	UMRNetSubsystem* N = Net();
+	return N && !N->GetPlayer().RoomFile.IsEmpty() ? &N->GetSocial().MapNotes.FindOrAdd(N->GetPlayer().RoomFile.ToLower()) : nullptr;
+}
+
+FVector SMRMapWindow::Origin() const
+{
+	const APlayerController* PC = UI.IsValid() ? UI->GetPlayerController() : nullptr;
+	const UMRNetWorldSubsystem* W = NetWorldOf(UI.Get());
+	const UMRZoneSubsystem* Zones = PC && PC->GetWorld() ? PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>() : nullptr;
+	const FMRZoneInfo* Zone = W && Zones ? Zones->FindZone(W->GetRid()) : nullptr;
+	return Zone ? Zone->Origin : FVector::ZeroVector;
+}
+
+void SMRMapWindow::AddNote(const FString& Text, TOptional<FVector2D> Where)
+{
+	TArray<FMRMapNote>* List = Notes();
+	const FString T = Text.TrimStartAndEnd().Left(40);
+	if (!List || T.IsEmpty() || List->Num() >= 30)
+	{
+		return;
+	}
+	FVector2D At;
+	if (Where.IsSet())
+	{
+		At = Where.GetValue();
+	}
+	else
+	{
+		const APlayerController* PC = UI.IsValid() ? UI->GetPlayerController() : nullptr;
+		const APawn* Pawn = PC ? PC->GetPawn() : nullptr;
+		At = Pawn ? FVector2D(Pawn->GetActorLocation() - Origin()) : FVector2D::ZeroVector;
+	}
+	List->Add({At.X, At.Y, T});
+	Net()->SaveSocial();
+	Marked.Reset();
+	Rebuild();
+}
+
+void SMRMapWindow::Rebuild()
+{
+	UMRUISubsystem* Ui = UI.Get();
+	UMRNetSubsystem* N = Net();
+	if (!Ui || !Ui->GetStyle())
+	{
+		return;
+	}
+	UMRUIStyle* S = Ui->GetStyle();
+	const float Px = S->Px();
+	TWeakPtr<SMRMapWindow> Weak = SharedThis(this);
+	SAssignNew(NoteField, SMRTextField, Ui).Width(110.f).MaxLength(40).HintText(LOCTEXT("NoteHint", "A note"))
+		.OnSubmit(FSimpleDelegate::CreateLambda([Weak]() { if (TSharedPtr<SMRMapWindow> D = Weak.Pin()) D->AddNote(D->NoteField->GetText(), D->Marked); }));
+	TSharedRef<SVerticalBox> List = SNew(SVerticalBox);
+	const TArray<FMRMapNote>* Room = Notes();
+	for (int32 i = 0; Room && i < Room->Num(); ++i)
+	{
+		List->AddSlot().AutoHeight().Padding(0.f, 0.5f * Px)
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)[Wrapped(S, FText::FromString(FString::Printf(TEXT("%d %s"), i + 1, *(*Room)[i].Text)), 9.f)]
+			+ SHorizontalBox::Slot().AutoWidth()
+			[
+				SNew(SMRTextButton, Ui).Text(FText::FromString(TEXT("x"))).TextSize(8.5f).MinWidth(14.f)
+					.OnClicked(FSimpleDelegate::CreateLambda([Weak, i]()
+					{
+						if (TSharedPtr<SMRMapWindow> D = Weak.Pin(); D && D->Notes() && D->Notes()->IsValidIndex(i))
+						{
+							D->Notes()->RemoveAt(i);
+							D->Net()->SaveSocial();
+							D->Rebuild();
+						}
+					}))
+			]
+		];
+	}
+	TSharedRef<SHorizontalBox> Buttons = ButtonRow();
+	AddButton(Buttons, Ui, LOCTEXT("Close", "Close"), [Weak]() { if (TSharedPtr<SMRMapWindow> D = Weak.Pin()) D->Close(); });
+	const FText Where = Marked.IsSet() ? LOCTEXT("AtMark", "Type a note for the marked place:") : LOCTEXT("AtYou", "Click the map to mark a place, or note where you stand:");
+	SetFrame(FText::FromString(N && !N->GetPlayer().RoomName.IsEmpty() ? N->GetPlayer().RoomName : TEXT("Map")),
+		SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight()
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth()
+			[
+				SNew(SMRMinimap, Ui).Side(200.f).bWhole(true)
+					.OnClicked(SMRMinimap::FOnMapClick::CreateLambda([Weak](FVector2D World)
+					{
+						if (TSharedPtr<SMRMapWindow> D = Weak.Pin())
+						{
+							D->Marked = World - FVector2D(D->Origin());
+							D->Rebuild();
+							D->NoteField->Focus();
+						}
+					}))
+			]
+			+ SHorizontalBox::Slot().FillWidth(1.f).Padding(4.f * Px, 0.f, 0.f, 0.f)
+			[
+				SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight()[Wrapped(S, Where, 8.5f, Dim)]
+				+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 2.f * Px)[NoteField.ToSharedRef()]
+				+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 0.f, 0.f, 3.f * Px)
+				[
+					SNew(SMRTextButton, Ui).Text(LOCTEXT("AddNote", "Add the note")).TextSize(9.f).MinWidth(60.f)
+						.OnClicked(FSimpleDelegate::CreateLambda([Weak]() { if (TSharedPtr<SMRMapWindow> D = Weak.Pin()) D->AddNote(D->NoteField->GetText(), D->Marked); }))
+				]
+				+ SVerticalBox::Slot().AutoHeight()[SNew(SBox).HeightOverride(150.f * Px)[SNew(SScrollBox) + SScrollBox::Slot()[List]]]
+			]
+		]
+		+ SVerticalBox::Slot().AutoHeight()[Buttons],
+		340.f);
 }
 
 // ------------------------------------------------------------------------------ guild

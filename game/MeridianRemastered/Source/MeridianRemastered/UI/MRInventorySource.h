@@ -177,10 +177,14 @@ private:
 	EMREquipSlot SlotFor(const FMRSlotContent& C) const;
 	void PlaceOnHotbar(uint32 ObjectId, int32 Index);
 	void RemoveFromHotbar(uint32 ObjectId);
+	/** The layouts kept per character (UMRNetSubsystem::GetSocial: hotbar items by icon and name, spell names). */
+	void LoadLayout();
+	void SaveLayout();
 	void ClearCursor();
 
 	TWeakObjectPtr<class UMRNetSubsystem> Net;
 	FDelegateHandle InventoryHandle;
+	FDelegateHandle LayoutHandle;
 	TArray<FName> KnownSpells;
 	TMap<FName, int32> SpellPercents;
 	TMap<FName, int32> Skills;

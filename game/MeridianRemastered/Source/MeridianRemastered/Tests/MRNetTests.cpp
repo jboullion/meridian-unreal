@@ -6,6 +6,7 @@
 #include "Misc/AutomationTest.h"
 #include "Net/MRAssetCache.h"
 #include "Net/MRChatCommands.h"
+#include "Core/MRSettings.h"
 #include "Net/MRNetWorld.h"
 #include "Net/MRProtocol.h"
 #include "Net/MRResources.h"
@@ -533,6 +534,25 @@ bool FMRNetChatTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("the group deleted by its start"), Groups.IsEmpty());
 	TestEqual(TEXT("a spell by its start"), MRChat::FindByName({TEXT("appraise"), TEXT("meditate"), TEXT("mend")}, TEXT("med")), 1);
 	TestEqual(TEXT("an ambiguous start"), MRChat::FindByName({TEXT("appraise"), TEXT("meditate"), TEXT("mend")}, TEXT("me")), -2);
+	// the original's typing (mr.Chat.OriginalTyping): every line a command, "say" to speak
+	const FMRTypedLine O1 = MRChat::Interpret(TEXT("hello there"), NoAliases, true);
+	TestEqual(TEXT("the original's typing: a plain line is no command"), static_cast<int32>(O1.Kind), static_cast<int32>(K::Unknown));
+	const FMRTypedLine O2 = MRChat::Interpret(TEXT("s hi all"), NoAliases, true);
+	TestTrue(TEXT("the original's typing: \"s\" says"), O2.Kind == K::Command && O2.Command == EMRChatCommand::Say && O2.Args == TEXT("hi all"));
+	TestTrue(TEXT("the original's typing: \":\" still emotes"), MRChat::Interpret(TEXT(":grins"), NoAliases, true).Command == EMRChatCommand::Emote);
+	// the keys (Core/MRSettings): every binding once, both presets set
+	TSet<FName> Ids;
+	int32 Differ = 0;
+	for (const FMRKeyBinding& B : MRKeys::All())
+	{
+		TestFalse(FString::Printf(TEXT("binding %s listed once"), *B.Id.ToString()), Ids.Contains(B.Id));
+		Ids.Add(B.Id);
+		Differ += B.Modern != B.Original ? 1 : 0;
+	}
+	TestTrue(TEXT("the Original preset moves on the arrows"), Differ >= 4 && MRKeys::All().ContainsByPredicate([](const FMRKeyBinding& B)
+	{
+		return B.Id == TEXT("MoveForward") && B.Original == EKeys::Up && B.Modern == EKeys::W;
+	}));
 	// the server's style codes (srvrstr.c)
 	const TArray<FMRTextRun> Runs = MRServerText::Runs(TEXT("a ~rred~n b ~Bbold~B ~zx"));
 	TestEqual(TEXT("style codes make runs"), Runs.Num(), 5);

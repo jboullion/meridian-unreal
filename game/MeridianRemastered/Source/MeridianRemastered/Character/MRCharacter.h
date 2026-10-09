@@ -53,6 +53,8 @@ class MERIDIANREMASTERED_API AMRCharacter : public ACharacter, public IAbilitySy
 	GENERATED_BODY()
 
 public:
+	/** Map the keys again if the player changed them (Options > Controls). */
+	void RemapKeysIfChanged();
 	AMRCharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -207,6 +209,11 @@ protected:
 
 	// --- input
 	void BuildInput();
+	/** Map the player's keys (MRKeys) into the input context; again when they change (RemapKeysIfChanged). */
+	void MapKeys();
+	int32 MappedKeyVersion = 0;
+	bool IsOnline() const;
+	void OnTurn(const struct FInputActionValue& Value);
 	void OnMove(const FInputActionValue& Value);
 	void OnLook(const FInputActionValue& Value);
 	void OnWalkStarted();
@@ -224,6 +231,7 @@ protected:
 	UPROPERTY(Transient) TObjectPtr<UInputMappingContext> DefaultContext;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> MoveAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> LookAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> TurnAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> GoAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> WalkAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> ViewAction;

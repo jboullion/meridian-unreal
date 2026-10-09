@@ -15,10 +15,6 @@ struct FInputActionValue;
  * context, IMC_UI, built in code like the character's: 1-9 and the mouse wheel select the hotbar
  * slot, numpad 1-9 cast from the spell bar, E or I opens the inventory dialog, - and = zoom the map,
  * Enter starts a chat line (playing on a Meridian server).
- *
- * Also drives client-side zone streaming: on a network client, keeps the player's current zone
- * and every zone one exit away loaded and visible (UMRZoneSubsystem::SetClientStreamingTarget),
- * plus any zone the server asks for with ClientPrepareZone (e.g. a teleport to a far zone).
  */
 UCLASS()
 class MERIDIANREMASTERED_API AMRPlayerController : public APlayerController
@@ -26,6 +22,8 @@ class MERIDIANREMASTERED_API AMRPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+	/** Map the keys again if the player changed them (Options > Controls): ours and the pawn's. */
+	void RemapKeysIfChanged();
 	AMRPlayerController();
 
 	virtual void PlayerTick(float DeltaTime) override;
@@ -34,16 +32,12 @@ public:
 	UFUNCTION(Exec)
 	void MRBookmark(const FString& Name);
 
-	/** Server -> owning client: start streaming this zone now (it is about to be needed). */
-	UFUNCTION(Client, Reliable)
-	void ClientPrepareZone(int32 Rid);
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
 private:
-	void UpdateZoneStreaming();
 
 	// --- UI input (IMC_UI)
 	void BuildUIInput();
@@ -53,6 +47,10 @@ private:
 	void OnInventoryKey();
 	/** O: who is on; L: mail; Y: the guild (online). */
 	void OnWindowKey(EMRWindow Window);
+	/** F1-F12 online: the quick chat's line (the original's function-key aliases). */
+	void OnQuickChatKey(int32 Index);
+	void MapUIKeys();
+	int32 MappedKeyVersion = 0;
 	void OnChatKey();
 	/** Esc or F10: the Escape menu (in PIE, Esc stops play: use F10 there). */
 	void OnMenuKey();
@@ -80,9 +78,11 @@ private:
 	UPROPERTY(Transient) TArray<TObjectPtr<UInputAction>> SpellActions;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> HotbarScrollAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> InventoryAction;
+	UPROPERTY(Transient) TArray<TObjectPtr<UInputAction>> QuickChatActions;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> WhoAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> MailAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> GuildAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> MapWindowAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> ChatAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> MapZoomAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> MenuAction;
@@ -95,21 +95,6 @@ private:
 	UPROPERTY(Transient) TObjectPtr<UInputAction> UseAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> RestAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> ApplyAction;
-
-	/** Zones requested by the server, with the time the request expires. */
-	TMap<int32, double> PreparedZones;
-
-	/** Zones recently left, kept resident until the given time. */
-	TMap<int32, double> RetainUntil;
-
-	/** Last streaming target sent to the zone subsystem. */
-	TSet<int32> StreamingTarget;
-
-	/** Zone the local player was last seen in, and whether its level was visible on entry. */
-	int32 LastZone = 0;
-
-	/** Levels requested but not yet visible: zone -> request time, for load-time logging. */
-	TMap<int32, double> PendingLoads;
 
 	/** -MRScreenshots visual check. */
 	UPROPERTY()
@@ -125,9 +110,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<class UMRSpriteClipTour> SpriteClipTour;
-
-	UPROPERTY()
-	TObjectPtr<class UMRSpriteNetTest> SpriteNetTest;
 
 	UPROPERTY()
 	TObjectPtr<class UMRMonsterTour> MonsterTour;

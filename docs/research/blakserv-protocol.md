@@ -445,6 +445,16 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
 - **Never sent by Server 104's Kod:** `BP_XLAT_OVERRIDE` (234), which clientd3d doesn't handle either; `BP_SECTOR_ANIMATE`, `BP_WALL_SCROLL` and `BP_SECTOR_SCROLL`.
   - `BP_SET_VIEW` and `BP_RESET_VIEW` (237, 238) come only from the view globe (`viewglbe.kod`): `u32` object, `u32` flags, `u32` height, `u8` light, to watch through another object.
 
+## Account (`blakserv/game.c GameProtocolParse`; `clientd3d/maindlg.c`, `server.c`; Kod `user.kod UserCommandSuicide`, `PerformSuicide`)
+- **The password:** `BP_CHANGE_PASSWORD` (23) carries the old and the new password, each as a string (`u16` length, then the bytes). Each is digested as at login: MD5 of the Latin-1 text, a 0 byte made 1.
+  - **blakserv answers itself** (no Kod): `BP_PASSWORD_NOT_OK` (161) when the old one isn't the account's, else it keeps the new one and answers `BP_PASSWORD_OK` (160).
+  - **A malformed message** (a length that runs past the end) is dropped with no answer at all.
+  - The original asked for 6 characters at least, and the new one twice (`maindlg.c`).
+- **Deleting a character** is the original's "suicide": `UC_SUICIDE` (8), no arguments, confirmed on the client with the account's password (`command.c SuicideVerifyDialogProc`). `BP_DELETE_CHARACTER` (47) isn't handled by this server.
+  - **Kod refuses** a guild's master, a player out of grace, the Justicar, one holding a token, and one whose base health is above `GetMaxSuicideHP`.
+  - **It also refuses within 10 minutes** of the character's last restart ("Give it a day."); a character just made through the creator wasn't held by that on our server.
+  - **Otherwise** it renames the character to a placeholder ("Suicide<time>..."), resets it, and sends `UC_SEND_QUIT` (1). The client answers with `BP_REQ_QUIT` (`merintr.c HandleSendQuit`): back to the character list, where the slot is one to create anew.
+
 ## Session (`blakserv/game.c`, Kod `user.kod`; the client side is `clientd3d/game.c`, `com.c`)
 - **Leaving the game but not the server:**
   - The client sends `BP_REQ_QUIT` (54). The server logs the character off and answers `BP_QUIT` (149) (`GameProtocolParse`, `GameClientExit`).

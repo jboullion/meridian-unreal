@@ -523,6 +523,50 @@ The existing movement, UI-shot and look-dev runs stay green. Look-dev compares r
 - `-Render` adds `news.png`, `mail.png`, `guild.png` and `who.png` (`build/net/m8_social.png`).
 - **Found on the way:** a user command sent while the client waits for its room isn't sent at all (`CanSend`), so the options are asked for after the room.
 
+### M9, settings, account and polish (2026-10-08)
+**What landed** (ADR 0009, "Options, the large map and the quick chat"; docs/research/blakserv-protocol.md, "Account"):
+- **The Options window:** graphics, sound, keys with the Modern and Original presets, the server-kept options, the quick chat, the account.
+- **The account:**
+  - changing the password (`BP_CHANGE_PASSWORD`);
+  - deleting the character (the original's "suicide", `UC_SUICIDE`; confirmed with the password; the server sends us back to the character list).
+- **The leftovers of M3 and M8:**
+  - the hotbar and spell bar kept with the character;
+  - the original's typing as an option;
+  - the quick chat (F1–F12);
+  - "password" and "suicide".
+- **The large map** with notes (the original's map annotations).
+- **Turning by keys:** for the Original keys.
+- **The UE dedicated-server path is retired** (ADR 0010):
+  - no client-side zone streaming or `ClientPrepareZone`;
+  - no `MRZoneSmokeTest` / `run_zone_test.ps1` or `MRSpriteNetTest` / `run_sprite_net_test.ps1`;
+  - the game runs one world with every zone loaded;
+  - the replicated properties stay: offline play runs through them.
+- **Item tooltips** were already there (the inventory's slots); the parity row was out of date.
+
+**Not yet:**
+- **The package:** a build with the runtime rooms (M1's leftover) still hasn't been made; it takes over an hour.
+- **Gamepad** navigation of the windows; a real font (ADR 0009's follow-ups).
+- **Admin and guide commands** (optional in the plan).
+- **The Options window:**
+  - a quality set by hand reads as none of the four;
+  - Lumen has no switch of its own (it comes with the quality);
+  - the left mouse button can only be bound through the presets (a click works the dialog).
+- **The original's typing** doesn't send letters straight to the chat line as the original's keys did.
+- **The chat log** can't be moved or resized.
+
+**Verification (local Shards stack):**
+- **Unit tests:** `Meridian.Net.Chat` adds the original's typing and the key presets; all 29 automation tests pass.
+- `run_net_test.ps1` reports **DONE 58/58** (60/60 with `-Create`, 62/62 with `-Create -Death`). The new Settings step:
+  - puts a note on the Inn's large map, kept with the character;
+  - F8 waves;
+  - the password: a wrong old one refused, then changed and changed back;
+  - an item on the hotbar's last slot comes back after the relog.
+
+  `-Create` ends by deleting its new character: "deleted Unrealubxcjn (UC_SUICIDE): back at the character list, the slot to create anew".
+- `run_move_test.ps1`: 8/8 with the keys mapped from `MRKeys`.
+- `-Render` adds `options_graphics.png`, `options_controls.png`, `options_account.png` and `map.png` (`build/net/m9_options.png`).
+- **Found on the way:** `FMRWriter::Raw` writes a length before the bytes. The first password message carried two lengths, and blakserv dropped it without a word.
+
 ## Alternatives considered
 
 - **Bake every room before allowing travel:** no runtime code, but hours of GPU texture work and hundreds of levels to import before anyone can leave Raza. A room changed on the server would also break until rebuilt.

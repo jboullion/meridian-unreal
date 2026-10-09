@@ -639,6 +639,7 @@ void UMRNetInventory::SetRaw(const FMRSlotRef& Slot, const FMRSlotContent& Conte
 	if (Slot.Area == EMRSlotArea::SpellBar && Slot.Index >= 0 && Slot.Index < HotbarSlots)
 	{
 		SpellBar[Slot.Index] = C;
+		SaveLayout();
 	}
 	else if (Slot.Area == EMRSlotArea::Cursor)
 	{
@@ -653,13 +654,51 @@ void UMRNetInventory::SetNet(UMRNetSubsystem* InNet)
 	if (UMRNetSubsystem* Old = Net.Get())
 	{
 		Old->OnInventoryChanged.Remove(InventoryHandle);
+		Old->OnCharacterDataLoaded.Remove(LayoutHandle);
 	}
 	Net = InNet;
 	if (InNet)
 	{
 		InventoryHandle = InNet->OnInventoryChanged.AddUObject(this, &UMRNetInventory::Rebuild);
+		LayoutHandle = InNet->OnCharacterDataLoaded.AddUObject(this, &UMRNetInventory::LoadLayout);
+	}
+	LoadLayout();  // (a new source for a character already read: entering the game again)
+}
+
+void UMRNetInventory::LoadLayout()
+{
+	const UMRNetSubsystem* N = Net.Get();
+	if (!N)
+	{
+		Rebuild();
+		return;
+	}
+	const FMRSocial& S = N->GetSocial();
+	for (int32 i = 0; i < HotbarSlots; ++i)
+	{
+		// by icon and name: the ids are found when the inventory comes (Rebuild)
+		HotbarRefs[i] = S.Hotbar.IsValidIndex(i) && !S.Hotbar[i].IsEmpty() ? FHotbarRef{0, S.Hotbar[i]} : FHotbarRef();
+		SpellBar[i] = S.SpellBar.IsValidIndex(i) && !S.SpellBar[i].IsEmpty() ? FMRSlotContent::Spell(FName(*S.SpellBar[i])) : FMRSlotContent();
 	}
 	Rebuild();
+}
+
+void UMRNetInventory::SaveLayout()
+{
+	UMRNetSubsystem* N = Net.Get();
+	if (!N)
+	{
+		return;
+	}
+	FMRSocial& S = N->GetSocial();
+	S.Hotbar.SetNum(HotbarSlots);
+	S.SpellBar.SetNum(HotbarSlots);
+	for (int32 i = 0; i < HotbarSlots; ++i)
+	{
+		S.Hotbar[i] = HotbarRefs[i].Key;
+		S.SpellBar[i] = SpellBar[i].IsEmpty() ? FString() : SpellBar[i].Id.ToString();
+	}
+	N->SaveSocial();
 }
 
 const FMRNetObject* UMRNetInventory::FindObject(const FMRSlotContent& Content) const
@@ -751,7 +790,7 @@ void UMRNetInventory::Rebuild()
 	for (int32 i = 0; i < HotbarSlots; ++i)
 	{
 		FHotbarRef& Ref = HotbarRefs[i];
-		if (!Ref.Id)
+		if (!Ref.Id && Ref.Key.IsEmpty())
 		{
 			continue;
 		}
@@ -788,16 +827,27 @@ void UMRNetInventory::PlaceOnHotbar(uint32 ObjectId, int32 Index)
 	}
 	RemoveFromHotbar(ObjectId);
 	HotbarRefs[Index] = FHotbarRef{ObjectId, O->Icon + TEXT("|") + O->Name};
+	SaveLayout();
 }
 
 void UMRNetInventory::RemoveFromHotbar(uint32 ObjectId)
 {
+	if (!ObjectId)
+	{
+		return;  // (a slot still waiting for its item by name has no id yet)
+	}
+	bool bChanged = false;
 	for (FHotbarRef& Ref : HotbarRefs)
 	{
 		if (Ref.Id == ObjectId)
 		{
 			Ref = FHotbarRef();
+			bChanged = true;
 		}
+	}
+	if (bChanged)
+	{
+		SaveLayout();
 	}
 }
 

@@ -189,10 +189,14 @@ bool MRChat::FindCommand(const FString& Text, EMRChatCommand& Out, FString& OutA
 	return false;
 }
 
-FMRTypedLine MRChat::Interpret(const FString& Line, const TMap<FString, FString>& Aliases)
+FMRTypedLine MRChat::Interpret(const FString& Line, const TMap<FString, FString>& Aliases, bool bOriginal)
 {
 	FMRTypedLine Out;
 	FString Text = Line.TrimStartAndEnd();
+	if (bOriginal && !Text.IsEmpty() && !Text.StartsWith(TEXT("/")) && !Text.StartsWith(TEXT(":")))
+	{
+		Text = TEXT("/") + Text;
+	}
 	// an alias may stand for another alias; a few rounds at most (no loops)
 	for (int32 Round = 0; Round < 4; ++Round)
 	{

@@ -188,6 +188,7 @@ namespace MRMsg
 	constexpr uint8 BP_REQ_GET_FROM_CONTAINER = 240;
 
 	// user commands inside BP_USERCOMMAND (proto.h UC_*)
+	constexpr uint8 UC_SEND_QUIT = 1;   // from the server: go back to the character list (after a suicide)
 	constexpr uint8 UC_LOOK_PLAYER = 2;
 	constexpr uint8 UC_REST = 5;
 	constexpr uint8 UC_STAND = 6;

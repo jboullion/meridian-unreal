@@ -34,6 +34,8 @@ enum class EMRWindow : uint8
 	Mail,
 	News,
 	Guild,
+	Options,
+	Map,
 	Count,
 };
 enum class EMRObjectAction : uint8;
@@ -71,6 +73,12 @@ public:
 	 * yell, broadcast, emote, who, mail, guild, wave, rest, cast, deposit, safety on...). UI/MRUIChat.cpp.
 	 */
 	void RunChatLine(const FString& Line);
+	/** F1-F12 online: the quick chat's line (GetSocial().QuickChat), run at once or put in the chat line. */
+	void RunQuickChat(int32 Index);
+	/** The Options window on a tab ("Graphics", "Sound", "Controls", "Game", "Chat", "Account"). */
+	void ShowOptions(const FString& Tab);
+	/** The session (online), or null. */
+	class UMRNetSubsystem* GetNet() const;
 
 	// --- the windows for the others (who, mail, news, guild)
 	void SetWindowOpen(EMRWindow Window, bool bOpen);
@@ -298,7 +306,6 @@ private:
 	/** In a server's game: a fresh UMRNetInventory for this character; out of it: the mock. */
 	void OnNetPhase();
 	void UseSource(UMRInventorySource* InSource);
-	class UMRNetSubsystem* GetNet() const;
 	FMRSlotRef HoveredSlot;
 	/** Where the mouse went down with an empty cursor: releasing over another slot places (drag and drop). */
 	FMRSlotRef PressSlot;

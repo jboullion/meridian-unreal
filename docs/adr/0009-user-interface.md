@@ -186,6 +186,24 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
 - **The Escape menu** has Who Is On, Mail and Guild. F5–F7 wave, point and dance online (`BP_ACTION`).
 - Pictures: `build/net/m8_social.png` (`run_net_test.ps1 -Render`: `who.png`, `mail.png`, `news.png`, `guild.png`).
 
+## Options, the large map and the quick chat (2026-10-08, M9 of ADR 0012)
+- **The Options window** (`SMROptions`; the Escape menu's Options, or the "password" and "suicide" commands). Every change is kept at once.
+  - **Graphics** (the engine's `UGameUserSettings`): quality, view distance, window mode, screen size, vertical sync, a frame limit, and the field of view (`mr.Camera.FOV`).
+  - **Sound:** music and sounds on or off with their volumes, room sounds, random sounds (the `mr.Audio.*` console variables).
+  - **Controls:** every key (`Core/MRSettings` `MRKeys`), with the presets:
+    - **Modern:** WASD and the mouse;
+    - **Original:** the original client's keys (`merintr.c interface_key_table`): the arrows walk and turn, Ctrl attacks, I opens the inventory, End changes the view.
+
+    A key taken by two actions leaves the other without one.
+  - **Game:** the server-kept options (safety, grouping, auto-loot...), damage numbers, and the original's typing (every line a command, `mr.Chat.OriginalTyping`).
+  - **Chat:** the quick chat's twelve lines, each run at once or put in the chat line.
+  - **Account:** change the password; delete the character, confirmed with the password.
+  - **Where they're kept:** console variables and keys in `GameUserSettings.ini` (`[MeridianRemastered.CVars]`, `[MeridianRemastered.Keys]`); the quick chat, hotbar and map notes per character (`Saved/MRNet/<server>/social/<name>.json`).
+- **The quick chat** (the original's function-key aliases, `alias.c`): F1–F12 online, F10 staying the menu's. The original's defaults: help, rest, stand, neutral, happy, sad, wry, wave, point; F11 mail, and F12 who (the original's "quit" is too easy to hit).
+- **The large map** (M, or "map"): the whole room with the player's notes, kept per room as the original's annotations were. A click marks where a note goes, else it goes where the player stands.
+- **The hotbar and the spell bar** are kept with the character and come back when it enters again (an item found by its icon and name).
+- Pictures: `build/net/m9_options.png`.
+
 ## Consequences
 - Inventory and equipment are still **mock data offline** and empty online (M3). Spells don't cast; a "cast" plays the sprite's cast action and a cooldown sweep. Online, the vitals, stats, spells and skills come from the server's stat groups (`docs/research/blakserv-protocol.md`, "Stats"). Offline they come from the attributes and the mock file.
 - Equipment doesn't change the avatar yet (no equipment layers on the sprite body).

@@ -26,6 +26,7 @@
 #include "Net/MRNetWorldSubsystem.h"
 #include "Net/MRNetSubsystem.h"
 #include "Net/MRProtocol.h"
+#include "Core/MRSettings.h"
 #include "Zones/MRZoneSubsystem.h"
 #include "HAL/FileManager.h"
 #include "HighResScreenshot.h"
@@ -39,6 +40,7 @@
 
 namespace
 {
+	TAutoConsoleVariable<float> CVarFieldOfView(TEXT("mr.Camera.FOV"), 90.f, TEXT("The camera's horizontal field of view, degrees (Options > Graphics)."));
 	TAutoConsoleVariable<float> CVarThirdPersonPitch(TEXT("mr.Camera.ThirdPersonPitch"), 20.f,
 		TEXT("How far (degrees) the third-person cameras may tilt up or down from eye level (0 = locked at eye level)."));
 
@@ -428,6 +430,15 @@ void AMRCharacter::Tick(float DeltaSeconds)
 	{
 		ClampThirdPersonPitch();
 	}
+	if (IsLocallyControlled() && Camera)
+	{
+		// Options > Graphics: the field of view
+		const float Fov = FMath::Clamp(CVarFieldOfView.GetValueOnGameThread(), 60.f, 120.f);
+		if (!FMath::IsNearlyEqual(Camera->FieldOfView, Fov))
+		{
+			Camera->SetFieldOfView(Fov);
+		}
+	}
 	if (HasAuthority())
 	{
 		ServerTickVigor(DeltaSeconds);
@@ -561,25 +572,55 @@ void AMRCharacter::BuildInput()
 	};
 	MoveAction = MakeAction(TEXT("IA_Move"), EInputActionValueType::Axis2D);
 	LookAction = MakeAction(TEXT("IA_Look"), EInputActionValueType::Axis2D);
+	TurnAction = MakeAction(TEXT("IA_Turn"), EInputActionValueType::Axis1D);
 	GoAction = MakeAction(TEXT("IA_Go"), EInputActionValueType::Boolean);
 	WalkAction = MakeAction(TEXT("IA_Walk"), EInputActionValueType::Boolean);
 	ViewAction = MakeAction(TEXT("IA_ToggleView"), EInputActionValueType::Boolean);
 	ZoomAction = MakeAction(TEXT("IA_Zoom"), EInputActionValueType::Axis1D);
-
-	DefaultContext = NewObject<UInputMappingContext>(this, TEXT("IMC_Default"));
-	UInputMappingContext* Ctx = DefaultContext;
-
-	// WASD -> Axis2D (X = right, Y = forward)
+	// sprite actions (docs/sprites.md): attack, emotes, next look
+	AttackAction = MakeAction(TEXT("IA_Attack"), EInputActionValueType::Boolean);
+	NextLookAction = MakeAction(TEXT("IA_NextLook"), EInputActionValueType::Boolean);
+	PhotoAction = MakeAction(TEXT("IA_Photo"), EInputActionValueType::Boolean);
+	for (int32 i = 0; i < UE_ARRAY_COUNT(EmoteKeys); ++i)
 	{
-		FEnhancedActionKeyMapping& W = Ctx->MapKey(MoveAction, EKeys::W);
-		W.Modifiers.Add(NewObject<UInputModifierSwizzleAxis>(Ctx));
-		FEnhancedActionKeyMapping& S = Ctx->MapKey(MoveAction, EKeys::S);
-		S.Modifiers.Add(NewObject<UInputModifierSwizzleAxis>(Ctx));
-		S.Modifiers.Add(NewObject<UInputModifierNegate>(Ctx));
-		Ctx->MapKey(MoveAction, EKeys::D);
-		FEnhancedActionKeyMapping& A = Ctx->MapKey(MoveAction, EKeys::A);
-		A.Modifiers.Add(NewObject<UInputModifierNegate>(Ctx));
-		Ctx->MapKey(MoveAction, EKeys::Gamepad_Left2D);
+		EmoteActions.Add(MakeAction(*FString::Printf(TEXT("IA_Emote_%s"), *EmoteKeys[i].ToString()), EInputActionValueType::Boolean));
+	}
+	DefaultContext = NewObject<UInputMappingContext>(this, TEXT("IMC_Default"));
+	MapKeys();
+}
+
+void AMRCharacter::MapKeys()
+{
+	// the player's keys (MRKeys: Options > Controls), and the gamepad's, which stay
+	UInputMappingContext* Ctx = DefaultContext;
+	Ctx->UnmapAll();
+	MappedKeyVersion = MRKeys::Version();
+	auto Map = [Ctx](UInputAction* Action, FName Binding) -> FEnhancedActionKeyMapping*
+	{
+		const FKey Key = MRKeys::Get(Binding);
+		return Key.IsValid() ? &Ctx->MapKey(Action, Key) : nullptr;
+	};
+	// move -> Axis2D (X = right, Y = forward)
+	if (FEnhancedActionKeyMapping* W = Map(MoveAction, TEXT("MoveForward")))
+	{
+		W->Modifiers.Add(NewObject<UInputModifierSwizzleAxis>(Ctx));
+	}
+	if (FEnhancedActionKeyMapping* S = Map(MoveAction, TEXT("MoveBack")))
+	{
+		S->Modifiers.Add(NewObject<UInputModifierSwizzleAxis>(Ctx));
+		S->Modifiers.Add(NewObject<UInputModifierNegate>(Ctx));
+	}
+	Map(MoveAction, TEXT("StrafeRight"));
+	if (FEnhancedActionKeyMapping* A = Map(MoveAction, TEXT("StrafeLeft")))
+	{
+		A->Modifiers.Add(NewObject<UInputModifierNegate>(Ctx));
+	}
+	Ctx->MapKey(MoveAction, EKeys::Gamepad_Left2D);
+	// turning by keys (the original's arrows)
+	Map(TurnAction, TEXT("TurnRight"));
+	if (FEnhancedActionKeyMapping* L = Map(TurnAction, TEXT("TurnLeft")))
+	{
+		L->Modifiers.Add(NewObject<UInputModifierNegate>(Ctx));
 	}
 	// Mouse look (invert Y so pushing the mouse forward looks up)
 	{
@@ -596,29 +637,39 @@ void AMRCharacter::BuildInput()
 		NegG->bZ = false;
 		G.Modifiers.Add(NegG);
 	}
-	Ctx->MapKey(GoAction, EKeys::SpaceBar);
+	Map(GoAction, TEXT("Go"));
 	Ctx->MapKey(GoAction, EKeys::Gamepad_FaceButton_Bottom);
-	Ctx->MapKey(WalkAction, EKeys::LeftShift);
-	Ctx->MapKey(WalkAction, EKeys::RightShift);
+	Map(WalkAction, TEXT("Walk"));
 	Ctx->MapKey(WalkAction, EKeys::Gamepad_LeftThumbstick);
-	Ctx->MapKey(ViewAction, EKeys::V);
+	Map(ViewAction, TEXT("View"));
 	Ctx->MapKey(ViewAction, EKeys::Gamepad_RightThumbstick);
 	Ctx->MapKey(ZoomAction, EKeys::MouseWheelAxis);
-
-	// sprite actions (docs/sprites.md): attack, emotes, next look
-	AttackAction = MakeAction(TEXT("IA_Attack"), EInputActionValueType::Boolean);
-	NextLookAction = MakeAction(TEXT("IA_NextLook"), EInputActionValueType::Boolean);
-	PhotoAction = MakeAction(TEXT("IA_Photo"), EInputActionValueType::Boolean);
-	Ctx->MapKey(AttackAction, EKeys::LeftMouseButton);
+	Map(AttackAction, TEXT("Attack"));
+	Ctx->MapKey(AttackAction, EKeys::Gamepad_RightTrigger);
+	// offline test keys: the next look, a photo, emotes on function keys (online the function keys
+	// are the quick chat's: AMRPlayerController)
 	Ctx->MapKey(NextLookAction, EKeys::L);
 	Ctx->MapKey(PhotoAction, EKeys::P);
-	// test emotes on function keys (1-9 select the hotbar; F8 is the editor's eject key in PIE)
 	const FKey EmoteKeyBindings[] = {EKeys::F5, EKeys::F6, EKeys::F7, EKeys::F9};
-	for (int32 i = 0; i < UE_ARRAY_COUNT(EmoteKeys); ++i)
+	for (int32 i = 0; i < EmoteActions.Num() && i < UE_ARRAY_COUNT(EmoteKeyBindings); ++i)
 	{
-		UInputAction* A = MakeAction(*FString::Printf(TEXT("IA_Emote_%s"), *EmoteKeys[i].ToString()), EInputActionValueType::Boolean);
-		Ctx->MapKey(A, EmoteKeyBindings[i]);
-		EmoteActions.Add(A);
+		Ctx->MapKey(EmoteActions[i], EmoteKeyBindings[i]);
+	}
+}
+
+void AMRCharacter::RemapKeysIfChanged()
+{
+	if (!DefaultContext || MappedKeyVersion == MRKeys::Version())
+	{
+		return;
+	}
+	MapKeys();
+	if (const APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			Subsystem->RequestRebuildControlMappings();
+		}
 	}
 }
 
@@ -640,6 +691,7 @@ void AMRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	UEnhancedInputComponent* Input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 	Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMRCharacter::OnMove);
 	Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMRCharacter::OnLook);
+	Input->BindAction(TurnAction, ETriggerEvent::Triggered, this, &AMRCharacter::OnTurn);
 	Input->BindAction(GoAction, ETriggerEvent::Started, this, &AMRCharacter::OnGo);
 	Input->BindAction(WalkAction, ETriggerEvent::Started, this, &AMRCharacter::OnWalkStarted);
 	Input->BindAction(WalkAction, ETriggerEvent::Completed, this, &AMRCharacter::OnWalkStopped);
@@ -664,6 +716,18 @@ void AMRCharacter::OnMove(const FInputActionValue& Value)
 	const FRotator Yaw(0.f, Controller->GetControlRotation().Yaw, 0.f);
 	AddMovementInput(FRotationMatrix(Yaw).GetUnitAxis(EAxis::X), Axis.Y);
 	AddMovementInput(FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y), Axis.X);
+}
+
+void AMRCharacter::OnTurn(const FInputActionValue& Value)
+{
+	// the original's arrow keys: a steady turn (degrees a second)
+	constexpr float TurnDegreesPerSecond = 150.f;
+	if (Controller && GetWorld())
+	{
+		FRotator Rot = Controller->GetControlRotation();
+		Rot.Yaw += Value.Get<float>() * TurnDegreesPerSecond * GetWorld()->GetDeltaSeconds();
+		Controller->SetControlRotation(Rot);
+	}
 }
 
 void AMRCharacter::OnLook(const FInputActionValue& Value)
@@ -824,20 +888,17 @@ void AMRCharacter::SetViewEffects(const FVector& EyeOffset, float Roll, float Bl
 	PP.ColorOffset = FVector4(0.36, 0.36, 0.36, 0.0);
 }
 
+bool AMRCharacter::IsOnline() const
+{
+	const UMRNetWorldSubsystem* NetWorld = GetWorld() ? GetWorld()->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
+	return NetWorld && NetWorld->IsActive();
+}
+
 void AMRCharacter::OnEmote(FName Action)
 {
-	// online: ask the server (BP_ACTION), which shows it to everyone, us included (a BP_CHANGE)
-	const UMRNetWorldSubsystem* NetWorld = GetWorld() ? GetWorld()->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
-	const UGameInstance* GI = GetGameInstance();
-	UMRNetSubsystem* Net = GI ? GI->GetSubsystem<UMRNetSubsystem>() : nullptr;
-	if (NetWorld && NetWorld->IsActive() && Net)
+	if (IsOnline())
 	{
-		const uint8 UA = Action == TEXT("wave") ? MRMsg::UA_WAVE : Action == TEXT("point") ? MRMsg::UA_POINT : Action == TEXT("dance") ? MRMsg::UA_DANCE : 0;
-		if (UA)
-		{
-			Net->DoAction(UA);
-		}
-		return;
+		return;  // online the function keys run the quick chat (AMRPlayerController::OnQuickChatKey)
 	}
 	const FName Current = SpriteBody ? SpriteBody->GetAction() : SpriteAction.Action;
 	PlaySpriteAction(Current == Action ? NAME_None : Action);  // the same key again stops (the dance)
@@ -845,6 +906,10 @@ void AMRCharacter::OnEmote(FName Action)
 
 void AMRCharacter::OnNextLook()
 {
+	if (IsOnline())
+	{
+		return;  // the server decides how we look (and L is the mail key online)
+	}
 	TArray<FName> Names;
 	FMRSpriteLibrary::Get().Looks.GetKeys(Names);
 	Names.Sort(FNameLexicalLess());

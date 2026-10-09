@@ -1,4 +1,5 @@
 #include "UI/SMRMinimap.h"
+#include "Net/MRNetSubsystem.h"
 
 #include "Dom/JsonObject.h"
 #include "Engine/Texture2D.h"
@@ -121,15 +122,77 @@ namespace MRMinimap
 void SMRMinimap::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 {
 	UI = InUI;
-	SetVisibility(EVisibility::HitTestInvisible);
+	SideArg = InArgs._Side;
+	bWhole = InArgs._bWhole;
+	OnClicked = InArgs._OnClicked;
+	SetVisibility(OnClicked.IsBound() ? EVisibility::Visible : EVisibility::HitTestInvisible);
+}
+
+float SMRMinimap::SidePx() const
+{
+	const UMRUIStyle* S = UI.IsValid() ? UI->GetStyle() : nullptr;
+	const float Px = S ? S->Px() : 2.f;
+	return (SideArg > 0.f ? SideArg : S ? S->Number(TEXT("minimap_px"), 96.f) : 96.f) * Px;
 }
 
 FVector2D SMRMinimap::ComputeDesiredSize(float) const
 {
 	const UMRUIStyle* S = UI.IsValid() ? UI->GetStyle() : nullptr;
 	const float Px = S ? S->Px() : 2.f;
-	const float Side = (S ? S->Number(TEXT("minimap_px"), 96.f) : 96.f) * Px;
-	return FVector2D(Side, Side + 22.f * Px);  // and two lines of text under it
+	const float SideNow = SidePx();
+	return FVector2D(SideNow, SideNow + 22.f * Px);  // and two lines of text under it
+}
+
+FBox2D SMRMinimap::ViewBox() const
+{
+	const UMRUISubsystem* Ui = UI.Get();
+	const UMRUIStyle* S = Ui ? Ui->GetStyle() : nullptr;
+	const APlayerController* PC = Ui ? Ui->GetPlayerController() : nullptr;
+	const APawn* Pawn = PC ? PC->GetPawn() : nullptr;
+	if (bWhole)
+	{
+		// the whole room: its picture's square, else its walls' box made square
+		FBox2D Box = Rect;
+		const UMRZoneSubsystem* Zones = PC && PC->GetWorld() ? PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>() : nullptr;
+		const FMRZoneInfo* Zone = Zones ? Zones->FindZone(GeometryRid) : nullptr;
+		if (!Box.bIsValid && Zone)
+		{
+			Box = FBox2D(ForceInit);
+			for (const FVector4& W : Zone->MapWalls)
+			{
+				Box += FVector2D(W.X, W.Y);
+				Box += FVector2D(W.Z, W.W);
+			}
+		}
+		if (Box.bIsValid)
+		{
+			const double Half = FMath::Max(Box.GetSize().X, Box.GetSize().Y) * 0.55;
+			return FBox2D(Box.GetCenter() - FVector2D(Half), Box.GetCenter() + FVector2D(Half));
+		}
+	}
+	const FVector2D Player = Pawn ? FVector2D(Pawn->GetActorLocation()) : FVector2D::ZeroVector;
+	// the visible world square around the player: at zoom 1 minimap_span_m across, or the whole
+	// picture for a smaller room
+	const double Base = FMath::Min<double>((S ? S->Number(TEXT("minimap_span_m"), 50.f) : 50.f) * 100.0, Rect.bIsValid ? Rect.GetSize().X : 1e9);
+	const double Span = Base / FMath::Max(0.25f, Zoom);
+	return FBox2D(Player - FVector2D(Span * 0.5), Player + FVector2D(Span * 0.5));
+}
+
+FReply SMRMinimap::OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event)
+{
+	if (!OnClicked.IsBound() || Event.GetEffectingButton() != EKeys::LeftMouseButton)
+	{
+		return FReply::Unhandled();
+	}
+	const FVector2f Local = Geo.AbsoluteToLocal(Event.GetScreenSpacePosition());
+	const float SideNow = SidePx();
+	if (Local.X < 0.f || Local.Y < 0.f || Local.X > SideNow || Local.Y > SideNow)
+	{
+		return FReply::Unhandled();
+	}
+	const FBox2D View = ViewBox();
+	OnClicked.Execute(View.Min + FVector2D(Local / SideNow) * View.GetSize().X);
+	return FReply::Handled();
 }
 
 void SMRMinimap::Tick(const FGeometry& Geo, const double Time, const float Dt)
@@ -181,7 +244,7 @@ int32 SMRMinimap::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FS
 	}
 	const float Px = S->Px();
 	const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
-	const float Side = S->Number(TEXT("minimap_px"), 96.f) * Px;
+	const float Side = SidePx();
 	const FVector2f MapSize(Side, Side);
 
 	// the parchment, under everything (and around the picture's edges)
@@ -189,11 +252,8 @@ int32 SMRMinimap::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FS
 
 	const APawn* Pawn = PC->GetPawn();
 	const FVector2D Player = Pawn ? FVector2D(Pawn->GetActorLocation()) : FVector2D::ZeroVector;
-	// the visible world square around the player: at zoom 1 minimap_span_m across, or the whole
-	// picture for a smaller room
-	const double Base = FMath::Min<double>(S->Number(TEXT("minimap_span_m"), 50.f) * 100.0, Rect.bIsValid ? Rect.GetSize().X : 1e9);
-	const double Span = Base / FMath::Max(0.25f, Zoom);
-	const FBox2D View(Player - FVector2D(Span * 0.5), Player + FVector2D(Span * 0.5));
+	const FBox2D View = ViewBox();
+	const double Span = View.GetSize().X;
 	auto ToMap = [&View, Span, Side](const FVector2D& World) { return FVector2f((World - View.Min) / Span) * Side; };
 	const UMRZoneSubsystem* Zones = PC->GetWorld() ? PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>() : nullptr;
 	const FMRZoneInfo* Zone = Zones ? Zones->FindZone(GeometryRid) : nullptr;
@@ -263,12 +323,31 @@ int32 SMRMinimap::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FS
 		}
 	}
 
+	// the player's notes on the large map (the original's annotations): a numbered pin each, its text beside it
+	if (bWhole && Zone)
+	{
+		const UMRNetSubsystem* Net = Ui->GetNet();
+		const TArray<FMRMapNote>* Notes = Net ? Net->GetSocial().MapNotes.Find(Net->GetPlayer().RoomFile.ToLower()) : nullptr;
+		const FSlateFontInfo NoteFont = S->Font(8.5f, true);
+		for (int32 i = 0; Notes && i < Notes->Num(); ++i)
+		{
+			const FMRMapNote& N = (*Notes)[i];
+			const FVector2f P = ToMap(FVector2D(Zone->Origin) + FVector2D(N.X, N.Y));
+			const float Pin = FMath::Max(4.f, 3.f * Px);
+			FSlateDrawElement::MakeBox(Out, Layer + 2, Geo.ToPaintGeometry(FVector2f(Pin, Pin), FSlateLayoutTransform(P - FVector2f(Pin * 0.5f))),
+				S->White(), ESlateDrawEffect::None, FLinearColor(0.75f, 0.05f, 0.05f) * Tint);
+			MRPaint::Text(Out, Layer + 4, Geo, FString::Printf(TEXT("%d %s"), i + 1, *N.Text), NoteFont, P + FVector2f(Pin, -Pin),
+				FLinearColor(1.f, 0.9f, 0.6f) * Tint, Px * 0.5f);
+		}
+	}
+
 	// the player: an arrow turned to the view's heading (yaw 0 = east = right; the art points north)
 	if (const FSlateBrush* Arrow = S->Brush(TEXT("map_arrow")))
 	{
 		const FVector2f A = FVector2f(Arrow->ImageSize) * S->Number(TEXT("minimap_arrow_scale"), 1.f);
 		const float Yaw = PC->GetControlRotation().Yaw;
-		FSlateDrawElement::MakeRotatedBox(Out, Layer + 2, Geo.ToPaintGeometry(A, FSlateLayoutTransform((MapSize - A) * 0.5f)), Arrow,
+		const FVector2f At = bWhole ? ToMap(Player) - A * 0.5f : (MapSize - A) * 0.5f;
+		FSlateDrawElement::MakeRotatedBox(Out, Layer + 2, Geo.ToPaintGeometry(A, FSlateLayoutTransform(At)), Arrow,
 			ESlateDrawEffect::None, FMath::DegreesToRadians(Yaw + 90.f), TOptional<FVector2f>(), FSlateDrawElement::RelativeToElement, Tint);
 	}
 

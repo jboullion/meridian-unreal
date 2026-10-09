@@ -31,6 +31,8 @@
 #include "UI/SMRStatChange.h"
 #include "UI/SMRTradeDialog.h"
 #include "UI/SMRSocial.h"
+#include "UI/SMROptions.h"
+#include "Core/MRSettings.h"
 #include "UI/SMRChatLog.h"
 #include "Net/MRAssetCache.h"
 #include "Net/MRNetLook.h"
@@ -57,6 +59,7 @@ void UMRUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	// UMRUIStyle and UMRGameDataSubsystem are game instance subsystems: already up before a local player's
 	Super::Initialize(Collection);
+	MRSettings::ApplySaved();  // the player's Options (sound, camera, chat)
 
 	UMRMockInventory* MockInventory = NewObject<UMRMockInventory>(this);
 	MockInventory->SetData(GetData());
@@ -418,6 +421,15 @@ void UMRUISubsystem::SetWindowOpen(EMRWindow Window, bool bOpen)
 	}
 	HUD->SetWindowOpen(static_cast<int32>(Window), bOpen);
 	ApplyInputMode();
+}
+
+void UMRUISubsystem::ShowOptions(const FString& Tab)
+{
+	SetWindowOpen(EMRWindow::Options, true);
+	if (TSharedPtr<SMRSocialWindow> W = GetWindow(EMRWindow::Options))
+	{
+		StaticCastSharedPtr<SMROptionsDialog>(W)->SetTab(Tab);
+	}
 }
 
 void UMRUISubsystem::OnNetNews()

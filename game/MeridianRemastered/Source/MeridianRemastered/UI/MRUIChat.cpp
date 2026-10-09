@@ -11,6 +11,13 @@
 #include "UI/MRUISubsystem.h"
 #include "UI/SMRLookDialog.h"
 #include "UI/SMRSocial.h"
+#include "HAL/IConsoleManager.h"
+
+namespace
+{
+	TAutoConsoleVariable<int32> CVarOriginalTyping(TEXT("mr.Chat.OriginalTyping"), 0,
+		TEXT("1: every typed line is a command, as in the original client (\"say\" to speak); 0: lines are said unless they're a command."));
+}
 
 namespace
 {
@@ -54,6 +61,26 @@ namespace
 	};
 }
 
+void UMRUISubsystem::RunQuickChat(int32 Index)
+{
+	const UMRNetSubsystem* Net = GetNet();
+	if (!Net || Index < 0 || Index >= 12 || Net->GetSocial().QuickChat[Index].IsEmpty() || bChatOpen)
+	{
+		return;
+	}
+	const FString Line = Net->GetSocial().QuickChat[Index];
+	if (Net->GetSocial().QuickRun[Index])
+	{
+		// a command line, as an alias's ("/" implied): "wave", "say hello", ":grins"
+		const FString L = Line.TrimStart();
+		RunChatLine(L.StartsWith(TEXT("/")) || L.StartsWith(TEXT(":")) ? L : TEXT("/") + L);
+	}
+	else
+	{
+		OpenChatWith(Line + TEXT(" "));
+	}
+}
+
 void UMRUISubsystem::RunChatLine(const FString& Line)
 {
 	UMRNetSubsystem* Net = GetNet();
@@ -68,7 +95,8 @@ void UMRUISubsystem::RunChatLine(const FString& Line)
 		World = nullptr;
 	}
 	auto Msg = [Net](const FString& Text) { Net->AddGameMessage(Text); };
-	const FMRTypedLine T = MRChat::Interpret(Line, Net->GetSocial().Aliases);
+	static IConsoleVariable* Original = IConsoleManager::Get().FindConsoleVariable(TEXT("mr.Chat.OriginalTyping"));
+	const FMRTypedLine T = MRChat::Interpret(Line, Net->GetSocial().Aliases, Original && Original->GetInt() != 0);
 	switch (T.Kind)
 	{
 	case FMRTypedLine::EKind::Nothing:
@@ -251,7 +279,7 @@ void UMRUISubsystem::RunChatLine(const FString& Line)
 		SetInventoryOpen(true);
 		Msg(T.Command == C::Drop ? TEXT("Drag a thing out of the inventory to drop it.") : TEXT("Putting things into containers isn't in this version yet."));
 		break;
-	case C::Map: Msg(TEXT("The map is at the top right; - and = zoom it.")); break;
+	case C::Map: SetWindowOpen(EMRWindow::Map, true); break;
 	case C::Deposit:
 	case C::Withdraw:
 	{
@@ -319,11 +347,11 @@ void UMRUISubsystem::RunChatLine(const FString& Line)
 		}
 		break;
 	case C::Suicid:
-	case C::Suicide:
-		Msg(TEXT("Deleting a character comes with the character list's options (not in this version yet)."));
+		Msg(TEXT("Type suicide in full if you mean it: it destroys this character."));
 		break;
+	case C::Suicide:
 	case C::Password:
-		Msg(TEXT("Changing your password comes with the Options (not in this version yet)."));
+		ShowOptions(TEXT("Account"));
 		break;
 	default:
 		break;

@@ -120,51 +120,8 @@ bool UMRZoneSubsystem::IsZoneVisibleLocally(int32 Rid) const
 
 bool UMRZoneSubsystem::IsZoneReadyFor(const AController* Controller, int32 Rid) const
 {
-	const ULevelStreaming* Streaming = FindZoneLevel(Rid);
-	if (!Streaming)
-	{
-		return true;
-	}
-	const APlayerController* PC = Cast<APlayerController>(Controller);
-	const UNetConnection* Connection = PC && !PC->IsLocalController() ? PC->GetNetConnection() : nullptr;
-	if (!Connection)
-	{
-		return Streaming->IsLevelVisible();
-	}
-	const ULevel* Level = Streaming->GetLoadedLevel();
-	return Level && Connection->ClientHasInitializedLevel(Level);
-}
-
-void UMRZoneSubsystem::SetClientStreamingTarget(const TSet<int32>& ZoneRids)
-{
-	TSet<FName> Wanted;
-	for (const int32 Rid : ZoneRids)
-	{
-		if (const FMRZoneInfo* Z = Zones.Find(Rid))
-		{
-			Wanted.Add(Z->LevelName);
-		}
-	}
-	TSet<FName> Seen;
-	for (const TPair<int32, FMRZoneInfo>& Pair : Zones)
-	{
-		const FName Name = Pair.Value.LevelName;
-		if (Seen.Contains(Name))
-		{
-			continue;
-		}
-		Seen.Add(Name);
-		if (ULevelStreaming* Streaming = FindZoneLevel(Pair.Key))
-		{
-			const bool bWant = Wanted.Contains(Name);
-			if (Streaming->ShouldBeLoaded() != bWant || Streaming->ShouldBeVisible() != bWant)
-			{
-				UE_LOG(LogMeridian, Log, TEXT("MRStreaming: %s %s"), bWant ? TEXT("load") : TEXT("unload"), *Name.ToString());
-				Streaming->SetShouldBeLoaded(bWant);
-				Streaming->SetShouldBeVisible(bWant);
-			}
-		}
-	}
+	// this game runs one world, every zone loaded (LoadAllZoneLevels): ready once its level shows
+	return IsZoneVisibleLocally(Rid);
 }
 
 void UMRZoneSubsystem::LoadAllZoneLevels(bool bBlock)
@@ -704,9 +661,8 @@ bool UMRZoneSubsystem::TeleportPawn(APawn* Pawn, int32 DestRid, int32 Row, int32
 		return false;
 	}
 
-	// Don't move a player onto geometry their client hasn't streamed in. Neighbours are always
-	// preloaded, so this normally passes at once; otherwise ask the client and retry on later
-	// zone updates (the pawn is still standing on the exit), giving up after a timeout.
+	// Don't move a player onto geometry that isn't in yet (the zones still loading at start-up):
+	// retry on later zone updates (the pawn is still standing on the exit), giving up after a timeout.
 	AController* Controller = Pawn->GetController();
 	if (Controller && !IsZoneReadyFor(Controller, DestRid))
 	{
@@ -715,23 +671,19 @@ bool UMRZoneSubsystem::TeleportPawn(APawn* Pawn, int32 DestRid, int32 Row, int32
 		if (!Pending || Pending->Key != DestRid)
 		{
 			PendingTeleport.Add(Pawn, TPair<int32, double>(DestRid, Now));
-			if (AMRPlayerController* MRPC = Cast<AMRPlayerController>(Controller))
-			{
-				MRPC->ClientPrepareZone(DestRid);
-			}
-			UE_LOG(LogMeridian, Log, TEXT("MRStreaming: waiting for client to stream zone %d before teleport"), DestRid);
+			UE_LOG(LogMeridian, Log, TEXT("MRStreaming: waiting for zone %d to load before the teleport"), DestRid);
 			return false;
 		}
 		if (Now - Pending->Value < StreamWaitTimeoutSeconds)
 		{
 			return false;
 		}
-		UE_LOG(LogMeridian, Warning, TEXT("MRStreaming: client did not stream zone %d within %.0f s; teleporting anyway"),
+		UE_LOG(LogMeridian, Warning, TEXT("MRStreaming: zone %d didn't load within %.0f s; teleporting anyway"),
 			DestRid, StreamWaitTimeoutSeconds);
 	}
 	if (PendingTeleport.Remove(Pawn) > 0)
 	{
-		UE_LOG(LogMeridian, Log, TEXT("MRStreaming: client ready for zone %d"), DestRid);
+		UE_LOG(LogMeridian, Log, TEXT("MRStreaming: zone %d ready"), DestRid);
 	}
 	FVector Dest = GridToWorld(DestRid, Row, Col, true);
 	Dest.Z += Pawn->GetSimpleCollisionHalfHeight() + 2.0;

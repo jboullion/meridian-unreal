@@ -49,7 +49,14 @@ namespace MRMinimap
 class MERIDIANREMASTERED_API SMRMinimap : public SLeafWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SMRMinimap) {}
+	DECLARE_DELEGATE_OneParam(FOnMapClick, FVector2D /* the room's own position, UE cm */);
+	SLATE_BEGIN_ARGS(SMRMinimap) : _Side(0.f), _bWhole(false) {}
+		/** The map's side in original pixels (0: ui_style.json minimap_px). */
+		SLATE_ARGUMENT(float, Side)
+		/** The whole room, not the square around the player, with the notes on it (the large map). */
+		SLATE_ARGUMENT(bool, bWhole)
+		/** A click on the map (the large map: where a note goes). */
+		SLATE_EVENT(FOnMapClick, OnClicked)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs, UMRUISubsystem* InUI);
@@ -57,8 +64,15 @@ public:
 	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
 		int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const override;
 	virtual void Tick(const FGeometry& Geo, const double Time, const float Dt) override;
+	virtual FReply OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event) override;
 
 private:
+	/** The world square shown (UE cm, XY) and its side in screen units. */
+	FBox2D ViewBox() const;
+	float SidePx() const;
+	float SideArg = 0.f;
+	bool bWhole = false;
+	FOnMapClick OnClicked;
 	TWeakObjectPtr<UMRUISubsystem> UI;
 	int32 GeometryRid = -1;
 	FBox2D Rect = FBox2D(ForceInit);

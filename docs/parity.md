@@ -13,7 +13,7 @@ This file tracks what the Unreal client does compared with the original desktop 
 
 Protocol facts go in [research/blakserv-protocol.md](research/blakserv-protocol.md), each with the blakserv or clientd3d source it came from.
 
-Last survey: 2026-10-08. M0 to M8 done the same day; what they left over is in "Left over from finished milestones" at the end.
+Last survey: 2026-10-08. M0 to M9 done the same day; what they left over is in "Left over from finished milestones" at the end.
 
 ## Session and account
 
@@ -23,12 +23,12 @@ Last survey: 2026-10-08. M0 to M8 done the same day; what they left over is in "
 | Login error messages | `AP_LOGINFAILED`, `AP_ACCOUNTUSED`, ... | Done | Done | — |
 | Character list, message of the day | `BP_CHARACTERS` | Done | Done | — |
 | Character creator | `BP_CHARINFO`, `BP_NEW_CHARINFO` | Done | Done | — |
-| Delete a character | `BP_DELETE_CHARACTER` | Missing | Missing | M9 |
-| Change password | `BP_CHANGE_PASSWORD`, `BP_PASSWORD_OK/NOT_OK` | Missing | Missing | M9 |
+| Delete a character | `UC_SUICIDE` (the original's "suicide"; `BP_DELETE_CHARACTER` isn't handled by this server) | Done: Options > Account, confirmed with the password | Missing | M9 |
+| Change password | `BP_CHANGE_PASSWORD`, `BP_PASSWORD_OK/NOT_OK` | Done: Options > Account | Done | M9 |
 | Keep-alive and redbook | `BP_PING`, `BP_ECHO_PING` | Done | Done | — |
 | Server saves: wait and invalidate | `BP_WAIT`, `BP_UNWAIT`, `BP_INVALIDATE_DATA` | Done: no moves while waiting; the room, players and stats are asked for again | Done | M0 |
 | Resync after a bad frame | `BP_RESYNC` | Not possible: blakserv's game-mode handshake can't complete, so a broken stream ends the session (protocol notes, "Session") | Missing | — |
-| Escape menu: log off to the character list, quit | `BP_REQ_QUIT`, `BP_QUIT`, `AP_GETCHOICE` | Done: Esc or F10; Options waits for M9 | Done | M0 |
+| Escape menu: log off to the character list, quit | `BP_REQ_QUIT`, `BP_QUIT`, `AP_GETCHOICE` | Done: Esc or F10, with Who, Mail, Guild and Options | Done | M0, M9 |
 | Room checksum | `BP_PLAYER` security | Done: checked on every room; a mismatch is logged (M1 builds the room at runtime instead) | Done | M0 |
 | The server's game files | `manifest.json`, `<assets>/<name>` | Done: the asset cache downloads and hash-checks any listed file | Done | M0 |
 
@@ -141,12 +141,12 @@ Last survey: 2026-10-08. M0 to M8 done the same day; what they left over is in "
 | HUD, hotbars, inventory dialog | Done (as UI; data per rows above) | Done | — |
 | Minimap: walls and the player | Done | Done | — |
 | Minimap: players, monsters, NPCs | Done: dots by the server's minimap flags; runtime rooms draw their walls | Done | M2 |
-| Map annotations | Missing | Missing | M9 |
-| Options: graphics, audio, controls | Missing: console variables only | Done | M9 |
-| Key rebinding, Modern and Original presets | Missing: hard-coded | Done | M9 |
-| Server-kept game options (`CF_*`) | Missing | Done | M9 |
-| Tooltips | Missing | Missing | M9 |
-| Admin and guide commands | Missing | Missing | M9 (optional) |
+| Map annotations | Done: the large map (M), notes per room and character | Missing | M9 |
+| Options: graphics, audio, controls | Done: the Options window | Done | M9 |
+| Key rebinding, Modern and Original presets | Done (keyboard and mouse; the gamepad's stay) | Done | M9 |
+| Server-kept game options (`CF_*`) | Done: Options > Game, and the commands | Done | M8, M9 |
+| Tooltips | Done for items, spells and skills; not for buttons | Missing | M3, M9 |
+| Admin and guide commands | Missing (left over) | Missing | Any (optional) |
 
 ## World coverage
 
@@ -171,7 +171,7 @@ The server serves about 395 rooms. `ReferenceServers/Server-104/resource/rooms` 
 | M6 | NPCs, economy, player trade (done 2026-10-08) |
 | M7 | Server-driven world: sound, light, room changes, texture animation (done 2026-10-08) |
 | M8 | Communication and social (done 2026-10-08) |
-| M9 | Settings, account, polish |
+| M9 | Settings, account, polish (done 2026-10-08) |
 | W2 | Baked tier for every room (runs alongside, after M1) |
 | W3 | Authored zones, one at a time |
 
@@ -187,7 +187,7 @@ Things a finished milestone didn't do, or did without proof. Each lands in the m
 | ☐ | M2b | Items' own colour translations on worn pieces stored below their own pixels (a red-tinted shield) | Those pieces have no colour-ramp atlas | Any |
 | ☐ | M2b | The overlays on first-person pictures (the fist's glow) | Not drawn yet | Any |
 | ☐ | M3 | Putting things into a container | The request exists (`BP_REQ_PUT`); no UI to choose the container | Any (likely with M9 polish) |
-| ☐ | M3 | The hotbar layout and the spell bar layout saved between sessions | Kept on the client for the session only | Any (M9 at the latest) |
+| ☑ | M3 | The hotbar layout and the spell bar layout saved between sessions | Done in M9: kept with the character | M9 |
 | ☐ | M3 | Weight and bulk from the server instead of our item data | The client sums our `items.json` | Any |
 | ☐ | M4 | Check other players' and monsters' swings on screen | Only our own character's swing is tested | Any (needs a second client or a monster attacking in a rendered run) |
 | ☐ | M4 | See a projectile from a real spell, and test bow attacks with their ammunition | The test character has no attack spell or bow | Any (a test character with them) |
@@ -212,9 +212,15 @@ Things a finished milestone didn't do, or did without proof. Each lands in the m
 | ☐ | M8 | Try ignoring, a blocked tell, broadcasts and tells between two players | The test plays one character | Any (two test clients) |
 | ☐ | M8 | Post to a news board, and delete an article | Raza's board is read only for players | Any |
 | ☐ | M8 | Check a mood's changed face (happy, sad, wry) on our sprite and others' | Sent, not checked | Any |
-| ☐ | M8 | The original's way of typing as an option (every line a command), and its profanity filter | Our default is speech; no filter | M9 (Options) |
-| ☐ | M8 | Quick-chat keys (function keys running aliases), moving and resizing the chat log | Not built | M9 |
+| ☑ | M8 | The original's way of typing as an option (every line a command) | Done in M9 (Options > Game) | M9 |
+| ☐ | M8 | The original's profanity filter | Not ported | Any |
+| ☑ | M8 | Quick-chat keys (function keys running lines) | Done in M9 (F1–F12, Options > Chat) | M9 |
+| ☐ | M8 | Moving and resizing the chat log | Not built | Any |
 | ☐ | M8 | Name colours, guilds and flags in the who list | Names only | Any |
 | ☐ | M8 | Italic text in the chat | The UI's font has no italic face | Any (a font with one) |
-| ☐ | M8 | "suicide" and "password" | They say "not in this version yet" | M9 |
+| ☑ | M8 | "suicide" and "password" | Done in M9 (Options > Account) | M9 |
+| ☐ | M9 | Gamepad navigation of the windows, and a real font | ADR 0009's follow-ups, not started | Any |
+| ☐ | M9 | Admin and guide commands (`BP_REQ_ADMIN`, `BP_REQ_DM`) | Optional in the plan | Any |
+| ☐ | M9 | Options: a separate Lumen switch; a hand-set quality shown as such; binding the left mouse button outside the presets | The dialog's limits | Any |
+| ☐ | M9 | The original's keys typing letters straight into the chat line | The Original preset maps the moves only | Any |
 | ☐ | Tests | `run_move_test.ps1`'s ledge checks read the height a fixed 1.6 s in, so a slow frame catches a fall mid-air (7/8 in about half the runs) | Test timing, not movement | Any |

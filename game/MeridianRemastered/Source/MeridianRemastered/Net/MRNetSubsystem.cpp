@@ -24,10 +24,8 @@
 #include "Tests/MRProfileTour.h"
 #include "Tests/MRScreenshotTour.h"
 #include "Tests/MRSpriteClipTour.h"
-#include "Tests/MRSpriteNetTest.h"
 #include "Tests/MRMoveTest.h"
 #include "Tests/MRUIShots.h"
-#include "Tests/MRZoneSmokeTest.h"
 #include "Zones/MRZoneSubsystem.h"
 
 namespace
@@ -89,7 +87,7 @@ bool UMRNetSubsystem::IsOfflineRequested()
 	return FParse::Param(FCommandLine::Get(), TEXT("MROffline"))
 		|| UMRScreenshotTour::IsRequested() || UMRProfileTour::IsRequested() || UMRLookDevTour::IsRequested()
 		|| UMRMapCapture::IsRequested() || UMRMonsterTour::IsRequested() || UMRSpriteClipTour::IsRequested()
-		|| UMRSpriteNetTest::IsRequested() || UMRUIShots::IsRequested() || UMRZoneSmokeTest::IsRequested()
+		|| UMRUIShots::IsRequested()
 		|| UMRMoveTest::IsRequested();
 }
 
@@ -191,6 +189,7 @@ void UMRNetSubsystem::Connect(int32 InServer, const FString& User, const FString
 	ServerIndex = InServer;
 	PendingUser = User.TrimStartAndEnd();
 	PendingPassword = Password;
+	LoginDigest = MRProto::PasswordDigest(Password);
 	LastError.Reset();
 	LastServer = InServer;
 	LastUser = PendingUser;
@@ -219,6 +218,7 @@ void UMRNetSubsystem::ReturnToCharacters()
 void UMRNetSubsystem::Logoff()
 {
 	PendingPassword.Reset();
+	LoginDigest.Reset();
 	if (Connection.IsValid())
 	{
 		Connection->Close();  // HandleClosed resets the state
@@ -420,6 +420,18 @@ void UMRNetSubsystem::SetPreferences(uint32 Flags)
 
 // ------------------------------------------------------------------------------ the others: ignore, groups, aliases
 
+void FMRSocial::DefaultQuickChat()
+{
+	// module/merintr alias.c: F1 help ... F9 point, F10 addgroup (ours: the menu), F11 mail, F12 quit (ours: who)
+	const TCHAR* Lines[12] = {TEXT("help"), TEXT("rest"), TEXT("stand"), TEXT("neutral"), TEXT("happy"), TEXT("sad"), TEXT("wry"),
+		TEXT("wave"), TEXT("point"), TEXT(""), TEXT("mail"), TEXT("who")};
+	for (int32 i = 0; i < 12; ++i)
+	{
+		QuickChat[i] = Lines[i];
+		QuickRun[i] = true;
+	}
+}
+
 FString UMRNetSubsystem::CharacterFile(const TCHAR* What) const
 {
 	return FPaths::Combine(CacheDir(), What, FPaths::MakeValidFileName(LoadedCharacter) + TEXT(".json"));
@@ -471,6 +483,7 @@ void UMRNetSubsystem::LoadCharacterData()
 	}
 	LoadedCharacter = Name;
 	Social = FMRSocial();
+	Social.DefaultQuickChat();
 	if (const TSharedPtr<FJsonObject> Root = ReadJson(CharacterFile(TEXT("social"))))
 	{
 		Root->TryGetStringArrayField(TEXT("ignored"), Social.Ignored);
@@ -497,6 +510,33 @@ void UMRNetSubsystem::LoadCharacterData()
 				Social.Aliases.Add(P.Key, P.Value->AsString());
 			}
 		}
+		const TArray<TSharedPtr<FJsonValue>>* Quick = nullptr;
+		if (Root->TryGetArrayField(TEXT("quick_chat"), Quick))
+		{
+			for (int32 i = 0; i < Quick->Num() && i < 12; ++i)
+			{
+				if (const TSharedPtr<FJsonObject> Q = (*Quick)[i]->AsObject())
+				{
+					Social.QuickChat[i] = Q->GetStringField(TEXT("text"));
+					Social.QuickRun[i] = Q->GetBoolField(TEXT("run"));
+				}
+			}
+		}
+		Root->TryGetStringArrayField(TEXT("hotbar"), Social.Hotbar);
+		Root->TryGetStringArrayField(TEXT("spell_bar"), Social.SpellBar);
+		const TSharedPtr<FJsonObject>* Notes = nullptr;
+		if (Root->TryGetObjectField(TEXT("map_notes"), Notes))
+		{
+			for (const TPair<FString, TSharedPtr<FJsonValue>>& P : (*Notes)->Values)
+			{
+				TArray<FMRMapNote>& List = Social.MapNotes.Add(P.Key);
+				for (const TSharedPtr<FJsonValue>& V : P.Value->AsArray())
+				{
+					const TSharedPtr<FJsonObject> O = V->AsObject();
+					List.Add({O->GetNumberField(TEXT("x")), O->GetNumberField(TEXT("y")), O->GetStringField(TEXT("text"))});
+				}
+			}
+		}
 	}
 	Mailbox.Reset();
 	if (const TSharedPtr<FJsonObject> Root = ReadJson(CharacterFile(TEXT("mail"))))
@@ -515,6 +555,7 @@ void UMRNetSubsystem::LoadCharacterData()
 	UE_LOG(LogMeridian, Log, TEXT("MRNet: %s: %d ignored, %d groups, %d aliases, %d kept mail"), *Name, Social.Ignored.Num(),
 		Social.Groups.Num(), Social.Aliases.Num(), Mailbox.Num());
 	OnMailChanged.Broadcast();
+	OnCharacterDataLoaded.Broadcast();
 }
 
 void UMRNetSubsystem::SaveSocial() const
@@ -540,6 +581,44 @@ void UMRNetSubsystem::SaveSocial() const
 		Aliases->SetStringField(A.Key, A.Value);
 	}
 	Root->SetObjectField(TEXT("aliases"), Aliases);
+	TArray<TSharedPtr<FJsonValue>> Quick;
+	for (int32 i = 0; i < 12; ++i)
+	{
+		TSharedRef<FJsonObject> Q = MakeShared<FJsonObject>();
+		Q->SetStringField(TEXT("text"), Social.QuickChat[i]);
+		Q->SetBoolField(TEXT("run"), Social.QuickRun[i]);
+		Quick.Add(MakeShared<FJsonValueObject>(Q));
+	}
+	Root->SetArrayField(TEXT("quick_chat"), Quick);
+	auto Strings = [](const TArray<FString>& In)
+	{
+		TArray<TSharedPtr<FJsonValue>> Out;
+		for (const FString& S : In)
+		{
+			Out.Add(MakeShared<FJsonValueString>(S));
+		}
+		return Out;
+	};
+	Root->SetArrayField(TEXT("hotbar"), Strings(Social.Hotbar));
+	Root->SetArrayField(TEXT("spell_bar"), Strings(Social.SpellBar));
+	TSharedRef<FJsonObject> Notes = MakeShared<FJsonObject>();
+	for (const TPair<FString, TArray<FMRMapNote>>& P : Social.MapNotes)
+	{
+		TArray<TSharedPtr<FJsonValue>> List;
+		for (const FMRMapNote& N : P.Value)
+		{
+			TSharedRef<FJsonObject> O = MakeShared<FJsonObject>();
+			O->SetNumberField(TEXT("x"), N.X);
+			O->SetNumberField(TEXT("y"), N.Y);
+			O->SetStringField(TEXT("text"), N.Text);
+			List.Add(MakeShared<FJsonValueObject>(O));
+		}
+		if (List.Num() > 0)
+		{
+			Notes->SetArrayField(P.Key, List);
+		}
+	}
+	Root->SetObjectField(TEXT("map_notes"), Notes);
 	WriteJson(Root, CharacterFile(TEXT("social")));
 }
 
@@ -567,6 +646,47 @@ TArray<TPair<uint32, FString>> UMRNetSubsystem::GetUserNames() const
 		Out.Add({U.Key, U.Value.Name});
 	}
 	return Out;
+}
+
+// ------------------------------------------------------------------------------ the account
+
+FString UMRNetSubsystem::ChangePassword(const FString& Old, const FString& New)
+{
+	// clientd3d maindlg.c: at least 6 characters; both sent hashed, as at login (blakserv game.c
+	// compares the old with the account's and keeps the new as it comes)
+	if (New.Len() < 6)
+	{
+		return TEXT("The new password needs at least 6 characters.");
+	}
+	if (New.Len() > 30)
+	{
+		return TEXT("The new password can have at most 30 characters.");
+	}
+	if (!Connection.IsValid() || Phase != EMRNetPhase::InGame)
+	{
+		return TEXT("Not now.");
+	}
+	FMRWriter W(MRMsg::BP_CHANGE_PASSWORD);
+	for (const FString* P : {&Old, &New})
+	{
+		W.Raw(MRProto::PasswordDigest(*P));  // (Raw: u16 length, then the bytes: a string, as blakserv reads it)
+	}
+	Connection->Send(W);
+	UE_LOG(LogMeridian, Log, TEXT("MRNet: asked to change the password (%d bytes)"), W.Bytes.Num());
+	return FString();
+}
+
+bool UMRNetSubsystem::IsLoginPassword(const FString& Password) const
+{
+	return LoginDigest.Num() > 0 && MRProto::PasswordDigest(Password) == LoginDigest;
+}
+
+void UMRNetSubsystem::DeleteCharacter()
+{
+	if (CanSend())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_USERCOMMAND).U8(MRMsg::UC_SUICIDE));
+	}
 }
 
 // ------------------------------------------------------------------------------ mail
@@ -1306,6 +1426,11 @@ void UMRNetSubsystem::HandleUserCommand(FMRReader& R, const TArray<uint8>& Body)
 		}
 		break;
 	}
+	case MRMsg::UC_SEND_QUIT:
+		// merintr.c HandleSendQuit: the server is done with this character (a suicide): back to the list
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: the server sends us to the character list"));
+		ReturnToCharacters();
+		break;
 	case MRMsg::UC_GUILDINFO:
 		if (MRNetRead::GuildInfo(R, World.Guild))
 		{
@@ -1763,6 +1888,15 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 			const FString* Fmt = Resources.Find(FormatId);
 			UE_LOG(LogMeridian, Warning, TEXT("MRNet: message %u couldn't be formatted (%d bytes): \"%s\""), FormatId, Body.Num(), Fmt ? **Fmt : TEXT("not in the rsb"));
 		}
+		break;
+	}
+	case MRMsg::BP_PASSWORD_OK:
+	case MRMsg::BP_PASSWORD_NOT_OK:
+	{
+		// server.c HandlePasswordOk / NotOk (client.rc IDS_PASSWORDCHANGED, IDS_PASSWORDNOTCHANGED)
+		const bool bOk = Body[0] == MRMsg::BP_PASSWORD_OK;
+		AddChat(bOk ? TEXT("Password changed.") : TEXT("You typed your old password incorrectly.  Password NOT changed!"), 0);
+		OnPasswordChanged.Broadcast(bOk);
 		break;
 	}
 	case MRMsg::BP_MAIL:
@@ -2252,6 +2386,7 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		SetPhase(EMRNetPhase::Connecting, TEXT("Loading characters..."));
 		break;
 	default:
+		UE_LOG(LogMeridian, Verbose, TEXT("MRNet: message %d not handled (%d bytes)"), Body[0], Body.Num());
 		break;  // not handled yet: docs/parity.md says which milestone does
 	}
 }
