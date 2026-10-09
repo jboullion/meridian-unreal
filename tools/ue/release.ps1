@@ -1,16 +1,19 @@
 # Releases the game: packages it, zips it, and publishes the zips as a GitHub release of this repo,
 # like Meridian Shards' `npm run release` (its tools/deploy/release.ts). Shards builds on GitHub's
 # runners; we can't (no Unreal Engine there, and Content/Generated/ isn't in git), so everything
-# runs here and the GitHub CLI uploads the result.
+# runs here: git pushes the version and its tag, and the zip goes up to GitHub's release page.
 #
-#   npm run release -- 0.2.0            package Win64, bump to 0.2.0, commit, tag, push, upload, publish
+#   npm run release -- 0.2.0            package Win64, bump to 0.2.0, commit, tag, push, then the upload
 #   npm run release -- 0.2.0 -Linux     also the Linux build (cross-compiled; untested on real Linux)
-#   npm run release -- 0.2.0 -Draft     leave the release an unpublished draft (publish it on GitHub)
+#   npm run release -- 0.2.0 -Draft     (with gh) leave the release an unpublished draft
 #   npm run release:local               zip the working tree as it is: no version, git or GitHub
 #
 # What ships is what's built on this machine: run build_world.ps1 first if zones or art changed.
 # The version lives in DefaultGame.ini (ProjectVersion; the login screen shows it).
-# Uploading needs the GitHub CLI signed in (gh auth login). The repo is public, so is the release.
+# The upload: with the GitHub CLI signed in (gh auth login) the script makes and publishes the release.
+# Without it, git does the rest and the script opens GitHub's new-release page for the pushed tag and
+# shows the zip in Explorer: drag it in, then Publish (git alone can't make a release).
+# The repo is public, so is the release.
 # Online play needs app://unreal-meridian in the Shards VM's GATEWAY_ORIGINS (ADR 0010).
 # Output: build/release/Unreal-Meridian-<version>-<Platform>.zip
 param(
@@ -142,9 +145,13 @@ if ($Local) {
 	Invoke-Git fetch --tags origin | Out-Null
 	if ((Invoke-Git rev-list --count HEAD..origin/main) -ne "0") { Fail "origin/main has commits you don't: pull first" }
 	if (Invoke-Git tag -l $tag) { Fail "tag $tag already exists" }
-	if (-not (Get-Command gh -ErrorAction SilentlyContinue)) { Fail "the GitHub CLI (gh) isn't installed" }
-	if ((Get-ExitCode { gh auth status }) -ne 0) { Fail "the GitHub CLI isn't signed in: gh auth login" }
-	if ((Get-ExitCode { gh release view $tag --repo $ghRepo }) -eq 0) { Fail "GitHub already has a release for $tag; delete it or pick another version" }
+	if (Invoke-Git ls-remote --tags origin "refs/tags/$tag") { Fail "origin already has tag $tag" }
+	$useGh = (Get-Command gh -ErrorAction SilentlyContinue) -and (Get-ExitCode { gh auth status }) -eq 0
+	if ($useGh) {
+		if ((Get-ExitCode { gh release view $tag --repo $ghRepo }) -eq 0) { Fail "GitHub already has a release for $tag; delete it or pick another version" }
+	} else {
+		Write-Host "the GitHub CLI isn't signed in: git pushes the tag, then you upload the zip on GitHub's page"
+	}
 }
 
 # ------------------------------------------------------------------------------ package and zip
@@ -184,6 +191,19 @@ Write-Host "pushing main and $tag"
 if ($LASTEXITCODE -ne 0) { Fail "pushing main failed; the release commit and tag $tag are local" }
 & git.exe -C $repo push origin $tag
 if ($LASTEXITCODE -ne 0) { Fail "pushing $tag failed" }
+
+if (-not $useGh) {
+	$title = [uri]::EscapeDataString("Unreal Meridian $tag")
+	$page = "https://github.com/$ghRepo/releases/new?tag=$tag&title=$title"
+	Write-Host ""
+	Write-Host "$tag is pushed. To finish the release on GitHub (the page is opening):"
+	Write-Host "  1. drag in $($zips -join ', ')"
+	Write-Host "  2. optionally 'Generate release notes', then 'Publish release'"
+	Write-Host "  $page"
+	Start-Process $page
+	Start-Process explorer.exe "/select,`"$($zips[0])`""
+	exit 0
+}
 
 $retry = "gh release create $tag $($zips -join ' ') --repo $ghRepo --draft --verify-tag --title `"Unreal Meridian $tag`" --generate-notes"
 Write-Host "uploading to a draft release (about 1.5 GB per platform)"
