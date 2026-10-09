@@ -83,6 +83,9 @@
     {"name": "trees_close", "location_cm": [2150, 5900, 180], "rotation": [14.0, -150.0], "fov": 60},
     {"name": "shops_wall_2m", "location_cm": [10080, 3300, 170], "rotation": [5.0, 0.0], "fov": 90},
     {"name": "shops_wall_7m", "location_cm": [9540, 3300, 170], "rotation": [5.0, 0.0], "fov": 90},
-    {"name": "shops_wall_17m", "location_cm": [8540, 3300, 170], "rotation": [5.0, 0.0], "fov": 90}
+    {"name": "shops_wall_17m", "location_cm": [8540, 3300, 170], "rotation": [5.0, 0.0], "fov": 90},
+    {"name": "cmp_inn", "location_cm": [201250, 700, 234], "rotation": [-4.0, 163.0], "fov": 90},
+    {"name": "cmp_raza_pond", "location_cm": [4600, 3900, 206], "rotation": [-3.0, 5.0], "fov": 90},
+    {"name": "cmp_mausoleum", "location_cm": [405010, 202700, 1334], "rotation": [-3.0, 93.0], "fov": 90}
   ]
 }

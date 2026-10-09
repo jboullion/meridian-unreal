@@ -1,6 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "World/MRRoomMesh.h"
+#include "Zones/MRZoneSubsystem.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "MRRuntimeRooms.generated.h"
 
@@ -58,6 +60,10 @@ public:
 
 	/** The actor of a built room (tests). */
 	AMRRuntimeRoom* FindRoomActor(const FString& RoomFile) const;
+
+	/** A room's wading areas and step walls (zone-local) as the zone subsystem keeps them. */
+	static TArray<FMRDepthArea> ToDepthAreas(const TArray<FMRRoomDepthArea>& Room);
+	static TArray<FMRStepWall> ToStepWalls(const TArray<FMRRoomStepWall>& Room);
 
 private:
 	struct FIndexEntry

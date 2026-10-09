@@ -36,7 +36,9 @@ public class UnrealMeridian : ModuleRules
 			"PhysicsCore",
 			// the server's sounds, decoded at runtime (Audio/MRServerSound)
 			"VorbisAudioDecoder",
-			"AudioExtensions"
+			"AudioExtensions",
+			// the release's version on the login screen (UGeneralProjectSettings::ProjectVersion)
+			"EngineSettings"
 		});
 
 		// FSoundQualityInfo (the decoder's interface) is declared there; header only, as the Engine module uses it

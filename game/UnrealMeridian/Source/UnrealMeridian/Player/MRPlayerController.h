@@ -129,4 +129,8 @@ private:
 	/** -MRMoveTest: the original's movement (speeds, ledge jumps, steps), checked in play. */
 	UPROPERTY(Transient)
 	TObjectPtr<class UMRMoveTest> MoveTest;
+
+	/** -MRStepSurvey: every step the original lets you take, tried with the player's capsule and movement. */
+	UPROPERTY(Transient)
+	TObjectPtr<class UMRStepSurvey> StepSurvey;
 };

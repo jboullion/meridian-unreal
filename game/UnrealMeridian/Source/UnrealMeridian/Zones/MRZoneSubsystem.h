@@ -86,13 +86,32 @@ struct FMRZoneInfo
 };
 
 /**
+ * One way across a wall where the floors differ, in world space, with the original's step rule there
+ * (FMRRoomStepWall; zone_layout.json "step_walls" for built zones, tools/roo2gltf).
+ */
+struct FMRStepWall
+{
+	FVector2D A = FVector2D::ZeroVector, B = FVector2D::ZeroVector;
+	/** Across the wall, from the side this way starts on (unit). */
+	FVector2D Into = FVector2D::ZeroVector;
+	bool bLowerTexture = false;
+	/** World Z of the higher floor at the wall's first end (the original's z1), cm. */
+	float Z1 = 0.f;
+	float FarSinkCm = 0.f;
+	/** The runtime zone it belongs to, 0 for the built zones. */
+	int32 RuntimeRid = 0;
+};
+
+/**
  * A wading area: a sector of the original with a depth (SF_MASK_DEPTH 1-3: fields, pools), one convex
  * BSP leaf of it in world XY (UE cm), from zone_layout.json "depth_areas" (tools/roo2gltf).
  */
 struct FMRDepthArea
 {
 	int32 Depth = 0;
-	/** The runtime zone it belongs to (UMRRuntimeRooms), 0 for the built zones. */
+	/** How far below the sector's floor you stand, cm: the depth's sink, or the server's override (negative: above it). */
+	float SinkCm = 0.f;
+	/** The runtime zone it belongs to (UMRRuntimeRooms), 0 for the built zones, -1 for MRMoveTest's. */
 	int32 RuntimeRid = 0;
 	FBox2D Bounds = FBox2D(ForceInit);
 	TArray<FVector2D> Points;
@@ -161,9 +180,20 @@ public:
 	 * Pure data, the same on client and server, so movement predicts it (UMRCharacterMovementComponent).
 	 */
 	int32 DepthAt(const FVector& World) const;
+	/** How far below its floor you stand at a world position, cm (0 out of every wading area). */
+	float DepthSinkAt(const FVector& World) const;
 
 	/** How fast you move at a wading depth, as the original (clientd3d move.c): 1, 3/4, 1/2, 1/4. */
 	static float DepthSpeedFactor(int32 Depth);
+
+	/**
+	 * How far a wading depth sinks you below the sector's floor, cm: 0, 1/5, 2/5 and 3/5 of a square
+	 * (clientd3d draw3d.c sector_depths). The collision floors are lowered by it (roo2gltf DEPTH_SINK_ROO).
+	 */
+	static float DepthSinkCm(int32 Depth);
+
+	/** MRMoveTest's pools: one rectangular wading area in world XY; Depth 0 removes it. */
+	void SetTestDepthArea(const FBox2D& Area, int32 Depth);
 
 	/** World -> (row, col) in the given zone's grid. */
 	FIntPoint WorldToGrid(int32 Rid, const FVector& World) const;
@@ -197,6 +227,16 @@ public:
 	 */
 	void AddRuntimeZone(const FMRZoneInfo& Info, const TArray<FMRDepthArea>& LocalDepthAreas);
 	void RemoveRuntimeZone(int32 Rid);
+	/** A runtime zone's wading areas again (zone-local): the server changed a sector's depth, or overrides its depths. */
+	void SetRuntimeDepthAreas(int32 Rid, const TArray<FMRDepthArea>& LocalDepthAreas);
+	/** A runtime zone's step walls (zone-local A, B; Z1 relative to the zone): its room changed (lifts, depths). */
+	void SetRuntimeStepWalls(int32 Rid, const TArray<FMRStepWall>& LocalStepWalls);
+
+	/**
+	 * The way across a room's wall that a pawn standing at From walked into at Impact (within a few cm
+	 * of it, From on its starting side), or null: then it's no room's wall (a prop, a test box).
+	 */
+	const FMRStepWall* StepWallAt(const FVector& Impact, const FVector& From) const;
 
 	/**
 	 * A server position (Kod fine units: square * 64 + fine, 1-based, so 64 is the room's top-left
@@ -218,6 +258,7 @@ public:
 	static constexpr int32 GalleryRid = 9000;
 
 private:
+	const FMRDepthArea* DepthAreaAt(const FVector& World) const;
 	bool LoadData();
 	void AddGalleryZone(const FString& Dir);
 	int32 GetPawnZone(const APawn* Pawn) const;
@@ -229,6 +270,12 @@ private:
 	TMap<FString, int32> RoomFiles;
 
 	bool bServerDriven = false;
+
+	/** Every zone geometry's step walls, world space (StepWallAt), and a grid of them (cells of StepCellCm). */
+	TArray<FMRStepWall> StepWalls;
+	TMultiMap<FIntPoint, int32> StepGrid;
+	static constexpr double StepCellCm = 500.0;
+	void IndexStepWalls();
 
 	/** Every zone geometry's wading areas, world space (DepthAt). */
 	TArray<FMRDepthArea> DepthAreas;

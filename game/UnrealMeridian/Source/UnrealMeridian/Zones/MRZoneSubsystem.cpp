@@ -297,6 +297,7 @@ bool UMRZoneSubsystem::LoadData()
 				const TSharedPtr<FJsonObject> D = DV->AsObject();
 				FMRDepthArea Area;
 				Area.Depth = IntField(D, TEXT("depth"));
+				Area.SinkCm = DepthSinkCm(Area.Depth);
 				for (const TSharedPtr<FJsonValue>& PV : D->GetArrayField(TEXT("points")))
 				{
 					const TArray<TSharedPtr<FJsonValue>>& XZ = PV->AsArray();
@@ -308,6 +309,27 @@ bool UMRZoneSubsystem::LoadData()
 				{
 					DepthAreas.Add(MoveTemp(Area));
 				}
+			}
+		}
+		// the original's step rule at each wall where the floors differ: [x0, z0, x1, z1, into x, into z,
+		// lower texture, z1 height, far sink] in layout metres (roo2gltf step_walls)
+		const TArray<TSharedPtr<FJsonValue>>* Steps = nullptr;
+		if (!Info.SharesGeometryWith && L->TryGetArrayField(TEXT("step_walls"), Steps))
+		{
+			for (const TSharedPtr<FJsonValue>& SV : *Steps)
+			{
+				const TArray<TSharedPtr<FJsonValue>>& Row = SV->AsArray();
+				if (Row.Num() < 9)
+				{
+					continue;
+				}
+				FMRStepWall& W = StepWalls.AddDefaulted_GetRef();
+				W.A = FVector2D(Info.Origin + MRUnits::LayoutToLocal(Row[0]->AsNumber(), 0.0, Row[1]->AsNumber()));
+				W.B = FVector2D(Info.Origin + MRUnits::LayoutToLocal(Row[2]->AsNumber(), 0.0, Row[3]->AsNumber()));
+				W.Into = FVector2D(Row[4]->AsNumber(), Row[5]->AsNumber()).GetSafeNormal();
+				W.bLowerTexture = Row[6]->AsNumber() != 0.0;
+				W.Z1 = static_cast<float>(Info.Origin.Z + Row[7]->AsNumber() * 100.0);
+				W.FarSinkCm = static_cast<float>(Row[8]->AsNumber() * 100.0);
 			}
 		}
 
@@ -415,6 +437,7 @@ bool UMRZoneSubsystem::LoadData()
 	}
 
 	UE_LOG(LogMeridian, Log, TEXT("Loaded %d zones from %s"), Zones.Num(), *Dir);
+	IndexStepWalls();
 	return Zones.Num() > 0;
 }
 
@@ -422,11 +445,22 @@ void UMRZoneSubsystem::AddRuntimeZone(const FMRZoneInfo& Info, const TArray<FMRD
 {
 	RemoveRuntimeZone(Info.Rid);
 	Zones.Add(Info.Rid, Info);
-	const FVector2D Origin(Info.Origin);
+	SetRuntimeDepthAreas(Info.Rid, LocalDepthAreas);
+}
+
+void UMRZoneSubsystem::SetRuntimeDepthAreas(int32 Rid, const TArray<FMRDepthArea>& LocalDepthAreas)
+{
+	const FMRZoneInfo* Zone = Zones.Find(Rid);
+	if (!Zone)
+	{
+		return;
+	}
+	DepthAreas.RemoveAll([Rid](const FMRDepthArea& A) { return A.RuntimeRid == Rid; });
+	const FVector2D Origin(Zone->Origin);
 	for (const FMRDepthArea& Local : LocalDepthAreas)
 	{
 		FMRDepthArea& A = DepthAreas.Add_GetRef(Local);
-		A.RuntimeRid = Info.Rid;
+		A.RuntimeRid = Rid;
 		A.Bounds = FBox2D(ForceInit);
 		for (FVector2D& P : A.Points)
 		{
@@ -441,7 +475,78 @@ void UMRZoneSubsystem::RemoveRuntimeZone(int32 Rid)
 	if (Zones.Remove(Rid) > 0)
 	{
 		DepthAreas.RemoveAll([Rid](const FMRDepthArea& A) { return A.RuntimeRid == Rid; });
+		if (StepWalls.RemoveAll([Rid](const FMRStepWall& W) { return W.RuntimeRid == Rid; }) > 0)
+		{
+			IndexStepWalls();
+		}
 	}
+}
+
+void UMRZoneSubsystem::SetRuntimeStepWalls(int32 Rid, const TArray<FMRStepWall>& LocalStepWalls)
+{
+	const FMRZoneInfo* Zone = Zones.Find(Rid);
+	if (!Zone)
+	{
+		return;
+	}
+	StepWalls.RemoveAll([Rid](const FMRStepWall& W) { return W.RuntimeRid == Rid; });
+	const FVector2D Origin(Zone->Origin);
+	for (const FMRStepWall& Local : LocalStepWalls)
+	{
+		FMRStepWall& W = StepWalls.Add_GetRef(Local);
+		W.A += Origin;
+		W.B += Origin;
+		W.Z1 += static_cast<float>(Zone->Origin.Z);
+		W.RuntimeRid = Rid;
+	}
+	IndexStepWalls();
+}
+
+void UMRZoneSubsystem::IndexStepWalls()
+{
+	StepGrid.Reset();
+	for (int32 i = 0; i < StepWalls.Num(); ++i)
+	{
+		const FMRStepWall& W = StepWalls[i];
+		const FIntPoint Lo(FMath::FloorToInt32(FMath::Min(W.A.X, W.B.X) / StepCellCm), FMath::FloorToInt32(FMath::Min(W.A.Y, W.B.Y) / StepCellCm));
+		const FIntPoint Hi(FMath::FloorToInt32(FMath::Max(W.A.X, W.B.X) / StepCellCm), FMath::FloorToInt32(FMath::Max(W.A.Y, W.B.Y) / StepCellCm));
+		for (int32 X = Lo.X; X <= Hi.X; ++X)
+		{
+			for (int32 Y = Lo.Y; Y <= Hi.Y; ++Y)
+			{
+				StepGrid.Add(FIntPoint(X, Y), i);
+			}
+		}
+	}
+}
+
+const FMRStepWall* UMRZoneSubsystem::StepWallAt(const FVector& Impact, const FVector& From) const
+{
+	constexpr double Near = 4.0;  // cm: the hit lies on the wall's face
+	const FVector2D P(Impact);
+	const FVector2D F(From);
+	const FMRStepWall* Best = nullptr;
+	double BestDist = Near;
+	TArray<int32> Cands;
+	StepGrid.MultiFind(FIntPoint(FMath::FloorToInt32(P.X / StepCellCm), FMath::FloorToInt32(P.Y / StepCellCm)), Cands);
+	for (const int32 i : Cands)
+	{
+		const FMRStepWall& W = StepWalls[i];
+		const FVector2D AB = W.B - W.A;
+		const double Len2 = AB.SizeSquared();
+		if (Len2 < 1.0 || FVector2D::DotProduct(F - W.A, W.Into) >= 0.0)
+		{
+			continue;  // a point, or From isn't on this way's starting side
+		}
+		const double T = FMath::Clamp(FVector2D::DotProduct(P - W.A, AB) / Len2, 0.0, 1.0);
+		const double Dist = FVector2D::Distance(P, W.A + AB * T);
+		if (Dist <= BestDist)
+		{
+			BestDist = Dist;
+			Best = &W;
+		}
+	}
+	return Best;
 }
 
 FVector UMRZoneSubsystem::GridToWorld(int32 Rid, int32 Row, int32 Col, bool bTraceFloor) const
@@ -512,6 +617,18 @@ bool UMRZoneSubsystem::TraceFloor(FVector& P, bool bLowest) const
 
 int32 UMRZoneSubsystem::DepthAt(const FVector& World) const
 {
+	const FMRDepthArea* Area = DepthAreaAt(World);
+	return Area ? Area->Depth : 0;
+}
+
+float UMRZoneSubsystem::DepthSinkAt(const FVector& World) const
+{
+	const FMRDepthArea* Area = DepthAreaAt(World);
+	return Area ? Area->SinkCm : 0.f;
+}
+
+const FMRDepthArea* UMRZoneSubsystem::DepthAreaAt(const FVector& World) const
+{
 	const FVector2D P(World.X, World.Y);
 	for (const FMRDepthArea& Area : DepthAreas)
 	{
@@ -534,10 +651,10 @@ int32 UMRZoneSubsystem::DepthAt(const FVector& World) const
 		}
 		if (bInside)
 		{
-			return Area.Depth;
+			return &Area;
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 float UMRZoneSubsystem::DepthSpeedFactor(int32 Depth)
@@ -548,6 +665,26 @@ float UMRZoneSubsystem::DepthSpeedFactor(int32 Depth)
 	case 2: return 0.5f;
 	case 3: return 0.25f;
 	default: return 1.f;
+	}
+}
+
+float UMRZoneSubsystem::DepthSinkCm(int32 Depth)
+{
+	return FMath::Clamp(Depth, 0, 3) * MRUnits::CmPerSquare / 5.0;
+}
+
+void UMRZoneSubsystem::SetTestDepthArea(const FBox2D& Area, int32 Depth)
+{
+	constexpr int32 TestOwner = -1;
+	DepthAreas.RemoveAll([](const FMRDepthArea& A) { return A.RuntimeRid == TestOwner; });
+	if (Depth > 0)
+	{
+		FMRDepthArea& A = DepthAreas.AddDefaulted_GetRef();
+		A.Depth = Depth;
+		A.SinkCm = DepthSinkCm(Depth);
+		A.RuntimeRid = TestOwner;
+		A.Points = {Area.Min, FVector2D(Area.Max.X, Area.Min.Y), Area.Max, FVector2D(Area.Min.X, Area.Max.Y)};
+		A.Bounds = Area;
 	}
 }
 

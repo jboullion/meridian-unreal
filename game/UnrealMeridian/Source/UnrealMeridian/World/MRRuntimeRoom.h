@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "World/MRRooFile.h"
+#include "World/MRRoomMesh.h"
 #include "MRRuntimeRoom.generated.h"
 
 class UMaterialInstanceDynamic;
@@ -46,6 +47,14 @@ public:
 
 	/** Back to the room as the file has it (a room entry: the server sends the room's changes again). */
 	void ResetChanges();
+	/** BP_PLAYER's override of the wading depths (FMRWadingOverride): rebuilds the collision when it changes. */
+	void SetWadingOverride(const FMRWadingOverride& InWading);
+	/** Its wading areas now (zone-local cm): the sectors' depths as changed, and the override. */
+	TArray<FMRRoomDepthArea> GetDepthAreas() const { return MRRoomMesh::DepthAreas(Room, Wading); }
+	/** Its step walls now (zone-local cm): the floors as moved, and the override. */
+	TArray<FMRRoomStepWall> GetStepWalls() const { return MRRoomMesh::StepWalls(Room, Wading); }
+	/** After every rebuild of the collision (lifts, depth changes, the override): wading and steps follow it. */
+	FSimpleMulticastDelegate OnCollisionRebuilt;
 	/** BP_SECTOR_MOVE: the floor (ANIMATE_FLOOR_LIFT) or ceiling of every sector with this id to Height (Kod units) at Speed a second; 0: at once. */
 	void MoveSector(uint8 Type, uint16 SectorId, int16 Height, uint8 Speed);
 	/** BP_SECTOR_CHANGE: a new depth (0..3) and scroll speed (0..3); CHANGE_OVERRIDE keeps either. */
@@ -108,6 +117,7 @@ private:
 	TMap<uint16, UTexture2D*> TextureByNumber;
 	TMap<uint16, UMaterialInstanceDynamic*> MaterialByTexture;
 	TArray<FLift> Lifts;
+	FMRWadingOverride Wading;
 	bool bChanged = false;
 	int32 Rebuilds = 0;
 	FBox MeshBounds = FBox(ForceInit);

@@ -19,6 +19,9 @@
  *   square), times mr.Move.SpeedScale; full speed at once, and full steering while falling;
  * - falling: gravity 5 squares/s/s (11 m/s/s), starting at 2/3 square/s (1.47 m/s) down;
  * - steps up to 24 Kod units (0.825 m), also while falling (HandleImpact), when the step climbs onto a floor;
+ *   wading, as high as the pool sinks you (WadingStepHeight), so you walk out onto a bank at its floor's height;
+ * - at a room's wall, the original's own rule (StepUp, UMRZoneSubsystem::StepWallAt): never blocked by a
+ *   wall without a lower texture, else measured from the higher floor at the wall's first end; up to mr.Move.StepCapCm;
  * - off a ledge: a flat base keeps its height, and the fall starts 19 cm past the edge (the original's
  *   53 cm reach less our 34 cm radius), so its jumps go as far: about 4.1 m running, 2.3 m walking.
  */
@@ -40,9 +43,23 @@ public:
 	static constexpr float OriginalFallStartCms = 2.f / 3.f * 220.f;                     // 147
 	/** The original's MAX_STEP_HEIGHT: 24 Kod units, cm. */
 	static constexpr float OriginalStepCm = 24.f / 64.f * 220.f;                         // 82.5
+	/**
+	 * The original's player height, cm: 3/4 square (game.c player.height, also the eye; blakserv
+	 * OBJECTHEIGHTROO). Passages and steps under a ceiling let you through when it's this high.
+	 */
+	static constexpr float OriginalHeightCm = 0.75f * 220.f;                             // 165
+	/**
+	 * Our capsule's height, cm: the original's less the 2 cm or so the movement floats over the floor
+	 * (UCharacterMovementComponent's MIN/MAX_FLOOR_DIST), so it fits under a ceiling 1.65 m up.
+	 */
+	static constexpr float CapsuleHeightCm = OriginalHeightCm - 3.f;                       // 162
+	/** Our capsule's radius, cm (the original's reach to a wall is 53, move.c min_distance). */
+	static constexpr float CapsuleRadiusCm = 34.f;
 
 	/** mr.Move.SpeedScale: every speed in the game relative to the original's (1 = the original). */
 	static float SpeedScale();
+	/** mr.Move.StepCapCm: the highest step the original's rule may climb at a room's wall (it has none: 34 m desert cliffs). */
+	static float StepCapCm();
 	/** The player's walk and run, cm/s, with mr.Move.SpeedScale: other characters' speeds follow these. */
 	static float WalkCms() { return OriginalWalkCms * SpeedScale(); }
 	static float RunCms() { return OriginalRunCms * SpeedScale(); }
@@ -52,6 +69,7 @@ public:
 
 	virtual float GetMaxSpeed() const override;
 	virtual void HandleImpact(const FHitResult& Hit, float TimeSlice = 0.f, const FVector& MoveDelta = FVector::ZeroVector) override;
+	virtual bool StepUp(const FVector& GravDir, const FVector& Delta, const FHitResult& Hit, FStepDownResult* OutStepDownResult = nullptr) override;
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
 	virtual FNetworkPredictionData_Client* GetPredictionData_Client() const override;
@@ -60,8 +78,17 @@ protected:
 	bool bWantsToWalk = false;
 	bool bSteppingUpInAir = false;
 
+	virtual void PhysWalking(float DeltaTime, int32 Iterations) override;
+	virtual void PhysFalling(float DeltaTime, int32 Iterations) override;
+
 	/** The original's wading slowdown where the character stands: 1, or 3/4, 1/2, 1/4 (UMRZoneSubsystem). */
 	float WadingFactor() const;
+	/** The highest step where the character stands: the original's, or out of a wading pool onto its bank. */
+	float WadingStepHeight() const;
+	/** The rise to the lowest floor above Feet just past Hit, within Limit cm, and its normal's Z; false when there's none. */
+	bool FloorAhead(const FHitResult& Hit, float Feet, float Limit, float& OutRise, float& OutNormalZ) const;
+	/** mr.Move.DebugSteps: what a refused StepUp met (the same sweeps up, forward and down, not moving). */
+	void LogStepSweeps(const FVector& At, float Feet, const FVector& Delta) const;
 };
 
 class FSavedMove_MR : public FSavedMove_Character

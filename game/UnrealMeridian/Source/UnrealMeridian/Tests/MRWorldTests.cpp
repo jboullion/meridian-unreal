@@ -15,6 +15,7 @@
 #include "World/MRRoomMesh.h"
 #include "World/MRRuntimeRoom.h"
 #include "Audio/MRServerSound.h"
+#include "Core/MRUnits.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "Net/MRProtocol.h"
@@ -138,6 +139,23 @@ bool FMRWorldRoomsTest::RunTest(const FString& Parameters)
 		}
 		TestEqual(FString::Printf(TEXT("%s render triangles (roo2gltf)"), *Stem), MRRoomMesh::Build(Room, Repeat, false).NumTriangles(), PyRender);
 		TestEqual(FString::Printf(TEXT("%s collision triangles (roo2gltf)"), *Stem), MRRoomMesh::Build(Room, Repeat, true).NumTriangles(), PyCollision);
+		// the original's step rule at each wall: the same ways across, with the same lower textures
+		const TArray<TSharedPtr<FJsonValue>>* PySteps = nullptr;
+		if (Z->TryGetArrayField(TEXT("step_walls"), PySteps))
+		{
+			const TArray<FMRRoomStepWall> Steps = MRRoomMesh::StepWalls(Room);
+			TestEqual(FString::Printf(TEXT("%s step walls (roo2gltf)"), *Stem), Steps.Num(), PySteps->Num());
+			int32 PyLower = 0, Lower = 0;
+			for (const TSharedPtr<FJsonValue>& S : *PySteps)
+			{
+				PyLower += S->AsArray()[6]->AsNumber() != 0.0 ? 1 : 0;
+			}
+			for (const FMRRoomStepWall& S : Steps)
+			{
+				Lower += S.bLowerTexture ? 1 : 0;
+			}
+			TestEqual(FString::Printf(TEXT("%s step walls with a lower texture (roo2gltf)"), *Stem), Lower, PyLower);
+		}
 		++Compared;
 	}
 	TestTrue(TEXT("compared some zones"), Compared > 0);
@@ -308,6 +326,91 @@ bool FMRWorldChangesTest::RunTest(const FString& Parameters)
 	AddInfo(FString::Printf(TEXT("changes tried on %s, sector id %d"), *MovableName, Was.ServerId));
 	GEngine->DestroyWorldContext(World);
 	World->DestroyWorld(false);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMRWorldWadingOverrideTest, "Meridian.World.WadingOverride",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMRWorldWadingOverrideTest::RunTest(const FString& Parameters)
+{
+	// The Temple of Riija (temprii.kod): ROOM_OVERRIDE_DEPTH1 at BRIDGE_OF_FAITH_LEVEL (384 Kod units,
+	// << 4 = 6144 ROO, 13.2 m): its depth-1 sectors lie on the chasm floor and are walked at the cliff tops
+	TArray<uint8> Bytes;
+	FMRRooFile Room;
+	FString Error;
+	if (!FFileHelper::LoadFileToArray(Bytes, *FPaths::Combine(RoomsDir(), TEXT("ke1.roo"))) || !Room.Load(Bytes, Error))
+	{
+		AddWarning(TEXT("no ke1.roo: skipped"));
+		return true;
+	}
+	const uint32 Depths[3] = {384, 0, 0};
+	const FMRWadingOverride Wading = FMRWadingOverride::FromServer(0x1, Depths);
+	TestTrue(TEXT("depth 1 is overridden, 2 and 3 aren't"), Wading.bSet[1] && !Wading.bSet[2] && !Wading.bSet[3]);
+	TestEqual(TEXT("at 6144 ROO units"), Wading.FloorRoo[1], 6144.0);
+
+	TArray<TArray<FVector2D>> Bridge;
+	for (const FMRRoomDepthArea& A : MRRoomMesh::DepthAreas(Room, Wading))
+	{
+		if (A.Depth == 1)
+		{
+			TestTrue(TEXT("a bridge area stands you 13.2 m above its floor"), FMath::IsNearlyEqual(A.SinkCm, -1320.0, 1.0));
+			Bridge.Add(A.Points);
+		}
+		else
+		{
+			TestTrue(TEXT("other depths keep their sink"), FMath::IsNearlyEqual(A.SinkCm, A.Depth * MRUnits::CmPerSquare / 5.0, 1.0));
+		}
+	}
+	if (!TestTrue(TEXT("ke1 has depth-1 areas"), Bridge.Num() > 0))
+	{
+		return true;
+	}
+	auto OnBridge = [&Bridge](const FVector2D& P)
+	{
+		for (const TArray<FVector2D>& Poly : Bridge)
+		{
+			int32 Sign = 0;
+			bool bIn = true;
+			for (int32 i = 0; i < Poly.Num() && bIn; ++i)
+			{
+				const double C = FVector2D::CrossProduct(Poly[(i + 1) % Poly.Num()] - Poly[i], P - Poly[i]);
+				const int32 S = C > 1e-3 ? 1 : (C < -1e-3 ? -1 : 0);
+				bIn = S == 0 || Sign == 0 || S == Sign;
+				Sign = Sign == 0 ? S : Sign;
+			}
+			if (bIn)
+			{
+				return true;
+			}
+		}
+		return false;
+	};
+	// the highest floor over the bridge: on the chasm floor without the override, at 13.2 m with it
+	auto HighestOverBridge = [&Room, &OnBridge](const FMRWadingOverride& W)
+	{
+		double Top = -1e9;
+		for (const FMRRoomMeshSection& S : MRRoomMesh::Build(Room, CatalogRepeat(), true, W).Sections)
+		{
+			for (int32 i = 0; i + 2 < S.Triangles.Num(); i += 3)
+			{
+				const FVector& A = S.Positions[S.Triangles[i]];
+				const FVector& B = S.Positions[S.Triangles[i + 1]];
+				const FVector& C = S.Positions[S.Triangles[i + 2]];
+				const FVector N = FVector::CrossProduct(B - A, C - A).GetSafeNormal();
+				if (FMath::Abs(N.Z) > 0.9 && OnBridge(FVector2D((A + B + C) / 3.0)))
+				{
+					Top = FMath::Max(Top, (A.Z + B.Z + C.Z) / 3.0);
+				}
+			}
+		}
+		return Top;
+	};
+	const double Without = HighestOverBridge(FMRWadingOverride());
+	const double With = HighestOverBridge(Wading);
+	AddInfo(FString::Printf(TEXT("floors over the bridge: %.0f cm without the override, %.0f cm with it"), Without, With));
+	TestTrue(TEXT("with the override the bridge is walked at 13.2 m"), FMath::IsNearlyEqual(With, 1320.0, 2.0));
+	TestTrue(TEXT("without it, not"), Without < 1300.0);
 	return true;
 }
 

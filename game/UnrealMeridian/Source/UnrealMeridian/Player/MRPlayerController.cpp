@@ -23,6 +23,7 @@
 #include "Tests/MRMonsterTour.h"
 #include "Tests/MRMapCapture.h"
 #include "Tests/MRMoveTest.h"
+#include "Tests/MRStepSurvey.h"
 #include "Tests/MRNetTest.h"
 #include "Tests/MRUIShots.h"
 #include "Zones/MRZoneSubsystem.h"
@@ -87,6 +88,11 @@ void AMRPlayerController::BeginPlay()
 		{
 			MoveTest = NewObject<UMRMoveTest>(this);
 			MoveTest->Start(this);
+		}
+		else if (UMRStepSurvey::IsRequested())
+		{
+			StepSurvey = NewObject<UMRStepSurvey>(this);
+			StepSurvey->Start(this);
 		}
 	}
 }

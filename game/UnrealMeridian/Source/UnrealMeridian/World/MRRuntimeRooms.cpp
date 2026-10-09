@@ -48,6 +48,35 @@ bool UMRRuntimeRooms::ShouldCreateSubsystem(UObject* Outer) const
 	return World && (World->WorldType == EWorldType::Game || World->WorldType == EWorldType::PIE);
 }
 
+TArray<FMRDepthArea> UMRRuntimeRooms::ToDepthAreas(const TArray<FMRRoomDepthArea>& Room)
+{
+	TArray<FMRDepthArea> Out;
+	for (const FMRRoomDepthArea& A : Room)
+	{
+		FMRDepthArea& D = Out.AddDefaulted_GetRef();
+		D.Depth = A.Depth;
+		D.SinkCm = static_cast<float>(A.SinkCm);
+		D.Points = A.Points;
+	}
+	return Out;
+}
+
+TArray<FMRStepWall> UMRRuntimeRooms::ToStepWalls(const TArray<FMRRoomStepWall>& Room)
+{
+	TArray<FMRStepWall> Out;
+	for (const FMRRoomStepWall& S : Room)
+	{
+		FMRStepWall& W = Out.AddDefaulted_GetRef();
+		W.A = S.A;
+		W.B = S.B;
+		W.Into = S.Into;
+		W.bLowerTexture = S.bLowerTexture;
+		W.Z1 = static_cast<float>(S.Z1Cm);
+		W.FarSinkCm = static_cast<float>(S.FarSinkCm);
+	}
+	return Out;
+}
+
 void UMRRuntimeRooms::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
@@ -358,14 +387,19 @@ void UMRRuntimeRooms::Finish(TSharedPtr<FPending> Job)
 			}
 		}
 	}
-	TArray<FMRDepthArea> Depths;
-	for (const FMRRoomDepthArea& A : MRRoomMesh::DepthAreas(Room))
+	Zones->AddRuntimeZone(Info, ToDepthAreas(Actor->GetDepthAreas()));
+	Zones->SetRuntimeStepWalls(Rid, ToStepWalls(Actor->GetStepWalls()));
+	// wading and the step rule follow the room's changes (lifts, depths, the server's override)
+	TWeakObjectPtr<AMRRuntimeRoom> WeakActor(Actor);
+	TWeakObjectPtr<UMRZoneSubsystem> WeakZones(Zones);
+	Actor->OnCollisionRebuilt.AddWeakLambda(this, [WeakActor, WeakZones, Rid]()
 	{
-		FMRDepthArea& D = Depths.AddDefaulted_GetRef();
-		D.Depth = A.Depth;
-		D.Points = A.Points;
-	}
-	Zones->AddRuntimeZone(Info, Depths);
+		if (WeakActor.IsValid() && WeakZones.IsValid())
+		{
+			WeakZones->SetRuntimeDepthAreas(Rid, ToDepthAreas(WeakActor->GetDepthAreas()));
+			WeakZones->SetRuntimeStepWalls(Rid, ToStepWalls(WeakActor->GetStepWalls()));
+		}
+	});
 
 	FBuilt& B = Built.Add(Job->Roo);
 	B.Rid = Rid;

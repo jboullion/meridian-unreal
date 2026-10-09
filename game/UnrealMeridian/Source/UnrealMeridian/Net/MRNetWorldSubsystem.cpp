@@ -341,14 +341,21 @@ void UMRNetWorldSubsystem::FinishEnterRoom(int32 PrevRid)
 	}
 	Net->SetStatus(FString());
 	ApplyRoomLight();
+	const FMRWadingOverride Wading = FMRWadingOverride::FromServer(Net->GetPlayer().RoomFlags, Net->GetPlayer().Depth);
 	if (AMRRuntimeRoom* Room = CurrentRuntimeRoom())
 	{
 		// the room as its file has it, then every change the server sent since BP_PLAYER (lifts at once)
+		Room->SetWadingOverride(Wading);
 		Room->ResetChanges();
 		for (const FMRNetRoomChange& C : Net->GetRoomChanges())
 		{
 			ApplyRoomChange(Room, C);
 		}
+	}
+	else if (Wading.Any())
+	{
+		UE_LOG(LogMeridian, Warning, TEXT("MRNet: the server overrides %s's wading depths; zone %d is built, so they aren't applied"),
+			*Net->GetPlayer().RoomFile, Rid);
 	}
 	PlacePlayer(PrevRid == Rid);
 	UpdateFrozen();
@@ -1364,7 +1371,7 @@ void UMRNetWorldSubsystem::OnRoomChange(const FMRNetRoomChange& C)
 {
 	if (AMRRuntimeRoom* Room = CurrentRuntimeRoom())
 	{
-		ApplyRoomChange(Room, C);
+		ApplyRoomChange(Room, C);  // (its rebuilt collision updates wading and steps: UMRRuntimeRooms)
 	}
 	else if (Rid)
 	{

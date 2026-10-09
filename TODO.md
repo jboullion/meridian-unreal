@@ -12,6 +12,11 @@
 
 ### UI
 
+- I can't seem to add an item.
+  - I think right now we have the inventory working a lot like the minecraft menu, but perhaps that isn't quite right.
+  - When a weapon is in our quickbar it should still appear in the inventory too.
+  - We should be able to double click a weapon to equip it.
+  - Do we have / need main hand and off hand slots to drag and drop to that would do the same thing?
 
 
 ### Props
@@ -29,13 +34,6 @@
 
 
 ### Server
-
-- What would it take to add new features to the game? Investigate the adding of new features / removal of old ones.
-  - If it is a simple process I might want to maintain my own server if possible with custom updates? 
-  - It is nice to have the benefit of the other users on server 104. Especially since there will likely be a 104 longer than I will be playing.
-  - Perhaps we can set up the Server-104 repo, create feature branches (which have sub branches) and then PR those feature branches?
-  - Thoes branches could then also coincide with releases of all four clients? Original, Ogre, Election, and Unreal?
-    - How much actually has to be done on the client side?
 
 
 

@@ -15,7 +15,13 @@ class APlayerController;
  * - runs off a ledge across a 2.5 m gap onto a platform as high as the ledge (the original's ledge
  *   "jump": you step up mid-fall), near the original's limit of about 4.1 m (3.9 m lands, 4.5 m doesn't), and
  *   across 5 m; walking across 2.5 m falls in;
- * - runs up one of the Mausoleum's 0.72 m steps (taller than a modern step, within the original's).
+ * - runs up one of the Mausoleum's 0.72 m steps (taller than a modern step, within the original's);
+ * - wades at half speed at depth 2, walks out of a pool onto a bank level with its floor (1.32 m and
+ *   0.88 m up from where the pool sinks you), and not onto a bank 0.99 m up;
+ * - runs and walks up a 0.825 m step (the original's most), stops at 0.85 m, walks under a beam 1.66 m
+ *   up (the original's player is 1.65 m tall); and steps between the sectors of a room built at runtime,
+ *   up a 1.51 m one without a lower texture (the original never blocks there), not a 3.99 m one (the cap),
+ *   and through a one-way wall from its passable side only.
  * Logs "MRMoveTest: PASS|FAIL ..." per step and "MRMoveTest: DONE n/m", then quits.
  */
 UCLASS()
@@ -50,7 +56,15 @@ private:
 	void Finish();
 	/** A box of collision (and a drawn cube) from Min to Max, world cm. */
 	AActor* Box(const FVector& Min, const FVector& Max);
+	/** The boxes, and the test pool's wading area. */
 	void ClearBoxes();
+	/**
+	 * A room built at runtime (AMRRuntimeRoom) at the rig: two sectors, the east one StepKod higher from the
+	 * rig's x on; bOneWay: a textured wall between them that only the west side's sidedef lets you through.
+	 */
+	void RuntimeStep(int16 StepKod, bool bLowerTexture, bool bOneWay);
+	/** A wading area (UMRZoneSubsystem::SetTestDepthArea) over Area, world XY; Depth 0: none. */
+	void SetTestPool(const FBox2D& Area, int32 Depth);
 	void Place(const FVector& FeetAt, const FVector& Facing);
 	double FeetZ() const;
 

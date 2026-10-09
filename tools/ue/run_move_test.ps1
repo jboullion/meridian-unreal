@@ -1,7 +1,8 @@
 # The original's movement, checked in play (docs/findings.md "Walking"): runs an offline game with
 # -MRMoveTest (Source/.../Tests/MRMoveTest.cpp), which measures the run and walk speeds, runs off a
-# ledge across a 2.5 m and a 5 m gap, and climbs a 0.72 m step in the Mausoleum. Exits 0 when every
-# step passes.
+# ledge across a 2.5 m and a 5 m gap, climbs a 0.72 m step in the Mausoleum, wades out of pools, climbs
+# terrain steps up to the original's 0.825 m (also in a room built at runtime) and walks under a 1.66 m
+# beam. Exits 0 when every step passes. tools/ue/run_step_survey.ps1 tries every step in the rooms.
 #
 #   powershell -File tools/ue/run_move_test.ps1
 #   powershell -File tools/ue/run_move_test.ps1 -Extra "-ExecCmds=`"mr.Move.SpeedScale 0.5`""

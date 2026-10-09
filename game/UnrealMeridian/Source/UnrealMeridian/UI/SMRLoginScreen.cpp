@@ -1,6 +1,7 @@
 #include "UI/SMRLoginScreen.h"
 
 #include "Engine/GameInstance.h"
+#include "GeneralProjectSettings.h"
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/PlayerController.h"
 #include "Net/MRNetSubsystem.h"
@@ -130,6 +131,11 @@ void SMRLoginScreen::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 				]
 			]
 		]
+		]
+		// the release (ProjectVersion in DefaultGame.ini, set by tools/ue/release.ps1), for bug reports
+		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(8.f * Px, 4.f * Px)
+		[
+			Label(S, FText::FromString(TEXT("v") + GetDefault<UGeneralProjectSettings>()->ProjectVersion), 8.f, false, Dim())
 		]
 	];
 	RebuildCharacters();

@@ -1,10 +1,11 @@
-# The tests that need no server, one after another: the C++ unit tests, then the movement test.
+# The tests that need no server, one after another: the C++ unit tests, the movement test, then the
+# step survey of our built zones (every step the original allows, walked with the player's capsule).
 # `-Online` adds the online smoke test (needs the Shards dev stack: `npm run dev` in meridian-browser).
 #
 #   powershell -File tools/ue/run_tests.ps1
 #   powershell -File tools/ue/run_tests.ps1 -Online
 param([switch]$Online)
-$suites = [ordered]@{ "unit" = "run_unit_tests.ps1"; "move" = "run_move_test.ps1" }
+$suites = [ordered]@{ "unit" = "run_unit_tests.ps1"; "move" = "run_move_test.ps1"; "steps" = "run_step_survey.ps1" }
 if ($Online) { $suites["net"] = "run_net_test.ps1" }
 $results = [ordered]@{}
 foreach ($name in $suites.Keys) {

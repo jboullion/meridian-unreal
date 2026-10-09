@@ -41,12 +41,17 @@ namespace
 	{
 		const FMRRooFile& Room;
 		bool bWading;
+		FMRWadingOverride Override;
 
 		double Floor(int32 SectorNum, double X, double Y) const
 		{
 			const FMRRooSector& S = Room.Sectors[SectorNum - 1];
 			const double Z = S.bSlopedFloor && S.FloorSlope.IsValid() ? S.FloorSlope.HeightAt(X, Y) : S.FloorHeight * Fine;
-			return bWading ? Z - DepthSink[S.Depth()] : Z;
+			if (!bWading)
+			{
+				return Z;
+			}
+			return Override.bSet[S.Depth()] ? Override.FloorRoo[S.Depth()] : Z - DepthSink[S.Depth()];
 		}
 		double Ceil(int32 SectorNum, double X, double Y) const
 		{
@@ -208,11 +213,13 @@ namespace
 				S.Light.Add(Level);
 				S.Scroll.Add(Scroll);
 			}
-			// (x, height, y) -> (x, y, height) mirrors, so the winding flips too: faces keep facing
-			// the way their normal points (floors up), as UE's glTF import of roo2gltf's meshes does
+			// the glTF winding as it is: in UE's (x, y, height) it faces the way its normal points for
+			// collision (floors up, as the built zones' glTF import; the step survey found the reverse
+			// let a pawn through every floor once the collision was cooked one-sided). The drawn
+			// material is two-sided, so the picture doesn't change.
 			for (int32 i = 1; i + 1 < Pts.Num(); ++i)
 			{
-				S.Triangles.Append({Base, Base + i + 1, Base + i});
+				S.Triangles.Append({Base, Base + i, Base + i + 1});
 			}
 		}
 
@@ -319,10 +326,10 @@ FBox FMRRoomMesh::Bounds() const
 	return B;
 }
 
-FMRRoomMesh MRRoomMesh::Build(const FMRRooFile& Room, const FRepeat& Repeat, bool bCollision)
+FMRRoomMesh MRRoomMesh::Build(const FMRRooFile& Room, const FRepeat& Repeat, bool bCollision, const FMRWadingOverride& Wading)
 {
 	FBuilder MB;
-	const FHeights H{Room, bCollision};
+	const FHeights H{Room, bCollision, Wading};
 	const FSectorLookup Sectors(Room);
 	auto LightAt = [&Room, &Sectors](double X, double Y, double& Out)
 	{
@@ -434,7 +441,9 @@ FMRRoomMesh MRRoomMesh::Build(const FMRRooFile& Room, const FRepeat& Repeat, boo
 			double Level;
 			return LightAt(Mid.X + Normal.X * Step, Mid.Y + Normal.Z * Step, Level) ? Level : Fallback;
 		};
-		auto Emit = [&](uint16 Tex, double B0, double T0, double B1, double T1, const FMRRooSidedef* Sd, ESection Section, int32 Side)
+		// Toward: only the face looking into that sector (a one-way wall in the collision), else both
+		auto Emit = [&](uint16 Tex, double B0, double T0, double B1, double T1, const FMRRooSidedef* Sd, ESection Section, int32 Side,
+			int32 Toward = 0)
 		{
 			if (T0 - B0 < 1 && T1 - B1 < 1)
 			{
@@ -450,8 +459,22 @@ FMRRoomMesh MRRoomMesh::Build(const FMRRooFile& Room, const FRepeat& Repeat, boo
 			}
 			const FRoo P0(W.X0, W.Y0, B0), P1(W.X1, W.Y1, B1), P2(W.X1, W.Y1, T1), P3(W.X0, W.Y0, T0);
 			const FVector2D Scroll = WallScroll(Sd, Repeat(Tex));
-			MB.Poly(Tex, {P0, P1, P2, P3}, {UB0, UB1, UT1, UT0}, WallLight, Scroll);
-			MB.Poly(Tex, {P3, P2, P1, P0}, {UT0, UT1, UB1, UB0}, WallLight, Scroll);
+			bool bFront = true, bBack = true;
+			FVector N;
+			if (Toward && NewellNormal({ToGltf(P0), ToGltf(P1), ToGltf(P2), ToGltf(P3)}, N))
+			{
+				const double Off = 16.0;
+				bFront = Sectors.At(Mid.X + N.X * Off, Mid.Y + N.Z * Off) == Toward;
+				bBack = !bFront;
+			}
+			if (bFront)
+			{
+				MB.Poly(Tex, {P0, P1, P2, P3}, {UB0, UB1, UT1, UT0}, WallLight, Scroll);
+			}
+			if (bBack)
+			{
+				MB.Poly(Tex, {P3, P2, P1, P0}, {UT0, UT1, UB1, UB0}, WallLight, Scroll);
+			}
 		};
 
 		if (!P || !N)
@@ -481,20 +504,26 @@ FMRRoomMesh MRRoomMesh::Build(const FMRRooFile& Room, const FRepeat& Repeat, boo
 		Emit(SdLow ? SdLow->BelowTexture : 0, FMath::Min(FP0, FN0), FMath::Max(FP0, FN0), FMath::Min(FP1, FN1), FMath::Max(FP1, FN1),
 			SdLow, ESection::Below, bLowP ? 1 : -1);
 
-		// upper section (skipped between two open-sky sectors)
-		if (!bSky)
+		// upper section (skipped between two open-sky sectors); for collision only with an upper texture:
+		// the original checks your head against it only then (move.c IntersectNode: above_bmap)
+		const bool bHighP = (CP0 + CP1) >= (CN0 + CN1);
+		const FMRRooSidedef* SdUp = bHighP ? SdPos : SdNeg;
+		if (!bSky && !(bCollision && (!SdUp || !SdUp->AboveTexture)))
 		{
-			const bool bHighP = (CP0 + CP1) >= (CN0 + CN1);
-			const FMRRooSidedef* SdUp = bHighP ? SdPos : SdNeg;
 			Emit(SdUp ? SdUp->AboveTexture : 0, FMath::Min(CP0, CN0), FMath::Max(CP0, CN0), FMath::Min(CP1, CN1), FMath::Max(CP1, CN1),
 				SdUp, ESection::Above, bHighP ? 1 : -1);
 		}
 
-		// middle (fences, windows, railings): only where a normal texture is set
-		if (bCollision && (!SdPos || (SdPos->Flags & MRRoo::WF_PASSABLE)) && (!SdNeg || (SdNeg->Flags & MRRoo::WF_PASSABLE)))
+		// middle (fences, windows, railings): only where a normal texture is set. For collision only where a
+		// side's sidedef isn't passable, and facing that side only: the original checks the sidedef on the
+		// side you come from (move.c IntersectNode), so a wall can be passable one way (Kocatan, the nests)
+		const bool bBlockP = SdPos && !(SdPos->Flags & MRRoo::WF_PASSABLE);
+		const bool bBlockN = SdNeg && !(SdNeg->Flags & MRRoo::WF_PASSABLE);
+		if (bCollision && !bBlockP && !bBlockN)
 		{
 			continue;
 		}
+		const int32 Toward = bCollision && bBlockP != bBlockN ? (bBlockP ? P : N) : 0;
 		const TPair<const FMRRooSidedef*, int32> Sides[2] = {{SdPos, 1}, {SdNeg, -1}};
 		for (const TPair<const FMRRooSidedef*, int32>& SS : Sides)
 		{
@@ -502,7 +531,7 @@ FMRRoomMesh MRRoomMesh::Build(const FMRRooFile& Room, const FRepeat& Repeat, boo
 			{
 				// WF_NO_VTILE (fences, hedges, railings) is clipped to one repeat in WallUVs
 				Emit(SS.Key->NormalTexture, FMath::Max(FP0, FN0), FMath::Min(CP0, CN0), FMath::Max(FP1, FN1), FMath::Min(CP1, CN1),
-					SS.Key, ESection::Normal, SS.Value);
+					SS.Key, ESection::Normal, SS.Value, Toward);
 				break;
 			}
 		}
@@ -510,7 +539,75 @@ FMRRoomMesh MRRoomMesh::Build(const FMRRooFile& Room, const FRepeat& Repeat, boo
 	return MoveTemp(MB.Mesh);
 }
 
-TArray<FMRRoomDepthArea> MRRoomMesh::DepthAreas(const FMRRooFile& Room)
+TArray<FMRRoomStepWall> MRRoomMesh::StepWalls(const FMRRooFile& Room, const FMRWadingOverride& Wading)
+{
+	TArray<FMRRoomStepWall> Out;
+	const FHeights Real{Room, false};
+	const FHeights Stand{Room, true, Wading};
+	const FSectorLookup Sectors(Room);
+	TSet<FString> Seen;
+	for (const FMRRooWall& W : Room.Walls)
+	{
+		const FMRRooSector* SP = Room.Sector(W.PosSector);
+		const FMRRooSector* SN = Room.Sector(W.NegSector);
+		const FVector2D V0(W.X0, W.Y0), V1(W.X1, W.Y1);
+		const double Length = FVector2D::Distance(V0, V1);
+		if (!SP || !SN || W.PosSector == W.NegSector || Length < 1.0)
+		{
+			continue;
+		}
+		const FString Key = FString::Printf(TEXT("%.0f,%.0f,%.0f,%.0f,%d,%d"), W.X0, W.Y0, W.X1, W.Y1, W.PosSector, W.NegSector);
+		if (Seen.Contains(Key))
+		{
+			continue;
+		}
+		// only where the collision has a step: the floors as we stand on them differ somewhere along it
+		bool bStep = false;
+		for (const double T : {0.0, 0.5, 1.0})
+		{
+			const FVector2D P = V0 + (V1 - V0) * T;
+			bStep |= FMath::Abs(Stand.Floor(W.PosSector, P.X, P.Y) - Stand.Floor(W.NegSector, P.X, P.Y)) > 1.0;
+		}
+		if (!bStep)
+		{
+			continue;
+		}
+		// which side is which: the sector a little way off the middle
+		const FVector2D Mid = (V0 + V1) * 0.5;
+		FVector2D N = FVector2D(-(V1.Y - V0.Y), V1.X - V0.X) / Length;
+		const double Off = 16.0;
+		if (Sectors.At(Mid.X + N.X * Off, Mid.Y + N.Y * Off) != W.PosSector)
+		{
+			N = -N;
+			if (Sectors.At(Mid.X + N.X * Off, Mid.Y + N.Y * Off) != W.PosSector)
+			{
+				continue;
+			}
+		}
+		Seen.Add(Key);
+		const double Z1 = FMath::Max(Real.Floor(W.PosSector, V0.X, V0.Y), Real.Floor(W.NegSector, V0.X, V0.Y));
+		for (int32 Side = 0; Side < 2; ++Side)
+		{
+			// from the neg side into pos (along N), and from pos into neg
+			const FMRRooSidedef* Sd = Room.Sidedef(Side == 0 ? W.NegSidedef : W.PosSidedef);
+			const FMRRooSector* Far = Side == 0 ? SP : SN;
+			if (!Sd || !(Sd->Flags & MRRoo::WF_PASSABLE))
+			{
+				continue;
+			}
+			FMRRoomStepWall& S = Out.AddDefaulted_GetRef();
+			S.A = V0 * MRUnits::CmPerRoo;
+			S.B = V1 * MRUnits::CmPerRoo;
+			S.Into = Side == 0 ? N : -N;
+			S.bLowerTexture = Sd->BelowTexture != 0;
+			S.Z1Cm = Z1 * MRUnits::CmPerRoo;
+			S.FarSinkCm = DepthSink[Far->Depth()] * MRUnits::CmPerRoo;
+		}
+	}
+	return Out;
+}
+
+TArray<FMRRoomDepthArea> MRRoomMesh::DepthAreas(const FMRRooFile& Room, const FMRWadingOverride& Wading)
 {
 	TArray<FMRRoomDepthArea> Out;
 	for (const FMRRooNode& Node : Room.Nodes)
@@ -522,6 +619,9 @@ TArray<FMRRoomDepthArea> MRRoomMesh::DepthAreas(const FMRRooFile& Room)
 		}
 		FMRRoomDepthArea& A = Out.AddDefaulted_GetRef();
 		A.Depth = S->Depth();
+		// below the sector's floor: the depth's sink, or as far as the override stands you (negative: above it)
+		const double FloorRoo = S->FloorHeight * Fine;
+		A.SinkCm = (Wading.bSet[A.Depth] ? FloorRoo - Wading.FloorRoo[A.Depth] : DepthSink[A.Depth]) * MRUnits::CmPerRoo;
 		for (const FVector2f& P : Node.Points)
 		{
 			A.Points.Add(FVector2D(P) * MRUnits::CmPerRoo);

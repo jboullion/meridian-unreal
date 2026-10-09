@@ -14,6 +14,8 @@
     "test:all": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_tests.ps1 -Online",
     "test:unit": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_unit_tests.ps1",
     "test:move": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_move_test.ps1",
+    "test:steps": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_step_survey.ps1",
+    "test:steps:all": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_step_survey.ps1 -Rooms all",
     "test:net": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_net_test.ps1",
     "test:net:create": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_net_test.ps1 -Create",
     "test:net:pair": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_net_test.ps1 -Pair",
@@ -26,6 +28,8 @@
     "lookdev": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_lookdev.ps1",
     "lookdev:gallery": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_lookdev.ps1 -Label gallery -Gallery",
     "package": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/package.ps1",
+    "release": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/release.ps1",
+    "release:local": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/release.ps1 -Local",
     "setup": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/setup.ps1",
 
     "data": "python tools/kod_extract/extract.py",

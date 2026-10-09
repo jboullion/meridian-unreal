@@ -24,6 +24,10 @@ $dataOut = Join-Path $repo "game\UnrealMeridian\Data"
 robocopy (Join-Path $repo "data") $dataOut /MIR /XD aigen /NFL /NDL /NJH /NJS /NP | Out-Null
 if ($LASTEXITCODE -ge 8) { throw "Copying data/ failed ($LASTEXITCODE)" }
 
+# The archive step only adds files, so an earlier package's leftovers (the pre-rename MeridianRemastered
+# folder, say) would ship with this one
+if (Test-Path $out) { Remove-Item -Recurse -Force $out }
+
 & "$EngineRoot\Engine\Build\BatchFiles\RunUAT.bat" BuildCookRun `
 	"-project=$project" "-platform=$Platform" "-clientconfig=$Config" -noP4 `
 	-build -cook -stage -pak -archive "-archivedirectory=$out" -utf8output `

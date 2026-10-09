@@ -280,6 +280,7 @@ def build_room_mesh(room: Room, collision: bool = False) -> MeshBuilder:
     mb = MeshBuilder()
     H = SectorHeights(room.sectors, wading=collision)
     light_at = sector_lights(room)
+    at = sector_at(room)
 
     # ---- floors & ceilings from BSP leaves (convex polygons)
     for node in room.bsp.walk():
@@ -331,16 +332,23 @@ def build_room_mesh(room: Room, collision: bool = False) -> MeshBuilder:
             level = light_at(mid[0] + n[0] * step, mid[1] + n[2] * step)
             return fallback if level is None else level
 
-        def emit(tex, b0, t0, b1, t1, sd, section, side, double=True):
+        def emit(tex, b0, t0, b1, t1, sd, section, side, double=True, toward=0):
+            """toward: only the face looking into that sector (a one-way wall in the collision)."""
             if t0 - b0 < 1 and t1 - b1 < 1:
                 return
             t0, t1 = max(t0, b0), max(t1, b1)
             (b0, t0, b1, t1), (ub0, ut0, ub1, ut1) = wall_uvs(tex, sd, section, side, w, length, b0, t0, b1, t1)
             if t0 - b0 < 1 and t1 - b1 < 1:
                 return
-            mb.quad(tex_key(tex),
-                    (w.x0, w.y0, b0), (w.x1, w.y1, b1), (w.x1, w.y1, t1), (w.x0, w.y0, t0),
-                    ub0, ub1, ut1, ut0, double=double, light=wall_light)
+            pts = [(w.x0, w.y0, b0), (w.x1, w.y1, b1), (w.x1, w.y1, t1), (w.x0, w.y0, t0)]
+            uvs = [ub0, ub1, ut1, ut0]
+            if toward:
+                n = newell_normal([to_gltf(p) for p in pts])
+                if n and at(mid[0] + n[0] * 16, mid[1] + n[2] * 16) != toward:
+                    pts, uvs = pts[::-1], uvs[::-1]
+                mb.poly(tex_key(tex), pts, uvs, light=wall_light)
+                return
+            mb.quad(tex_key(tex), *pts, *uvs, double=double, light=wall_light)
 
         if not P and not N:
             continue
@@ -365,22 +373,28 @@ def build_room_mesh(room: Room, collision: bool = False) -> MeshBuilder:
         emit(sd_low.type_below if sd_low else 0,
              min(fP0, fN0), max(fP0, fN0), min(fP1, fN1), max(fP1, fN1), sd_low, "below", 1 if lowP else -1)
 
-        # upper section (skipped between two open-sky sectors)
-        if not sky:
-            highP = (cP0 + cP1) >= (cN0 + cN1)
-            sd_up = sd_pos if highP else sd_neg
+        # upper section (skipped between two open-sky sectors); for collision only with an upper
+        # texture: the original checks your head against it only then (move.c IntersectNode: above_bmap)
+        highP = (cP0 + cP1) >= (cN0 + cN1)
+        sd_up = sd_pos if highP else sd_neg
+        if not sky and not (collision and not (sd_up and sd_up.type_above)):
             emit(sd_up.type_above if sd_up else 0,
                  min(cP0, cN0), max(cP0, cN0), min(cP1, cN1), max(cP1, cN1), sd_up, "above", 1 if highP else -1)
 
-        # middle (fences, windows, railings): only where a normal texture is set
-        if collision and all(sd.flags & WF_PASSABLE for sd in (sd_pos, sd_neg) if sd):
+        # middle (fences, windows, railings): only where a normal texture is set. For collision only
+        # where a side's sidedef isn't passable, and facing that side only: the original checks the
+        # sidedef on the side you come from (move.c IntersectNode), so a wall can be passable one way
+        block_p = bool(sd_pos and not (sd_pos.flags & WF_PASSABLE))
+        block_n = bool(sd_neg and not (sd_neg.flags & WF_PASSABLE))
+        if collision and not block_p and not block_n:
             continue
+        toward = (P if block_p else N) if collision and block_p != block_n else 0
         for sd, side in ((sd_pos, 1), (sd_neg, -1)):
             if sd and sd.type_normal:
                 b0, t0 = max(fP0, fN0), min(cP0, cN0)
                 b1, t1 = max(fP1, fN1), min(cP1, cN1)
                 # WF_NO_VTILE (fences, hedges, railings) is clipped to one repeat in wall_uvs
-                emit(sd.type_normal, b0, t0, b1, t1, sd, "normal", side)
+                emit(sd.type_normal, b0, t0, b1, t1, sd, "normal", side, toward=toward)
                 break
     return mb
 
@@ -530,6 +544,7 @@ def zone_layout(zone: dict, room: Room) -> dict:
         "objects": objects,
         "generators": gens,
         "depth_areas": depth_areas(room),
+        "step_walls": step_walls(room),
     }
 
 
@@ -553,6 +568,49 @@ def depth_areas(room: Room) -> list[dict]:
         depth = room.sectors[node.sector - 1].blak_flags & SF_MASK_DEPTH
         if depth:
             out.append({"depth": depth, "points": [[w[0], w[2]] for w in (world(p, 0) for p in node.points)]})
+    return out
+
+
+def step_walls(room: Room) -> list[list]:
+    """Both ways across every passable wall where the floors as you stand on them (wading lowered)
+    differ, with what the original's step rule needs there (clientd3d move.c IntersectNode, blakserv
+    roofile.c BSPCanMoveInRoomTreeInternal): [x0, z0, x1, z1, into_x, into_z, lower_texture, z1_height,
+    far_sink], glTF metres in zone coordinates. A side without a lower texture never blocks a step;
+    otherwise the higher floor at the wall's first end (z1), less the far sector's sink, may be at most
+    24 Kod units above where you stand. UMRCharacterMovementComponent::StepUp applies it; the C++
+    MRRoomMesh::StepWalls gives the same for rooms built at runtime."""
+    real = SectorHeights(room.sectors)
+    stand = SectorHeights(room.sectors, wading=True)
+    at = sector_at(room)
+    seen = set()
+    out = []
+    m = lambda v: round(v * M_PER_ROO, 4)
+    for w in room.client_walls:
+        P, N = w.pos_sector, w.neg_sector
+        length = math.hypot(w.x1 - w.x0, w.y1 - w.y0)
+        if not P or not N or P == N or length < 1:
+            continue
+        key = (round(w.x0), round(w.y0), round(w.x1), round(w.y1), P, N)
+        if key in seen:
+            continue
+        pts = [(w.x0 + (w.x1 - w.x0) * t, w.y0 + (w.y1 - w.y0) * t) for t in (0.0, 0.5, 1.0)]
+        if all(abs(stand.floor(P, x, y) - stand.floor(N, x, y)) <= 1.0 for x, y in pts):
+            continue
+        mx, my = (w.x0 + w.x1) / 2, (w.y0 + w.y1) / 2
+        nx, ny = -(w.y1 - w.y0) / length, (w.x1 - w.x0) / length
+        if at(mx + nx * 16, my + ny * 16) != P:
+            nx, ny = -nx, -ny
+            if at(mx + nx * 16, my + ny * 16) != P:
+                continue
+        seen.add(key)
+        z1 = max(real.floor(P, w.x0, w.y0), real.floor(N, w.x0, w.y0))
+        for sd_num, far, ix, iy in ((w.neg_sidedef, P, nx, ny), (w.pos_sidedef, N, -nx, -ny)):
+            sd = room.sidedefs[sd_num - 1] if sd_num else None
+            if not sd or not (sd.flags & WF_PASSABLE):
+                continue
+            sink = DEPTH_SINK_ROO[room.sectors[far - 1].blak_flags & SF_MASK_DEPTH]
+            out.append([m(w.x0), m(w.y0), m(w.x1), m(w.y1), round(ix, 5), round(iy, 5),
+                        1 if sd.type_below else 0, m(z1), m(sink)])
     return out
 
 

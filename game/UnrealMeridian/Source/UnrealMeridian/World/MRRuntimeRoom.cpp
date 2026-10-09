@@ -1,5 +1,6 @@
 #include "World/MRRuntimeRoom.h"
 
+#include "Core/MRUnits.h"
 #include "Engine/Texture2D.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UnrealMeridian.h"
@@ -46,6 +47,10 @@ AMRRuntimeRoom::AMRRuntimeRoom()
 	CollisionMeshComponent->SetCollisionObjectType(ECC_WorldStatic);
 	CollisionMeshComponent->SetCollisionResponseToAllChannels(ECR_Block);
 	CollisionMeshComponent->SetCanEverAffectNavigation(false);
+	// the original walks any floor however steep (it stands you on the floor where you are): its floors are
+	// walkable up to 89 degrees here (UE's default stops at 45; props keep it, so they aren't climbed)
+	CollisionMeshComponent->BodyInstance.SetWalkableSlopeOverride(
+		FWalkableSlopeOverride(EWalkableSlopeBehavior::WalkableSlope_Increase, 89.f));
 }
 
 UMaterialInterface* AMRRuntimeRoom::LoadMaterial()
@@ -128,7 +133,7 @@ void AMRRuntimeRoom::Rebuild(bool bCollision)
 	if (bCollision)
 	{
 		// one section for collision: every surface the original moves you on
-		const FMRRoomMesh CollisionMesh = MRRoomMesh::Build(Room, Repeat, true);
+		const FMRRoomMesh CollisionMesh = MRRoomMesh::Build(Room, Repeat, true, Wading);
 		FMRRoomMeshSection All;
 		for (const FMRRoomMeshSection& S : CollisionMesh.Sections)
 		{
@@ -145,11 +150,15 @@ void AMRRuntimeRoom::Rebuild(bool bCollision)
 		CollisionMeshComponent->ClearAllMeshSections();
 		if (UBodySetup* Body = CollisionMeshComponent->GetBodySetup())
 		{
-			Body->bDoubleSidedGeometry = true;  // walls are touched from both sides, as in the original (set before cooking)
+			// one-sided, as the built zones' collision: the mesher already gives every wall a face on each
+			// side, and double-sided cooking of those back-to-back faces made a pawn touching a step's wall
+			// start each step-up sweep "penetrating", so StepUp gave up on every step (MRStepSurvey)
+			Body->bDoubleSidedGeometry = false;
 		}
 		ToColors(All, Colors);
 		CollisionMeshComponent->CreateMeshSection_LinearColor(0, All.Positions, All.Triangles, All.Normals, All.UVs, Colors, TArray<FProcMeshTangent>(), true);
 		CollisionTriangles = CollisionMesh.NumTriangles();
+		OnCollisionRebuilt.Broadcast();
 	}
 	if (Rebuilds++ == 0)
 	{
@@ -176,6 +185,20 @@ void AMRRuntimeRoom::ResetChanges()
 		bChanged = false;
 		Rebuild(true);
 	}
+}
+
+void AMRRuntimeRoom::SetWadingOverride(const FMRWadingOverride& InWading)
+{
+	if (InWading == Wading)
+	{
+		return;
+	}
+	Wading = InWading;
+	UE_LOG(LogMeridian, Log, TEXT("World: %s: wading depths overridden: %s%s%s"), *RoomFile,
+		Wading.bSet[1] ? *FString::Printf(TEXT("1 at %.0f cm "), Wading.FloorRoo[1] * MRUnits::CmPerRoo) : TEXT(""),
+		Wading.bSet[2] ? *FString::Printf(TEXT("2 at %.0f cm "), Wading.FloorRoo[2] * MRUnits::CmPerRoo) : TEXT(""),
+		Wading.bSet[3] ? *FString::Printf(TEXT("3 at %.0f cm"), Wading.FloorRoo[3] * MRUnits::CmPerRoo) : TEXT(""));
+	Rebuild(true);
 }
 
 void AMRRuntimeRoom::SetHeight(int32 Sector, bool bCeiling, int16 Height)

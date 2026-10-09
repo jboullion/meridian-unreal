@@ -55,9 +55,10 @@ AMRCharacter::AMRCharacter(const FObjectInitializer& ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	// ~1.8 m tall human; eye at ~1.65 m above the floor (the original's 0.75-square eye height)
-	GetCapsuleComponent()->InitCapsuleSize(34.f, 90.f);
-	BaseEyeHeight = 75.f;   // relative to the capsule centre (90 cm above the floor)
+	// as tall as the original's player, 1.65 m (0.75 square, game.c player.height), less the floor
+	// hover: it passes under what the original does. The eye is 1.65 m up, as the original's.
+	GetCapsuleComponent()->InitCapsuleSize(UMRCharacterMovementComponent::CapsuleRadiusCm, UMRCharacterMovementComponent::CapsuleHeightCm / 2.f);
+	BaseEyeHeight = UMRCharacterMovementComponent::OriginalHeightCm - UMRCharacterMovementComponent::CapsuleHeightCm / 2.f;  // from the capsule centre
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetCapsuleComponent());
