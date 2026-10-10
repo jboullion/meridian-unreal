@@ -78,6 +78,11 @@ int32 MRNetLook::FirstItemOverlay(const FMRNetObject& Object, const FMRNetOverla
 	return i;
 }
 
+bool MRNetLook::IsPlayerFigure(const FMRNetObject& Object)
+{
+	return Object.IsPlayer() || (Find(Object, HsHead) && Find(Object, HsLegs) && (Find(Object, HsRightArm) || Find(Object, HsLeftArm)));
+}
+
 bool MRNetLook::IsFemale(const FMRNetObject& Object)
 {
 	const FMRNetOverlay* Head = Find(Object, HsHead);
@@ -92,7 +97,7 @@ bool MRNetLook::IsFemale(const FMRNetObject& Object)
 
 bool MRNetLook::AppearanceFromObject(const FMRNetObject& Object, FMRSpriteAppearance& Out)
 {
-	if (!Object.IsPlayer())
+	if (!IsPlayerFigure(Object))
 	{
 		return false;
 	}

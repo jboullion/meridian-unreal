@@ -23,7 +23,8 @@ class UNREALMERIDIAN_API AMRAvatarPreview : public AActor
 public:
 	AMRAvatarPreview();
 
-	void SetAppearance(const FMRSpriteAppearance& Appearance);
+	/** Show this look; false if it was already shown. */
+	bool SetAppearance(const FMRSpriteAppearance& Appearance);
 	/**
 	 * The face only, from the front, as the original creator showed it (charface.c): the camera
 	 * close on the head and the sprite drawn with enough texels for the face parts' detail.
@@ -31,7 +32,15 @@ public:
 	void SetPortrait(bool bInPortrait);
 	/** A flat colour behind the character (the creator's previews: the sprite's edges read better on grey). */
 	void SetBackdrop(const FLinearColor& Colour);
+	/**
+	 * Nothing behind the character: the capture keeps the scene colour with the coverage in alpha
+	 * (inverted: SCS_SceneColorHDR), so the widget draws it over its own background (the inventory's
+	 * stone; SMRAvatar draws it with ESlateDrawEffect::InvertAlpha).
+	 */
+	void SetTransparent(bool bTransparent);
 	void SetCapturing(bool bCapture);
+	/** One picture now (a still preview kept up to date now and then). */
+	void CaptureNow();
 	void Turn(int32 Steps);
 	UTextureRenderTarget2D* GetTarget() const { return Target; }
 

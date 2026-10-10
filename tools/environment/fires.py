@@ -46,8 +46,9 @@ def _uv_frame(P, T):
 
 
 def wall_flames(prims, presets=None, catalog=None):
-    """-> [{"preset", "pos": [x, y, z] glTF metres, "out": unit vector off the wall or None}] for the
-    zone's blockout primitives (tools/environment/blockout.read_glb)."""
+    """-> [{"preset", "pos": [x, y, z] glTF metres, "out": unit vector off the wall or None, "wall": the
+    point on the wall behind the flame (the texture's edge in the "out" direction) or None, "texel":
+    the flame's texel, before OUT_M} for the zone's blockout primitives (tools/environment/blockout.read_glb)."""
     presets = load_presets() if presets is None else presets
     if catalog is None:
         catalog = json.load(open(CATALOG, encoding="utf-8"))["textures"]
@@ -73,12 +74,17 @@ def wall_flames(prims, presets=None, catalog=None):
                 if not (min(us) - MARGIN_UV <= u <= max(us) + MARGIN_UV and min(vs) - MARGIN_UV <= v <= max(vs) + MARGIN_UV):
                     continue
                 pos = [O[k] + U[k] * u + V[k] * v for k in range(3)]
-                out = None
+                out = at_wall = None
                 if wall.get("out"):
                     d = [U[k] * wall["out"][0] + V[k] * wall["out"][1] for k in range(3)]
                     n = math.sqrt(sum(x * x for x in d))
                     out = [x / n for x in d] if n > 1e-9 else None
-                found.append({"preset": name, "pos": pos, "out": out})
+                    # the wall is the texture's edge the torch is mounted on: back along "out" from the flame
+                    ou, ov = wall["out"]
+                    du = (-fu if ou > 0 else 1 - fu) * abs(ou)
+                    dv = (-fv if ov > 0 else 1 - fv) * abs(ov)
+                    at_wall = [pos[k] + U[k] * du + V[k] * dv for k in range(3)]
+                found.append({"preset": name, "pos": pos, "out": out, "wall": at_wall})
     # one flame per torch: merge the faces that agree, preferring those that know the wall's side
     flames = []
     for f in sorted(found, key=lambda f: f["out"] is None):
@@ -88,6 +94,9 @@ def wall_flames(prims, presets=None, catalog=None):
         else:
             near["n"] += 1
     for f in flames:
+        f["texel"] = [round(x, 4) for x in f["pos"]]
+        if f["wall"]:
+            f["wall"] = [round(x, 4) for x in f["wall"]]
         if f["out"]:
             f["pos"] = [f["pos"][k] + f["out"][k] * OUT_M for k in range(3)]
         f["pos"] = [round(x, 4) for x in f["pos"]]
@@ -102,7 +111,7 @@ def main():
         flames = wall_flames(blockout.read_glb(glb))
         print("zone %s: %d wall flames" % (rid, len(flames)))
         for f in flames:
-            print("  %-6s %s out %s (%d faces)" % (f["preset"], f["pos"], f["out"] and [round(x, 2) for x in f["out"]], f["n"]))
+            print("  %-6s %s out %s wall %s (%d faces)" % (f["preset"], f["pos"], f["out"] and [round(x, 2) for x in f["out"]], f["wall"], f["n"]))
 
 
 if __name__ == "__main__":

@@ -463,6 +463,22 @@ The user walked the prop gallery and sorted what needed another pass.
 - The user then pointed out that the back should be the front mirrored; variant `SYMM` (450 credits). It wins where it should: the profile props come out bilateral (`skulhorn` reads as a horned skull head-on, `skulnorm` gets a face in its side view, `skulbrok` a coherent skull), and the rest match `SYM`. `SYMM` is the custom model for all ten (`build/aigen/symmetrical_mirror_review.jpg`).
 - Studio's HD multi-view takes two of its four slots. A slot upload sometimes doesn't take: check both thumbnails before Generate; a Generate with a slot missing starts nothing and costs nothing.
 
+## Flagpole (2026-10-10)
+The faction flagpoles (`flag.kod`; Raza, the Forest of Raza and Farol West in our zones) were the server's bitmap. Now the pole is 3D and the flag stays the original's sprite, as the maintainer asked.
+- **Placement:** the Kod extractor didn't place them: a Flagpole is created by the territory game (`territry.kod` `plFlagRIDs`) at the room's `viFlag_row` / `viFlag_col`, not by the room's own objects. `extract.py` `flag_rids()` reads that list and adds a `Flagpole` object there (else at the room's teleport point). All three match the server's positions.
+- **Mesh:** `data/aigen/props/flagpole.json`, `symmetrical`, polycount 1000. One Studio run (`SYM`, 45 credits) gave a clean 718-triangle pole; kept as `SM_AI_Flagpole` (4.4 m, `props.json` `Flagpole`, blocking as a 0.1 m post).
+- **The flag:** online, an object drawn by a prop still hangs its overlays: `UMRBgfSpriteComponent::SetOverlays` places each overlay's bitmap at the base bitmap's hotspot (the base itself hidden, `SetBaseHidden`), as the original client does (the overlay's top-left at the hotspot plus its own offsets, in the base's pixels; sized by its own shrink; in front for a positive hotspot). Claiming or losing the pole redraws it (the overlay key changes).
+- **Checked:** the online test (`-Render`) photographs the Farol West pole: `Saved/Screenshots/MRNet/flagpole.png`, with the pole claimed for the Duke on the dev server by hand (`set object <pole> piFaction int 1`; put it back to 0, or Duke soldiers keep coming).
+
+## Wall torch (2026-10-10)
+The original's wall torches are wall textures, not objects: a side view with the bracket (`grd08886`) crossed with a front view (`grd08887`), the flame painted on. The maintainer wanted them 3D, like the braziers, with the original flame.
+- **A texture as the source:** a manifest's `"texture"` replaces `"bgf"` (`sprite.texture_frame`: the frame from `build/textures/`, the same 64 × shrink pixels a square). `"erase_flame"` drops the painted fire with the same rule as `make_placeholders.py`.
+  - The sprite step measures 0.79 m and keeps the 72 rows under the torch as `lift_m`, so the normalized mesh's origin is the texture's bottom edge. The world build places it by that (ADR 0005 "3D wall torches and the signs' glow").
+- **Mesh:** `data/aigen/props/walltorch.json`, `symmetrical` (the side view mirrored is the view from the other side), polycount 1000. One Studio run (`SYM`, 45 credits, 942 triangles): the bracket, its twisted brace, the collar and the charred head all came through. Kept as `SM_AI_WallTorch`.
+  - Review: `build/aigen/props/walltorch/05_review/sheet2_tripo.png`.
+- **Found on the way:** `make_placeholders.py` deleted every file in `build/textures_placeholder/` it hadn't written, which included the prop gallery's sprite pictures (`T_GallerySprite_*`, from `prop_gallery.py`). The next world build then failed at the gallery. It now leaves them alone.
+- The iron collar renders lighter than the original's grey-blue; the maintainer likes it that way (no `"albedo"`).
+
 ## Open
 - `necglobe` (TargetGlobe, ViewpointGlobe): a sphere with our own swirling glass material instead of the Tripo model.
 - World batch: the user's picks of reruns (the plant, the orb, maybe `necvase` at 2000, multi-view where a back was invented), then a world build and look-dev for the props that authored zones place.

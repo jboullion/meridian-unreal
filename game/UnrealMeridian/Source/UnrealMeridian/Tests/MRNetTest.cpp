@@ -985,6 +985,62 @@ void UMRNetTest::Tick()
 			{
 				UI->CloseLook();
 			}
+			LookStage = 5;
+			StageTime = Now;
+			PropAimId = 0;
+		}
+		else if (LookStage == 5)
+		{
+			// an object drawn by a prop of the world build (the Inn's sign): turn to it; the
+			// aim must take it, so Look can (its sight line used to end in the prop itself)
+			const APawn* Pawn = PC->GetPawn();
+			for (const TPair<uint32, TWeakObjectPtr<AMRNetObject>>& Pair : NetWorld->GetActors())
+			{
+				const AMRNetObject* A = Pair.Value.Get();
+				// the Inn's sign ("Welcome"), in the open (a stool behind the counter is really hidden)
+				if (A && A->IsShownByProp() && A->GetObjectName() == TEXT("Welcome") && Pawn && PC->PlayerCameraManager)
+				{
+					const FVector Middle = (A->GetActorLocation() - FVector(0.0, 0.0, 80.0) + A->GetNameAnchor()) * 0.5;
+					PC->SetControlRotation((Middle - PC->PlayerCameraManager->GetCameraLocation()).Rotation());
+					PropAimId = Pair.Key;
+					PropAimName = A->GetObjectName();
+					break;
+				}
+			}
+			if (!PropAimId || !FApp::CanEverRender())
+			{
+				Advance(EStep::Social);  // none near, or no view to aim in (headless): nothing to check
+				break;
+			}
+			LookStage = 6;
+			StageTime = Now;
+		}
+		else if (LookStage == 6 && Now - StageTime > 0.8)
+		{
+			if (NetWorld->GetAimId() == PropAimId || NetWorld->ObjectsAtAim().Contains(PropAimId))
+			{
+				Pass(FString::Printf(TEXT("aimed at the %s, drawn by a prop of the world build (so Look can take it)"), *PropAimName));
+			}
+			else
+			{
+				// what the sight line meets on the way (the camera to the object's middle)
+				FString Seen;
+				if (const AMRNetObject* A = NetWorld->FindActor(PropAimId); A && PC->PlayerCameraManager)
+				{
+					const FVector Cam = PC->PlayerCameraManager->GetCameraLocation();
+					const FVector Middle = (A->GetActorLocation() - FVector(0.0, 0.0, 80.0) + A->GetNameAnchor()) * 0.5;
+					FCollisionQueryParams Q(SCENE_QUERY_STAT(MRNetTestSight), false, PC->GetPawn());
+					Q.AddIgnoredActor(A);
+					TArray<FHitResult> Hits;
+					PC->GetWorld()->LineTraceMultiByChannel(Hits, Cam, Middle, ECC_WorldStatic, Q);
+					FHitResult H;
+					PC->GetWorld()->LineTraceSingleByChannel(H, Cam, Middle, ECC_WorldStatic, Q);
+					Seen = FString::Printf(TEXT("; actor at %s, middle %s, camera %s; first hit %s (tags %d) at %.0f cm"), *A->GetActorLocation().ToCompactString(),
+						*Middle.ToCompactString(), *Cam.ToCompactString(), H.GetActor() ? *H.GetActor()->GetActorNameOrLabel() : TEXT("nothing"),
+						H.GetActor() ? H.GetActor()->Tags.Num() : 0, H.Distance);
+				}
+				Fail(FString::Printf(TEXT("aim: the %s, drawn by a prop, can't be aimed at (aim on %u)%s"), *PropAimName, NetWorld->GetAimId(), *Seen));
+			}
 			Advance(EStep::Social);
 		}
 		break;
@@ -2688,7 +2744,55 @@ void UMRNetTest::Tick()
 				Net->Say(SayText);
 				TravelStage = 1;
 			}
-			else if (Here == FarolWest && Now - StepStart > 1.0)
+			else if (Here == FarolWest && Now - StepStart > 1.0 && FApp::CanEverRender() && FlagShot == 0)
+			{
+				// the faction flagpole (a 3D prop of the world build, its flag the server's overlay):
+				// turn to it for a picture (Saved/Screenshots/MRNet/flagpole.png)
+				FlagShot = 2;
+				for (const TPair<uint32, TWeakObjectPtr<AMRNetObject>>& Pair : NetWorld->GetActors())
+				{
+					const AMRNetObject* A = Pair.Value.Get();
+					if (A && A->GetObjectName().Equals(TEXT("flagpole"), ESearchCase::IgnoreCase) && PC->PlayerCameraManager)
+					{
+						Pass(FString::Printf(TEXT("the flagpole here is %s, %.0f m away"), A->IsShownByProp() ? TEXT("the world build's prop") : TEXT("a bitmap"),
+							FVector::Dist(A->GetActorLocation(), PC->PlayerCameraManager->GetCameraLocation()) / 100.0));
+						// stand 9 m off on open floor with a clear view of its top, then turn to it
+						const FVector Pole = A->GetActorLocation();
+						const FVector Top = Pole + FVector(0.0, 0.0, 380.0);
+						UMRZoneSubsystem* ZoneSys = PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>();
+						APawn* Pawn = PC->GetPawn();
+						for (int32 d = 0; d < 8 && Pawn && ZoneSys; ++d)
+						{
+							const double Ang = FMath::DegreesToRadians(45.0 * d);
+							FVector P = Pole + FVector(FMath::Cos(Ang), FMath::Sin(Ang), 0.0) * 900.0 + FVector(0.0, 0.0, 200.0);
+							if (!ZoneSys->TraceFloor(P))
+							{
+								continue;
+							}
+							const FVector Eye = P + FVector(0.0, 0.0, 165.0);
+							FHitResult Hit;
+							FCollisionQueryParams Params(SCENE_QUERY_STAT(MRFlagView), true, Pawn);
+							if (PC->GetWorld()->LineTraceSingleByChannel(Hit, Eye, Top, ECC_Visibility, Params) && FVector::Dist2D(Hit.ImpactPoint, Pole) > 100.0)
+							{
+								continue;
+							}
+							Pawn->TeleportTo(P + FVector(0.0, 0.0, Pawn->GetSimpleCollisionHalfHeight() + 2.0), Pawn->GetActorRotation(), false, true);
+							PC->SetControlRotation((Top - Eye).Rotation());
+							break;
+						}
+						FlagShot = 1;
+						FlagShotTime = Now;
+						break;
+					}
+				}
+			}
+			else if (Here == FarolWest && FlagShot == 1 && Now - FlagShotTime > 2.0)
+			{
+				FScreenshotRequest::RequestScreenshot(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), TEXT("flagpole.png")), true, false);
+				FlagShot = 2;
+				FlagShotTime = Now;
+			}
+			else if (Here == FarolWest && (FlagShot == 2 || !FApp::CanEverRender()) && Now - FlagShotTime > 0.5 && Now - StepStart > 1.0)
 			{
 				HopFrom = Here;
 				StepOffEdge(static_cast<uint8>(EMREdge::East));

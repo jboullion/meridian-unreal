@@ -12,11 +12,13 @@
 #include "Engine/World.h"
 #include "Game/MRGameMode.h"
 #include "GameFramework/PlayerController.h"
+#include "ProfilingDebugging/CsvProfiler.h"
 #include "UnrealMeridian.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Net/MRNetLook.h"
 #include "Net/MRNetObject.h"
+#include "World/MRBgfSpriteComponent.h"
 #include "Net/MRNetProjectile.h"
 #include "Net/MRNetSubsystem.h"
 #include "Net/MRNetWorld.h"
@@ -438,13 +440,19 @@ FName UMRNetWorldSubsystem::LookFor(const FMRNetObject& Object) const
 		MRNetLook::AppearanceFromObject(Object, A);
 		return Lib.Looks.Contains(A.Look) ? A.Look : GetDefault<AMRCharacter>()->DefaultSpriteLook;
 	}
-	// by name first (NPCs share bodies), then by the body bitmap
+	// by name first (NPCs share bodies), then a player's figure (soldiers, ghosts), then by the body bitmap
 	for (const TPair<FName, FMRMonsterDef>& Pair : Lib.Monsters)
 	{
 		if (!Object.Name.IsEmpty() && Pair.Value.Name.Equals(Object.Name, ESearchCase::IgnoreCase))
 		{
 			return Pair.Value.Look;
 		}
+	}
+	if (MRNetLook::IsPlayerFigure(Object))
+	{
+		FMRSpriteAppearance A;
+		MRNetLook::AppearanceFromObject(Object, A);
+		return Lib.Looks.Contains(A.Look) ? A.Look : GetDefault<AMRCharacter>()->DefaultSpriteLook;
 	}
 	if (LookByBgf.IsEmpty())
 	{
@@ -472,7 +480,12 @@ void UMRNetWorldSubsystem::SpawnObject(const FMRNetObject& Object)
 	}
 	// creatures we have a sprite for wear it; everything else is the server's bitmap, or a prop of
 	// the world build standing on its square (a built zone's lamps, signs, tables)
-	const FName Look = Object.IsCreature() ? LookFor(Object) : NAME_None;
+	// (a logged-off player's ghost isn't a creature on the server, but carries a player's overlays)
+	const FName Look = Object.IsCreature() || MRNetLook::IsPlayerFigure(Object) ? LookFor(Object) : NAME_None;
+	if (!Look.IsNone() && !Object.IsPlayer() && MRNetLook::IsPlayerFigure(Object))
+	{
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: %s drawn as a player figure (a player's overlays)"), *Object.Name);
+	}
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	const FVector Floor = Zones->KodToWorld(Rid, Object.KodRow, Object.KodCol, true);
@@ -499,6 +512,12 @@ void UMRNetWorldSubsystem::SpawnObject(const FMRNetObject& Object)
 	else if (!Object.IsCreature() && FindPropAt(Floor, PropTop))
 	{
 		Actor->SetShownByProp(PropTop);
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: %s drawn by the prop on its square"), *Object.Name);
+		if (Object.OverlayParts.Num() > 0)
+		{
+			// its overlays still show, hung from its (unseen) bitmap's hotspots: the flagpole's flag
+			AttachBgfSprite(Actor, Object, true);
+		}
 	}
 	else
 	{
@@ -540,7 +559,54 @@ bool UMRNetWorldSubsystem::FindPropAt(const FVector& Floor, double& OutTop) cons
 	return false;
 }
 
-void UMRNetWorldSubsystem::AttachBgfSprite(AMRNetObject* Actor, const FMRNetObject& Object)
+FString UMRNetWorldSubsystem::OverlayKeyOf(const FMRNetObject& Object)
+{
+	FString Key;
+	for (const FMRNetOverlay& V : Object.OverlayParts)
+	{
+		Key += FString::Printf(TEXT("%s@%d;"), *V.Bgf, V.Hotspot);
+	}
+	return Key;
+}
+
+void UMRNetWorldSubsystem::AttachBgfOverlays(AMRNetObject* Actor, const FMRNetObject& Object)
+{
+	// every overlay's bitmap first, then all at once (they arrive in any order)
+	Actor->SetOverlayKey(OverlayKeyOf(Object));
+	if (Object.OverlayParts.Num() == 0)
+	{
+		return;
+	}
+	struct FPending
+	{
+		TArray<UMRBgfSpriteComponent::FOverlay> Overlays;
+		int32 Left = 0;
+	};
+	TSharedRef<FPending> P = MakeShared<FPending>();
+	P->Overlays.SetNum(Object.OverlayParts.Num());
+	P->Left = Object.OverlayParts.Num();
+	TWeakObjectPtr<AMRNetObject> WeakActor(Actor);
+	for (int32 i = 0; i < Object.OverlayParts.Num(); ++i)
+	{
+		const FMRNetOverlay& V = Object.OverlayParts[i];
+		P->Overlays[i].Hotspot = V.Hotspot;
+		P->Overlays[i].Animation = V.Animation;
+		FetchBgf(V.Bgf + TEXT(".bgf"), [WeakActor, P, i](TSharedPtr<const FMRBgf> Bgf)
+		{
+			P->Overlays[i].Bgf = Bgf;
+			if (--P->Left == 0)
+			{
+				AMRNetObject* A = WeakActor.Get();
+				if (A && A->GetBgfSprite())
+				{
+					A->GetBgfSprite()->SetOverlays(P->Overlays);
+				}
+			}
+		});
+	}
+}
+
+void UMRNetWorldSubsystem::AttachBgfSprite(AMRNetObject* Actor, const FMRNetObject& Object, bool bBaseHidden)
 {
 	UMRNetSubsystem* Net = GetNet();
 	FMRAssetCache* Cache = Net ? Net->GetAssets() : nullptr;
@@ -553,12 +619,22 @@ void UMRNetWorldSubsystem::AttachBgfSprite(AMRNetObject* Actor, const FMRNetObje
 	const FMRNetAnimation Standing = Object.Animation;
 	const FMRNetAnimation Moving = Object.MotionAnimation;
 	TWeakObjectPtr<AMRNetObject> WeakActor(Actor);
-	FetchBgf(File, [WeakActor, File, Standing, Moving](TSharedPtr<const FMRBgf> Bgf)
+	TWeakObjectPtr<UMRNetWorldSubsystem> WeakThis(this);
+	const FMRNetObject Copy = Object;
+	FetchBgf(File, [WeakActor, WeakThis, File, Standing, Moving, bBaseHidden, Copy](TSharedPtr<const FMRBgf> Bgf)
 	{
 		if (AMRNetObject* A = WeakActor.Get())
 		{
 			A->SetBgfSprite(File, Bgf);
 			A->SetServerAnimation(Standing, Moving);
+			if (A->GetBgfSprite())
+			{
+				A->GetBgfSprite()->SetBaseHidden(bBaseHidden);
+			}
+			if (UMRNetWorldSubsystem* Self = WeakThis.Get())
+			{
+				Self->AttachBgfOverlays(A, Copy);
+			}
 		}
 	});
 }
@@ -654,9 +730,10 @@ void UMRNetWorldSubsystem::OnObjectChanged(uint32 Id)
 		return;
 	}
 	// another body (a corpse), a creature that stopped being one, or another bitmap: draw it again
-	const FName Want = O->IsCreature() ? LookFor(*O) : NAME_None;
+	const FName Want = O->IsCreature() || MRNetLook::IsPlayerFigure(*O) ? LookFor(*O) : NAME_None;
 	const bool bRespawn = Want != A->GetLook() || A->IsStatic() == O->IsCreature()
-		|| (Want.IsNone() && !A->IsShownByProp() && A->GetBgfName() != O->Icon.ToLower());
+		|| (Want.IsNone() && !A->IsShownByProp() && A->GetBgfName() != O->Icon.ToLower())
+		|| (Want.IsNone() && OverlayKeyOf(*O) != A->GetOverlayKey());  // a flag raised, lowered or changed
 	if (bRespawn)
 	{
 		A->Destroy();
@@ -816,7 +893,7 @@ void UMRNetWorldSubsystem::TargetAim()
 	SetTarget(AimId);
 }
 
-bool UMRNetWorldSubsystem::IsInSight(const AMRNetObject* A, FVector2D& OutScreen, double& OutDistance) const
+bool UMRNetWorldSubsystem::IsInSight(const AMRNetObject* A, FVector2D& OutScreen, double& OutDistance, double MaxDistance) const
 {
 	const APlayerController* PC = GetPC();
 	if (!A || !PC || !PC->PlayerCameraManager || A->GetDrawEffect() == MRMsg::DRAWFX_INVISIBLE)
@@ -827,6 +904,10 @@ bool UMRNetWorldSubsystem::IsInSight(const AMRNetObject* A, FVector2D& OutScreen
 	const FVector Feet = A->GetActorLocation() - FVector(0.0, 0.0, 80.0);
 	const FVector Middle = (Feet + A->GetNameAnchor()) * 0.5;
 	OutDistance = FVector::Dist(Camera, Middle);
+	if (MaxDistance >= 0.0 && OutDistance > MaxDistance)
+	{
+		return false;  // too far to matter: no trace (the aim asks every object, every frame)
+	}
 	if (!PC->ProjectWorldLocationToScreen(Middle, OutScreen, true))
 	{
 		return false;
@@ -841,12 +922,34 @@ bool UMRNetWorldSubsystem::IsInSight(const AMRNetObject* A, FVector2D& OutScreen
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(MRNetSight), false, PC->GetPawn());
 	Params.AddIgnoredActor(A);
 	FHitResult Hit;
-	return !GetWorld()->LineTraceSingleByChannel(Hit, Camera, Middle, ECC_WorldStatic, Params)
-		|| Hit.GetActor() && Hit.GetActor()->IsA<AMRNetObject>();
+	for (int32 Tries = 0; Tries < 3; ++Tries)
+	{
+		if (!GetWorld()->LineTraceSingleByChannel(Hit, Camera, Middle, ECC_WorldStatic, Params))
+		{
+			return true;
+		}
+		const AActor* By = Hit.GetActor();
+		if (By && By->IsA<AMRNetObject>())
+		{
+			return true;
+		}
+		// an object drawn by a prop of the world build (a table, a lamp, a sign): the line ends
+		// inside that prop, or its post's blocker; it doesn't hide its own object (2026-10-10:
+		// such objects could never be aimed at, so never looked at)
+		if (By && A->IsShownByProp() && By->ActorHasTag(TEXT("ZoneProp"))
+			&& FVector::Dist2D(By->GetActorLocation(), A->GetActorLocation()) < MRUnits::CmPerSquare * 0.75)
+		{
+			Params.AddIgnoredActor(By);
+			continue;
+		}
+		return false;
+	}
+	return false;
 }
 
 void UMRNetWorldSubsystem::UpdateAim()
 {
+	CSV_SCOPED_TIMING_STAT_EXCLUSIVE(MRNetAim);
 	AimId = 0;
 	AimStack.Reset();
 	const APlayerController* PC = GetPC();
@@ -856,14 +959,20 @@ void UMRNetWorldSubsystem::UpdateAim()
 	}
 	int32 W = 0, H = 0;
 	PC->GetViewportSize(W, H);
-	const FVector2D Centre(W * 0.5, H * 0.5);
+	// what's under the free cursor (UMRUISubsystem::UsesFreeCursor), else the middle of the view
+	FVector2D Centre(W * 0.5, H * 0.5);
+	float MouseX = 0.f, MouseY = 0.f;
+	if (PC->bShowMouseCursor && UMRUISubsystem::UsesFreeCursor() && PC->GetMousePosition(MouseX, MouseY))
+	{
+		Centre = FVector2D(MouseX, MouseY);
+	}
 	TArray<TPair<double, uint32>> Hits;
 	for (const TPair<uint32, TWeakObjectPtr<AMRNetObject>>& Pair : Actors)
 	{
 		const AMRNetObject* A = Pair.Value.Get();
 		FVector2D Screen;
 		double Dist = 0.0;
-		if (!A || !IsInSight(A, Screen, Dist) || Dist > NameDistanceCm())
+		if (!A || !IsInSight(A, Screen, Dist, NameDistanceCm()))
 		{
 			continue;
 		}
@@ -953,10 +1062,11 @@ bool UMRNetWorldSubsystem::UseAim()
 	return false;
 }
 
-bool UMRNetWorldSubsystem::LookAtTarget()
+bool UMRNetWorldSubsystem::LookAtTarget(bool bAimFirst)
 {
 	UMRNetSubsystem* Net = GetNet();
-	const uint32 Id = TargetId ? TargetId : AimId;
+	// (a right click with the free cursor looks at what it's on, as the original's right click)
+	const uint32 Id = bAimFirst && AimId ? AimId : TargetId ? TargetId : AimId;
 	if (!Net || !Id)
 	{
 		return false;
@@ -969,6 +1079,7 @@ bool UMRNetWorldSubsystem::LookAtTarget()
 
 void UMRNetWorldSubsystem::Tick(float DeltaTime)
 {
+	CSV_SCOPED_TIMING_STAT_EXCLUSIVE(MRNetWorldTick);
 	Super::Tick(DeltaTime);
 	UMRNetSubsystem* Net = GetNet();
 	// (not while the server saves or our data is being reloaded: the room's object id may change)

@@ -12,6 +12,7 @@
 #include "UI/SMRChatLog.h"
 #include "UI/SMREnchantments.h"
 #include "UI/SMRGameMenu.h"
+#include "UI/SMRHUDFrames.h"
 #include "UI/SMRLookDialog.h"
 #include "UI/SMRStatChange.h"
 #include "UI/SMRTradeDialog.h"
@@ -22,6 +23,7 @@
 #include "UI/SMRSlot.h"
 #include "UI/SMRWorldOverlay.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SDPIScaler.h"
 #include "Widgets/Layout/SUniformGridPanel.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Input/SEditableText.h"
@@ -453,12 +455,18 @@ void SMRHUDRoot::Rebuild()
 	{
 		return;
 	}
-	const float Px = Style->Px();
-	HotbarArea = MakeHotbarArea();
-	SpellBar = MakeSpellBar();
+	const float Hp = Style->HudPx();
+	const float Margin = Style->HudNumber(TEXT("margin"), 10.f) * Hp;
+	ActionBar = SNew(SMRActionBar, Ui);
 	Inventory = SNew(SMRInventoryScreen, Ui);
 	Inventory->SetVisibility(Ui->IsInventoryOpen() ? EVisibility::Visible : EVisibility::Collapsed);
-	ChatLog = SNew(SMRChatLog, Ui);
+	// the chat stays left of the action bar (Shards: max-width calc(50% - 265px)), in its scaled units
+	const float BarHalf = (9.f * Style->HudNumber(TEXT("slot"), 44.f) + 8.f * Style->HudNumber(TEXT("slot_gap"), 4.f)
+		+ 2.f * Style->HudNumber(TEXT("action_pad"), 6.f)) * 0.5f * Hp;
+	ChatLog = SNew(SMRChatLog, Ui).MaxWidth_Lambda([this, BarHalf, Margin]()
+	{
+		return LastSize.X / UMRUISubsystem::GetHudScale() * 0.5f - BarHalf - 2.f * Margin;
+	});
 	GameMenu = SNew(SMRGameMenu, Ui);
 	LookDialog = SNew(SMRLookDialog, Ui);
 	LookDialog->SetVisibility(Ui->IsLookOpen() ? EVisibility::Visible : EVisibility::Collapsed);
@@ -483,41 +491,56 @@ void SMRHUDRoot::Rebuild()
 		[
 			SNew(SMRWorldOverlay, Ui)
 		]
-		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0.f, 0.f, 0.f, Style->Number(TEXT("hotbar_bottom"), 6.f) * Px)
-		[
-			HotbarArea.ToSharedRef()
-		]
-		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0.f, Style->Number(TEXT("minimap_margin"), 8.f) * Px,
-			Style->Number(TEXT("minimap_margin"), 8.f) * Px, 0.f)
-		[
-			SNew(SVerticalBox)
-			+ SVerticalBox::Slot().AutoHeight()
-			[
-				SNew(SMRMinimap, Ui)
-			]
-			// the room's enchantments under the map (merintr enchant.c: by the view)
-			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Right).Padding(0.f, 3.f * Px, 0.f, 0.f)
-			[
-				SNew(SMREnchantments, Ui).bRoom(true)
-			]
-		]
-		// the enchantments on the player, top left (merintr enchant.c: by the player's portrait)
-		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(Style->Number(TEXT("minimap_margin"), 8.f) * Px)
-		[
-			SNew(SMREnchantments, Ui)
-		]
-		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(Style->Number(TEXT("chat_margin"), 8.f) * Px)
-		[
-			ChatLog.ToSharedRef()
-		]
+		// the inventory dialog under the HUD: items are dragged from it straight onto the action bar's
+		// hotbar and spell row (its own clicks outside the window drop what's carried)
 		+ SOverlay::Slot()
 		[
 			Inventory.ToSharedRef()
 		]
-		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom).Padding(0.f, 0.f, Style->Number(TEXT("spellbar_margin"), 8.f) * Px,
-			Style->Number(TEXT("spellbar_margin"), 8.f) * Px)
+		// the HUD (Shards' Modern interface): each cluster grown by HUD Size where it stands
+		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(Margin, Margin, 0.f, 0.f)
 		[
-			SpellBar.ToSharedRef()
+			Cluster(SNew(SMRUnitFrame, Ui))
+		]
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Top).Padding(0.f, Margin, 0.f, 0.f)
+		[
+			Cluster(SNew(SMRTargetFrame, Ui).MaxWidth_Lambda([this, Ui]()
+			{
+				return LastSize.X * Ui->GetStyle()->HudNumber(TEXT("target_max_share"), 0.4f) / UMRUISubsystem::GetHudScale();
+			}))
+		]
+		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0.f, Margin, Margin, 0.f)
+		[
+			Cluster(SNew(SMRMapCluster, Ui))
+		]
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0.f, 0.f, 0.f, Style->HudNumber(TEXT("action_bottom"), 8.f) * Hp)
+		[
+			Cluster(SNew(SVerticalBox)
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 0.f, 0.f, 4.f * Hp)
+				[
+					SNew(SMRItemName, Ui)
+				]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+				[
+					ActionBar.ToSharedRef()
+				])
+		]
+		// the chat down the left side under the unit frame, grown by HUD Size with its place (Shards'
+		// zoom); it fades and hides itself (SMRChatLog)
+		+ SOverlay::Slot()
+		[
+			SNew(SDPIScaler).Visibility(EVisibility::SelfHitTestInvisible).DPIScale_Lambda([]() { return UMRUISubsystem::GetHudScale(); })
+			[
+				SNew(SBox).HAlign(HAlign_Left).VAlign(VAlign_Fill).Visibility(EVisibility::SelfHitTestInvisible)
+					.Padding(Margin, Style->HudNumber(TEXT("chat_top"), 190.f) * Hp, 0.f, Style->HudNumber(TEXT("chat_bottom"), 10.f) * Hp)
+				[
+					ChatLog.ToSharedRef()
+				]
+			]
+		]
+		+ SOverlay::Slot()
+		[
+			SNew(SMRViewNote, Ui)
 		]
 		+ SOverlay::Slot()
 		[
@@ -559,117 +582,21 @@ FString SMRHUDRoot::LoadingText() const
 	return NetWorld && !NetWorld->GetLoadingRoom().IsEmpty() ? FString::Printf(TEXT("Loading %s..."), *NetWorld->GetLoadingRoom()) : FString();
 }
 
-TSharedRef<SWidget> SMRHUDRoot::MakeHotbarArea()
+TSharedRef<SWidget> SMRHUDRoot::Cluster(const TSharedRef<SWidget>& Content)
 {
-	UMRUISubsystem* Ui = UI.Get();
-	UMRUIStyle* Style = Ui->GetStyle();
-	const float Px = Style->Px();
-	const float SlotPx = Style->Number(TEXT("slot_px"), 22.f);
-	const float RowW = SlotPx * 9.f;
-	const float Gap = 4.f;
-
-	TSharedRef<SHorizontalBox> Slots = SNew(SHorizontalBox);
-	for (int32 i = 0; i < 9; ++i)
-	{
-		Slots->AddSlot().AutoWidth()
+	TWeakObjectPtr<UMRUISubsystem> WeakUI = UI;
+	return SNew(SDPIScaler)
+		.DPIScale_Lambda([]() { return UMRUISubsystem::GetHudScale(); })
+		.Visibility_Lambda([WeakUI]() { return WeakUI.IsValid() && WeakUI->IsHudHidden() ? EVisibility::Collapsed : EVisibility::SelfHitTestInvisible; })
 		[
-			SNew(SMRSlot, Ui, FMRSlotRef(EMRSlotArea::Hotbar, i)).Size(SlotPx).KeyLabel(FString::FromInt(i + 1)).bSelectable(true)
+			Content
 		];
-	}
-	// the server's condition stats online, the local attributes offline (UMRUISubsystem::GetVital)
-	auto Vital = [Ui](int32 Index, bool bMax)
-	{
-		return TAttribute<float>::CreateLambda([Ui, Index, bMax]()
-		{
-			float Value = 0.f, Max = 0.f;
-			if (Ui)
-			{
-				Ui->GetVital(Index, Value, Max);
-			}
-			return bMax ? Max : Value;
-		});
-	};
-	const float BarW = (RowW - Gap) * 0.5f;
-	return SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 0.f, 0.f, 2.f * Px)
-		[
-			SNew(SMRItemName, Ui)
-		]
-		// health (left) and mana (right) above the hotbar, where Minecraft has hearts and food
-		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 0.f, 0.f, 3.f * Px)
-		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot().AutoWidth().Padding(0.f, 0.f, Gap * Px, 0.f)
-			[
-				SNew(SMRBar, Ui).Width(BarW).Height(Style->Number(TEXT("bar_px"), 9.f))
-					.Color(Style->Color(TEXT("health"), FLinearColor(0.75f, 0.06f, 0.06f)))
-					.Value(Vital(0, false)).Max(Vital(0, true))
-			]
-			+ SHorizontalBox::Slot().AutoWidth()
-			[
-				SNew(SMRBar, Ui).Width(BarW).Height(Style->Number(TEXT("bar_px"), 9.f))
-					.Color(Style->Color(TEXT("mana"), FLinearColor(0.08f, 0.2f, 0.85f)))
-					.Value(Vital(1, false)).Max(Vital(1, true))
-			]
-		]
-		// vigor: a slimmer bar across the hotbar's width, where Minecraft has experience, with its value too
-		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 0.f, 0.f, 3.f * Px)
-		[
-			SNew(SMRBar, Ui).Width(RowW).Height(Style->Number(TEXT("vigor_bar_px"), 7.f))
-				.Color(Style->Color(TEXT("vigor"), FLinearColor(0.85f, 0.6f, 0.05f)))
-				.Value(Vital(2, false)).Max(Vital(2, true))
-		]
-		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
-		[
-			SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(1.f)
-			[
-				Slots
-			]
-		];
-}
-
-TSharedRef<SWidget> SMRHUDRoot::MakeSpellBar()
-{
-	UMRUISubsystem* Ui = UI.Get();
-	UMRUIStyle* Style = Ui->GetStyle();
-	const float SlotPx = Style->Number(TEXT("spell_slot_px"), 20.f);
-	const bool bRow = Style->Number(TEXT("spellbar_row"), 0.f) > 0.f;
-	TSharedRef<SUniformGridPanel> Grid = SNew(SUniformGridPanel);
-	for (int32 i = 0; i < 9; ++i)
-	{
-		// the numpad's layout: 7 8 9 on top, 1 2 3 at the bottom
-		const int32 Col = bRow ? i : i % 3;
-		const int32 Row = bRow ? 0 : 2 - i / 3;
-		Grid->AddSlot(Col, Row)
-		[
-			SNew(SMRSlot, Ui, FMRSlotRef(EMRSlotArea::SpellBar, i)).Size(SlotPx).KeyLabel(FString::FromInt(i + 1))
-		];
-	}
-	return SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(1.f)
-	[
-		Grid
-	];
-}
-
-bool SMRHUDRoot::IsSpellBarHovered() const
-{
-	return SpellBar.IsValid() && SpellBar->IsHovered();
 }
 
 void SMRHUDRoot::Tick(const FGeometry& Geo, const double Time, const float Dt)
 {
 	SCompoundWidget::Tick(Geo, Time, Dt);
-	UMRUISubsystem* Ui = UI.Get();
-	UMRUIStyle* Style = Ui ? Ui->GetStyle() : nullptr;
-	if (!Style || !SpellBar.IsValid())
-	{
-		return;
-	}
-	// the spell bar is faint until wanted: hovered, the dialog open, or just used
-	const bool bWanted = Ui->IsInventoryOpen() || IsSpellBarHovered() || Ui->Now() - Ui->SpellBarLastUsed() < 1.5;
-	const float Target = bWanted ? 1.f : Style->Number(TEXT("spellbar_idle_opacity"), 0.45f);
-	SpellBarOpacity = FMath::FInterpTo(SpellBarOpacity, Target, Dt, 10.f);
-	SpellBar->SetRenderOpacity(SpellBarOpacity);
+	LastSize = FVector2f(Geo.GetLocalSize());
 }
 
 void SMRHUDRoot::SetInventoryTab(int32 Tab)
@@ -747,9 +674,5 @@ void SMRHUDRoot::SetInventoryOpen(bool bOpen)
 			Inventory->OnOpened();
 		}
 	}
-	if (HotbarArea.IsValid())
-	{
-		// the dialog has its own copy of the hotbar (as Minecraft)
-		HotbarArea->SetVisibility(bOpen ? EVisibility::Hidden : EVisibility::SelfHitTestInvisible);
-	}
+
 }

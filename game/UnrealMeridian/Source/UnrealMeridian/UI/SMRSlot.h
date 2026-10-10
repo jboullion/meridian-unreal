@@ -14,7 +14,7 @@ class UMRUISubsystem;
 class UNREALMERIDIAN_API SMRSlot : public SLeafWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SMRSlot) : _Size(22.f), _bSelectable(false), _bToolTip(true) {}
+	SLATE_BEGIN_ARGS(SMRSlot) : _Size(22.f), _bSelectable(false), _bToolTip(true), _bHud(false) {}
 		/** Size in original pixels. */
 		SLATE_ARGUMENT(float, Size)
 		/** Small key label in the corner ("1", "7"...). */
@@ -25,6 +25,8 @@ public:
 		SLATE_ARGUMENT(FName, HintIcon)
 		/** Show the content's tooltip (off inside a list row, which shows it for the whole row). */
 		SLATE_ARGUMENT(bool, bToolTip)
+		/** The HUD's look (ui_style.json "hud": Shards' sunk box with a gold edge); Size is then in HUD pixels. */
+		SLATE_ARGUMENT(bool, bHud)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs, UMRUISubsystem* InUI, const FMRSlotRef& InSlot);
@@ -49,7 +51,10 @@ private:
 	FString KeyLabel;
 	bool bSelectable = false;
 	bool bToolTip = true;
+	bool bHud = false;
 	FName HintIcon;
 	FName ToolTipFor;
 	TSharedPtr<IToolTip> CachedToolTip;
+
+	int32 PaintHud(const FGeometry& Geo, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& WStyle) const;
 };

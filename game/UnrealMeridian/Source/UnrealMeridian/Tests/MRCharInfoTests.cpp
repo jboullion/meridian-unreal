@@ -207,8 +207,11 @@ bool FMRSpriteOverlaysTest::RunTest(const FString& Parameters)
 	MRNetLook::AppearanceFromObject(O, A);
 	TestEqual(TEXT("no hair overlay: none drawn"), A.HairBgf, FName(TEXT("blank")));
 	TestTrue(TEXT("unconverted eyes: the look's own"), A.EyesBgf.IsNone());
+	// not a player, but with a player's body overlays (a soldier, a logged-off ghost): drawn as one
 	O.Flags = 0;
-	TestFalse(TEXT("not a player"), MRNetLook::AppearanceFromObject(O, A));
+	TestTrue(TEXT("not a player, with a player's overlays: a player figure"), MRNetLook::AppearanceFromObject(O, A));
+	O.OverlayParts.Reset();
+	TestFalse(TEXT("not a player, without them"), MRNetLook::AppearanceFromObject(O, A));
 
 	// a look with a part replaced places it on the same hotspot
 	FMRSpriteLook L = Lib.Looks[TEXT("player_female")];

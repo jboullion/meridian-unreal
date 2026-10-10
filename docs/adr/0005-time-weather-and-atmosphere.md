@@ -9,7 +9,7 @@
 Raza has four hand-tuned lighting moods: afternoon, morning, dusk and night (`data/environment/moods.json`, ADR 0003 "Moods and lit windows"). But:
 - **One mood is baked into the level.** Only one mood at a time is baked into `L_World` by an editor script (`tools/ue/zone_mood.py`), so nothing changes while you play.
 - **Interiors share the town's light.** Interiors (the Inn, shops, Hall, Mausoleum) are streamed into the same `L_World`, under the town's sun, fog and exposure.
-- **Torches are still the original art.** They're flat animated textures, rebuilt as thin solids.
+- **Torches are still the original art.** They're flat animated textures, rebuilt as thin solids. (Since 2026-10-10 they're 3D props with the original's flame: "3D wall torches and the signs' glow".)
 - **There's no weather.**
 
 The original game already had most of this. Our server runs its rules (Server 104 Kod), so we know exactly how it behaved:
@@ -318,6 +318,38 @@ Rooms built at runtime from the server's files (ADR 0012) are drawn with the ori
 - **Authored zones keep their moods**: the server's light values don't change them.
 - **Flicker** (`BP_SECTOR_LIGHT`) isn't drawn, as in the original's Direct3D client.
 
+## Sky: the original skyboxes (2026-10-10)
+- **Why:** under a cloudy sky the volumetric clouds cost 25–55 ms a frame on an RTX 3070. Capped, they still cost 11–19 ms. See `docs/performance.md`.
+- **Decision (user):** draw the original client's skyboxes instead. No "fancy clouds" are needed.
+- **The skyboxes:** the Direct3D client drew one of five skyboxes, `resource/sky{a,b,c,d}.bsf` and `redsky.bsf` (six 512 px PNG faces each).
+  - `room.kod` `RecalcBackgroundSkyGraphic` picks the box by day phase: dawn `skyc`, day `skya`, dusk `skyb`, night `skyd`. Storms keep the same box; `redsky` is for Chaos nights.
+  - `tools/textures/make_skyboxes.py` packs each into a 3×2 atlas (`T_Skybox_<name>`).
+  - `M_NightSky` (the dome, `SKYBOX_HLSL`) finds the face for a view direction. It blends dawn, day, dusk and night by `SkyDawn` / `SkyDay` / `SkyDusk` / `SkyNight`, then adds the sun or moon disc on top.
+- **Data and director:**
+  - `moods.json` `"sky"` has `"skybox": true`, `"skybox_keys"` (hours, blended between keys) and `"volumetric_clouds": false`.
+  - Each mood's `"SkyDome"` sets `SkyboxBrightness` for its fixed exposure: afternoon 0.6, morning 0.4, dusk 0.17, night 0.03. The storms multiply it (rain ×0.5).
+  - The director (`ApplySkybox`) sets these on the dome's material instance.
+- **Results:**
+  - The hitch test's p95 went from 29–38 ms to 17.4 ms, with slow frames 122–460 → 33; in rain 31.6 → 17.6 ms, 146 → 29.
+  - Sheets: `build/lookdev/compare_clouds_before_sky_day2.png` (13:00), `build/lookdev/sky_times.png` (7, 13, 19 and 23 h).
+- **The sky light** captures the dome, so the skybox's blue (violet at dusk) tints the ambient. The user likes it for now. Revisit later (`docs/performance.md` "Follow-ups").
+- **Interiors have no bounce lighting** (user, 2026-10-10). `raza_interior_day` sets `dynamic_global_illumination_method` `None` and the night and crypt moods inherit it; `raza_afternoon` sets `Lumen` for outdoors. Lumen had filled the rooms with the skybox's blue. Without it they are the original's warm, dark rooms, lit by their own lights (`build/lookdev/interior_lighting.png`, `docs/performance.md`).
+- **Turning the clouds back on:** `"volumetric_clouds": true` restores them, with the caps in `Config/DefaultScalability.ini` and the thinner, shorter layer in `raza_afternoon`'s `"Clouds"`.
+
+## 3D wall torches and the signs' glow (2026-10-10)
+- **Wall torches are 3D props now, the flame still the original's flipbook,** as the braziers are (the maintainer's choice).
+  - The mesh `SM_AI_WallTorch` comes from the side-view texture (`grd08886`) with its flame erased, through the props pipeline (ADR 0007 "Wall torch").
+  - `props.json` fires `"torch"` `"mesh"`: once the kit mesh exists, `make_placeholders.py` blanks both torch textures (`grd08886`, `grd08887`), so the blockout's crossed planes draw nothing. The blockout itself is untouched.
+  - `fires.py` also reports the wall point behind each flame (`"wall"`, the texture's edge in its `"out"` direction). `build_world.py` `zone_wall_fires` stands the mesh there: its bracket end (the mesh's -X) on the wall, turned to `"out"`. Its origin goes at the texture's bottom row (`"mesh_bottom_px"` 152; the aigen mesh keeps the rows under the torch as lift).
+  - The flame is set on the mesh's head, read from the GLB (the top 4 cm of vertices), sunk `"flame_sink_m"` 0.03 into it, as the painted flame overlaps the head.
+  - **Side view:** the old flame stood 12 cm further from the wall than the stick (`fires.py` `OUT_M`, there so the sprite wouldn't cut the wall). Now the flame stands on the head from every side. Cameras `torch_side_inn`, `torch_side_crypt`.
+  - All 28 torches in Raza's interiors (the vault's 3 included). Their lights are unchanged (the room light under each still moves onto its flame).
+- **Signs glow like the original's.** `sign.kod` sends a white light at 255 flagged `LIGHT_FLAG_HIGHLIGHT`. The original client draws it at a tenth of a normal light's size, with no falloff on the floor (`d3dlighting.c`): a lit disk about 3.9 m across at the sign's foot.
+  - `props.json` `Sign` `"light"` `"highlight": true`: `build_world.py` sizes the disk from the original's formula and draws it as a spot light 2.2 m above the foot, pointing down, its cone just covering the disk.
+  - First tried as a point light 0.5 m up: it burned a hot spot into the post. Then as the spot: the sign's top caught it, and it showed as a beam in the interiors' haze. So the light is on lighting channel 1, which only the zone's floors and walls take (`"geometry"`, `"render"` and `"art"` parts), and it doesn't scatter in fog.
+  - Bright enough to read in the dark interiors (candela scale 3); outdoors by day it hardly shows, as in the original.
+- **Sheets:** `build/lookdev/compare_torch_before_13_torch_v4_13.png` (midday) and `compare_torch_before_23_torch_v4_23.png` (night); the sign's three tries in `compare_torch_before_13_torch_v2_13_torch_v3_13.png`.
+
 ## Phase 4 built (2026-10-05): weather
 - **The original's rules** (`MRWeather`, unit-tested in `Meridian.Environment.Weather`):
   - Every game day each of the 15 weather zones rolls a storm at 15% (kod `RecalcWeatherConditions`, `piStormChance`).
@@ -392,7 +424,7 @@ Rooms built at runtime from the server's files (ADR 0012) are drawn with the ori
   - `make_placeholders.py` upscales the frames with the base-colour model into `T_Fire_<preset>` (one power-of-two cell per frame, soft alpha).
   - `M_Fire` (unlit, translucent) cycles the cells at the preset's frame rate. Each frame fades into the next, and each fire starts from its own phase (a hash of where it stands). `AMRFireActor` draws it as a `UMaterialBillboardComponent` at the original's size: a torch flame is 0.45 × 0.65 m, a brazier's 0.52 × 0.31 m.
   - Embers and thin smoke are left for later: a hand-made Niagara system can be added to `AMRFireActor` when wanted.
-- **Wall torches:**
+- **Wall torches** (replaced on 2026-10-10 by 3D torches: "3D wall torches and the signs' glow"):
   - The torch textures lose their painted flame: flame-coloured pixels in the preset's `"erase"` rect become transparent, so the bracket and the glowing torch head stay.
   - `tools/environment/fires.py` finds a flame wherever the blockout uses those textures. It extends each face's UV mapping to the flame's texel (`"at"`), merges the faces of one torch (crossed planes, both sides), and sets the flame 12 cm off the wall (`"out"`: the texture direction away from the wall).
   - Each torch gets a light of Kod intensity 20 (`"light"`). The original torches had none of their own; this replaces the brighter sectors around them.

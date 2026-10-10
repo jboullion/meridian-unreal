@@ -2,6 +2,7 @@
 
 #include "Dom/JsonObject.h"
 #include "Engine/Texture2D.h"
+#include "Fonts/CompositeFont.h"
 #include "Fonts/FontMeasure.h"
 #include "Framework/Application/SlateApplication.h"
 #include "HAL/IConsoleManager.h"
@@ -48,6 +49,17 @@ void UMRUIStyle::Reload()
 	}
 	UIScale = Number(TEXT("ui_scale"), 2.f);
 	TextScale = Number(TEXT("text_scale"), 1.f);
+	HudScale = HudNumber(TEXT("hud_px"), 1.f);
+	const FString FontPath = FPaths::Combine(UMRZoneSubsystem::GetDataDir(), TEXT("runtime"), TEXT("fonts"), TEXT("heidelb1.ttf"));
+	TitleComposite.Reset();
+	if (FPaths::FileExists(FontPath))
+	{
+		TitleComposite = MakeShared<FStandaloneCompositeFont>(NAME_None, FontPath, EFontHinting::Default, EFontLoadingPolicy::LazyLoad);
+	}
+	else
+	{
+		UE_LOG(LogMeridian, Log, TEXT("UI: %s not found (tools/ui/build_ui_art.py copies it); titles use the UI font"), *FontPath);
+	}
 	Brushes.Reset();
 	Frames.Reset();
 	OnReloaded.Broadcast();
@@ -188,6 +200,44 @@ FSlateFontInfo UMRUIStyle::Font(float Size, bool bBold) const
 	return FCoreStyle::GetDefaultFontStyle(bBold ? TEXT("Bold") : TEXT("Regular"), Size * UIScale * 0.5f * TextScale);
 }
 
+float UMRUIStyle::HudNumber(const TCHAR* Key, float Default) const
+{
+	const TSharedPtr<FJsonObject>* Hud = nullptr;
+	double V = Default;
+	if (Json && Json->TryGetObjectField(TEXT("hud"), Hud))
+	{
+		(*Hud)->TryGetNumberField(Key, V);
+	}
+	return static_cast<float>(V);
+}
+
+FLinearColor UMRUIStyle::HudColor(const TCHAR* Key, const FLinearColor& Default) const
+{
+	const TSharedPtr<FJsonObject>* Hud = nullptr;
+	const TSharedPtr<FJsonObject>* Colors = nullptr;
+	FString Hex;
+	if (Json && Json->TryGetObjectField(TEXT("hud"), Hud) && (*Hud)->TryGetObjectField(TEXT("colors"), Colors) && (*Colors)->TryGetStringField(Key, Hex))
+	{
+		return FLinearColor(FColor::FromHex(Hex));
+	}
+	return Default;
+}
+
+FSlateFontInfo UMRUIStyle::HudFont(float SizePx, bool bBold) const
+{
+	// Slate's font sizes are points (96 dpi): a CSS pixel is 0.75 of one
+	return FCoreStyle::GetDefaultFontStyle(bBold ? TEXT("Bold") : TEXT("Regular"), SizePx * 0.75f * HudScale);
+}
+
+FSlateFontInfo UMRUIStyle::TitleFont(float SizePx) const
+{
+	if (!TitleComposite.IsValid())
+	{
+		return HudFont(SizePx, true);
+	}
+	return FSlateFontInfo(TitleComposite, SizePx * 0.75f * HudScale);
+}
+
 float UMRUIStyle::FrameScale(FName Name) const
 {
 	const TSharedPtr<FJsonObject>* Scales = nullptr;
@@ -294,6 +344,67 @@ namespace MRPaint
 			return FVector2f::ZeroVector;
 		}
 		return FVector2f(FSlateApplication::Get().GetRenderer()->GetFontMeasureService()->Measure(Str, Font));
+	}
+
+	void Rounded(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, FVector2f Pos, FVector2f Size, const FLinearColor& Fill,
+		float Radius, const FLinearColor& Outline, float OutlineWidth)
+	{
+		if (Size.X <= 0.f || Size.Y <= 0.f)
+		{
+			return;
+		}
+		// (a draw element copies what it needs from the brush, so a brush on the stack is fine)
+		// (the element's tint is the fill; the outline keeps its own colour)
+		FSlateBrush B;
+		B.DrawAs = ESlateBrushDrawType::RoundedBox;
+		const float R = FMath::Min(Radius, FMath::Min(Size.X, Size.Y) * 0.5f);
+		B.OutlineSettings = FSlateBrushOutlineSettings(FVector4(R, R, R, R), FSlateColor(Outline), OutlineWidth);
+		FSlateDrawElement::MakeBox(Out, Layer, Geo.ToPaintGeometry(Size, FSlateLayoutTransform(Pos)), &B, ESlateDrawEffect::None, Fill);
+	}
+
+	void Gradient(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, FVector2f Pos, FVector2f Size, const FLinearColor& Top,
+		const FLinearColor& Bottom, float Radius)
+	{
+		if (Size.X <= 0.f || Size.Y <= 0.f)
+		{
+			return;
+		}
+		// Orient_Horizontal: the stops run down the box (ElementBatcher AddGradientElement)
+		TArray<FSlateGradientStop> Stops = {FSlateGradientStop(FVector2f(0.f, 0.f), Top), FSlateGradientStop(FVector2f(0.f, Size.Y), Bottom)};
+		const float R = FMath::Min(Radius, FMath::Min(Size.X, Size.Y) * 0.5f);
+		FSlateDrawElement::MakeGradient(Out, Layer, Geo.ToPaintGeometry(Size, FSlateLayoutTransform(Pos)), MoveTemp(Stops), Orient_Horizontal,
+			ESlateDrawEffect::None, FVector4f(R, R, R, R));
+	}
+
+	void SoftShadow(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, FVector2f Pos, FVector2f Size, float Radius, float OffsetY,
+		float Blur, const FLinearColor& Color)
+	{
+		// rings outside the box only (a CSS shadow isn't drawn under a translucent box): each a band
+		// from the edge outward, so near the edge they add up and it fades outward
+		constexpr int32 Steps = 4;
+		for (int32 i = 1; i <= Steps; ++i)
+		{
+			const float Grow = Blur * i / Steps * 0.5f;
+			FLinearColor C = Color;
+			C.A *= 0.45f / Steps;
+			Rounded(Out, Layer, Geo, Pos + FVector2f(-Grow, OffsetY - Grow), Size + FVector2f(2.f * Grow, 2.f * Grow), FLinearColor::Transparent,
+				Radius + Grow, C, Grow);
+		}
+	}
+
+	void HudPanel(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, UMRUIStyle* Style, FVector2f Pos, FVector2f Size, float Radius,
+		float Opacity, const FLinearColor* Edge)
+	{
+		if (!Style)
+		{
+			return;
+		}
+		const float Px = Style->HudPx();
+		const FLinearColor Alpha(1.f, 1.f, 1.f, Opacity);
+		SoftShadow(Out, Layer, Geo, Pos, Size, Radius, 2.f * Px, 8.f * Px, Style->HudColor(TEXT("shadow"), FLinearColor(0.f, 0.f, 0.f, 0.6f)) * Alpha);
+		const FLinearColor E = Edge ? *Edge : Style->HudColor(TEXT("edge"), FLinearColor(0.67f, 0.46f, 0.1f, 0.55f));
+		Rounded(Out, Layer + 1, Geo, Pos, Size, Style->HudColor(TEXT("panel"), FLinearColor(0.005f, 0.004f, 0.003f, 0.66f)) * Alpha, Radius,
+			E * Alpha, FMath::Max(1.f, Px));
 	}
 }
 

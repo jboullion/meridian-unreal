@@ -115,6 +115,8 @@ private:
 	TSharedPtr<FJsonObject> StateFor(double Hour, int32 ZoneId, bool& bOutPinnedMood);
 	void Apply(const TSharedPtr<FJsonObject>& State, double Hour, bool bPinnedMood);
 	AActor* FindActor(const FString& Label) const;
+	/** Light and sky light intensity and temperature through their setters: no new render proxy. */
+	static bool SetCheaply(USceneComponent* Component, const FString& Field, const TSharedPtr<FJsonValue>& V);
 	void ApplyLamps(float LampsOn);
 	/** The zone the local view is in (camera location), else the local player's zone; -1 if none. */
 	int32 LocalZoneId() const;
@@ -136,6 +138,9 @@ private:
 	/** The clouds' material as a dynamic instance (made once), and a parameter's value before any mood set it. */
 	class UMaterialInstanceDynamic* CloudMaterial();
 	float CloudBase(const FName& Param);
+	/** The sky dome's material (M_NightSky) as a dynamic instance (made once), and the original skyboxes on it. */
+	class UMaterialInstanceDynamic* SkyDomeMaterial();
+	void ApplySkybox(const TSharedPtr<FJsonObject>& State, const TSharedPtr<FJsonObject>& SkyCfg, double Hour);
 	void TickLightning(float DeltaTime);
 	bool IsOutdoor() const;
 
@@ -144,6 +149,8 @@ private:
 	TSharedPtr<FJsonObject> Profile;
 	TMap<FString, TSharedPtr<FJsonObject>> Resolved;
 	TMap<TWeakObjectPtr<ULightComponent>, float> LampBase;
+	bool bLampsFound = false;
+	mutable TMap<FString, TWeakObjectPtr<AActor>> FoundActors;
 	TSet<FString> Warned;
 
 	UPROPERTY()
@@ -165,6 +172,7 @@ private:
 	FString LastAtmosphereLog;
 
 	TWeakObjectPtr<UMaterialInstanceDynamic> CloudMID;
+	TWeakObjectPtr<UMaterialInstanceDynamic> SkyDomeMID;
 	TMap<FName, float> CloudBaseValues;
 
 	TWeakObjectPtr<AMRPrecipitationActor> Precip;

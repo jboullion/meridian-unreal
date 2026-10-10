@@ -97,7 +97,7 @@ Run `bgf2png` before `roo2gltf`, which needs texture sizes for its UVs.
 - `powershell -File tools/lookdev/cycle_test.ps1 [-Hours 0,6,9,14,19,22] [-Cameras …]` captures `cycle_<hh>` per hour and one sheet with the hours side by side.
 - `powershell -File tools/lookdev/ground_normals_test.ps1 [-Variants current,strong,stones] [-Moods …] [-Cameras …]` captures `gn_<variant>_<mood>` per ground-normal variant (`ground_normals_variant.py`), then restores `materials.json`, the textures and the mood.
 - `powershell -File tools/lookdev/upscaler_test.ps1 -Models default,<name>,… [-Cameras …]` captures `up_<model>` per model, then restores the default textures.
-- `python tools/lookdev/profile_report.py <label> [--top N]` summarises the GPU passes from a `-Profile` run (variants: everything on, tessellation off, grass hidden, fire lights off).
+- `python tools/lookdev/profile_report.py <label> [--top N]` summarises the GPU passes from a `-Profile` run (variants: everything on, grass hidden, fire lights off; "no_tess" until 2026-10-10).
   The CSV pass timings are noisy; the 150-frame averages in the run's `MRLookDevProfile:` log lines are the steadier figure.
 
 **Environment director (C++)**

@@ -1,0 +1,58 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json. The wall torch: the original draws it as two crossed wall textures with the flame painted on (grd08886 'Torch Attaches to wall', side view with its bracket; grd08887 the front view). Made from the side view with the flame erased (\"texture\", \"erase_flame\"); the world build stands it on the wall where tools/environment/fires.py finds each torch, and the flame stays the original's flipbook (props.json fires \"torch\" \"mesh\"). Symmetrical: the side view mirrored is the view from the other side.",
+  "name": "walltorch",
+  "kind": "props",
+  "class": "WallTorch",
+  "texture": "grd08886",
+  "erase_flame": true,
+  "frame": 0,
+  "describe": "a medieval wall torch seen from the side, unlit, no flame: a short round dark wooden handle standing upright, its top a charred black head, held near its middle by a wide grey wrought-iron collar band; from the collar an iron bracket reaches left to the wall: a straight horizontal arm and a diagonal brace below it meeting at a small upright iron plate at the far left end that is fixed to the wall",
+  "mesh": "SM_AI_WallTorch",
+  "size_by": "height",
+  "symmetrical": true,
+  "polycount": 1000,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "height_m": 0.7906,
+  "width_m": 0.5156,
+  "lift_m": 1.2375,
+  "sprite_px": [40, 152],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": 36.9,
+      "batch": null,
+      "file": "build/aigen/props/walltorch/02_restyle/openai_front.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "SYM": {
+        "tripo_task": "5db23013-3b31-4df9-8ad6-1732326a19de",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, multi-view Front + mirrored Back (45 credits)",
+        "tripo_name": "rusty metal tool 3d model",
+        "tris_raw": 942,
+        "file": "build/aigen/props/walltorch/04_tripo_out/SYM.glb",
+        "digest": "a166cf395835d19c",
+        "tris": 942,
+        "size_m": [0.6156, 0.2271, 0.9814]
+      }
+    },
+    "chosen": {
+      "variant": "SYM",
+      "file": "build/aigen/props/walltorch/04_tripo_out/SYM.glb",
+      "tripo_task": "5db23013-3b31-4df9-8ad6-1732326a19de",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, multi-view Front + mirrored Back (45 credits)",
+      "tripo_name": "rusty metal tool 3d model",
+      "tris_raw": 942,
+      "digest": "a166cf395835d19c",
+      "tris": 942,
+      "size_m": [0.6156, 0.2271, 0.9814]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_WallTorch.glb",
+    "tris": 942,
+    "size_m": [0.4959, 0.183, 0.7906],
+    "scale": 0.8056
+  }
+}

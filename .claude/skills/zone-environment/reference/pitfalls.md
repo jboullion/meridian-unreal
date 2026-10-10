@@ -57,7 +57,8 @@ Each entry gives the symptom you'll see, then the cause and fix. The ADR 0003 se
 - **A material helper change doesn't reach a master.** Every helper a builder calls must be in `_master`'s cache key (`_camera_box_inputs`, `_puff_inputs`, `_season`...), or the master isn't rebuilt.
 - **A grey veil or a blurred patch over part of a rain capture.** A streak frozen close to the camera (look-dev freezes time) smears across the view.
   M_Precip hides streaks within 1.5 m; keep that if you retune it. To check whether splashes or streaks cause an artefact, capture with `-Exec "mr.Weather.Splashes 0"` or tint the material.
-- **A GPU crash (`DXGI_ERROR_DEVICE_HUNG`) in Nanite `PatchSplit` during the first frame's shadow pass** can hit both look-dev attempts. It's the tessellation first-frame crash, not the change under test; run the capture again.
+- **A GPU crash (`DXGI_ERROR_DEVICE_HUNG`) in Nanite `PatchSplit` during the first frame's shadow pass** can hit both look-dev attempts. It's the tessellation first-frame crash, not the change under test; run the capture again. Since 2026-10-10 the game runs with `r.Nanite.Tessellation=0` (nothing displaces; docs/performance.md) (the look-dev profile too).
+- **The sky is the original skyboxes on the dome (`M_NightSky`), not volumetric clouds** (ADR 0005 "Sky"). The clouds cost up to 55 ms a frame. A new sky texture must be imported as colour: the importer takes a blue image for a normal map (BC5, drawn green).
 - **Every zone re-imports after running `roo2gltf`, with nothing changed.** Its output must be byte-for-byte deterministic (no Python `hash()` of strings: it's salted per run).
 - **The clock or atlas shows the neighbouring cell's edge.** UVs must be clamped inside the cell (`_atlas_uv` clamps to 0.0005–0.9995).
 - **Textures are stuck at low mips, or Nanite fallback meshes show (blur, dark gaps in parapets) in a capture right after an in-place mesh reimport.**

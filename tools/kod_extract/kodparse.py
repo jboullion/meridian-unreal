@@ -230,7 +230,8 @@ class ConstEval:
             if re.fullmatch(r"0x[0-9A-Fa-f]+", t):
                 py.append(str(int(t, 16)))
             elif t.isdigit():
-                py.append(t)
+                # (Kod writes decimal with leading zeros: "#fine_col=04"; Python's eval refuses "04")
+                py.append(str(int(t)))
             elif re.fullmatch(r"[A-Za-z_]\w*", t):
                 v = None
                 lv = KodIndex._ci_get(local, t) if local else None

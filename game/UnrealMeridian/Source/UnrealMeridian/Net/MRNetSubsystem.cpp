@@ -18,6 +18,7 @@
 #include "Net/MRProtocol.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "Tests/MRHitchTour.h"
 #include "Tests/MRLookDevTour.h"
 #include "Tests/MRMapCapture.h"
 #include "Tests/MRMonsterTour.h"
@@ -89,7 +90,7 @@ bool UMRNetSubsystem::IsOfflineRequested()
 		|| UMRScreenshotTour::IsRequested() || UMRProfileTour::IsRequested() || UMRLookDevTour::IsRequested()
 		|| UMRMapCapture::IsRequested() || UMRMonsterTour::IsRequested() || UMRSpriteClipTour::IsRequested()
 		|| UMRUIShots::IsRequested()
-		|| UMRMoveTest::IsRequested();
+		|| UMRMoveTest::IsRequested() || UMRHitchTour::IsRequested();
 }
 
 bool UMRNetSubsystem::WantsOnline(const UWorld* World)

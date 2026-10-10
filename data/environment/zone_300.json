@@ -22,11 +22,11 @@
   "scatter": [
     {
       "name": "grass",
-      "_doc": "Grass tufts on the original grass floors (grd02306/02301) and sparser between the stones of the grass-stone path (grd09603). Meshes: tools/blender/build_grass_kit.py.",
+      "_doc": "Grass tufts on the original grass floors (grd02306/02301) and sparser between the stones of the grass-stone path (grd09603). Meshes: tools/blender/build_grass_kit.py. Half the density and 70% of the distance of the first pass (12/m2, 40-60 m) since 2026-10-10: about 1 ms a frame, the shadows kept (docs/performance.md).",
       "meshes": ["SM_GrassClump_A", "SM_GrassClump_B", "SM_GrassClump_C"],
-      "per_m2": {"grd02306": 12.0, "grd02301": 12.0, "grd09603": 1.5},
+      "per_m2": {"grd02306": 6.0, "grd02301": 6.0, "grd09603": 0.75},
       "scale": [0.7, 1.4],
-      "cull_m": [40, 60],
+      "cull_m": [28, 42],
       "shadows": true,
       "seed": 1,
       "keep_out_m": 0.12

@@ -114,7 +114,7 @@ def apply_mood(world_actors, mood_name):
     changed = 0
     _apply_collection(dict({"WindowGlow": 0.0}, **mood.get("Collection", {})))
     for label, block in mood.items():
-        if label.startswith("_") or label == "Collection":
+        if label.startswith("_") or label in ("Collection", "SkyDome"):  # SkyDome: the dome's material (game only)
             continue
         actor = by_label.get(label)
         if not actor:

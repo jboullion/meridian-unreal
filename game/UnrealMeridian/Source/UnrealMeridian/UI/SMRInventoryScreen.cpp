@@ -69,10 +69,18 @@ int32 SMRAvatar::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSl
 	}
 	const FVector2f S(Geo.GetLocalSize());
 	const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
-	// a dark niche, like Minecraft's black box behind the player
-	MRPaint::Box(Out, Layer, Geo, Style->White(), FVector2f::ZeroVector, S, Tint * Style->Color(TEXT("avatar_bg"), FLinearColor(0.01f, 0.01f, 0.012f, 1.f)));
-	if (UObject* Target = Source == EMRAvatarSource::Inventory ? Ui->GetAvatarTarget()
-		: Ui->GetCreatorTarget(Source == EMRAvatarSource::CreatorPortrait))
+	// the inventory's figure stands on the bag's dark grey stone (the black hid its outlines); the
+	// creator's previews bring their own backdrop
+	const bool bInventory = Source == EMRAvatarSource::Inventory;
+	if (bInventory)
+	{
+		MRPaint::Tile(Out, Layer, Geo, Style->Brush(TEXT("invbkgnd"), true), FVector2f::ZeroVector, S, Tint);
+	}
+	else
+	{
+		MRPaint::Box(Out, Layer, Geo, Style->White(), FVector2f::ZeroVector, S, Tint * Style->Color(TEXT("avatar_bg"), FLinearColor(0.01f, 0.01f, 0.012f, 1.f)));
+	}
+	if (UObject* Target = bInventory ? Ui->GetAvatarTarget() : Ui->GetCreatorTarget(Source == EMRAvatarSource::CreatorPortrait))
 	{
 		if (Brush.GetResourceObject() != Target)
 		{
@@ -81,7 +89,9 @@ int32 SMRAvatar::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSl
 		// the render target is square: fit its height and show the middle of it
 		const float U0 = FMath::Clamp((1.f - S.X / FMath::Max(1.f, S.Y)) * 0.5f, 0.f, 0.5f);
 		Brush.SetUVRegion(FBox2f(FVector2f(U0, 0.f), FVector2f(1.f - U0, 1.f)));
-		MRPaint::Box(Out, Layer + 1, Geo, &Brush, FVector2f::ZeroVector, S, Tint);
+		// the inventory's capture has its coverage inverted in alpha (AMRAvatarPreview::SetTransparent)
+		FSlateDrawElement::MakeBox(Out, Layer + 1, Geo.ToPaintGeometry(S, FSlateLayoutTransform()), &Brush,
+			bInventory ? ESlateDrawEffect::InvertAlpha : ESlateDrawEffect::None, Tint);
 	}
 	MRPaint::Frame(Out, Layer + 2, Geo, Style->Frame(TEXT("inset")), FVector2f::ZeroVector, S, Tint);
 	return Layer + 4;
@@ -93,13 +103,27 @@ FReply SMRAvatar::OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& E
 	{
 		return FReply::Unhandled();
 	}
+	if (Source == EMRAvatarSource::Inventory && UI.IsValid() && UI->IsCarrying())
+	{
+		UI->DropOnAvatar();  // an item clicked onto the figure: put it on
+		return FReply::Handled();
+	}
 	DragAccum = 0.f;
 	return FReply::Handled().CaptureMouse(SharedThis(this));
 }
 
 FReply SMRAvatar::OnMouseButtonUp(const FGeometry& Geo, const FPointerEvent& Event)
 {
-	return HasMouseCapture() ? FReply::Handled().ReleaseMouseCapture() : FReply::Unhandled();
+	if (HasMouseCapture())
+	{
+		return FReply::Handled().ReleaseMouseCapture();
+	}
+	if (Source == EMRAvatarSource::Inventory && Event.GetEffectingButton() == EKeys::LeftMouseButton && UI.IsValid() && UI->IsCarrying())
+	{
+		UI->DropOnAvatar();  // an item dragged from a slot and let go over the figure
+		return FReply::Handled();
+	}
+	return FReply::Unhandled();
 }
 
 FReply SMRAvatar::OnMouseMove(const FGeometry& Geo, const FPointerEvent& Event)
@@ -285,18 +309,45 @@ TSharedRef<SWidget> SMRInventoryScreen::MakeInventoryPage()
 		return Box;
 	};
 
+	// weight and bulk: the label, and a green bar of what's carried against what can be (the
+	// original's stat bar colour, COLOR_BAR1); without the server's stat, the items' own total
 	auto Totals = [Ui](bool bWeight)
 	{
 		return TAttribute<FText>::CreateLambda([Ui, bWeight]()
 		{
-			int32 W = 0, B = 0;
-			if (Ui && Ui->GetSource())
+			int32 Value = 0, Max = 0;
+			if (Ui && !Ui->GetCarried(bWeight, Value, Max) && Ui->GetSource())
 			{
+				int32 W = 0, B = 0;
 				Ui->GetSource()->GetTotals(W, B);
+				return bWeight ? FText::Format(LOCTEXT("Weight", "Weight  {0}"), FText::AsNumber(W))
+					: FText::Format(LOCTEXT("Bulk", "Bulk  {0}"), FText::AsNumber(B));
 			}
-			return bWeight ? FText::Format(LOCTEXT("Weight", "Weight  {0}"), FText::AsNumber(W))
-				: FText::Format(LOCTEXT("Bulk", "Bulk  {0}"), FText::AsNumber(B));
+			return bWeight ? LOCTEXT("WeightBar", "Weight") : LOCTEXT("BulkBar", "Bulk");
 		});
+	};
+	auto Carried = [Ui, S](bool bWeight) -> TSharedRef<SWidget>
+	{
+		auto Get = [Ui, bWeight](bool bMax)
+		{
+			return TAttribute<float>::CreateLambda([Ui, bWeight, bMax]()
+			{
+				int32 Value = 0, Max = 0;
+				if (Ui)
+				{
+					Ui->GetCarried(bWeight, Value, Max);
+				}
+				return static_cast<float>(bMax ? Max : Value);
+			});
+		};
+		return SNew(SBox).Visibility_Lambda([Ui, bWeight]()
+			{
+				int32 Value = 0, Max = 0;
+				return Ui && Ui->GetCarried(bWeight, Value, Max) && Max > 0 ? EVisibility::Visible : EVisibility::Collapsed;
+			})
+			[
+				SNew(SMRBar, Ui).Width(66.f).Height(8.f).Color(S->Color(TEXT("graph_bar"), FLinearColor(0.f, 0.216f, 0.f))).Value(Get(false)).Max(Get(true))
+			];
 	};
 	auto Held = TAttribute<FText>::CreateLambda([Ui]()
 	{
@@ -309,15 +360,8 @@ TSharedRef<SWidget> SMRInventoryScreen::MakeInventoryPage()
 		return C.IsEmpty() ? LOCTEXT("Bare", "Bare hands") : Ui->NameFor(C);
 	});
 
+	// (no hotbar row: items go straight onto the HUD's hotbar, which stays over the dialog)
 	BagGrid = SNew(SUniformGridPanel);
-	TSharedRef<SHorizontalBox> HotbarRow = SNew(SHorizontalBox);
-	for (int32 i = 0; i < Columns; ++i)
-	{
-		HotbarRow->AddSlot().AutoWidth()
-		[
-			SNew(SMRSlot, Ui, FMRSlotRef(EMRSlotArea::Hotbar, i)).Size(SlotPx).KeyLabel(FString::FromInt(i + 1)).bSelectable(true)
-		];
-	}
 
 	const float AvatarW = SlotPx * 3.f, AvatarH = SlotPx * 5.f;
 	return SNew(SVerticalBox)
@@ -342,7 +386,9 @@ TSharedRef<SWidget> SMRInventoryScreen::MakeInventoryPage()
 				+ SVerticalBox::Slot().AutoHeight()[Label(S, LOCTEXT("Wielding", "Wielding"), 8.f, false, FLinearColor(0.8f, 0.78f, 0.7f))]
 				+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 0.f, 0.f, 6.f * Px)[Label(S, Held, 10.f, true)]
 				+ SVerticalBox::Slot().AutoHeight()[Label(S, Totals(true), 9.f)]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Left).Padding(1.f * Px, 1.f * Px, 0.f, 4.f * Px)[Carried(true)]
 				+ SVerticalBox::Slot().AutoHeight()[Label(S, Totals(false), 9.f)]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Left).Padding(1.f * Px, 1.f * Px, 0.f, 0.f)[Carried(false)]
 			]
 		]
 		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 4.f * Px, 0.f, 0.f)
@@ -359,15 +405,7 @@ TSharedRef<SWidget> SMRInventoryScreen::MakeInventoryPage()
 				]
 			]
 		]
-		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 4.f * Px, 0.f, 0.f)
-		[
-			SNew(SMRPanel, Ui).Background(TEXT("invbkgnd")).Frame(TEXT("inset")).Padding(0.f)
-			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot().AutoWidth()[HotbarRow]
-				+ SHorizontalBox::Slot().AutoWidth()[SNew(SSpacer).Size(FVector2D(Scroll, 1.f))]
-			]
-		];
+		;
 }
 
 void SMRInventoryScreen::RebuildBag()

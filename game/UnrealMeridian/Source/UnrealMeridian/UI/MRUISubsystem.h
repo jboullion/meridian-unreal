@@ -58,6 +58,13 @@ public:
 	void ShowLogin(APlayerController* PC);
 	void HideLogin();
 	bool IsLoginShown() const { return Login.IsValid(); }
+	/**
+	 * The loading screen over everything until the world has warmed up (UMRWarmup): shaders,
+	 * pipeline states, meshes and textures. Removes itself when the warm-up is Ready; offline the
+	 * player can't walk or look meanwhile.
+	 */
+	void ShowWarmup(APlayerController* PC);
+	bool IsWarmupShown() const { return Loading.IsValid(); }
 	/** The character creator on the login screen (tests), or null. */
 	TSharedPtr<class SMRCharCreator> GetCreator() const;
 
@@ -89,6 +96,8 @@ public:
 
 	// --- keys (from AMRPlayerController)
 	void OnHotbarKey(int32 Index);
+	/** A hotbar item clicked on the HUD: selected and used (put on, if it's worn or wielded). Selecting alone doesn't wield. */
+	void UseHotbarSlot(int32 Index);
 	void OnHotbarScroll(float Delta);
 	void OnSpellKey(int32 Index);
 	void OnMapZoom(float Steps);
@@ -138,6 +147,10 @@ public:
 	bool GetMouse(FVector2D& OutScreenSpace) const { OutScreenSpace = MouseScreen; return bHasMouse; }
 	/** Clicked outside the dialog window. */
 	void OnClickOutside(bool bRight);
+	/** Something is carried by the mouse (in the dialog). */
+	bool IsCarrying() const;
+	/** The mouse let go over or clicked the dialog's avatar: put the carried item on (else it goes back). */
+	void DropOnAvatar();
 
 	// --- what the widgets draw
 	UMRInventorySource* GetSource() const { return Source; }
@@ -184,10 +197,45 @@ public:
 	 * data/ui/stat_layout.json for the server's ruleset.
 	 */
 	void GetStatSections(TArray<FMRStatSection>& Out) const;
+	/**
+	 * Weight or bulk carried and what can be carried: the server's "Weight Carried" and "Bulk
+	 * Carried" stats online (user.kod), the mock's offline. False without the stat.
+	 */
+	bool GetCarried(bool bWeight, int32& OutValue, int32& OutMax) const;
 	/** Bumped whenever the server's stats change (the Stats page rebuilds). */
 	int32 GetStatsVersion() const { return StatsVersion; }
 	/** Health (0), mana (1) or vigor (2): the server's (its stat group 1) online, else the local attributes. */
 	bool GetVital(int32 Index, float& OutValue, float& OutMax) const;
+	/**
+	 * A bar on the HUD's action bar (Shards' Sidebar.tsx barValues): health 0, mana 1, vigor 2,
+	 * experience 3 (online only). OutMax is where the bar ends (health and mana: their current
+	 * maximum), OutLimit how far it can fill now (vigor: its current maximum).
+	 */
+	bool GetVitalBar(int32 Index, float& OutValue, float& OutMax, float& OutLimit) const;
+	/**
+	 * Our face for the HUD's unit frame: a portrait preview of our own look, captured for a moment
+	 * whenever the look changes (null until there's a character).
+	 */
+	UObject* UpdateSelfPortrait();
+
+	// --- Hide Interface (H) and HUD Size (docs/adr/0009, "The Shards layout")
+	/** The HUD and the idle chat away for pictures, and back; a note says which. */
+	void ToggleHudHidden();
+	bool IsHudHidden() const { return bHudHidden; }
+	/** A short note in the middle of the view (SMRViewNote), fading. */
+	void ShowHudNote(const FText& Text);
+	bool GetHudNote(FString& OutText, double& OutAge) const;
+	/** HUD Size (Options > Game, mr.UI.HudSize in percent): how much each cluster is grown. */
+	static float GetHudScale();
+	/**
+	 * The cursor stays free and aims, and holding the right mouse button turns the view
+	 * (mr.Input.FreeCursor, Options > Controls); else the mouse always turns it and the crosshair
+	 * aims, as before 2026-10-10. The test tours always use the crosshair.
+	 */
+	static bool UsesFreeCursor();
+	/** The chat's width in HUD pixels (dragged by its edge; mr.UI.ChatWidth, 0: ui_style.json's). */
+	float GetChatWidth() const;
+	void SetChatWidth(float HudPixels);
 	/** A text box in the dialog has the keyboard (the spell search): every key goes to it. */
 	void SetTextInput(bool bTyping);
 	// --- trade (SMRTradeDialog; docs/adr/0012 M6)
@@ -248,12 +296,27 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<AMRAvatarPreview> CreatorPortrait;
 
+	/** Our own face for the unit frame (UpdateSelfPortrait). */
+	UPROPERTY(Transient)
+	TObjectPtr<AMRAvatarPreview> SelfPortrait;
+	double SelfCaptureUntil = 0.0;
+	double SelfCapturedAt = 0.0;
+	bool bSelfCapturing = false;
+	bool bHudHidden = false;
+	/** The input was the game's at the last ApplyInputMode (leaving it flushes the held keys). */
+	bool bWasInGame = true;
+	FString HudNote;
+	double HudNoteTime = -100.0;
+
 	UPROPERTY(Transient)
 	TMap<int32, TObjectPtr<class UTexture2D>> MapTextures;
 
 	TWeakObjectPtr<APlayerController> OwnerPC;
 	TSharedPtr<SMRHUDRoot> HUD;
 	TSharedPtr<class SMRLoginScreen> Login;
+	TSharedPtr<class SMRLoadingScreen> Loading;
+	FDelegateHandle WarmupHandle;
+	void HideWarmup();
 	bool bInventoryOpen = false;
 	bool bChatOpen = false;
 	bool bGameMenuOpen = false;

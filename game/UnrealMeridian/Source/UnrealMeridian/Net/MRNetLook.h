@@ -16,13 +16,20 @@ struct FMRNetOverlay;
  */
 namespace MRNetLook
 {
+	/**
+	 * Drawn as a player: a player, or anything the server sends with a player's body overlays (a
+	 * head, legs and an arm: human.kod SendMoveOverlays' soldiers and guards, a logged-off player's
+	 * ghost). Without the overlays those drew as their bare torso bitmap.
+	 */
+	UNREALMERIDIAN_API bool IsPlayerFigure(const FMRNetObject& Object);
+
 	/** Female when the head or the torso is the female one (phkx, btb). */
 	UNREALMERIDIAN_API bool IsFemale(const FMRNetObject& Object);
 
 	/**
 	 * The appearance to draw a player with: player_male / player_female, the server's face parts
 	 * (those the game has converted; the rest keep the look's), skin, hair colour, shirt and pants.
-	 * False if the object isn't a player.
+	 * False if the object isn't drawn as a player (IsPlayerFigure).
 	 */
 	UNREALMERIDIAN_API bool AppearanceFromObject(const FMRNetObject& Object, FMRSpriteAppearance& Out);
 

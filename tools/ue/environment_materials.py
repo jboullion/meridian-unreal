@@ -1531,12 +1531,56 @@ def gallery_sprite_material(texture_file):
     return _instance("MI_" + os.path.splitext(texture_file)[0], master, textures={"Sprite": tex[texture_file]})
 
 
-def build_night_sky_master(name, stars, mpc):
+SKYBOX_HLSL = """
+// The original client's skybox (tools/textures/make_skyboxes.py): a box 150000 wide and 74000 tall
+// around the eye, faces back, bottom, front, left, right, top in a 3 x 2 atlas. Its up is our Z; the
+// face and the texel are where the view direction leaves the box. Four boxes (dawn, day, dusk, night)
+// blended by W.
+float3 c = float3(Dir.x, Dir.z, Dir.y);
+float3 ext = float3(75000.0, 37000.0, 75000.0);
+float3 a = abs(c) / ext;
+float m = max(max(a.x, a.y), max(a.z, 1e-6));
+float3 p = c / ext / m;
+float face;
+float2 st;
+if (a.y >= a.x && a.y >= a.z)
+{
+    if (p.y > 0) { face = 5; st = float2(p.x + 1, p.z + 1) * 0.5; }
+    else { face = 1; st = float2(p.x + 1, 1 - p.z) * 0.5; }
+}
+else if (a.x >= a.z)
+{
+    if (p.x > 0) { face = 4; st = float2(1 - p.z, 1 - p.y) * 0.5; }
+    else { face = 3; st = float2(p.z + 1, 1 - p.y) * 0.5; }
+}
+else
+{
+    if (p.z > 0) { face = 2; st = float2(p.x + 1, 1 - p.y) * 0.5; }
+    else { face = 0; st = float2(1 - p.x, 1 - p.y) * 0.5; }
+}
+st = clamp(st, Inset, 1.0 - Inset);  // inside the face: no filtering across into the next one
+float2 uv = (float2(fmod(face, 3.0), floor(face / 3.0)) + st) / float2(3.0, 2.0);
+float3 sky = 0;
+sky += W.x * Texture2DSampleLevel(Dawn, DawnSampler, uv, 0).rgb;
+sky += W.y * Texture2DSampleLevel(Day, DaySampler, uv, 0).rgb;
+sky += W.z * Texture2DSampleLevel(Dusk, DuskSampler, uv, 0).rgb;
+sky += W.w * Texture2DSampleLevel(Night, NightSampler, uv, 0).rgb;
+return sky;
+"""
+
+
+def build_night_sky_master(name, stars, mpc, skyboxes=None, skybox_hlsl=SKYBOX_HLSL):
     """M_NightSky (docs/adr/0005): the sky dome's material. It is a sky material (is_sky), so the sky
     atmosphere is drawn through it (view luminance + the sun / moon disc) exactly as without a dome,
     and the star map (T_Stars, equirectangular around the zenith) is added on top, scaled by
     MPC_Environment.Stars (night 1, day 0) and StarBrightness, faded out at the horizon and turned a
-    full circle per game day with GameHour."""
+    full circle per game day with GameHour.
+
+    skyboxes {"dawn", "day", "dusk", "night": texture path}: the original client's skyboxes
+    (make_skyboxes.py, SKYBOX_HLSL), blended by the scalars SkyDawn, SkyDay, SkyDusk, SkyNight and shown
+    by Skybox (0 the atmosphere and stars, 1 the skybox) at SkyboxBrightness, with the sun or moon disc
+    on top. UMREnvironmentSubsystem sets them on the dome's instance (moods.json "sky" "skybox"); they
+    replaced the volumetric clouds, which cost up to 55 ms a frame (docs/performance.md)."""
     mat = _new_material(name)
     mat.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
     mat.set_editor_property("is_sky", True)
@@ -1597,6 +1641,41 @@ def build_night_sky_master(name, stars, mpc):
     out = _expr(mat, unreal.MaterialExpressionAdd, -400, 150)
     mel.connect_material_expressions(atmos, "", out, "A")
     mel.connect_material_expressions(star_rgb, "", out, "B")
+    if skyboxes:
+        texs = {}
+        for i, key in enumerate(("dawn", "day", "dusk", "night")):
+            texs[key] = _expr(mat, unreal.MaterialExpressionTextureObjectParameter, -1100, 900 + i * 120,
+                              parameter_name="Sky" + key.capitalize() + "Box", texture=eal.load_asset(skyboxes[key]))
+        weights = {}
+        for i, (key, default) in enumerate((("SkyDawn", 0.0), ("SkyDay", 1.0), ("SkyDusk", 0.0), ("SkyNight", 0.0))):
+            weights[key] = _expr(mat, unreal.MaterialExpressionScalarParameter, -1400, 900 + i * 100,
+                                 parameter_name=key, default_value=default)
+        w01 = _expr(mat, unreal.MaterialExpressionAppendVector, -1250, 950)
+        mel.connect_material_expressions(weights["SkyDawn"], "", w01, "A")
+        mel.connect_material_expressions(weights["SkyDay"], "", w01, "B")
+        w23 = _expr(mat, unreal.MaterialExpressionAppendVector, -1250, 1100)
+        mel.connect_material_expressions(weights["SkyDusk"], "", w23, "A")
+        mel.connect_material_expressions(weights["SkyNight"], "", w23, "B")
+        w = _expr(mat, unreal.MaterialExpressionAppendVector, -1100, 1000)
+        mel.connect_material_expressions(w01, "", w, "A")
+        mel.connect_material_expressions(w23, "", w, "B")
+        inset = _expr(mat, unreal.MaterialExpressionConstant, -1100, 1400, r=0.5 / 512.0)
+        box = _custom(mat, -800, 900, skybox_hlsl, unreal.CustomMaterialOutputType.CMOT_FLOAT3,
+                      [("Dir", d, ""), ("Dawn", texs["dawn"], ""), ("Day", texs["day"], ""), ("Dusk", texs["dusk"], ""),
+                       ("Night", texs["night"], ""), ("W", w, ""), ("Inset", inset, "")], "OriginalSkybox")
+        bright = _expr(mat, unreal.MaterialExpressionScalarParameter, -800, 1150, parameter_name="SkyboxBrightness", default_value=1.0)
+        lit = _expr(mat, unreal.MaterialExpressionMultiply, -600, 950)
+        mel.connect_material_expressions(box, "", lit, "A")
+        mel.connect_material_expressions(bright, "", lit, "B")
+        with_disc = _expr(mat, unreal.MaterialExpressionAdd, -450, 950)
+        mel.connect_material_expressions(lit, "", with_disc, "A")
+        mel.connect_material_expressions(disc, "", with_disc, "B")
+        amount = _expr(mat, unreal.MaterialExpressionScalarParameter, -450, 1100, parameter_name="Skybox", default_value=1.0)
+        mix = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -250, 400)
+        mel.connect_material_expressions(out, "", mix, "A")
+        mel.connect_material_expressions(with_disc, "", mix, "B")
+        mel.connect_material_expressions(amount, "", mix, "Alpha")
+        out = mix
     mel.connect_material_property(out, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     mel.recompile_material(mat)
     eal.save_loaded_asset(mat)
@@ -2607,7 +2686,8 @@ class ZoneMaterials:
         self.props = build_prop_materials(json.load(open(props_cfg, encoding="utf-8")).get("materials", {})
                                           if os.path.exists(props_cfg) else {}, ensure_mpc())
         stars = self._import_extra("T_Stars.png", srgb=True)
-        self.night_sky = _master("M_NightSky", build_night_sky_master, stars, ensure_mpc()) if stars else None
+        self.night_sky = (_master("M_NightSky", build_night_sky_master, stars, ensure_mpc(), self._skyboxes(), SKYBOX_HLSL)
+                          if stars else None)
         self.fires = build_fires()
         self.precip = build_precip(self.glow[1] if self.glow else None, _materials_json("precip"))
         bolts = self._import_extra("T_Bolts.png", srgb=True)
@@ -2616,6 +2696,30 @@ class ZoneMaterials:
                      if bolts else None)
         self.ice = _master("M_Ice", build_ice_master, self.macro) if self.macro else None
         self.atmosphere = build_atmosphere(self.glow[1] if self.glow else None, _materials_json("atmosphere"))
+
+    def _skyboxes(self):
+        """{"dawn", "day", "dusk", "night": texture path} of the original skyboxes (make_skyboxes.py; the
+        room.kod choice: dawn skyc, day skya, dusk skyb, night skyd), or None without them."""
+        files = {"dawn": "T_Skybox_skyc.png", "day": "T_Skybox_skya.png", "dusk": "T_Skybox_skyb.png", "night": "T_Skybox_skyd.png"}
+        if not all(os.path.exists(os.path.join(PLACEHOLDERS, f)) for f in files.values()):
+            log("no skyboxes (run tools/textures/make_skyboxes.py)")
+            return None
+        paths = ensure_textures([(f, True, False) for f in files.values()])
+        for path in paths.values():
+            # colour (the importer takes a blue sky for a normal map: BC5, drawn green), sampled at mip 0
+            # only (the faces meet at seams where mips would bleed), kept resident
+            tex = eal.load_asset(path)
+            if (not tex.get_editor_property("never_stream") or not tex.get_editor_property("srgb")
+                    or tex.get_editor_property("mip_gen_settings") != unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS
+                    or tex.get_editor_property("compression_settings") != unreal.TextureCompressionSettings.TC_DEFAULT):
+                tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_DEFAULT)
+                tex.set_editor_property("srgb", True)
+                tex.set_editor_property("never_stream", True)
+                tex.set_editor_property("mip_gen_settings", unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
+                tex.set_editor_property("address_x", unreal.TextureAddress.TA_CLAMP)
+                tex.set_editor_property("address_y", unreal.TextureAddress.TA_CLAMP)
+                eal.save_loaded_asset(tex)
+        return {key: paths[f] for key, f in files.items() if f in paths} if len(paths) == len(files) else None
 
     def _import_extra(self, filename, srgb=True, normal=False):
         """Shared textures from make_placeholders.py (macro noise, water normals)."""

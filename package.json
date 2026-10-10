@@ -20,6 +20,7 @@
     "test:net:create": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_net_test.ps1 -Create",
     "test:net:pair": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_net_test.ps1 -Pair",
     "test:net:death": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_net_test.ps1 -Create -Death",
+    "test:hitch": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_hitch_test.ps1",
     "test:ui": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_ui_shots.ps1 -Label latest",
 
     "compile": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/compile.ps1",

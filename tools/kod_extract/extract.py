@@ -273,8 +273,27 @@ class Extractor:
         lst = body[m.end() - 1: matching(body, m.end() - 1) + 1]
         return [[self.val(cls, x) for x in e] for e in parse_list_literal(lst) if isinstance(e, list)]
 
+    def flag_rids(self) -> set[int]:
+        """The rooms the territory game puts a flagpole in (util/factgame/territry.kod Recreate:
+        plFlagRIDs, then the main towns consed on). The pole stands at the room's viFlag_row /
+        viFlag_col, else its teleport point (CreateOneFlagpole)."""
+        path = self.kod_root / "util" / "factgame" / "territry.kod"
+        if not path.exists():
+            return set()
+        text = path.read_text(encoding="latin-1")
+        names: list[str] = []
+        m = re.search(r"plFlagRIDs\s*=\s*\[", text)
+        if m:
+            names += re.findall(r"RID_\w+", text[m.end() - 1: matching(text, m.end() - 1) + 1])
+            f = re.search(r"foreach\s+i\s+in\s*\[", text[m.end():])
+            if f:
+                start = m.end() + f.end() - 1
+                names += re.findall(r"RID_\w+", text[start: matching(text, start) + 1])
+        return {v for v in (self.idx.consts.value(n) for n in names) if isinstance(v, int)}
+
     def zones(self) -> list[dict]:
         out = []
+        flag_rids = self.flag_rids()
         for rid in DEMO_RIDS:
             cls = self.room_class_for(rid)
             if not cls:
@@ -287,6 +306,13 @@ class Extractor:
             # some rooms (e.g. the crypt) also place things in Constructed / FirstUserEntered
             for extra in ("Constructed", "CreateStaticObjects"):
                 objects += self.parse_placements(cls, extra)
+            if rid in flag_rids:
+                # the faction flagpole (flag.kod): created by the territory game, not the room, so
+                # placed here by hand; its flag is the server's overlay, drawn as the original's sprite
+                row = r.get("viFlag_row") if r.get("viFlag_row") is not None else r.get("viTeleport_row")
+                col = r.get("viFlag_col") if r.get("viFlag_col") is not None else r.get("viTeleport_col")
+                if isinstance(row, int) and isinstance(col, int):
+                    objects.append({"class": "Flagpole", "row": row, "col": col, "angle": 0, "by": "territry.kod CreateOneFlagpole"})
             out.append({
                 "rid": rid,
                 "class": cls,

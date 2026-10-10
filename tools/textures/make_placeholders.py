@@ -626,7 +626,12 @@ def wall_flame(key: str) -> dict | None:
         return None
     for name, preset in json.loads(PROPS.read_text(encoding="utf-8")).get("fires", {}).items():
         if isinstance(preset, dict) and key in preset.get("walls", {}):
-            return dict(preset["walls"][key], preset=name)
+            out = dict(preset["walls"][key], preset=name)
+            # a 3D torch replaces the painted one (props.json fires "mesh"), once its kit mesh is made
+            mesh = preset.get("mesh")
+            if mesh and (ROOT / "build" / "environment" / "kit" / (mesh + ".glb")).exists():
+                out["replaced_by"] = mesh
+            return out
     return None
 
 
@@ -641,6 +646,9 @@ def erase_flame(img: Image.Image, flame: dict | None) -> Image.Image:
     """The original without its painted flame (props.json fires "walls" "erase": [x0, y0, x1, y1] in the
     original's pixels): flame-coloured pixels inside the rect become transparent, so a flipbook flame
     can take their place (docs/adr/0005 phase 3). A clock atlas is never a flame texture."""
+    if flame and flame.get("replaced_by"):
+        # the whole torch is a 3D prop now: the texture draws nothing (its faces stay in the blockout)
+        return Image.new("RGBA", img.size, (0, 255, 255, 0))
     if not flame or not flame.get("erase"):
         return img
     img = img.copy()
@@ -931,7 +939,8 @@ def main():
     # anything else in the folder is from a texture no longer in the catalog
     keep = {f for entry in new_cache.values() for f in entry.get("files", [])} | {"placeholders.json", "cache.json", "relief.json"}
     for f in OUT.iterdir():
-        if f.is_file() and f.name not in keep:
+        # (the prop gallery's sprite pictures live here too: tools/environment/prop_gallery.py writes them)
+        if f.is_file() and f.name not in keep and not f.name.startswith("T_GallerySprite_"):
             f.unlink()
 
     manifest = dict(sorted(manifest.items()))

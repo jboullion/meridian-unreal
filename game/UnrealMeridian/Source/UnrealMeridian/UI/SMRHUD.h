@@ -189,8 +189,10 @@ private:
 };
 
 /**
- * The whole UI of one player: the HUD (vitals and item hotbar at the bottom centre, the spell bar
- * bottom right, the minimap top right), the inventory dialog, and the carried stack.
+ * The whole UI of one player: the HUD over the view, laid out as Meridian Shards' Modern interface
+ * (SMRHUDFrames.h: our face top left, the target top centre, the round map top right, the action
+ * bar with the bars, the spell row and the item hotbar bottom centre, the chat down the left), the
+ * inventory dialog and the other windows, and the carried stack.
  */
 class UNREALMERIDIAN_API SMRHUDRoot : public SCompoundWidget
 {
@@ -232,13 +234,12 @@ private:
 	TSharedPtr<class SMRTradeDialog> TradeDialog;
 	TArray<TSharedPtr<class SMRSocialWindow>> Windows;
 	TSharedPtr<SMRChatLog> ChatLog;
-	TSharedPtr<SWidget> SpellBar;
-	TSharedPtr<SWidget> HotbarArea;
-	float SpellBarOpacity = 1.f;
+	TSharedPtr<class SMRActionBar> ActionBar;
+	/** Our size last frame (the target frame may take 40 % of it). */
+	FVector2f LastSize = FVector2f(1920.f, 1080.f);
 
-	TSharedRef<SWidget> MakeHotbarArea();
-	TSharedRef<SWidget> MakeSpellBar();
-	bool IsSpellBarHovered() const;
+	/** A HUD cluster grown by HUD Size where it stands, and hidden by Hide Interface. */
+	TSharedRef<SWidget> Cluster(const TSharedRef<SWidget>& Content);
 	/** "Loading <room>..." while a room is built from the server's files, else empty. */
 	FString LoadingText() const;
 	EVisibility GetHUDVisibility() const;

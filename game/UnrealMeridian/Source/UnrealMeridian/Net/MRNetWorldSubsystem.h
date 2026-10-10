@@ -61,7 +61,7 @@ public:
 	/** Take what the crosshair is on as the target (or clear it when it's on nothing). */
 	void TargetAim();
 	/** Look (BP_REQ_LOOK) at the target, else at what the crosshair is on. False: nothing to look at. */
-	bool LookAtTarget();
+	bool LookAtTarget(bool bAimFirst = false);
 	/** Every object at the crosshair, nearest the middle first (the Look picker when there are several). */
 	TArray<uint32> ObjectsAtAim() const { return AimStack; }
 	/** The things at the crosshair that can be picked up (OF_GETTABLE), nearest the middle first. */
@@ -174,7 +174,12 @@ private:
 	/** A prop standing on this floor point's square, and its top. */
 	bool FindPropAt(const FVector& Floor, double& OutTop) const;
 	/** An object with no sprite of ours gets the server's bitmap (fetched through the asset cache, parsed once). */
-	void AttachBgfSprite(AMRNetObject* Actor, const FMRNetObject& Object);
+	/** The server's bitmap for an object (bBaseHidden: only to hang its overlays from, a prop draws it), and its overlays. */
+	void AttachBgfSprite(AMRNetObject* Actor, const FMRNetObject& Object, bool bBaseHidden = false);
+	/** The object's overlays on its bitmap (the flagpole's flag), once their bitmaps arrive. */
+	void AttachBgfOverlays(AMRNetObject* Actor, const FMRNetObject& Object);
+	/** The overlays an object shows, as a key (a change redraws it). */
+	static FString OverlayKeyOf(const FMRNetObject& Object);
 	void ClearObjects();
 	/** Put the pawn where the server says; bSameRoom (the room's data reloaded): only if it is far off. */
 	void PlacePlayer(bool bSameRoom);
@@ -184,7 +189,7 @@ private:
 	void SendMovement(double Now);
 	void UpdateAim();
 	/** In view of the camera and not behind a wall: where (in pixels) and how far. */
-	bool IsInSight(const AMRNetObject* A, FVector2D& OutScreen, double& OutDistance) const;
+	bool IsInSight(const AMRNetObject* A, FVector2D& OutScreen, double& OutDistance, double MaxDistance = -1.0) const;
 
 	bool bActive = false;
 	int32 Rid = 0;

@@ -734,6 +734,11 @@ void AMRCharacter::OnTurn(const FInputActionValue& Value)
 void AMRCharacter::OnLook(const FInputActionValue& Value)
 {
 	const FVector2D Axis = Value.Get<FVector2D>();
+	LookTravel += static_cast<float>(Axis.Size());
+	if (Controller && Controller->IsLookInputIgnored())
+	{
+		return;  // (the fixed views tilt their own camera below: not while a window has the mouse)
+	}
 	AddControllerYawInput(Axis.X);
 	if (!IsFirstPerson())
 	{

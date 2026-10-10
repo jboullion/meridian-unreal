@@ -27,6 +27,8 @@ public:
 	/** "Graphics", "Sound", "Controls", "Game", "Chat" or "Account". */
 	void SetTab(const FString& InTab);
 	const FString& GetTab() const { return Tab; }
+	/** The Graphics page scrolled to its end (UI shots). */
+	void DebugScrollToEnd();
 
 private:
 	TSharedRef<SWidget> MakeGraphics();
@@ -45,4 +47,5 @@ private:
 	FDelegateHandle PasswordHandle, PrefsHandle;
 	TSharedPtr<SMRTextField> OldPassword, NewPassword, NewPassword2, DeletePassword;
 	TArray<TSharedPtr<SMRTextField>> QuickFields;
+	TSharedPtr<class SScrollBox> GraphicsScroll;
 };

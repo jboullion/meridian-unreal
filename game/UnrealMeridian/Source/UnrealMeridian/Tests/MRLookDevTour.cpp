@@ -201,12 +201,12 @@ void UMRLookDevTour::Start(APlayerController* InController)
 		{
 			InController->ConsoleCommand(Cmd);
 		}
+		// (tessellation is off since 2026-10-10, docs/performance.md: the "no_tess" variant went with it)
 		Variants = {
-			{TEXT("full"), {TEXT("r.Nanite.Tessellation 1"), TEXT("ShowFlag.InstancedStaticMeshes 1"), TEXT("mr.Fire.CullDistanceM 60")}},
-			{TEXT("no_tess"), {TEXT("r.Nanite.Tessellation 0"), TEXT("ShowFlag.InstancedStaticMeshes 1"), TEXT("mr.Fire.CullDistanceM 60")}},
-			{TEXT("no_grass"), {TEXT("r.Nanite.Tessellation 1"), TEXT("ShowFlag.InstancedStaticMeshes 0"), TEXT("mr.Fire.CullDistanceM 60")}},
+			{TEXT("full"), {TEXT("ShowFlag.InstancedStaticMeshes 1"), TEXT("mr.Fire.CullDistanceM 60")}},
+			{TEXT("no_grass"), {TEXT("ShowFlag.InstancedStaticMeshes 0"), TEXT("mr.Fire.CullDistanceM 60")}},
 			// fire lights off (UMRFireSubsystem): what the fires' lights and shadows cost
-			{TEXT("no_fire"), {TEXT("r.Nanite.Tessellation 1"), TEXT("ShowFlag.InstancedStaticMeshes 1"), TEXT("mr.Fire.CullDistanceM 0")}},
+			{TEXT("no_fire"), {TEXT("ShowFlag.InstancedStaticMeshes 1"), TEXT("mr.Fire.CullDistanceM 0")}},
 		};
 	}
 	Index = -1;

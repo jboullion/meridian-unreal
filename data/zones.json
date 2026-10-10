@@ -375,7 +375,7 @@
     "row": 9,
     "col": 13,
     "fine_row": 52,
-    "fine_col": "04",
+    "fine_col": 4,
     "angle": 0
    },
    {
@@ -388,7 +388,7 @@
     "row": 4,
     "col": 13,
     "fine_row": 56,
-    "fine_col": "04",
+    "fine_col": 4,
     "angle": 0
    },
    {
@@ -1128,6 +1128,13 @@
     "class": "Cow",
     "row": 30,
     "col": 45
+   },
+   {
+    "class": "Flagpole",
+    "row": 20,
+    "col": 6,
+    "angle": 0,
+    "by": "territry.kod CreateOneFlagpole"
    }
   ],
   "file": "Server-104/kod/object/active/holder/room/razarm/raza.kod"
@@ -3836,6 +3843,13 @@
     "fine_row": 46,
     "fine_col": 20,
     "angle": 0
+   },
+   {
+    "class": "Flagpole",
+    "row": 9,
+    "col": 62,
+    "angle": 0,
+    "by": "territry.kod CreateOneFlagpole"
    }
   ],
   "file": "Server-104/kod/object/active/holder/room/monsroom/razaforest.kod"
@@ -3914,7 +3928,15 @@
    "init_count_max": 6,
    "monster_count_max": 12
   },
-  "objects": [],
+  "objects": [
+   {
+    "class": "Flagpole",
+    "row": 3,
+    "col": 41,
+    "angle": 0,
+    "by": "territry.kod CreateOneFlagpole"
+   }
+  ],
   "file": "Server-104/kod/object/active/holder/room/monsroom/farolwest.kod"
  },
  {

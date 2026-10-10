@@ -41,6 +41,41 @@ def frame(bgf: str, index: int):
     return Image.open(d / ("frame_%02d.png" % index)).convert("RGBA"), json.loads((d / "meta.json").read_text())
 
 
+TEXTURES = ROOT / "build" / "textures"
+
+
+def is_flame(p) -> bool:
+    """A pixel painted as fire (tools/textures/make_placeholders.py is_flame)."""
+    r, g, b, a = p
+    return a >= 128 and r >= 150 and r - b >= 70
+
+
+def texture_frame(key: str, index: int, erase_flame: bool = False):
+    """(RGBA image, meta) of one frame of a wall texture (build/textures/<key>_fNN.png, from
+    tools/bgf2png/bgf2png.py --textures-for-zones): the wall torches. Wall textures and object
+    bitmaps share a scale (64 x shrink pixels a square). `erase_flame` takes the painted flame out:
+    the game draws its own flipbook flame on the 3D torch (props.json "fires")."""
+    info = json.loads((TEXTURES / "catalog.json").read_text(encoding="utf-8"))["textures"][key]
+    path = TEXTURES / ("%s_f%02d.png" % (key, index))
+    if not path.exists():
+        raise SystemExit("%s missing: run tools/bgf2png/bgf2png.py --textures-for-zones" % path)
+    img = Image.open(path).convert("RGBA")
+    if erase_flame:
+        px = img.load()
+        for y in range(img.height):
+            for x in range(img.width):
+                if is_flame(px[x, y]):
+                    px[x, y] = (0, 0, 0, 0)
+    return img, {"shrink": info["shrink"], "groups": []}
+
+
+def source_frame(m: dict, index: int):
+    """(RGBA image, meta) of a manifest's frame: its "bgf", or its wall "texture" (with "erase_flame")."""
+    if m.get("texture"):
+        return texture_frame(m["texture"], index, bool(m.get("erase_flame")))
+    return frame(m["bgf"], index)
+
+
 # positions in an 8-direction rotation group (45-degree steps round the object, starting at its front)
 VIEW_STEPS = {"left": 2, "back": 4, "right": 6}
 

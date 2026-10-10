@@ -79,6 +79,8 @@ private:
 	TObjectPtr<UMaterialParameterCollection> Collection;
 
 	double PinnedHour = -1.0;
+	double StartHour = -1.0;  // -MRGameHourFrom
+	double StartedAt = 0.0;
 	int32 PinnedSeason = -1;
 	double LastWritten = -1.0;
 };

@@ -61,6 +61,12 @@ private:
 	void OnTargetAim();
 	/** Right mouse button: look at the target, else what the crosshair is on (the original's look-mouse). */
 	void OnLookKey();
+	/** The look key let go: with the free cursor, a right click that didn't turn the view looks. */
+	void OnLookReleased();
+	/** Look at the target, else what the crosshair (or cursor) is on; bCursorFirst: what the cursor is on first. */
+	void LookAtAim(bool bCursorFirst);
+	bool bLookPending = false;
+	double LookPressTime = 0.0;
 	/** G: pick up what the crosshair is on (several: a list to pick from). */
 	void OnGetKey();
 	/** F: open the container or work the lever the target or crosshair is on. */
@@ -69,6 +75,8 @@ private:
 	void OnRestKey();
 	/** U: use the selected hotbar item (or the item under the mouse in the dialog) on something. */
 	void OnApplyKey();
+	/** H: the HUD away for pictures, and back (Shards' Hide Interface). */
+	void OnHideInterfaceKey();
 	class UMRNetWorldSubsystem* GetNetWorld() const;
 	void OnMapZoom(const FInputActionValue& Value);
 	class UMRUISubsystem* GetUI() const;
@@ -95,6 +103,7 @@ private:
 	UPROPERTY(Transient) TObjectPtr<UInputAction> UseAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> RestAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> ApplyAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> HideInterfaceAction;
 
 	/** -MRScreenshots visual check. */
 	UPROPERTY()
@@ -103,6 +112,10 @@ private:
 	/** -MRProfile character cost measurement. */
 	UPROPERTY()
 	TObjectPtr<class UMRProfileTour> ProfileTour;
+
+	/** -MRHitchTour frame-time measurement while playing. */
+	UPROPERTY()
+	TObjectPtr<class UMRHitchTour> HitchTour;
 
 	/** -MRLookDev environment captures. */
 	UPROPERTY()

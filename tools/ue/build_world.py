@@ -42,6 +42,7 @@ Output (everything under /Game/Generated, git-ignored):
 """
 import importlib
 import json
+import math
 import os
 import shutil
 import sys
@@ -423,6 +424,16 @@ def kod_light(light, params):
     out = dict(light)
     out["candela"] = intensity * KOD_CANDELA_PER_UNIT * float(light.get("candela_scale", 1.0))
     out["radius_m"] = KOD_RADIUS_M[0] + KOD_RADIUS_M[1] * intensity
+    if light.get("highlight"):
+        # LIGHT_FLAG_HIGHLIGHT (signs, sign.kod): the original client draws it a tenth of a normal
+        # light's size (d3dlighting.c D3DLightingXYCalc: DLIGHT_SCALE(intensity) * 0.1 across, in fine
+        # units, 1024 a square), with no falloff on the floor: a lit disk at the sign's foot. Drawn as a
+        # spot light "offset_m" above the foot, pointing down, its cone just covering that disk (a point
+        # light at the foot burns a hot spot into the post)
+        disk = (intensity * 14000.0 / 255.0 + 4000.0) * 0.1 / 2.0 / 1024.0 * 2.2
+        high = float(light.get("offset_m", 2.0))
+        out["radius_m"] = round(math.hypot(high, disk) * 1.05, 3)
+        out["cone_deg"] = round(math.degrees(math.atan2(disk, high)), 2)
     # Kod's 15-bit colours are fully saturated (fire: 31, 24, 6); 40% towards white reads as firelight
     out["color"] = [round(((color >> s) & 31) * 255 / 31 * 0.6 + 255 * 0.4) for s in (10, 5, 0)]
     return out
@@ -644,7 +655,10 @@ def merge_torch_lights(props, wall_fires):
     (the original's strength and colour) moves onto the flame. -> (props, wall fires)."""
     kept, used = [], set()
     merged = []
-    for label, mesh, pos, light, fire, yaw in wall_fires:
+    for label, mesh, pos, light, fire, yaw, *rest in wall_fires:
+        if mesh:  # a 3D torch: its flame (the next entry) carries the light
+            merged.append((label, mesh, pos, light, fire, yaw, *rest))
+            continue
         best, best_d = None, TORCH_LIGHT_MERGE_CM
         for i, p in enumerate(props):
             plabel, pmesh, ppos, plight, pfire = p[:5]
@@ -666,22 +680,72 @@ def merge_torch_lights(props, wall_fires):
     return kept, merged
 
 
-def zone_wall_fires(zone, materials):
-    """-> [(label, None, [x, y, z] cm, light, fire)] for the wall torches the blockout draws
-    (props.json "fires" presets with "walls", found by tools/environment/fires.py)."""
+_torch_shapes = {}
+
+
+def torch_shape(mesh_name):
+    """(height, head x, head z, back x) in metres of a wall torch's kit mesh (glTF: base-centre origin,
+    its front +Z, the bracket toward -X: the wall): the top of its head, where the flame sits, and
+    the end of its bracket, which touches the wall. None when the mesh isn't made."""
+    if mesh_name not in _torch_shapes:
+        path = os.path.join(KIT_DIR, mesh_name + ".glb")
+        shape = None
+        if os.path.exists(path):
+            pts = [p for prim in blockout.read_glb(path).values() for p in prim.positions]
+            top = max(p[1] for p in pts)
+            head = [p for p in pts if p[1] > top - 0.04]
+            shape = (top, sum(p[0] for p in head) / len(head), sum(p[2] for p in head) / len(head), min(p[0] for p in pts))
+        _torch_shapes[mesh_name] = shape
+    return _torch_shapes[mesh_name]
+
+
+def zone_wall_fires(zone, materials, prop_materials=None):
+    """-> [(label, mesh, [x, y, z] cm, light, fire, yaw, ...)] for the wall torches the blockout draws
+    (props.json "fires" presets with "walls", found by tools/environment/fires.py): a flame each and,
+    when the preset has a "mesh" (a 3D torch from tools/aigen, its painted torch blanked by
+    make_placeholders.py), that mesh on the wall with the flame on its head (docs/adr/0005)."""
     presets = fires.load_presets()
     if not any(p.get("walls") for p in presets.values()):
         return []
+    glb = os.path.join(REPO, zone["mesh"])
+    catalog = None
     out = []
-    for i, f in enumerate(fires.wall_flames(blockout.read_glb(os.path.join(REPO, zone["mesh"])), presets)):
+    for i, f in enumerate(fires.wall_flames(blockout.read_glb(glb), presets)):
+        preset = presets[f["preset"]]
         x, y, z = f["pos"]
-        light = presets[f["preset"]].get("light")
+        light = preset.get("light")
         if light and "kod_intensity" in light:
             light = dict(kod_light(light, None), offset_m=0.0)
         fire = fire_spec(materials, f["preset"], 0.0)
+        shape = torch_shape(preset["mesh"]) if preset.get("mesh") else None
+        if shape and f.get("wall") and f.get("out") and fire:
+            # the torch's bracket on the wall behind the original's flame, its foot where the original's
+            # stick ends ("mesh_bottom_px", the texture's row); the flame stands on its head, sunk
+            # "flame_sink_m" into it, as the original's painted flame overlaps the head
+            if catalog is None:
+                catalog = json.load(open(os.path.join(REPO, "build", "textures", "catalog.json"), encoding="utf-8"))["textures"]
+            grd = preset["texture"]
+            mpp = catalog[grd]["squares_h"] * 2.2 / catalog[grd]["h"]
+            at_y = preset["walls"][grd]["at"][1]
+            top, hx, hz, bx = shape
+            ox, oz = f["out"][0], f["out"][2]
+            yaw = math.atan2(oz, ox)
+            c, s = math.cos(yaw), math.sin(yaw)
+            wx, _, wz = f["wall"]
+            head_x, head_z = wx + ox * (hx - bx), wz + oz * (hx - bx)
+            mx, mz = head_x - (hx * c - hz * s), head_z - (hx * s + hz * c)
+            my = f["texel"][1] - (float(preset.get("mesh_bottom_px", at_y)) - at_y) * mpp
+            flame_y = my + top + materials.fires[f["preset"]][1]["flame_m"][1] / 2.0 - float(preset.get("flame_sink_m", 0.0))
+            x, y, z = head_x, flame_y, head_z
+            mesh = import_kit_mesh(preset["mesh"], materials, prop_materials)
+            if mesh:
+                sector = round(blockout.floor_light(glb, mx, mz, my), 3)
+                out.append(("Torch_%d_%d" % (zone["rid"], i), mesh, [mx * 100.0, mz * 100.0, my * 100.0], None, None,
+                            math.degrees(yaw), 1.0, sector, False))
         out.append(("Fire_%d_%s_%d" % (zone["rid"], f["preset"], i), None, [x * 100.0, z * 100.0, y * 100.0], light, fire, 0.0))
     if out:
-        log("zone %d: %d wall flames" % (zone["rid"], len(out)))
+        log("zone %d: %d wall flames, %d 3D torches" % (zone["rid"], sum(1 for o in out if o[1] is None),
+                                                        sum(1 for o in out if o[1])))
     return out
 
 
@@ -839,6 +903,12 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
             comp.set_collision_enabled(unreal.CollisionEnabled.NO_COLLISION)
         if role in ("decal", "ice"):
             comp.set_cast_shadow(False)
+        if role in ("geometry", "render", "art"):
+            # the room's floors and walls also take lighting channel 1: the signs' highlight lights only
+            # that, as the original's lights only the room, not the sign over it (props.json "highlight")
+            channels = comp.get_editor_property("lighting_channels")
+            channels.set_editor_property("channel1", True)
+            comp.set_editor_property("lighting_channels", channels)
         a.tags = [unreal.Name("Zone" + role.capitalize())] + zone_tags
     for label, mesh, transforms, rule in compute_scatter():
         a = actors.spawn_actor_from_class(unreal.MRScatterActor, origin, unreal.Rotator(0, 0, 0))
@@ -879,7 +949,18 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
             comp.set_editor_property("custom_primitive_data", cpd)
             a.tags = [unreal.Name("ZoneProp"), unreal.Name("Zone%d" % zone["rid"])]
         if light:
-            pl = actors.spawn_actor_from_class(unreal.PointLight, loc + unreal.Vector(0, 0, light["offset_m"] * 100.0))
+            if light.get("cone_deg"):  # a highlight light (props.json "highlight"): a spot looking straight down
+                pl = actors.spawn_actor_from_class(unreal.SpotLight, loc + unreal.Vector(0, 0, light["offset_m"] * 100.0),
+                                                   unreal.Rotator(roll=0.0, pitch=-90.0, yaw=0.0))
+                pl.light_component.set_editor_property("outer_cone_angle", float(light["cone_deg"]))
+                pl.light_component.set_editor_property("inner_cone_angle", 0.0)
+                channels = pl.light_component.get_editor_property("lighting_channels")
+                channels.set_editor_property("channel0", False)
+                channels.set_editor_property("channel1", True)
+                pl.light_component.set_editor_property("lighting_channels", channels)
+                pl.light_component.set_editor_property("volumetric_scattering_intensity", 0.0)  # no beam in the haze
+            else:
+                pl = actors.spawn_actor_from_class(unreal.PointLight, loc + unreal.Vector(0, 0, light["offset_m"] * 100.0))
             pl.set_actor_label(label + "_Light")
             lc = pl.light_component
             lc.set_mobility(unreal.ComponentMobility.MOVABLE)
@@ -1109,7 +1190,7 @@ def main(args):
             if any(parts[0][0].startswith(d + "/") for d in cache.built.get("meshes", [])):  # re-imported
                 bad += 0 if check_orientation(z, parts[0][0]) else 1
             scatter_inputs, compute_scatter = zone_scatter(z, materials)
-            room_props, torches = merge_torch_lights(zone_props(z, materials, prop_materials), zone_wall_fires(z, materials))
+            room_props, torches = merge_torch_lights(zone_props(z, materials, prop_materials), zone_wall_fires(z, materials, prop_materials))
             props = room_props + torches
             effects = zone_effects(z, materials)
             path, rebuilt = build_zone_level(z, parts, sharers.get(z["rid"], []), scatter_inputs, compute_scatter, props, maps,

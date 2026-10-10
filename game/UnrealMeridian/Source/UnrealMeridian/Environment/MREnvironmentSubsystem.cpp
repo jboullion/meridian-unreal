@@ -3,6 +3,8 @@
 #include "Audio/MRAudioSubsystem.h"
 
 #include "Components/LightComponent.h"
+#include "Components/SkyLightComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Engine/PostProcessVolume.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -23,6 +25,7 @@
 #include "Misc/Parse.h"
 #include "Misc/Paths.h"
 #include "Player/MRPlayerState.h"
+#include "ProfilingDebugging/CsvProfiler.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
@@ -36,6 +39,9 @@ namespace
 	TAutoConsoleVariable<float> CVarUpdateSeconds(
 		TEXT("mr.Env.UpdateSeconds"), 5.f,
 		TEXT("How often (real seconds) the environment director re-evaluates time of day; it applies only changes."));
+	TAutoConsoleVariable<float> CVarSkyBurstSeconds(
+		TEXT("mr.Env.SkyBurstSeconds"), 0.25f,
+		TEXT("After a zone change, capture the sky light whole every frame for this long (s), then time-slice again."));
 	TAutoConsoleVariable<FString> CVarMood(
 		TEXT("mr.Env.Mood"), TEXT(""),
 		TEXT("Pin one mood from moods.json (no day/night cycle); empty follows the cycle."));
@@ -259,7 +265,28 @@ namespace
 		return false;
 	}
 
-	bool SetFromJson(void* Container, FProperty* Property, const TSharedPtr<FJsonValue>& V)
+	bool SetFromJsonValue(void* Container, FProperty* Property, const TSharedPtr<FJsonValue>& V);
+
+	/**
+	 * Set a property from JSON. bOutChanged (optional): whether the value is now different, so a
+	 * component's render state is only rebuilt when something really changed (a new light proxy
+	 * throws away its shadow cache).
+	 */
+	bool SetFromJson(void* Container, FProperty* Property, const TSharedPtr<FJsonValue>& V, bool* bOutChanged = nullptr)
+	{
+		void* Addr = Property->ContainerPtrToValuePtr<void>(Container);
+		TArray<uint8, TInlineAllocator<64>> Old;
+		Old.SetNumZeroed(Property->GetElementSize());
+		Property->CopySingleValue(Old.GetData(), Addr);
+		const bool bSet = SetFromJsonValue(Container, Property, V);
+		if (bOutChanged)
+		{
+			*bOutChanged = bSet && !Property->Identical(Old.GetData(), Addr);
+		}
+		return bSet;
+	}
+
+	bool SetFromJsonValue(void* Container, FProperty* Property, const TSharedPtr<FJsonValue>& V)
 	{
 		void* Addr = Property->ContainerPtrToValuePtr<void>(Container);
 		if (FBoolProperty* Bool = CastField<FBoolProperty>(Property))
@@ -346,6 +373,37 @@ namespace
 		}
 		return false;
 	}
+}
+
+bool UMREnvironmentSubsystem::SetCheaply(USceneComponent* Component, const FString& Field, const TSharedPtr<FJsonValue>& V)
+{
+	double Number = 0.0;
+	if (!V.IsValid() || !V->TryGetNumber(Number))
+	{
+		return false;
+	}
+	if (ULightComponent* Light = Cast<ULightComponent>(Component))
+	{
+		if (Field == TEXT("intensity"))
+		{
+			Light->SetIntensity(float(Number));
+			return true;
+		}
+		if (Field == TEXT("temperature"))
+		{
+			Light->SetTemperature(float(Number));
+			return true;
+		}
+	}
+	else if (USkyLightComponent* Sky = Cast<USkyLightComponent>(Component))
+	{
+		if (Field == TEXT("intensity"))
+		{
+			Sky->SetIntensity(float(Number));
+			return true;
+		}
+	}
+	return false;
 }
 
 FRotator UMREnvironmentSubsystem::SkyBodyRotation(double Hour, double Rise, double Set, double MaxElevation, double& OutElevation)
@@ -640,19 +698,23 @@ TSharedPtr<FJsonObject> UMREnvironmentSubsystem::StateFor(double Hour, int32 Zon
 
 AActor* UMREnvironmentSubsystem::FindActor(const FString& Label) const
 {
+	// remembered: every apply looks up the same few actors, and a scan walks every actor in every zone
+	if (const TWeakObjectPtr<AActor>* Known = FoundActors.Find(Label); Known && Known->IsValid())
+	{
+		return Known->Get();
+	}
 	const FName Tag(*Label);
 	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
 	{
-		if (It->Tags.Contains(Tag))
-		{
-			return *It;
-		}
+		bool bMatch = It->Tags.Contains(Tag);
 #if WITH_EDITOR
-		if (It->GetActorLabel() == Label)
+		bMatch = bMatch || It->GetActorLabel() == Label;
+#endif
+		if (bMatch)
 		{
+			FoundActors.Add(Label, *It);
 			return *It;
 		}
-#endif
 	}
 	return nullptr;
 }
@@ -678,18 +740,30 @@ int32 UMREnvironmentSubsystem::LocalZoneId() const
 
 void UMREnvironmentSubsystem::ApplyLamps(float LampsOn)
 {
-	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+	// the lamps' lights, found once (every zone is loaded at the start) instead of scanning every actor
+	// on every apply
+	if (!bLampsFound)
 	{
-		if (!It->Tags.Contains(NightLampTag))
+		bLampsFound = true;
+		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
 		{
-			continue;
+			if (!It->Tags.Contains(NightLampTag))
+			{
+				continue;
+			}
+			TArray<ULightComponent*> Lights;
+			It->GetComponents(Lights);
+			for (ULightComponent* Light : Lights)
+			{
+				LampBase.FindOrAdd(Light, Light->Intensity);
+			}
 		}
-		TArray<ULightComponent*> Lights;
-		It->GetComponents(Lights);
-		for (ULightComponent* Light : Lights)
+	}
+	for (const auto& Pair : LampBase)
+	{
+		if (ULightComponent* Light = Pair.Key.Get())
 		{
-			const float Base = LampBase.FindOrAdd(Light, Light->Intensity);
-			Light->SetIntensity(Base * LampsOn);
+			Light->SetIntensity(Pair.Value * LampsOn);
 			Light->SetVisibility(LampsOn > 0.001f);
 		}
 	}
@@ -697,6 +771,7 @@ void UMREnvironmentSubsystem::ApplyLamps(float LampsOn)
 
 void UMREnvironmentSubsystem::Apply(const TSharedPtr<FJsonObject>& State, double Hour, bool bPinnedMood)
 {
+	CSV_SCOPED_TIMING_STAT_EXCLUSIVE(MREnvApply);
 	UWorld* World = GetWorld();
 	const TSharedPtr<FJsonObject>* Sky = nullptr;
 	Root->TryGetObjectField(TEXT("sky"), Sky);
@@ -746,6 +821,22 @@ void UMREnvironmentSubsystem::Apply(const TSharedPtr<FJsonObject>& State, double
 			(*SunBlock)->SetNumberField(TEXT("intensity"), 0.0);
 			(*SunBlock)->RemoveField(TEXT("rotation"));
 		}
+	}
+	// the volumetric clouds are the frame's most expensive pass when thick overhead, and the sky light
+	// captures them again: hidden where no sky is seen ("clouds": false; by default with the sun)
+	bool bClouds = bSunOn;
+	if (Profile.IsValid())
+	{
+		Profile->TryGetBoolField(TEXT("clouds"), bClouds);
+	}
+	bool bVolumetricClouds = true;
+	if (SkyCfg.IsValid() && SkyCfg->TryGetBoolField(TEXT("volumetric_clouds"), bVolumetricClouds) && !bVolumetricClouds)
+	{
+		bClouds = false;
+	}
+	if (AActor* Clouds = FindActor(TEXT("Clouds")); Clouds && Clouds->IsHidden() == bClouds)
+	{
+		Clouds->SetActorHiddenInGame(!bClouds);
 	}
 	const double Daylight = Number(Profile, TEXT("daylight"), 1.0);
 	FString LampRule;
@@ -867,10 +958,13 @@ void UMREnvironmentSubsystem::Apply(const TSharedPtr<FJsonObject>& State, double
 		}
 	}
 
+	ApplySkybox(State, SkyCfg, Hour);
+
 	for (const auto& Pair : State->Values)
 	{
 		const FString Label(*Pair.Key);
-		if (Label.StartsWith(TEXT("_")) || Label == TEXT("Collection") || Label == TEXT("CloudMaterial") || Pair.Value->Type != EJson::Object)
+		if (Label.StartsWith(TEXT("_")) || Label == TEXT("Collection") || Label == TEXT("CloudMaterial") || Label == TEXT("SkyDome")
+			|| Pair.Value->Type != EJson::Object)
 		{
 			continue;
 		}
@@ -931,10 +1025,15 @@ void UMREnvironmentSubsystem::Apply(const TSharedPtr<FJsonObject>& State, double
 				}
 				continue;
 			}
-			FProperty* Property = FindProperty(Component->GetClass(), FieldName);
-			if (Property && SetFromJson(Component, Property, Field.Value))
+			if (SetCheaply(Component, FieldName, Field.Value))
 			{
-				bChanged = true;
+				continue;
+			}
+			FProperty* Property = FindProperty(Component->GetClass(), FieldName);
+			bool bValueChanged = false;
+			if (Property && SetFromJson(Component, Property, Field.Value, &bValueChanged))
+			{
+				bChanged |= bValueChanged;
 			}
 			else if (!Warned.Contains(Label + TEXT(".") + FieldName))
 			{
@@ -951,6 +1050,7 @@ void UMREnvironmentSubsystem::Apply(const TSharedPtr<FJsonObject>& State, double
 
 void UMREnvironmentSubsystem::Tick(float DeltaTime)
 {
+	CSV_SCOPED_TIMING_STAT_EXCLUSIVE(MREnvTick);
 	UWorld* World = GetWorld();
 	if (!World || !Root.IsValid() || (World->WorldType == EWorldType::Editor && CVarEditor.GetValueOnGameThread() == 0))
 	{
@@ -972,7 +1072,8 @@ void UMREnvironmentSubsystem::Tick(float DeltaTime)
 			// the sky light's real-time capture is time-sliced: after the sun turns off (in) or on
 			// (out), it kept lighting the new place with the old sky for about 2 s, the fade players
 			// saw at every door (build/lookdev/burst_sky.png). Capture it whole every frame for a
-			// moment, then go back to slicing.
+			// moment (mr.Env.SkyBurstSeconds), then go back to slicing. Each whole capture renders
+			// the sky and its clouds six times: 2 s of them cost up to 30 ms a frame (docs/performance.md).
 			if (IConsoleVariable* Slice = IConsoleManager::Get().FindConsoleVariable(TEXT("r.SkyLight.RealTimeReflectionCapture.TimeSlice")))
 			{
 				if (SkySliceRestoreAt <= 0.0)
@@ -980,7 +1081,7 @@ void UMREnvironmentSubsystem::Tick(float DeltaTime)
 					SkySliceSaved = Slice->GetInt();
 				}
 				Slice->Set(0, ECVF_SetByCode);
-				SkySliceRestoreAt = Now + 2.0;
+				SkySliceRestoreAt = Now + FMath::Max(0.f, CVarSkyBurstSeconds.GetValueOnGameThread());
 			}
 		}
 		LastZone = Zone;
@@ -1116,6 +1217,80 @@ UMaterialInstanceDynamic* UMREnvironmentSubsystem::CloudMaterial()
 	}
 	CloudMID = MID;
 	return MID;
+}
+
+UMaterialInstanceDynamic* UMREnvironmentSubsystem::SkyDomeMaterial()
+{
+	if (SkyDomeMID.IsValid())
+	{
+		return SkyDomeMID.Get();
+	}
+	AActor* Dome = FindActor(TEXT("NightSky"));
+	UStaticMeshComponent* Mesh = Dome ? Dome->FindComponentByClass<UStaticMeshComponent>() : nullptr;
+	UMaterialInstanceDynamic* MID = Mesh ? Mesh->CreateDynamicMaterialInstance(0) : nullptr;
+	SkyDomeMID = MID;
+	return MID;
+}
+
+void UMREnvironmentSubsystem::ApplySkybox(const TSharedPtr<FJsonObject>& State, const TSharedPtr<FJsonObject>& SkyCfg, double Hour)
+{
+	// the original client's skyboxes on the sky dome (M_NightSky): dawn, day, dusk, night by the hour
+	// (moods.json "sky" "skybox_keys", blended between keys), as bright as the mood's "SkyDome" says
+	UMaterialInstanceDynamic* MID = SkyDomeMaterial();
+	if (!MID)
+	{
+		return;
+	}
+	bool bSkybox = false;
+	if (SkyCfg.IsValid())
+	{
+		SkyCfg->TryGetBoolField(TEXT("skybox"), bSkybox);
+	}
+	MID->SetScalarParameterValue(TEXT("Skybox"), bSkybox ? 1.f : 0.f);
+	if (!bSkybox)
+	{
+		return;
+	}
+	TMap<FString, float> Weights = {{TEXT("dawn"), 0.f}, {TEXT("day"), 0.f}, {TEXT("dusk"), 0.f}, {TEXT("night"), 0.f}};
+	const TArray<TSharedPtr<FJsonValue>>* Keys = nullptr;
+	if (SkyCfg->TryGetArrayField(TEXT("skybox_keys"), Keys) && Keys->Num() > 0)
+	{
+		// [hour, sky] keys, wrapping over midnight like the cycles
+		int32 Next = 0;
+		while (Next < Keys->Num() && (*Keys)[Next]->AsArray()[0]->AsNumber() <= Hour)
+		{
+			++Next;
+		}
+		const int32 Prev = (Next + Keys->Num() - 1) % Keys->Num();
+		Next %= Keys->Num();
+		const TArray<TSharedPtr<FJsonValue>>& A = (*Keys)[Prev]->AsArray();
+		const TArray<TSharedPtr<FJsonValue>>& B = (*Keys)[Next]->AsArray();
+		const double Span = FMath::Fmod(B[0]->AsNumber() - A[0]->AsNumber() + 24.0, 24.0);
+		const double Into = FMath::Fmod(Hour - A[0]->AsNumber() + 24.0, 24.0);
+		const float T = Span > 0.0 ? float(FMath::Clamp(Into / Span, 0.0, 1.0)) : 0.f;
+		Weights.FindOrAdd(A[1]->AsString()) += 1.f - T;
+		Weights.FindOrAdd(B[1]->AsString()) += T;
+	}
+	else
+	{
+		Weights[TEXT("day")] = 1.f;
+	}
+	MID->SetScalarParameterValue(TEXT("SkyDawn"), Weights[TEXT("dawn")]);
+	MID->SetScalarParameterValue(TEXT("SkyDay"), Weights[TEXT("day")]);
+	MID->SetScalarParameterValue(TEXT("SkyDusk"), Weights[TEXT("dusk")]);
+	MID->SetScalarParameterValue(TEXT("SkyNight"), Weights[TEXT("night")]);
+	const TSharedPtr<FJsonObject>* Dome = nullptr;
+	if (State->TryGetObjectField(TEXT("SkyDome"), Dome))
+	{
+		for (const auto& Param : (*Dome)->Values)
+		{
+			double Value = 0.0;
+			if (!FString(*Param.Key).StartsWith(TEXT("_")) && Param.Value->TryGetNumber(Value))
+			{
+				MID->SetScalarParameterValue(FName(*FString(*Param.Key)), float(Value));
+			}
+		}
+	}
 }
 
 float UMREnvironmentSubsystem::CloudBase(const FName& Param)
