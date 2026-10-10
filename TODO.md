@@ -12,11 +12,7 @@
 
 ### UI
 
-- I can't seem to add an item.
-  - I think right now we have the inventory working a lot like the minecraft menu, but perhaps that isn't quite right.
-  - When a weapon is in our quickbar it should still appear in the inventory too.
-  - We should be able to double click a weapon to equip it.
-  - Do we have / need main hand and off hand slots to drag and drop to that would do the same thing?
+- Update our UI to work just like the Modern UI in our Shards client
 
 
 ### Props

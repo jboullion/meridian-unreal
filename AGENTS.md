@@ -256,6 +256,7 @@ Full commands, flags and caches for the environment tools: [zone-environment/ref
 - **Collision walls like the original's checks:** upper walls only where the side you come from has an upper texture; a middle wall only toward a side whose sidedef isn't passable (a wall can be passable one way: Kocatan, the nests). Runtime rooms' floors are walkable up to 89 degrees (the original has no slope limit); props keep UE's 45.
 - **Online, no resync:** blakserv's game-mode resync can't complete (a signed-char compare), so a broken stream ends the session. Never send `BP_RESYNC`.
 - **Online, runtime room light and scroll:** `M_RuntimeRoom` needs `MPC_Environment`'s `RoomAmbient` and `PlayerLight` and reads UV1 as scroll speed. After changing it, rebuild it with `build_world.ps1 -Script build_runtime_materials.py`. Vertex alpha 0 (bitmap sprites) skips the room light model.
+- **Online, two Origin headers:** the engine's WebSocket client (libwebsockets, `LwsWebSocket.cpp`) always sends `Origin: <host>` before the `app://unreal-meridian` we add, and the engine can't be changed. The local dev gateway allows every origin, so only a server with `GATEWAY_ORIGINS` set notices: before 2026-10-09 the Shards gateway compared the joined header and refused us (403, "Couldn't reach the server."). Its `tools/gateway/gateway.ts` now lets a request through if any of its origins is allowed.
 - **Online, local Vite:** the local Vite server listens on `[::1]:5173` only; use `localhost`, not `127.0.0.1`, in `data/net/servers.json`.
 
 ## Writing docs
