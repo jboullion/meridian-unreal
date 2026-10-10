@@ -250,7 +250,9 @@ bool UMRNetTest::TakeExit()
 	}
 	for (const FMRZoneExit& E : Zone->Exits)
 	{
-		if (!E.bLocked && Zones->FindZone(E.DestRid))
+		// (not into a guild hall: its door lets only the guild in; the Forest of Farol's leads to one)
+		const FMRZoneInfo* Dest = Zones->FindZone(E.DestRid);
+		if (!E.bLocked && Dest && !Dest->KodClass.StartsWith(TEXT("GuildHall")))
 		{
 			const FVector At = DoorStandPoint(Zones, *Zone, E.Row, E.Col, Pawn->GetSimpleCollisionHalfHeight());
 			UE_LOG(LogMeridian, Display, TEXT("MRNetTest: stepping onto the exit (%d, %d) of zone %d toward %d"), E.Row, E.Col, Zone->Rid, E.DestRid);
@@ -2861,8 +2863,10 @@ void UMRNetTest::Tick()
 
 	case EStep::Travel:
 	{
-		// our zones -> Farol West (331) -> off its east edge: the Forest of Farol, built at runtime
+		// our zones -> Farol West (331, its flagpole) -> the Forest of Farol (536, built since pass 2 of
+		// the world remaster) -> off its east edge: Deep in the Forest of Farol (d6e6.roo), built at runtime
 		constexpr int32 FarolWest = 331;
+		constexpr int32 ForestOfFarol = 536;
 		const int32 Here = NetWorld->GetRid();
 		if (Net->GetPhase() == EMRNetPhase::Offline)
 		{
@@ -2875,6 +2879,10 @@ void UMRNetTest::Tick()
 			Fail(FString::Printf(TEXT("travel: stuck in zone %d (stage %d, loading \"%s\")"), Here, TravelStage, *NetWorld->GetLoadingRoom()));
 			Advance(bDeath ? EStep::Death : EStep::Relog);
 			break;
+		}
+		if (HopFrom == ForestOfFarol && Here == HopFrom && Now - HopAt > 8.0)
+		{
+			HopFrom = 0;  // the edge didn't take us (a move too soon after arriving is lost): step off again
 		}
 		if (HopFrom && (Here == HopFrom || Here == 0))
 		{
@@ -2949,7 +2957,13 @@ void UMRNetTest::Tick()
 				HopFrom = Here;
 				StepOffEdge(static_cast<uint8>(EMREdge::East));
 			}
-			else if (Here && Here != FarolWest && Now - StepStart > 1.0)
+			else if (Here == ForestOfFarol && Now - StepStart > 3.0)
+			{
+				HopFrom = Here;
+				HopAt = Now;
+				StepOffEdge(static_cast<uint8>(EMREdge::East));
+			}
+			else if (Here && Here != FarolWest && Here != ForestOfFarol && Now - StepStart > 1.0)
 			{
 				HopFrom = Here;
 				if (!HopToward(FarolWest))
@@ -3027,13 +3041,13 @@ void UMRNetTest::Tick()
 		}
 		else if (TravelStage == 6 && Here && Here != RuntimeRid)
 		{
-			if (Here == FarolWest)
+			if (Here == ForestOfFarol)
 			{
-				Pass(FString::Printf(TEXT("walked off the runtime room's west edge back into Farol West (zone %d)"), Here));
+				Pass(FString::Printf(TEXT("walked off the runtime room's west edge back into the Forest of Farol (zone %d)"), Here));
 			}
 			else
 			{
-				Fail(FString::Printf(TEXT("travel: the west edge led to zone %d, not Farol West"), Here));
+				Fail(FString::Printf(TEXT("travel: the west edge led to zone %d, not the Forest of Farol"), Here));
 			}
 			Advance(bDeath ? EStep::Death : EStep::Relog);
 		}
@@ -3042,10 +3056,11 @@ void UMRNetTest::Tick()
 
 	case EStep::Death:
 	{
-		// die to the Forest of Farol's spiders (off Farol West's east edge, built at runtime), bare
+		// die to the Forest of Farol's spiders (off Farol West's east edge; built since pass 2), bare
 		// handed so they outlast us; the Underworld; its archway back to Raza (uworld.kod: the portal
 		// at row 11, col 3, to the Inn of Raza)
 		constexpr int32 FarolWest = 331;
+		constexpr int32 ForestOfFarol = 536;
 		const int32 Here = NetWorld->GetRid();
 		const FString Room = Net->GetPlayer().RoomFile.ToLower();
 		if (DeathStart == 0.0)
@@ -3075,7 +3090,7 @@ void UMRNetTest::Tick()
 		}
 		if (DeathStage == 0)
 		{
-			if (Here < UMRRuntimeRooms::RuntimeRidBase)
+			if (Here != ForestOfFarol && Here < UMRRuntimeRooms::RuntimeRidBase)
 			{
 				if (Here && Now - StageTime > 1.0)
 				{

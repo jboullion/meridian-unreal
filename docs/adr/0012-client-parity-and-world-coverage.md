@@ -590,6 +590,13 @@ Players got stuck in rivers online, and on terrain steps. A new test, the **step
 - **The server's depth override** (`BP_PLAYER`; the Temple of Riija's invisible bridge at 13.2 m over its chasm) is applied to runtime rooms' collision and wading areas; they also follow `BP_SECTOR_CHANGE` and lifts now (`AMRRuntimeRoom::OnCollisionRebuilt`).
 - **Results:** the survey passes 637 of 637 crossings in our zones (now part of `npm test`) and 48,922 of 48,958 in all 362 rooms (504 more are over the cap). Once the winding was fixed, 1,099 of 49,487 were still stuck; before that, nearly every step in a runtime room. The rest are listed in `docs/parity.md`. `run_move_test.ps1` 23/23 (wading, terrain steps, a beam 1.66 m up, steps and a one-way wall in a room built at runtime); unit tests 30/30 (the C++ step walls match `roo2gltf`'s; the Riija override); the online test 58/58.
 
+### W3: the map list and the pass order (2026-10-10)
+The maintainer set the order for the authored zones: (1) Raza and its interiors, (2) near Raza (the forest ring: the Outskirts, Farol West, Druid Hills `b6`, the Forest of Farol `c6`, Faronath `c7`, the Old Dwarven Hall `guildh7`), (3) each city with its surroundings (Marion, Jasper, Cor Noth, Barloque, Tos, Berg, Jixa), (4) overland, (5) caves and castles, (6) Brax, (7) the islands. Pass 8 holds the rest (the Death Realm's own maps, the historic towns, god and test rooms, maps no exit or Kod room reaches).
+- **The unit is the `.roo` file**, not the Kod room: the client picks a built zone by its room file and checksum, so one remastered map serves every room that uses it. 429 Kod rooms use 355 maps (the 59 Death Realm rooms reuse overland maps, twelve dunes share one); 23 more in the client folder are used by none. 378 in all.
+- **The list:** `tools/world/map_inventory.py` (`npm run maps`) writes `docs/world-maps.md` and `data/world/maps.json` from `data/world/regions.json` (each map's pass, region, note and approval date, hand-kept) and what each built zone has (its art config, lighting profile and look-dev cameras). At the start: 2 remastered (Raza town and the Outskirts), 11 built without an art pass, 365 runtime.
+- **"Remastered" means the full art pass** (the zone-environment skill) and the maintainer's approval of its look-dev sheets, room by room.
+- **The Death Realm's moods** follow its own RIDs, but a built map serves them with the living room's profile. Give the Death Realm a profile when its first map is built.
+
 ## Alternatives considered
 
 - **Bake every room before allowing travel:** no runtime code, but hours of GPU texture work and hundreds of levels to import before anyone can leave Raza. A room changed on the server would also break until rebuilt.

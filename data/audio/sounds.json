@@ -16,7 +16,9 @@
    "used_by": [
     "room 300",
     "room 330",
-    "room 331"
+    "room 331",
+    "room 536",
+    "room 537"
    ]
   },
   "bank.ogg": {
@@ -149,7 +151,11 @@
     "room 330 door",
     "room 331 door",
     "room 332 door",
-    "room 333 door"
+    "room 333 door",
+    "room 526 door",
+    "room 536 door",
+    "room 537 door",
+    "room 706 door"
    ]
   },
   "down2.ogg": {
@@ -166,6 +172,14 @@
    "loop": false,
    "used_by": [
     "room 306"
+   ]
+  },
+  "eagle.ogg": {
+   "file": "eagle.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 526"
    ]
   },
   "faren.ogg": {
@@ -364,6 +378,30 @@
    "loop": false,
    "used_by": [
     "Player player_wave_hit"
+   ]
+  },
+  "ice03.ogg": {
+   "file": "ice03.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 526"
+   ]
+  },
+  "ice04.ogg": {
+   "file": "ice04.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 526"
+   ]
+  },
+  "icecave.ogg": {
+   "file": "icecave.ogg",
+   "category": "loop",
+   "loop": true,
+   "used_by": [
+    "room 526"
    ]
   },
   "imp.ogg": {
@@ -594,6 +632,14 @@
     "room 305",
     "room 307",
     "room 308"
+   ]
+  },
+  "ltlgirl.ogg": {
+   "file": "ltlgirl.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 706"
    ]
   },
   "lute_equip.ogg": {
@@ -1191,7 +1237,9 @@
    "used_by": [
     "room 300",
     "room 330",
-    "room 331"
+    "room 331",
+    "room 536",
+    "room 537"
    ]
   },
   "rs_for02.ogg": {
@@ -1201,7 +1249,9 @@
    "used_by": [
     "room 300",
     "room 330",
-    "room 331"
+    "room 331",
+    "room 536",
+    "room 537"
    ]
   },
   "rs_for03.ogg": {
@@ -1211,7 +1261,9 @@
    "used_by": [
     "room 300",
     "room 330",
-    "room 331"
+    "room 331",
+    "room 536",
+    "room 537"
    ]
   },
   "rs_for05.ogg": {
@@ -1221,7 +1273,9 @@
    "used_by": [
     "room 300",
     "room 330",
-    "room 331"
+    "room 331",
+    "room 536",
+    "room 537"
    ]
   },
   "rs_for14.ogg": {
@@ -1231,7 +1285,9 @@
    "used_by": [
     "room 300",
     "room 330",
-    "room 331"
+    "room 331",
+    "room 536",
+    "room 537"
    ]
   },
   "rs_for18.ogg": {
@@ -1241,7 +1297,9 @@
    "used_by": [
     "room 300",
     "room 330",
-    "room 331"
+    "room 331",
+    "room 536",
+    "room 537"
    ]
   },
   "rs_for20.ogg": {
@@ -1251,14 +1309,17 @@
    "used_by": [
     "room 300",
     "room 330",
-    "room 331"
+    "room 331",
+    "room 536",
+    "room 537"
    ]
   },
   "rs_wind.ogg": {
-   "file": "Rs_wind.ogg",
-   "category": "weather",
+   "file": "rs_wind.ogg",
+   "category": "periodic",
    "loop": true,
    "used_by": [
+    "room 526",
     "weather wind"
    ]
   },
@@ -1300,6 +1361,38 @@
    "loop": false,
    "used_by": [
     "spell BreathOfLife"
+   ]
+  },
+  "scp_atkh.ogg": {
+   "file": "scp_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Scorpion hit"
+   ]
+  },
+  "scp_atkm.ogg": {
+   "file": "scp_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Scorpion miss"
+   ]
+  },
+  "scp_awr.ogg": {
+   "file": "scp_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Scorpion aware"
+   ]
+  },
+  "scp_dth.ogg": {
+   "file": "scp_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Scorpion death"
    ]
   },
   "sdazzle.ogg": {
@@ -1349,6 +1442,14 @@
    "used_by": [
     "spell Truce",
     "spell ResistAcid"
+   ]
+  },
+  "shielddn.ogg": {
+   "file": "shielddn.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 706"
    ]
   },
   "sholysym.ogg": {
@@ -1409,6 +1510,38 @@
     "room 332"
    ]
   },
+  "spd_atkh.ogg": {
+   "file": "spd_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Spider hit"
+   ]
+  },
+  "spd_atkm.ogg": {
+   "file": "spd_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Spider miss"
+   ]
+  },
+  "spd_awr.ogg": {
+   "file": "spd_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Spider aware"
+   ]
+  },
+  "spd_dth.ogg": {
+   "file": "spd_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Spider death"
+   ]
+  },
   "splash.ogg": {
    "file": "splash.ogg",
    "category": "world",
@@ -1425,7 +1558,11 @@
     "room 330 wading",
     "room 331 wading",
     "room 332 wading",
-    "room 333 wading"
+    "room 333 wading",
+    "room 526 wading",
+    "room 536 wading",
+    "room 537 wading",
+    "room 706 wading"
    ]
   },
   "splearn.ogg": {
@@ -1546,7 +1683,8 @@
    "category": "periodic",
    "loop": false,
    "used_by": [
-    "room 300"
+    "room 300",
+    "room 526"
    ]
   },
   "system_save.ogg": {
@@ -1573,6 +1711,38 @@
     "Player player_tougher_wav_rsc"
    ]
   },
+  "tr_atkh.ogg": {
+   "file": "tr_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Ent hit"
+   ]
+  },
+  "tr_atkm.ogg": {
+   "file": "tr_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Ent miss"
+   ]
+  },
+  "tr_awr.ogg": {
+   "file": "tr_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Ent aware"
+   ]
+  },
+  "tr_dth.ogg": {
+   "file": "tr_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Ent death"
+   ]
+  },
   "tranport.ogg": {
    "file": "tranport.ogg",
    "category": "spell",
@@ -1581,13 +1751,23 @@
     "spell DeliveranceTouch"
    ]
   },
+  "walk4.ogg": {
+   "file": "walk4.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 526"
+   ]
+  },
   "walk5.ogg": {
    "file": "walk5.ogg",
    "category": "music",
    "loop": true,
    "used_by": [
     "room 330",
-    "room 331"
+    "room 331",
+    "room 536",
+    "room 537"
    ]
   },
   "wave1.ogg": {

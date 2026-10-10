@@ -148,6 +148,61 @@
   "is_npc": false
  },
  {
+  "class": "Ent",
+  "parents": [
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/ent.kod",
+  "vrName": "living tree",
+  "vrDesc": "A primordial spirit flows through the dark branches of this ancient being.  A forest scent of aged wood and fertile earth tingles your nostrils.  You wonder if the story that it can summon lightning bolts to protect the forest is really true.",
+  "vrIcon": "res0003a.bgf",
+  "vrDead_icon": "res0003d.bgf",
+  "viLevel": 60,
+  "viDifficulty": 4,
+  "viKarma": 50,
+  "viSpeed": 0,
+  "viAttack_type": 256,
+  "viDefault_behavior": 32770,
+  "viTreasure_type": 29,
+  "viCashmin": 200,
+  "viCashmax": 600,
+  "viVisionDistance": 14,
+  "viAttackRange": 128,
+  "viSpellChance": 8,
+  "vbIsUndead": 0,
+  "viOccupation": 0,
+  "viAttributes": 2,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": "tr_atkh.ogg",
+  "vrSound_miss": "tr_atkm.ogg",
+  "vrSound_aware": "tr_awr.ogg",
+  "vrSound_death": "tr_dth.ogg",
+  "vars": {
+   "vrKocName": "tezmecya",
+   "vrDead_name": "dead remains of living tree",
+   "vrLeaves": "res0003b.bgf",
+   "vrDead_leaves": "res0003e.bgf",
+   "piAnimation": 0,
+   "piSpellPower": 50,
+   "piMax_mana": 12,
+   "piReputationGroup": 1
+  },
+  "behavior_flags": [
+   "AI_NOMOVE",
+   "AI_FIGHT_KARMA_AGGRESSIVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_WHIP",
+   "ATCK_SPELL_HUNTERSWORD"
+  ],
+  "is_npc": false
+ },
+ {
   "class": "GiantRat",
   "parents": [
    "Monster",
@@ -990,6 +1045,106 @@
    "ATCK_SPELL_COLD"
   ],
   "is_npc": true
+ },
+ {
+  "class": "Scorpion",
+  "parents": [
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/scorpion.kod",
+  "vrName": "giant scorpion",
+  "vrDesc": "The scorpion's deadly stinger rises high in the air and its hard plated body protects it from all but the strongest attacks.",
+  "vrIcon": "scorp.bgf",
+  "vrDead_icon": "scorpX.bgf",
+  "viLevel": 65,
+  "viDifficulty": 8,
+  "viKarma": 60,
+  "viSpeed": 16,
+  "viAttack_type": 2048,
+  "viDefault_behavior": 0,
+  "viTreasure_type": 5,
+  "viCashmin": 275,
+  "viCashmax": 650,
+  "viVisionDistance": 10,
+  "viAttackRange": 192,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 0,
+  "viAttributes": 0,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": "scp_atkh.ogg",
+  "vrSound_miss": "scp_atkm.ogg",
+  "vrSound_aware": "scp_awr.ogg",
+  "vrSound_death": "scp_dth.ogg",
+  "vars": {
+   "vrKocName": "kinkauikinich",
+   "vrDead_name": "dead scorpion",
+   "viWimpy": 40,
+   "piPoison_Chance": 18,
+   "piPoison_Duration": 180000,
+   "piPoison_Loss_Rate": 3500,
+   "piAnimation": 0
+  },
+  "behavior_flags": [],
+  "attack_flags": [
+   "ATCK_WEAP_STING"
+  ],
+  "is_npc": false
+ },
+ {
+  "class": "Spider",
+  "parents": [
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/spider.kod",
+  "vrName": "spider",
+  "vrDesc": "This strangely delicate creature moves with stealth and strikes with deadly precision.",
+  "vrIcon": "spider.bgf",
+  "vrDead_icon": "spiderX.bgf",
+  "viLevel": 50,
+  "viDifficulty": 4,
+  "viKarma": -30,
+  "viSpeed": 12,
+  "viAttack_type": 1024,
+  "viDefault_behavior": 16448,
+  "viTreasure_type": 5,
+  "viCashmin": -100,
+  "viCashmax": 300,
+  "viVisionDistance": 9,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 0,
+  "viAttributes": 4,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": "spd_atkh.ogg",
+  "vrSound_miss": "spd_atkm.ogg",
+  "vrSound_aware": "spd_awr.ogg",
+  "vrSound_death": "spd_dth.ogg",
+  "vars": {
+   "vrKocName": "teotkauilkinich",
+   "vrDead_name": "dead spider",
+   "viWimpy": 30,
+   "piAnimation": 0
+  },
+  "behavior_flags": [
+   "AI_MOVE_REGROUP",
+   "AI_FIGHT_AGGRESSIVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_BITE"
+  ],
+  "is_npc": false
  },
  {
   "class": "SpiderBaby",

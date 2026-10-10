@@ -29,7 +29,7 @@ from kodparse import KodIndex  # noqa: E402
 from server104 import SERVER104  # noqa: E402  (ReferenceServers/Server-104)
 
 # Raza demo: town, interiors, mausoleum, outskirts, western Farol.
-DEMO_RIDS = [300, 301, 302, 303, 304, 305, 306, 307, 308, 330, 331, 332, 333]
+DEMO_RIDS = [300, 301, 302, 303, 304, 305, 306, 307, 308, 330, 331, 332, 333, 526, 536, 537, 706]
 
 # Kod angles: 0..4096 (MAX_ANGLE), 0 = east, increasing toward south, i.e. measured from
 # ROO +X toward ROO +Y (rows grow southward).  yaw_deg = angle * 360 / 4096.

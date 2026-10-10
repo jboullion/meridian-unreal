@@ -1,0 +1,26 @@
+{
+  "_doc": "Zone art for The Grand Museum of Raza (rid 308), the interiors' art pass (docs/adr/0003, 2026-10-10): no buildings rebuilt; the cut-outs (bars, cages, gates) become solids and indoor grime runs along the wall feet and under the ceiling. Wall torches stay with the fire pipeline (props.json \"fires\").",
+  "rid": 308,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        1.8,
+        2.3,
+        44.5,
+        32.9
+      ],
+      "displacement": "none",
+      "_doc": "every cut-out in the room, rebuilt as a solid (facades.json cutouts)"
+    }
+  ],
+  "grime": {
+    "base": "indoor_base",
+    "ceiling": "ceiling"
+  },
+  "_grime_doc": "Which materials.json \"grime\" kinds the strips use: indoor dirt at the wall feet, soot under the ceiling."
+}

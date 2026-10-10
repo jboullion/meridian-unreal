@@ -20,6 +20,8 @@ Without this file, the zone renders as the plain blockout with placeholder mater
 | `buildings[].detail` | opt-in Blender detail: `timber`, `tiles`, `window_boxes` (`zone_detail.py`); off by default |
 | `buildings[].grid_m` | displacement grid size (default 0.25; only matters with displacement on) |
 | `scatter[]` | ground decoration: `meshes`, `per_m2` per floor texture, `scale`, `cull_m`, `shadows`, `seed`, `keep_out_m` |
+| `grime` | which `materials.json` `grime` kind each strip uses: `{"base": "indoor_base", "ceiling": "ceiling"}` (interiors). Defaults: `base`, `eave`, no ceiling strips |
+| `trims` | skirting boards and cornices along the room walls (`zone_trims.py`): `skirting` / `cornice` `{height_m, depth_m, texture}`, `min_wall_m`, `exclude`. Tried on Raza's interiors and dropped (2026-10-10); off unless set |
 
 A per-building Blender override `art_src/environment/zones/<rid>/<Building>.blend` replaces the generated building (`--seed-override <Building>` starts one).
 
@@ -46,7 +48,7 @@ Other animated textures (`catalog.json` `frames` > 1) show frame 0.
 |---|---|
 | `materials` | `grd` → real material asset override (empty today) |
 | `relief` | `normals`, `displacement`, `flat_openings`, `flat` (regex on the catalog **name**, case-insensitive), `rules_for` (names that keep the rule-based maps instead of Marigold's: roofs and the four path/stone/rock floors; changing it remakes those texture sets). `true`/`false` switches both |
-| `grime` | `enabled`, `exclude` (texture-name regex), `base` and `eave` blocks: `height_m`, linear `color`, `opacity`, `falloff` |
+| `grime` | `enabled`, `exclude` (texture-name regex), and kinds with `height_m`, linear `color`, `opacity`, `falloff`: `base` and `eave` (the town's), `indoor_base` and `ceiling` (interiors, picked by `zone_<rid>.json` `grime`). Walls the original leaves untextured get none |
 | `variants` | parameters for `<grd>__<variant>` slots: `pane`, `glass`, `panel`, `solid` |
 | `displacement`, `displacement_range_cm`, `displacement_facade_scale` | per-texture Nanite displacement strengths; dormant while `relief.displacement` is false |
 | `ground` | floors drawn with the world-aligned ground master (`tile_m` 2.2, optional `normal_strength`, default 0.8, and `large_normal_scale` for the 2.73x layer, default 1.5) |

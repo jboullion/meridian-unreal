@@ -45,11 +45,14 @@ class _Lookup:
         return out
 
 
-def build_grime(out, prims, polys_of, cfg, no_grime):
-    """Add the strips to `out` (a MeshOut, glTF space) in slots "grime_base" and "grime_eave".
+def build_grime(out, prims, polys_of, cfg, no_grime, kinds=None):
+    """Add the strips to `out` (a MeshOut, glTF space) in slots "grime_<kind>".
     cfg: materials.json "grime"; no_grime: wall textures that get none (cut-outs, foliage, the
-    names matching cfg "exclude"). Returns (base strips, eave strips)."""
-    floors, roofs = _Lookup(), _Lookup()
+    names matching cfg "exclude"). kinds: which materials.json "grime" kind each strip uses (a zone's
+    "grime" in zone_<rid>.json): "base" (wall feet), "eave" (under a roof), "ceiling" (under a
+    ceiling, along the wall's top; none unless given). Returns (base strips, eave strips, ceiling strips)."""
+    kinds = dict({"base": "base", "eave": "eave", "ceiling": None}, **(kinds or {}))
+    floors, roofs, ceilings = _Lookup(), _Lookup(), _Lookup()
     walls = []
     for prim in prims.values():
         for a, b, c in prim.triangles:
@@ -59,13 +62,17 @@ def build_grime(out, prims, polys_of, cfg, no_grime):
                 floors.add(pa, pb, pc)
             elif 0.1 < ny <= 0.97:
                 roofs.add(pa, pb, pc)
+            elif ny < -0.97:
+                ceilings.add(pa, pb, pc)
         if prim.material in no_grime:
             continue
         walls += [p for p in polys_of(prim, range(len(prim.triangles))) if p.vertical]
 
-    base_h = float(cfg.get("base", {}).get("height_m", 0.9))
-    eave_h = float(cfg.get("eave", {}).get("height_m", 0.6))
-    n_base = n_eave = 0
+    def height(kind, default):
+        return float(cfg.get(kinds[kind] or "", {}).get("height_m", default))
+
+    base_h, eave_h, ceil_h = height("base", 0.9), height("eave", 0.6), height("ceiling", 0.5)
+    n_base = n_eave = n_ceil = 0
     for poly in walls:
         if len(poly.pts) < 3:
             continue
@@ -82,18 +89,25 @@ def build_grime(out, prims, polys_of, cfg, no_grime):
             probe = mid + n * 0.3
             if any(abs(h - mid.y) < 0.15 for h in floors.heights(probe.x, probe.z)):
                 h = min(base_h, 0.6 * (top_y - bottom_y))
-                _strip(out, a, b, UP * h, n, "grime_base")
+                _strip(out, a, b, UP * h, n, "grime_" + kinds["base"])
                 n_base += 1
         # eave: a level top edge with a roof starting on it
         c, d = pts[-1], pts[-2]
         if (d - c).length > 0.2 and abs(c.y - d.y) < 0.02:
             mid = (c + d) / 2
             probe = mid - n * 0.25  # just behind the wall face, under the roof
-            if any(-0.05 < h - mid.y < 1.2 for h in roofs.heights(probe.x, probe.z)):
+            if kinds["eave"] and any(-0.05 < h - mid.y < 1.2 for h in roofs.heights(probe.x, probe.z)):
                 h = min(eave_h, 0.5 * (top_y - bottom_y))
-                _strip(out, c, d, -UP * h, n, "grime_eave")
+                _strip(out, c, d, -UP * h, n, "grime_" + kinds["eave"])
                 n_eave += 1
-    return n_base, n_eave
+            # ceiling: a level top edge that meets a ceiling in front of the wall (indoors)
+            elif kinds["ceiling"]:
+                probe = mid + n * 0.3
+                if any(abs(h - mid.y) < 0.15 for h in ceilings.heights(probe.x, probe.z)):
+                    h = min(ceil_h, 0.4 * (top_y - bottom_y))
+                    _strip(out, c, d, -UP * h, n, "grime_" + kinds["ceiling"])
+                    n_ceil += 1
+    return n_base, n_eave, n_ceil
 
 
 def _strip(out, a, b, rise, n, slot):

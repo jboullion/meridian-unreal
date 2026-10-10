@@ -38,7 +38,7 @@ Last survey: 2026-10-08. M0 to M9 done the same day; what they left over is in "
 |---|---|---|---|---|
 | Enter a room, walk, turn | `BP_PLAYER`, `BP_REQ_MOVE`, `BP_REQ_TURN` | Done | Done | — |
 | Doors ("go") and edge exits | `BP_REQ_GO` | Done | Done | — |
-| Every room in the world | `.roo` | Done: 13 built rooms; any other room is built at runtime from the server's files | Done: 362 rooms parsed at runtime | M1, W2 |
+| Every room in the world | `.roo` | Done: 17 built rooms; any other room is built at runtime from the server's files | Done: 362 rooms parsed at runtime | M1, W2 |
 | Server room changes: lifts, doors, texture swaps | `BP_SECTOR_MOVE`, `BP_SECTOR_CHANGE`, `BP_CHANGE_TEXTURE`, `BP_WALL_ANIMATE` | Partial: lifts, depth, scroll and texture changes on runtime rooms; authored zones don't move (W2.3); wall frames (`BP_WALL_ANIMATE`) not yet | Missing | M7 |
 | Scrolling and animated textures | from the `.roo` | Partial: scrolling floors, ceilings and walls on runtime rooms; frame animation not yet | Done | M7 |
 | Sky and background overlays (sun, moon) | `BP_BACKGROUND`, `BP_*_BG_OVERLAY` | Decided: our own sky and sun (ADR 0005); the server's background is kept, not drawn | Done | M7 |
@@ -152,11 +152,13 @@ Last survey: 2026-10-08. M0 to M9 done the same day; what they left over is in "
 
 | Tier | Rooms | Notes |
 |---|---|---|
-| Authored | 13 (Raza and around, RIDs 300–308, 330–333) | the zone-environment skill |
+| Authored | 17 (Raza and around, RIDs 300–308, 330–333; pass 2's forest ring 526, 536, 537, 706) | the zone-environment skill; how far each is: [world-maps.md](world-maps.md) |
 | Baked | 0 | W2: every room, built automatically from the blockout |
 | Runtime | every other room (about 380) | M1: built when entered, from the server's `.roo` and textures |
 
 The server serves about 395 rooms. `ReferenceServers/Server-104/resource/rooms` has 362 of them; the Server 104 client folder has 378.
+
+Every map, its pass in the remaster order and how far it is: [world-maps.md](world-maps.md) (`npm run maps`; ADR 0012 "W3: the map list and the pass order").
 
 ## Milestones
 

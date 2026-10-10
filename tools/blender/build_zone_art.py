@@ -78,6 +78,7 @@ import facades  # noqa: E402
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import zone_detail  # noqa: E402
 import zone_grime  # noqa: E402
+import zone_trims  # noqa: E402
 
 M_PER_SQUARE = 2.2
 GRID_M = 0.25  # art meshes are cut into this grid so displacement has interior vertices to move
@@ -1502,15 +1503,29 @@ def main():
         pattern = re.compile(grime_cfg.get("exclude") or "$^", re.I)
         no_grime = {grd for grd, info in catalog.items()
                     if info.get("has_transparency") or pattern.search(info.get("name", ""))}
+        no_grime.add("untextured")  # a wall the original leaves without a texture (roo2gltf tex_key)
         out = MeshOut()
-        n_base, n_eave = zone_grime.build_grime(out, prims, polys_of, grime_cfg, no_grime)
+        n_base, n_eave, n_ceil = zone_grime.build_grime(out, prims, polys_of, grime_cfg, no_grime, config.get("grime"))
         name = "SM_Z%d_Grime" % rid
         obj = make_object(name, out, art_col, grid=False)
         path = os.path.join(out_dir, name + ".glb")
         export_glb(obj, path)
         manifest["meshes"].append({"name": name, "file": os.path.basename(path), "building": "Grime",
                                    "displacement": "none", "decal": True})
-        log("%s: %d wall-foot strips, %d eave strips -> %d triangles" % (name, n_base, n_eave, len(obj.data.polygons)))
+        log("%s: %d wall-foot strips, %d eave strips, %d ceiling strips -> %d triangles" % (name, n_base, n_eave, n_ceil, len(obj.data.polygons)))
+
+    # skirting boards and cornices along the room walls (zone_<rid>.json "trims"; zone_trims.py)
+    if config.get("trims"):
+        out = MeshOut()
+        n_skirt, n_corn = zone_trims.build_trims(out, prims, polys_of, config["trims"], catalog, {"untextured"})
+        name = "SM_Z%d_Trims" % rid
+        obj = make_object(name, out, art_col, grid=False)
+        path = os.path.join(out_dir, name + ".glb")
+        export_glb(obj, path)
+        manifest["meshes"].append({"name": name, "file": os.path.basename(path), "building": "Trims",
+                                   "displacement": "none"})
+        log("%s: %d skirting runs, %d cornice runs -> %d triangles, slots %s"
+            % (name, n_skirt, n_corn, len(obj.data.polygons), ", ".join(out.slots)))
 
     # the rest of the blockout, for context in the .blend and the preview
     render_glb = os.path.join(out_dir, "blockout_render.glb")

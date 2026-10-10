@@ -68,7 +68,11 @@
     "307": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.5, "base_light": 164, "outside": 5, "ambient": {"motes": 1}},
     "308": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.5, "base_light": 164, "outside": 5, "ambient": {"motes": 1}},
     "332": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.3, "base_light": 164, "outside": 3, "ambient": {"motes": 1}},
-    "333": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.3, "base_light": 164, "outside": 3, "ambient": {"motes": 1}}
+    "333": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.3, "base_light": 164, "outside": 3, "ambient": {"motes": 1}},
+    "526": {"cycle": "raza_outdoor", "weather_zone": 4, "weather_mask": "DEFAULT", "ambient": {"pollen": 1, "fireflies": 0.5}},
+    "536": {"cycle": "raza_outdoor", "weather_zone": 4, "weather_mask": "DEFAULT", "ambient": {"pollen": 1, "fireflies": 1, "leaves": 1}},
+    "537": {"cycle": "raza_outdoor", "weather_zone": 3, "weather_mask": "DEFAULT", "ambient": {"pollen": 1, "fireflies": 1, "leaves": 1}},
+    "706": {"cycle": "raza_interior", "kind": "underground", "sun": false, "daylight": 0.0, "lamps": "always", "base_light": 164, "outside": 0, "weather_zone": 0, "ambient": {"motes": 1}}
   },
   "atmosphere": {
     "_doc": "Phase 5 (docs/adr/0005; UMREnvironmentSubsystem::AtmosphereFor). night_deg: the sun's elevation (degrees) below which it's full night and above which full day (MPC_Environment.Night: fireflies, moths, smoke). seasons: tint per season [spring, summer, fall, winter] on foliage and grass (materials.json \"seasons\"; summer is the original), and winter_snow_cover, snow that lies outdoors all winter where winter storms bring snow (0: off; 0.12, an even dusting, read as pale sand in look-dev p5b_winter_17; the original has none; keep below the pond's 0.15 so it doesn't ice over without a storm). smoke: how thickly the chimneys smoke (0..1): base, plus morning over morning_hours [rising from, full, full until, gone by], plus night x Night, plus winter; times 1 - storm x the storm. ambient: per kind, the share by season [spring, summer, fall, winter], when (day, night, always) and storm (the share a full storm takes away outdoors; negative brings more); the zone profiles' \"ambient\" say which kinds show where. The look of each (sizes, colours, counts): materials.json \"atmosphere\".",
@@ -337,7 +341,7 @@
         "intensity": 1.0,
         "volumetric_scattering_intensity": 0.15,
         "lower_hemisphere_is_black": false,
-        "lower_hemisphere_color": [0.1, 0.075, 0.05, 1.0]
+        "lower_hemisphere_color": [0.085, 0.064, 0.043, 1.0]
       },
       "HeightFog": {
         "fog_density": 0.3,
@@ -362,7 +366,7 @@
         "WindowGlow": 0.0,
         "WindowDaylight": 0.5,
         "Stars": 0.0,
-        "SectorAmbient": 1.0,
+        "SectorAmbient": 0.85,
         "AmbientTint": [1.0, 0.86, 0.7]
       }
     },
@@ -370,7 +374,7 @@
       "_doc": "Inside a Raza building at night: the windows dark, the room lit by its own lights over a dimmer warm ambient floor, exposure allowed to go darker.",
       "inherit": "raza_interior_day",
       "SkyLight": {
-        "lower_hemisphere_color": [0.06, 0.042, 0.026, 1.0]
+        "lower_hemisphere_color": [0.051, 0.036, 0.022, 1.0]
       },
       "GlobalPostProcess": {
         "settings": {
@@ -388,7 +392,7 @@
       "_doc": "The Mausoleum (ADR 0003 mood target: cold, high contrast, torch-lit): no daylight, a cold dim ambient floor, a faint cold mist that the torches and braziers glow in (the interiors' haze), desaturated cool grading with strong contrast; braziers and lights give the warm pools.",
       "inherit": "raza_interior_night",
       "SkyLight": {
-        "lower_hemisphere_color": [0.03, 0.036, 0.048, 1.0]
+        "lower_hemisphere_color": [0.026, 0.031, 0.041, 1.0]
       },
       "HeightFog": {
         "fog_density": 0.3,

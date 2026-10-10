@@ -53,8 +53,8 @@ Work in this order; each step is cheap to re-run (everything is incremental).
 1. **Blockout and textures exist.** The demo zones are `DEMO_RIDS` in `tools/kod_extract/extract.py`.
    If the zone is new there, run `extract.py`, `bgf2png.py --textures-for-zones`, then `roo2gltf.py --rid <rid> --preview`.
    Check `build/zones/<rid>_<Name>.glb` and its `.png` top-down map.
-2. **Inventory the zone's textures.** List the slots the blockout uses (`blockout.read_glb`) with catalog names.
-   Make a contact sheet and sort each into: tileable surface, roof, painted facade (windows/doors), cut-out (fence, gate, sign, torch, bars), foliage cut-out, sign or picture, animated (`catalog.json` `frames` > 1).
+2. **Inventory the zone's textures.** `python tools/environment/zone_textures.py <rid>` lists the blockout's slots with catalog names, area and where they are (wall, floor, ceiling), sorted into wall torch (the fire pipeline's), cut-out solid, foliage cut-out, painted and kept flat, animated and plain surface, and writes `build/environment/zone_<rid>/textures.png`.
+   Check the sort on the sheet: painted art filed as a surface needs `relief.flat` (step 4); roofs aren't told apart, so find them by eye.
    Show the sheet to the user.
 3. **`facades.json`.** For every texture with painted windows, add `openings` with `"kind": "window"` (doors: `"kind": "door"`).
    With facade relief off, these still drive the night-glow mask (`T_<grd>_E`), the window flattening and `flat_openings`.
@@ -96,13 +96,18 @@ Work in this order; each step is cheap to re-run (everything is incremental).
 12. **Record.** Log any new experiment, comparison or decision in ADR 0003 (with the sheet paths).
     If a *default* changed, update this skill's table and the reference files too.
 
-## Interiors and other zones: what isn't proven yet
+## Interiors and other zones
 
-The art recipe (textures, rebuild, grime) was proven on Raza's town (300) only; the lighting recipe (ADR 0005 phases 1–2) also covers Raza's interiors and the Mausoleum. For other interiors and the forest zones (330, 331), expect these gaps. Raise them with the user rather than guessing:
-- **Lighting.** A zone without a profile in `moods.json` `"zones"` gets the town's outdoor cycle. Add a profile (see step 10) and cameras (`python tools/lookdev/suggest_cameras.py <rid>`).
-- **Zone config.** An interior usually needs no `buildings` regions. A single `"kind": "cutouts"` entry over the whole blockout gives solid torches, bars and signs. Grime runs over the whole zone either way. Check that the 1.1 m base strips aren't too heavy indoors, and tune them in `materials.json` `grime` (it's global today).
+**Interiors** (Raza's ten, 2026-10-10; ADR 0003 "Raza's interiors"):
+- **Zone config.** No `buildings` regions. Use `"rebuild": ["cutouts"]` and a single `"kind": "cutouts"` entry over the whole blockout (solid bars, cages, gates; wall torches stay with the fire pipeline). Copy `zone_301.json`.
+- **Grime.** Set `"grime": {"base": "indoor_base", "ceiling": "ceiling"}` (`materials.json` kinds: darker contact dirt at the wall feet and a band under the ceiling). The town's base strips vanish on dark rooms.
+- **Not used.** Skirting boards and cornices (`"trims"`, `tools/blender/zone_trims.py`) were tried and dropped by the user: they read as dark lines and cover painted beams. A brighter or deeper day mood was also turned down; interiors keep `raza_interior_day`.
+- **Expect little change.** The town's recipe changes interiors little: on Raza's, only the solid cut-outs showed.
+- **Painted art.** Tapestries, shelves, cabinets, weapon racks, barrel racks and cloths are in `relief.flat`. Confirm it on the zone's texture sheet.
+
+**Other zones** (the forest zones 330 and 331, new maps). Raise these gaps with the user rather than guessing:
+- **Lighting.** A zone without a profile in `moods.json` `"zones"` gets the town's outdoor cycle. Add a profile (see step 10) and cameras (`python tools/lookdev/suggest_cameras.py <rid>`; `--opposite` gives the reverse view).
 - **Look-dev.** `run_lookdev.ps1` starts in zone 300; zones one exit away (Raza's interiors, the Outskirts) stream in. For farther zones pass `-StartZone <rid>`.
-- **Interiors' painted art** (tapestries, shelves, cabinets, weapons racks) is already in `relief.flat`. Confirm it on a contact sheet for the zone.
 
 ## The iteration loop
 

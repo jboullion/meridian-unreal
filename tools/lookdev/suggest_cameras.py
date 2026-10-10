@@ -6,6 +6,7 @@ interiors; move or add cameras by hand (or MRBookmark in game) where a room need
 
     python tools/lookdev/suggest_cameras.py 301 302 303      # -> [{"name": "int_301", ...}, ...]
     python tools/lookdev/suggest_cameras.py 301 --prefix int_inn
+    python tools/lookdev/suggest_cameras.py 301 --prefix int_inn_2 --opposite   # from the far corner, looking back
 """
 import argparse
 import collections
@@ -43,7 +44,7 @@ def inside(p, a, b, c):
     return not ((d1 < 0 or d2 < 0 or d3 < 0) and (d1 > 0 or d2 > 0 or d3 > 0))
 
 
-def suggest(rid, origin, name):
+def suggest(rid, origin, name, opposite=False):
     glb = next(iter(glob.glob(os.path.join(REPO, "build", "zones", "%d_*.glb" % rid))), None)
     if not glb:
         raise SystemExit("no build/zones/%d_*.glb (run tools/roo2gltf/roo2gltf.py)" % rid)
@@ -56,6 +57,8 @@ def suggest(rid, origin, name):
     xs = [p[0] for f in main for p in f[:3]]
     zs = [p[1] for f in main for p in f[:3]]
     x0, x1, z0, z1 = min(xs), max(xs), min(zs), max(zs)
+    if opposite:
+        x0, x1, z0, z1 = x1, x0, z1, z0  # the same walk from the far corner
     # from 15% in from a corner towards the middle, until the point is on the main floor
     px, pz = (x0 + x1) / 2, (z0 + z1) / 2
     for k in range(40):
@@ -75,13 +78,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("rids", nargs="+", type=int)
     ap.add_argument("--prefix", default="int_", help="camera name prefix (name = prefix + rid, or prefix alone for one zone)")
+    ap.add_argument("--opposite", action="store_true", help="stand in the far corner and look back")
     args = ap.parse_args()
     layout = json.load(open(os.path.join(REPO, "data", "zone_layout.json"), encoding="utf-8"))
     origins = {z["rid"]: z["world_origin_cm"] for z in layout["zones"]}
     cams = []
     for rid in args.rids:
         name = args.prefix if len(args.rids) == 1 and not args.prefix.endswith("_") else "%s%d" % (args.prefix, rid)
-        cams.append(suggest(rid, origins[rid], name))
+        cams.append(suggest(rid, origins[rid], name, args.opposite))
     print(json.dumps(cams, indent=1))
 
 

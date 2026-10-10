@@ -4126,5 +4126,438 @@
    }
   ],
   "file": "Server-104/kod/object/active/holder/room/razarm/razabank.kod"
+ },
+ {
+  "rid": 526,
+  "class": "OutdoorsB6",
+  "parents": [
+   "ObjectRoom",
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Druid Hills",
+  "roo": "b6.roo",
+  "music": "walk4.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_MOUNTAIN",
+   "TERRAIN_HILLS"
+  ],
+  "teleport": {
+   "row": 12,
+   "col": 12,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 8,
+  "info": null,
+  "exits": [],
+  "edge_exits": [
+   {
+    "side": "LEAVE_EAST",
+    "dest_rid": 331,
+    "dest_row": 16,
+    "dest_col": 2,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_NORTH",
+    "dest_rid": 750,
+    "dest_row": 46,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_NORTH",
+    "dest_rid": 516,
+    "dest_row": 41,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Scorpion",
+     "weight": 100
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 80,
+   "init_count_min": 4,
+   "init_count_max": 8,
+   "monster_count_max": 15
+  },
+  "objects": [
+   {
+    "class": "Flagpole",
+    "row": 14,
+    "col": 25,
+    "angle": 0,
+    "by": "territry.kod CreateOneFlagpole"
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/objroom/b6.kod"
+ },
+ {
+  "rid": 536,
+  "class": "OutdoorsC6",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Forest of Farol",
+  "roo": "c6.roo",
+  "music": "walk5.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_FOREST"
+  ],
+  "teleport": {
+   "row": 31,
+   "col": 23,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 8,
+  "info": null,
+  "exits": [
+   {
+    "row": 2,
+    "col": 17,
+    "dest_rid": 706,
+    "dest_row": 2,
+    "dest_col": 21,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 3,
+    "col": 17,
+    "dest_rid": 706,
+    "dest_row": 2,
+    "dest_col": 21,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [
+   {
+    "side": "LEAVE_EAST",
+    "dest_rid": 550,
+    "dest_row": 7,
+    "dest_col": 3,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_SOUTH",
+    "dest_rid": 537,
+    "dest_row": 4,
+    "dest_col": 34,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_NORTH",
+    "dest_rid": 535,
+    "dest_row": 55,
+    "dest_col": 24,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_WEST",
+    "dest_rid": 331,
+    "dest_row": 20,
+    "dest_col": 54,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Spider",
+     "weight": 70
+    },
+    {
+     "class": "Ent",
+     "weight": 30
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 70,
+   "init_count_min": 3,
+   "init_count_max": 8,
+   "monster_count_max": 12
+  },
+  "objects": [
+   {
+    "class": "Flagpole",
+    "row": 20,
+    "col": 11,
+    "angle": 0,
+    "by": "territry.kod CreateOneFlagpole"
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/c6.kod"
+ },
+ {
+  "rid": 537,
+  "class": "OutdoorsC7",
+  "parents": [
+   "ObjectRoom",
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Faronath, home of the TreeFolk",
+  "roo": "c7.roo",
+  "music": "walk5.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_FOREST"
+  ],
+  "teleport": {
+   "row": 15,
+   "col": 19,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 8,
+  "info": null,
+  "exits": [
+   {
+    "row": 6,
+    "col": 13,
+    "dest_rid": 706,
+    "dest_row": 20,
+    "dest_col": 4,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 6,
+    "col": 14,
+    "dest_rid": 706,
+    "dest_row": 20,
+    "dest_col": 4,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [
+   {
+    "side": "LEAVE_EAST",
+    "dest_rid": 547,
+    "dest_row": 6,
+    "dest_col": 3,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_NORTH",
+    "dest_rid": 536,
+    "dest_row": 45,
+    "dest_col": 26,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Spider",
+     "weight": 5
+    },
+    {
+     "class": "Ent",
+     "weight": 95
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 25000,
+   "gen_percent": 80,
+   "init_count_min": 6,
+   "init_count_max": 12,
+   "monster_count_max": 10
+  },
+  "objects": [
+   {
+    "class": "Flagpole",
+    "row": 42,
+    "col": 15,
+    "angle": 0,
+    "by": "territry.kod CreateOneFlagpole"
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/objroom/c7.kod"
+ },
+ {
+  "rid": 706,
+  "class": "GuildHall7",
+  "parents": [
+   "GuildHall",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Old Dwarven Hall",
+  "roo": "guildh7.roo",
+  "music": "ltlgirl.ogg",
+  "flags": [
+   "ROOM_SANCTUARY"
+  ],
+  "terrain": [
+   "TERRAIN_GUILDHALL",
+   "TERRAIN_CITY"
+  ],
+  "teleport": {
+   "row": 5,
+   "col": 11,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 0,
+  "info": null,
+  "exits": [
+   {
+    "row": 2,
+    "col": 10,
+    "dest_rid": 535,
+    "dest_row": 49,
+    "dest_col": 35,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 19,
+    "col": 4,
+    "dest_rid": 537,
+    "dest_row": 5,
+    "dest_col": 14,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 1,
+    "col": 22,
+    "dest_rid": 536,
+    "dest_row": 3,
+    "dest_col": 18,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "Table",
+    "row": 10,
+    "col": 16
+   },
+   {
+    "class": "Table",
+    "row": 12,
+    "col": 19
+   },
+   {
+    "class": "Brazier",
+    "row": 21,
+    "col": 7,
+    "fine_row": 0,
+    "fine_col": 24
+   },
+   {
+    "class": "Brazier",
+    "row": 20,
+    "col": 4,
+    "fine_row": 40,
+    "fine_col": 16
+   },
+   {
+    "class": "Brazier",
+    "row": 16,
+    "col": 11,
+    "fine_row": 44,
+    "fine_col": 56
+   },
+   {
+    "class": "Brazier",
+    "row": 5,
+    "col": 8,
+    "fine_row": 12,
+    "fine_col": 48
+   },
+   {
+    "class": "Brazier",
+    "row": 2,
+    "col": 9,
+    "fine_row": 0,
+    "fine_col": 4
+   },
+   {
+    "class": "Brazier",
+    "row": 7,
+    "col": 19,
+    "fine_row": 54,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 1,
+    "col": 20,
+    "fine_row": 44,
+    "fine_col": 60
+   },
+   {
+    "class": "Brazier",
+    "row": 4,
+    "col": 20,
+    "fine_row": 60,
+    "fine_col": 48
+   },
+   {
+    "class": "Firepit",
+    "row": 12,
+    "col": 27,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Firepit",
+    "row": 17,
+    "col": 27,
+    "fine_row": 32,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 13,
+    "col": 33,
+    "fine_row": 32,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 16,
+    "col": 33,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "WoodenBox",
+    "row": 13,
+    "col": 37,
+    "fine_row": 48,
+    "fine_col": 0,
+    "angle": 1024
+   },
+   {
+    "class": "WoodenBox",
+    "row": 14,
+    "col": 37,
+    "fine_row": 48,
+    "fine_col": 48,
+    "angle": 2048
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/ghall/guildh7.kod"
  }
 ]

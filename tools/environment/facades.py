@@ -80,6 +80,20 @@ def opening_outline(op, grow=0.0, segments=8):
     return pts
 
 
+_TORCH_WALLS = None
+
+
+def torch_walls():
+    """Wall textures with a torch painted on that the fire pipeline replaces with its torch mesh and
+    flame (props.json "fires" -> "walls"; tools/environment/fires.py, tools/ue/build_world.py)."""
+    global _TORCH_WALLS
+    if _TORCH_WALLS is None:
+        props = os.path.join(os.path.dirname(FACADES), "props.json")
+        fires = json.load(open(props, encoding="utf-8")).get("fires", {}) if os.path.exists(props) else {}
+        _TORCH_WALLS = {grd for p in fires.values() if isinstance(p, dict) for grd in p.get("walls", {})}
+    return _TORCH_WALLS
+
+
 def cutout_thickness(grd, data=None, catalog=None, crenels=False):
     """Thickness (m) to rebuild a cut-out (alpha) original as a solid, or None when it stays a flat
     cut-out: not transparent, foliage ("cutouts" "exclude"), or crenellations (built as parapets,
@@ -92,6 +106,8 @@ def cutout_thickness(grd, data=None, catalog=None, crenels=False):
     rules = data.get("cutouts", {})
     if not info or not info.get("has_transparency") or ("crenels" in data["textures"].get(grd, {}) and not crenels):
         return None
+    if grd.split("__")[0] in torch_walls():
+        return None  # the fire pipeline's: its torch mesh and flame go on these (props.json "fires" "walls")
     name = info["name"]
     if rules.get("exclude") and re.search(rules["exclude"], name, re.I):
         return None

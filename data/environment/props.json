@@ -40,7 +40,7 @@
     "Dice": {"mesh": "SM_AI_Dice", "random_yaw": true},
     "FeyTree": {"mesh": "SM_AI_Feytree", "random_yaw": true, "blocks": {"radius_m": 0.2, "height_m": 3.0}},
     "FirePit": {"mesh": "SM_AI_Firepit"},
-    "Firepit": {"mesh": "SM_AI_Firepit"},
+    "Firepit": {"mesh": "SM_AI_Firepit", "_doc": "kod firepit.kod: a Flickerer with the brazier's flame (brazflam.bgf) and a wavering fire light at 50 (2026-10-10: it was a cold mesh; the Old Dwarven Hall has the only two)", "fire": {"preset": "brazier", "base_m": 0.2}, "light": {"kod_intensity": 50, "candela_scale": 0.4, "kod_color": 32518, "offset_m": 0.6, "source_radius_cm": 25, "flicker": true}},
     "Fountain": {"mesh": "SM_AI_Fountain", "blocks": true},
     "GlowTree": {"mesh": "SM_AI_Nectree3", "random_yaw": true, "blocks": {"radius_m": 0.35, "height_m": 3.0}},
     "KocatanBrazier": {"mesh": "SM_AI_Koclamp", "blocks": {"radius_m": 0.12, "height_m": 2.5}},

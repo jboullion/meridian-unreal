@@ -46,7 +46,9 @@ Run `bgf2png` before `roo2gltf`, which needs texture sizes for its UVs.
 - **Check for z-fighting:** `blender -b build/environment/zone_<rid>/zone_<rid>_art.blend --factory-startup -P tools/blender/check_overlaps.py -- [SM_Z<rid>_<Building> …]` lists overlapping same-plane, same-facing triangle pairs per mesh (`MR_OVERLAP_DETAIL=20` prints the first 20 pairs).
 - **Helpers:**
   - `zone_detail.py`: cut-out tracing (`cutout_solid`), optional timber, tiles and window boxes.
-  - `zone_grime.py`: base and eave strips from the geometry, configured by `materials.json` `grime`.
+  - `zone_grime.py`: base, eave and ceiling strips from the geometry, configured by `materials.json` `grime` (the kinds a zone picks in its `grime`).
+  - `zone_trims.py`: skirting boards and cornices along room walls (`zone_<rid>.json` `trims`; off by default, dropped on Raza's interiors).
+- **Texture inventory:** `python tools/environment/zone_textures.py <rid> [...]` sorts a zone's textures for the art pass (wall torch, cut-out solid, foliage cut-out, painted and flat, animated, surface) into `build/environment/zone_<rid>/textures.png` and `textures.json`.
 
 **Kits**
 | Kit | Command | Output |

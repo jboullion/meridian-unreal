@@ -34,6 +34,7 @@
     "setup": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/setup.ps1",
 
     "data": "python tools/kod_extract/extract.py",
+    "maps": "python tools/world/map_inventory.py",
     "props:inventory": "python tools/aigen/inventory.py --world",
     "props:gallery-layout": "python tools/environment/prop_gallery.py",
     "props:overview": "python tools/aigen/aigen.py overview all 05_review/normalized/front.png"

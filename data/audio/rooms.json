@@ -323,6 +323,138 @@
     28.497,
     25.575
    ]
+  },
+  "526": {
+   "class": "OutdoorsB6",
+   "terrain": [
+    "TERRAIN_MOUNTAIN",
+    "TERRAIN_HILLS"
+   ],
+   "music": "walk4.ogg",
+   "loops": [
+    {
+     "sound": "icecave.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 10.278
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "ice04.ogg",
+     "ice03.ogg",
+     "sws_wind.ogg",
+     "rs_wind.ogg",
+     "eagle.ogg"
+    ],
+    "interval_ms": 10000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    111.1,
+    107.8
+   ]
+  },
+  "536": {
+   "class": "OutdoorsC6",
+   "terrain": [
+    "TERRAIN_FOREST"
+   ],
+   "music": "walk5.ogg",
+   "loops": [
+    {
+     "sound": "ambcntry.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 0.0
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "rs_for01.ogg",
+     "rs_for02.ogg",
+     "rs_for03.ogg",
+     "rs_for05.ogg",
+     "rs_for14.ogg",
+     "rs_for18.ogg",
+     "rs_for20.ogg"
+    ],
+    "interval_ms": 10000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    110.0,
+    107.8
+   ]
+  },
+  "537": {
+   "class": "OutdoorsC7",
+   "terrain": [
+    "TERRAIN_FOREST"
+   ],
+   "music": "walk5.ogg",
+   "loops": [
+    {
+     "sound": "ambcntry.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 0.0
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "rs_for01.ogg",
+     "rs_for02.ogg",
+     "rs_for03.ogg",
+     "rs_for05.ogg",
+     "rs_for14.ogg",
+     "rs_for18.ogg",
+     "rs_for20.ogg"
+    ],
+    "interval_ms": 10000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    110.0,
+    107.8
+   ]
+  },
+  "706": {
+   "class": "GuildHall7",
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_CITY"
+   ],
+   "music": "ltlgirl.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    83.6,
+    66.0
+   ]
   }
  }
 }

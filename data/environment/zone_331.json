@@ -1,0 +1,47 @@
+{
+  "_doc": "Zone art for the Western Edge of the Forest of Farol (rid 331), pass 2 of the world remaster (near Raza; docs/adr/0003, 2026-10-10): the town's recipe outdoors. No buildings; the tree lines stay flat cut-outs (foliage), grime at the rock walls' feet, grass tufts on the grass.",
+  "rid": 331,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -15.2,
+        0.9,
+        127.2,
+        119.4
+      ],
+      "displacement": "none",
+      "_doc": "every non-foliage cut-out, rebuilt as a solid"
+    }
+  ],
+  "scatter": [
+    {
+      "name": "grass",
+      "_doc": "Grass tufts on the grass floors, as in Raza's Outskirts (zone_300.json).",
+      "meshes": [
+        "SM_GrassClump_A",
+        "SM_GrassClump_B",
+        "SM_GrassClump_C"
+      ],
+      "per_m2": {
+        "grd02301": 6.0,
+        "grd02305": 4.0
+      },
+      "scale": [
+        0.7,
+        1.4
+      ],
+      "cull_m": [
+        28,
+        42
+      ],
+      "shadows": true,
+      "seed": 1,
+      "keep_out_m": 0.12
+    }
+  ]
+}

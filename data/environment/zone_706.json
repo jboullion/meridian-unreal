@@ -1,0 +1,25 @@
+{
+  "_doc": "Zone art for the Old Dwarven Hall (rid 706), pass 2 (near Raza; docs/adr/0003, 2026-10-10): the interiors' recipe. No buildings rebuilt; cut-outs become solids; indoor grime along the wall feet and under the ceiling.",
+  "rid": 706,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        5.3,
+        -1.0,
+        83.0,
+        45.8
+      ],
+      "displacement": "none",
+      "_doc": "every cut-out in the hall, rebuilt as a solid"
+    }
+  ],
+  "grime": {
+    "base": "indoor_base",
+    "ceiling": "ceiling"
+  }
+}
