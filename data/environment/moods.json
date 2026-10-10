@@ -49,6 +49,14 @@
       ]
     }
   },
+  "viewer_light": {
+    "_doc": "The viewer's light (UMREnvironmentSubsystem::UpdateViewLight): the original lights what is near the viewer by the player's light value (BP_PLAYER; 5 for a player, more under a light spell), falling off as 1 / distance, which is what keeps its dark rooms readable (clientd3d draw3d.c: a sector darker than 128 ignores the room's ambient). A point light that follows the camera, unshadowed, no specular, linear falloff. default: the value offline. intensity_per_unit, radius_m_per_unit: the light's brightness and reach per unit of the value. mr.Env.ViewLight scales it (0: off). Added 2026-10-10 for Marion's crypts (ADR 0003).",
+    "default": 5,
+    "intensity_per_unit": 0.4,
+    "radius_m_per_unit": 2.2,
+    "falloff_exponent": 2.0,
+    "color": [1.0, 0.92, 0.8]
+  },
   "zones": {
     "_doc": "Per zone (original room id) environment profile. cycle: which cycle it follows. kind: outdoor (default), interior or underground. sun: false turns the sun and moon off while the view is in the zone (interiors are closed boxes, but their single-sided walls and ceilings don't stop the sun's shadows). daylight: scales the moods' WindowDaylight (painted windows lit from outside by day): the original's outside factor / 10 (kod: 10 the Inn, 5 shops and the Hall, 3 the bank and vault, 0 underground). lamps: \"always\" keeps night-only lamps lit (the original's indoor lamps with outside factor 0). base_light, outside: the original room's base light (0-255) and outside factor (0-10) from data/zones.json; the director scales the moods' SectorAmbient by the original's room light, base + outside * (brightness - 50) / 4 (kod room.kod GetRoomLight), so rooms with windows dim at night. \"default\" covers every zone not listed. weather_zone: the original's weather zone (kod WEATHER_ZONE_*: Raza and its forest 13, Marion 4; 0 none, as the Mausoleum), whose storms the server rolls (AMRGameState). weather_mask: what a storm brings by season (kod WEATHER_MASK_* without the prefix: DEFAULT_NS is Raza's, rain in spring, summer and fall, snow in winter). Both fall back to \"default\". ambient: which ambient particles show here and how many ({kind: weight}; kinds in \"atmosphere\" \"ambient\"), also falling back to \"default\": Raza outdoors has pollen and fireflies, the forest also leaves, the buildings dust motes.",
     "default": {
@@ -72,7 +80,22 @@
     "526": {"cycle": "raza_outdoor", "weather_zone": 4, "weather_mask": "DEFAULT", "ambient": {"pollen": 1, "fireflies": 0.5}},
     "536": {"cycle": "raza_outdoor", "weather_zone": 4, "weather_mask": "DEFAULT", "ambient": {"pollen": 1, "fireflies": 1, "leaves": 1}},
     "537": {"cycle": "raza_outdoor", "weather_zone": 3, "weather_mask": "DEFAULT", "ambient": {"pollen": 1, "fireflies": 1, "leaves": 1}},
-    "706": {"cycle": "raza_interior", "kind": "underground", "sun": false, "daylight": 0.0, "lamps": "always", "base_light": 164, "outside": 0, "weather_zone": 0, "ambient": {"motes": 1}}
+    "706": {"cycle": "raza_interior", "kind": "underground", "sun": false, "daylight": 0.0, "lamps": "always", "base_light": 164, "outside": 0, "weather_zone": 0, "ambient": {"motes": 1}},
+    "200": {"cycle": "raza_outdoor", "weather_zone": 0, "ambient": {"pollen": 1, "fireflies": 1}},
+    "201": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.5, "base_light": 164, "outside": 5, "ambient": {"motes": 1}},
+    "202": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.5, "base_light": 164, "outside": 5, "ambient": {"motes": 1}},
+    "203": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.5, "base_light": 164, "outside": 5, "ambient": {"motes": 1}},
+    "204": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.3, "base_light": 164, "outside": 3, "ambient": {"motes": 1}},
+    "205": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.3, "base_light": 164, "outside": 3, "ambient": {"motes": 1}},
+    "206": {"cycle": "raza_outdoor", "weather_zone": 0, "ambient": {"pollen": 1, "fireflies": 1}},
+    "207": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 0.3, "base_light": 164, "outside": 3, "ambient": {"motes": 1}},
+    "208": {"cycle": "raza_interior", "kind": "interior", "sun": false, "daylight": 1.0, "base_light": 164, "outside": 10, "ambient": {"motes": 1}},
+    "535": {"cycle": "raza_outdoor", "weather_zone": 4, "weather_mask": "DEFAULT", "ambient": {"pollen": 1, "fireflies": 1, "leaves": 1}},
+    "717": {"cycle": "raza_interior", "kind": "underground", "sun": false, "daylight": 0.0, "lamps": "always", "base_light": 164, "outside": 0, "weather_zone": 0, "ambient": {"motes": 1}},
+    "2600": {"cycle": "raza_crypt", "kind": "underground", "sun": false, "daylight": 0.0, "lamps": "always", "base_light": 124, "outside": 0, "weather_zone": 0, "ambient": {"motes": 1}},
+    "2601": {"cycle": "raza_crypt", "kind": "underground", "sun": false, "daylight": 0.0, "lamps": "always", "base_light": 124, "outside": 0, "weather_zone": 0, "ambient": {"motes": 1}},
+    "2602": {"cycle": "raza_crypt", "kind": "underground", "sun": false, "daylight": 0.0, "lamps": "always", "base_light": 84, "outside": 0, "weather_zone": 0, "ambient": {"motes": 1}},
+    "2603": {"cycle": "raza_crypt", "kind": "underground", "sun": false, "daylight": 0.0, "lamps": "always", "base_light": 84, "outside": 0, "weather_zone": 0, "ambient": {"motes": 1}}
   },
   "atmosphere": {
     "_doc": "Phase 5 (docs/adr/0005; UMREnvironmentSubsystem::AtmosphereFor). night_deg: the sun's elevation (degrees) below which it's full night and above which full day (MPC_Environment.Night: fireflies, moths, smoke). seasons: tint per season [spring, summer, fall, winter] on foliage and grass (materials.json \"seasons\"; summer is the original), and winter_snow_cover, snow that lies outdoors all winter where winter storms bring snow (0: off; 0.12, an even dusting, read as pale sand in look-dev p5b_winter_17; the original has none; keep below the pond's 0.15 so it doesn't ice over without a storm). smoke: how thickly the chimneys smoke (0..1): base, plus morning over morning_hours [rising from, full, full until, gone by], plus night x Night, plus winter; times 1 - storm x the storm. ambient: per kind, the share by season [spring, summer, fall, winter], when (day, night, always) and storm (the share a full storm takes away outdoors; negative brings more); the zone profiles' \"ambient\" say which kinds show where. The look of each (sizes, colours, counts): materials.json \"atmosphere\".",

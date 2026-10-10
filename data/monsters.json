@@ -1,5 +1,141 @@
 [
  {
+  "class": "BatteredSkeleton",
+  "parents": [
+   "Skeleton",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/skel/batrskel.kod",
+  "vrName": "battered skeleton",
+  "vrDesc": "A few scraps of rotten flesh cling to this collection of human bones topped by a battered and distinctly nonhuman skull.  Sizzling liquid drips from its teeth, leaving small pits in the ground below.You shudder to think what dark ritual brought this abomination into being.",
+  "vrIcon": "skelbody.bgf",
+  "vrDead_icon": "skelX.bgf",
+  "viLevel": 60,
+  "viDifficulty": 4,
+  "viKarma": -70,
+  "viSpeed": 12,
+  "viAttack_type": 64,
+  "viDefault_behavior": 8405024,
+  "viTreasure_type": 44,
+  "viCashmin": 50,
+  "viCashmax": 280,
+  "viVisionDistance": 7,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 1,
+  "viOccupation": 0,
+  "viAttributes": 0,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": null,
+  "vrSound_miss": "skl2_atk.ogg",
+  "vrSound_aware": "skl2_awr.ogg",
+  "vrSound_death": "skl2_die.ogg",
+  "vars": {
+   "vrKocName": "cha'oleoc",
+   "vrDead_name": "pile of bones",
+   "vrHeadIcon": "skelhed3.bgf",
+   "piAnimation": 0,
+   "piReputationGroup": 13
+  },
+  "behavior_flags": [
+   "AI_MOVE_FLEE_FRIGHTENERS",
+   "AI_FIGHT_AGGRESSIVE",
+   "AI_FIGHT_SWITCHALOT"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_THRUST",
+   "ATCK_SPELL_ACID"
+  ],
+  "is_npc": false
+ },
+ {
+  "class": "BoatCaptain",
+  "parents": [
+   "Pirates",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/pirates/boatcaptain.kod",
+  "vrName": "Captain Seaborn",
+  "vrDesc": "If you want to travel to the land beyond, Captain Seaborn charges a heavy price for such a luxurious experience.",
+  "vrIcon": "captain.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 7,
+  "viAttributes": 163,
+  "viGender": 1,
+  "viMerchant_markup": 0,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "vrUnwanted_give": "~kCaptain Seaborn tells you, ''~B~rIf you want to travel on my boat, you need to buy a ticket. If you're not buying a ticket, get off my boat.~B~r''~k",
+   "plWantedItems": null,
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "items": [
+    {
+     "class": "BoatTicket",
+     "params": {
+      "model": null,
+      "destination": 107
+     }
+    },
+    {
+     "class": "BoatTicket",
+     "params": {
+      "model": null,
+      "destination": 1524
+     }
+    },
+    {
+     "class": "BoatTicket",
+     "params": {
+      "model": null,
+      "destination": 206
+     }
+    }
+   ]
+  }
+ },
+ {
   "class": "Bunny",
   "parents": [
    "Monster",
@@ -249,6 +385,486 @@
    "ATCK_WEAP_CLAW"
   ],
   "is_npc": false
+ },
+ {
+  "class": "MarionBartender",
+  "parents": [
+   "MarionTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/marntwn/mrbart.kod",
+  "vrName": "Tova",
+  "vrDesc": "There is no overlooking Tova, a bellowing and uproarious man who takes life exactly as it comes through the front door of the Limping Toad.  He is the proprietor here, serving drinks and entertaining from his self-styled rostrum noted for its powerful stout.",
+  "vrIcon": "mrbart.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 1,
+  "viAttributes": 99515,
+  "viGender": 1,
+  "viMerchant_markup": 1,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "vrUnwanted_keep": "~k%s%s tells you, \"Well, how nice of you.  A gift.~n~k\"",
+   "vrUnwanted_pay": "~k%s%s tells you, \"What an interesting item!~n~k\"",
+   "vrUnwanted_give": "~k%s%s tells you, \"Ha, ha, you've got to be kidding me, stranger! This is a tavern, not a gypsys tent!~n~k\"",
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "items": [
+    {
+     "class": "Meatpie"
+    },
+    {
+     "class": "Bread"
+    },
+    {
+     "class": "Mug",
+     "params": {
+      "number": 4
+     }
+    },
+    {
+     "class": "BeerMug"
+    },
+    {
+     "class": "BrawlGloves"
+    }
+   ],
+   "skills": [
+    {
+     "id": 408,
+     "const": "SKID_LOGGING"
+    }
+   ]
+  }
+ },
+ {
+  "class": "MarionBlacksmith",
+  "parents": [
+   "MarionTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/marntwn/mrsmith.kod",
+  "vrName": "Colhorr",
+  "vrDesc": "A country blacksmith with years of pounding the anvil ringing in his ears, Colhorr is an established landmark in Marion.  Most of his work consists of fabricating and repairing farming implements and hardware for the agrarian locals.",
+  "vrIcon": "mrsmith.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 5,
+  "viAttributes": 1243,
+  "viGender": 1,
+  "viMerchant_markup": 3,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "vrUnwanted_keep": "~k%s%s tells you, \"Hmmm, okay I guess.~n~k\"",
+   "vrUnwanted_pay": "~k%s%s tells you, \"Well it certainly looks valuable!~n~k\"",
+   "vrUnwanted_give": "~k%s%s tells you, \"Don't waste my time with that.~n~k\"",
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "items": [
+    {
+     "class": "LeatherArmor"
+    },
+    {
+     "class": "MetalShield"
+    },
+    {
+     "class": "Axe"
+    },
+    {
+     "class": "ShortSword"
+    },
+    {
+     "class": "Mace"
+    },
+    {
+     "class": "BlacksmithsHammer"
+    },
+    {
+     "class": "Sickle"
+    },
+    {
+     "class": "CuttingAxe"
+    }
+   ],
+   "spells": [
+    {
+     "id": 13,
+     "const": "SID_MEND"
+    },
+    {
+     "id": 212,
+     "const": "SID_CRAFTHAMMER"
+    },
+    {
+     "id": 211,
+     "const": "SID_CRAFTAXE"
+    },
+    {
+     "id": 234,
+     "const": "SID_CRAFTLONGSWORD"
+    },
+    {
+     "id": 213,
+     "const": "SID_CRAFTCHAINARMOR"
+    },
+    {
+     "id": 221,
+     "const": "SID_CRAFTGOLDSHIELD"
+    },
+    {
+     "id": 245,
+     "const": "SID_CRAFTSICKLE"
+    },
+    {
+     "id": 244,
+     "const": "SID_CRAFTWOODAXE"
+    },
+    {
+     "id": 249,
+     "const": "SID_CRAFTBRAWL"
+    }
+   ]
+  }
+ },
+ {
+  "class": "MarionElder",
+  "parents": [
+   "MarionTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/marntwn/mrelder.kod",
+  "vrName": "Ran er'Hoth",
+  "vrDesc": "An ancient member of the Marion community, Ran er'Hoth has taken on a somewhat legendary status throughout Meridian, and is sought out for his opinions and knowledge by pilgrims and travellers.  Whether he is considered a wise man or the village idiot locally really depends on who you talk to.",
+  "vrIcon": "mrelder.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 9,
+  "viAttributes": 66619,
+  "viGender": 1,
+  "viMerchant_markup": 0,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "items": [
+    {
+     "class": "StatsResetToken"
+    }
+   ],
+   "spells": [
+    {
+     "id": 26,
+     "const": "SID_TRUCE"
+    }
+   ]
+  }
+ },
+ {
+  "class": "MarionHealer",
+  "parents": [
+   "MarionTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/marntwn/mrhealer.kod",
+  "vrName": "Lady Aftyn",
+  "vrDesc": "In the presence of Lady Aftyn there is no mistaking that she is of royalty, and not from these parts.  She exudes a sense of peaceful determination; of confidence, serenity, and purpose.",
+  "vrIcon": "mrhealer.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 19,
+  "viAttributes": 1203,
+  "viGender": 2,
+  "viMerchant_markup": 2,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "items": [
+    {
+     "class": "PurifyPotion",
+     "params": {
+      "labelled": 1
+     }
+    },
+    {
+     "class": "RemoveCursePotion",
+     "params": {
+      "labelled": 1
+     }
+    },
+    {
+     "class": "CurePoisonPotion",
+     "params": {
+      "labelled": 1
+     }
+    },
+    {
+     "class": "CureDiseasePotion",
+     "params": {
+      "labelled": 1
+     }
+    },
+    {
+     "class": "Flask"
+    },
+    {
+     "class": "DyeBottle"
+    },
+    {
+     "class": "DyeRemover"
+    }
+   ],
+   "spells": [
+    {
+     "id": 159,
+     "const": "SID_DISTILL"
+    }
+   ]
+  }
+ },
+ {
+  "class": "MarionInnkeeper",
+  "parents": [
+   "MarionTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/marntwn/mrinnk.kod",
+  "vrName": "Morrigan",
+  "vrDesc": "A silly little man, Morrigan maintains a modest business alternately buying and selling reagents and other various notions.  Although his heart doesn't seem to be in commerce, there can be little doubt Morrigan loves his job. ",
+  "vrIcon": "mrinnk.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 3,
+  "viAttributes": 2131155,
+  "viGender": 1,
+  "viMerchant_markup": 1,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "piInitialRoomCost": 5000,
+   "piPerDayCost": 75,
+   "piKeyCopyCosts": 500,
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "items": [
+    {
+     "class": "VaultContract"
+    },
+    {
+     "class": "VaultResign"
+    },
+    {
+     "class": "PantsC",
+     "params": {
+      "translation": 33
+     }
+    },
+    {
+     "class": "PantsC",
+     "params": {
+      "translation": 34
+     }
+    },
+    {
+     "class": "ElderBerry",
+     "params": {
+      "number": 4
+     }
+    },
+    {
+     "class": "Herbs",
+     "params": {
+      "number": 5
+     }
+    },
+    {
+     "class": "Torch"
+    },
+    {
+     "class": "Gingermen"
+    }
+   ],
+   "spells": [
+    {
+     "id": 238,
+     "const": "SID_HEWING"
+    }
+   ]
+  }
  },
  {
   "class": "Mummy",
@@ -1097,6 +1713,112 @@
   "is_npc": false
  },
  {
+  "class": "Skeleton",
+  "parents": [
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/skel.kod",
+  "vrName": "skeleton",
+  "vrDesc": "A few scraps of rotten flesh cling to this collection of bones.  The skeleton, although lifeless, is animated by dark magicks.",
+  "vrIcon": "skelbody.bgf",
+  "vrDead_icon": "skelX.bgf",
+  "viLevel": 75,
+  "viDifficulty": 5,
+  "viKarma": -50,
+  "viSpeed": 12,
+  "viAttack_type": 64,
+  "viDefault_behavior": 8405024,
+  "viTreasure_type": 6,
+  "viCashmin": 50,
+  "viCashmax": 400,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 1,
+  "viOccupation": 0,
+  "viAttributes": 0,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": null,
+  "vrSound_miss": "skl_atkm.ogg",
+  "vrSound_aware": "skl_awr.ogg",
+  "vrSound_death": "skl_dth.ogg",
+  "vars": {
+   "vrKocName": "chaleoc",
+   "vrDead_name": "pile of bones",
+   "vrHeadIcon": "skelhed2.bgf",
+   "piAnimation": 0,
+   "piReputationGroup": 13
+  },
+  "behavior_flags": [
+   "AI_MOVE_FLEE_FRIGHTENERS",
+   "AI_FIGHT_AGGRESSIVE",
+   "AI_FIGHT_SWITCHALOT"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_THRUST",
+   "ATCK_SPELL_ACID"
+  ],
+  "is_npc": false
+ },
+ {
+  "class": "SpectralMummy",
+  "parents": [
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/specmum.kod",
+  "vrName": "spectral mummy",
+  "vrDesc": "This poor creature was once a person who was mummified in an ancient ritual and put to rest in the crypt.  Ages have passed and only the spirit of the original person remains.  It has been dead and mummified for so long it has forgotten what it originally looked like and now wanders this plane as a spectral being, appearing as it did when it was originally put to rest.",
+  "vrIcon": "mummy.bgf",
+  "vrDead_icon": "mummyX.bgf",
+  "viLevel": 40,
+  "viDifficulty": 5,
+  "viKarma": 0,
+  "viSpeed": 8,
+  "viAttack_type": 8,
+  "viDefault_behavior": 16416,
+  "viTreasure_type": 52,
+  "viCashmin": 120,
+  "viCashmax": 320,
+  "viVisionDistance": 8,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 1,
+  "viOccupation": 0,
+  "viAttributes": 0,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": "mum_atkh.ogg",
+  "vrSound_miss": "mum_atkm.ogg",
+  "vrSound_aware": "mum_awr2.ogg",
+  "vrSound_death": "mum_die.ogg",
+  "vars": {
+   "vrKocName": "kosnapleoc",
+   "vrDead_name": "dead spectral mummy",
+   "viDead_drawfx": 2,
+   "piDrawfx": 2,
+   "piDrawEffectFlag": 131072,
+   "piReputationGroup": 13
+  },
+  "behavior_flags": [
+   "AI_MOVE_FLEE_FRIGHTENERS",
+   "AI_FIGHT_AGGRESSIVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": false
+ },
+ {
   "class": "Spider",
   "parents": [
    "Monster",
@@ -1191,6 +1913,66 @@
   ],
   "attack_flags": [
    "ATCK_WEAP_BITE"
+  ],
+  "is_npc": false
+ },
+ {
+  "class": "Thrasher",
+  "parents": [
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/thrasher.kod",
+  "vrName": "thrasher",
+  "vrDesc": "The powerful smell of rotted flesh and embalming herbs assault your nostrils.  This shambling horror in front of you seems like it was crafted in madness, and birthed in nightmares. Various limbs, none of them matching, sprout from this monster in disarray, and in its eye a strange malignance glows.  Run for your life. ",
+  "vrIcon": "res0001a.bgf",
+  "vrDead_icon": "res0001b.bgf",
+  "viLevel": 150,
+  "viDifficulty": 8,
+  "viKarma": -75,
+  "viSpeed": 16,
+  "viAttack_type": 16,
+  "viDefault_behavior": 5259296,
+  "viTreasure_type": 53,
+  "viCashmin": 4000,
+  "viCashmax": 6000,
+  "viVisionDistance": 25,
+  "viAttackRange": 192,
+  "viSpellChance": 10,
+  "vbIsUndead": 1,
+  "viOccupation": 0,
+  "viAttributes": 0,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": "res0001b.ogg",
+  "vrSound_miss": "res0001b.ogg",
+  "vrSound_aware": "res0001a.ogg",
+  "vrSound_death": "res0001c.ogg",
+  "vars": {
+   "vrKocName": "teotixleoc",
+   "vrDead_name": "dead thrasher",
+   "viNormalSpeed": 16,
+   "viBonusXP": 0,
+   "piAnimation": 0,
+   "prShieldOverlay": null,
+   "pbFirstAttack": 1,
+   "ptSecondAttack": null,
+   "piSpinDelay": 75,
+   "ptSpin": null,
+   "piSpinAngle": 0
+  },
+  "behavior_flags": [
+   "AI_MOVE_FLEE_FRIGHTENERS",
+   "AI_FIGHT_AGGRESSIVE",
+   "AI_FIGHT_LASHOUT",
+   "AI_FIGHT_HYPERAGGRESSIVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_BLUDGEON",
+   "ATCK_SPELL_HOLY"
   ],
   "is_npc": false
  }

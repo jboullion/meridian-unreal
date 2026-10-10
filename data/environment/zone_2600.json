@@ -1,0 +1,25 @@
+{
+  "_doc": "Zone art for The crypt in Marion (rid 2600), pass 3 (Marion; docs/adr/0003, 2026-10-10): the interiors' recipe. Cut-outs become solids; indoor grime along the wall feet and under the ceiling.",
+  "rid": 2600,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        1.2,
+        -0.9,
+        88.2,
+        84.7
+      ],
+      "displacement": "none",
+      "_doc": "every cut-out, rebuilt as a solid"
+    }
+  ],
+  "grime": {
+    "base": "indoor_base",
+    "ceiling": "ceiling"
+  }
+}

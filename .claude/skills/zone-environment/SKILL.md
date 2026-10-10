@@ -22,9 +22,9 @@ Every default below won an in-engine comparison; don't change one without a new 
 | Area | Default | Why (ADR 0003) |
 |---|---|---|
 | Layout and collision | The roo2gltf blockout is the source of truth. Never hand-edit generated output; art is layered on top, and the full blockout stays as hidden collision. | Constraints 2–3; "Hidden collision" |
-| Base colour | Every original upscaled 4x with `4xTextures_GTAV_rgt-s_dither` (spandrel), Real-ESRGAN `x4plus` as fallback | "Upscaler models": cleans the dither, keeps the rough painted feel |
+| Base colour | The originals' own pixels, smoothly filtered (`materials.json` `"base_colour": "original"`, since 2026-10-10), as the original D3D client and Meridian Shards draw them; rule-based relief. `"upscaled"` brings back the 4x AI upscale (`4xTextures_GTAV_rgt-s_dither`). Fire flipbooks are always upscaled | "Original textures, filtered": nearly the same at normal distances, a quarter of the memory, seconds to build |
 | Normals | On plain surfaces only (ground, plain and perimeter walls). Flat on anything with painted windows, doors, signs, pictures, clocks (`relief.flat_openings` + `relief.flat` regex) | "Textures-only test", "Selective rebuild and relief" |
-| Roof and path normals | Rule-based maps instead of Marigold's (`relief.rules_for`): roofs `luma` at strength 2.2; path, stone-path and rocky-ground floors `stones` at `ground` `normal_strength` 1.0. Grass keeps Marigold's | Marigold gives roofs and ground nearly flat normals; "Ground normals" |
+| Roof and path normals | Rule-based maps instead of Marigold's (`relief.rules_for`): roofs `luma` at strength 2.2; path, stone-path and rocky-ground floors `stones` at `ground` `normal_strength` 1.0. With the original base colours every texture's relief is rule-based (Marigold only runs with `"upscaled"`) | Marigold gives roofs and ground nearly flat normals; "Ground normals" |
 | Displacement | Off (`relief.displacement: false`) | Inferred depth made wobbly glass and melted stone |
 | Rebuilt geometry | `"rebuild": ["plain_facades", "roofs", "parapets", "cutouts"]`: proud bands, piers and plinths on walls *without* painted openings, roof slabs with eaves and verges, solid merlons, solid fences/gates/signs. Walls with painted windows or doors stay original (no facade relief, no cut openings) | "Selective rebuild", "Plain facades back" |
 | Grime | Geometry-derived strips at wall feet and under eaves (mesh decals) | Never reads the textures, so it can't misplace anything |
@@ -43,7 +43,7 @@ Inferred relief is fine on plain masonry, ground and roofs. It breaks on painted
 
 - Blockout and `zone_<rid>.json` `region_m`: glTF metres, x east, y up, z south, relative to the zone.
 - UE and `lookdev_cameras.json`: world cm, X east, Y south, Z up. UE = `world_origin_cm` + (100x, 100z, 100y).
-- Zones sit on a 2 km grid (`data/zone_layout.json` `world_origin_cm`: 301 is at X 200000). Raza (300) and the Outskirts (330) share geometry.
+- Zones sit on a 2 km grid (`data/zone_layout.json` `world_origin_cm`: 301 is at X 200000). Raza (300) and the Outskirts (330) share geometry. A zone keeps its slot when zones are added (`roo2gltf.py` reads the old layout); new zones take free slots, a map bigger than a cell reserving the cells it covers, so cameras in world cm stay valid.
 - `facades.json`: pixels of the original texture (`build/textures/<grd>.png`), x right, y down.
 
 ## New zone workflow

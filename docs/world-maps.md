@@ -14,13 +14,13 @@ Every map is a `.roo` file. The client picks a built zone by its room file and c
 |---|---|---|---|---|---|
 | 1. Raza | 11 | 0 | 0 | 0 | 11 |
 | 2. Near Raza | 6 | 0 | 0 | 0 | 6 |
-| 3. Cities and their surroundings | 0 | 0 | 0 | 138 | 138 |
+| 3. Cities and their surroundings | 15 | 0 | 0 | 123 | 138 |
 | 4. Overland | 0 | 0 | 0 | 78 | 78 |
 | 5. Caves and castles | 0 | 0 | 0 | 48 | 48 |
 | 6. Brax | 0 | 0 | 0 | 11 | 11 |
 | 7. The islands | 0 | 0 | 0 | 45 | 45 |
 | 8. Special and unused | 0 | 0 | 0 | 41 | 41 |
-| **All** | **17** | **0** | **0** | **361** | **378** |
+| **All** | **32** | **0** | **0** | **346** | **378** |
 
 Within pass 3 the cities go in this order: Marion, Jasper, Cor Noth, Barloque, Tos, Berg, Jixa.
 
@@ -57,26 +57,26 @@ Within pass 3 the cities go in this order: Marion, Jasper, Cor Noth, Barloque, T
 
 ## 3. Cities and their surroundings
 
-### Marion (0 of 16 remastered)
+### Marion (15 of 16 remastered)
 
 | Map | Rooms | Status | To do |
 |---|---|---|---|
+| `marion.roo` | 200 Marion; 3026 Death Realm | remastered (2026-10-10) |  |
+| `marsmith.roo` | 201 Ye Olde Slasher Salesman | remastered (2026-10-10) |  |
+| `marinn.roo` | 202 The Limping Toad Inn and Tavern | remastered (2026-10-10) |  |
+| `marelder.roo` | 203 The home of the elder | remastered (2026-10-10) |  |
+| `marhall.roo` | 204 The Adventurer's Hall of Marion | remastered (2026-10-10) |  |
+| `marheal.roo` | 205 Lady Aftyn's Sanctuary | remastered (2026-10-10) |  |
+| `greenplantation.roo` | 206 Green Acres Plantation | remastered (2026-10-10) |  |
+| `plantationhouse.roo` | 207 The Green's Home | remastered (2026-10-10) |  |
+| `workerhome1.roo` | 208 Workers quarters | remastered (2026-10-10) |  |
+| `c5.roo` | 535 West Merchant Way through Ilerian Woods; 3025 Death Realm | remastered (2026-10-10) |  |
+| `guildh17.roo` | 717 Green's workshop | remastered (2026-10-10) |  |
+| `mardun01.roo` | 2600 The crypt in Marion | remastered (2026-10-10) |  |
+| `mardun02.roo` | 2601 Resting place of Marion's ancestors | remastered (2026-10-10) |  |
+| `mardun03.roo` | 2602 Affirmation of the Forsaken | remastered (2026-10-10) |  |
+| `marcrypt4.roo` | 2603 The Laboratory of the Mad Brothers | remastered (2026-10-10) |  |
 | `marrent.roo` | (no Kod room) | runtime | Build, approval. A rentable room (Kod rentroom/): each renter gets a copy made at runtime, so it has no fixed RID |
-| `marion.roo` | 200 Marion; 3026 Death Realm | runtime | Build, approval |
-| `marsmith.roo` | 201 Ye Olde Slasher Salesman | runtime | Build, approval |
-| `marinn.roo` | 202 The Limping Toad Inn and Tavern | runtime | Build, approval |
-| `marelder.roo` | 203 The home of the elder | runtime | Build, approval |
-| `marhall.roo` | 204 The Adventurer's Hall of Marion | runtime | Build, approval |
-| `marheal.roo` | 205 Lady Aftyn's Sanctuary | runtime | Build, approval |
-| `greenplantation.roo` | 206 Green Acres Plantation | runtime | Build, approval |
-| `plantationhouse.roo` | 207 The Green's Home | runtime | Build, approval |
-| `workerhome1.roo` | 208 Workers quarters | runtime | Build, approval |
-| `c5.roo` | 535 West Merchant Way through Ilerian Woods; 3025 Death Realm | runtime | Build, approval |
-| `guildh17.roo` | 717 Green's workshop | runtime | Build, approval |
-| `mardun01.roo` | 2600 The crypt in Marion | runtime | Build, approval |
-| `mardun02.roo` | 2601 Resting place of Marion's ancestors | runtime | Build, approval |
-| `mardun03.roo` | 2602 Affirmation of the Forsaken | runtime | Build, approval |
-| `marcrypt4.roo` | 2603 The Laboratory of the Mad Brothers | runtime | Build, approval |
 
 ### Jasper (0 of 33 remastered)
 

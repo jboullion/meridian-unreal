@@ -561,7 +561,8 @@ def normal_map(height_img: Image.Image, strength: float, texel_scale: float) -> 
     return Image.merge("RGB", (r, g, b))
 
 
-def make_set(key: str, info: dict, rules: dict, scale: int, max_side: int, upscaled: str | None) -> tuple[dict, list[str]]:
+def make_set(key: str, info: dict, rules: dict, scale: int, max_side: int, upscaled: str | None,
+             original: bool = False) -> tuple[dict, list[str]]:
     """One texture set (D, N, H and, for timber, M) -> (manifest entry, files written). `rules` holds
     what the name-based rules resolved to, so editing a rule only remakes the textures it changes."""
     orig = erase_flame(source_image(key), rules.get("flame"))
@@ -571,6 +572,11 @@ def make_set(key: str, info: dict, rules: dict, scale: int, max_side: int, upsca
     src_rgb = fill_cutout(orig) if masked else orig.convert("RGB")
     if upscaled:
         rgb = Image.open(upscaled).convert("RGB").resize(size, Image.Resampling.LANCZOS)
+    elif original:
+        # materials.json "base_colour" "original": the original's own pixels, only stretched to
+        # power-of-two sides (most already are) so UE makes mips; UE filters them smoothly, as the
+        # original D3D client and Meridian Shards do
+        rgb = src_rgb if src_rgb.size == size else src_rgb.resize(size, Image.Resampling.BICUBIC)
     else:
         if rules["dedither"]:
             # 64 px grass/field art is mostly dither; upscaled, it reads as coloured noise
@@ -813,6 +819,17 @@ FIRE_CODE = (make_fires, fire_frames, is_flame, fill_cutout, pow2, _normalise)
 UPSCALE_CODE = (_upscale_source, run_upscales, wrap_crop, fill_cutout, source_image, clock_layout)
 
 
+def base_colour_mode() -> str:
+    """materials.json "base_colour": "upscaled" (the default: the AI 4x upscale, ADR 0003) or
+    "original" (the room textures' own pixels, filtered in UE; 2026-10-10 test). Fires keep their
+    upscale either way."""
+    data = json.loads(MATERIALS.read_text(encoding="utf-8")) if MATERIALS.exists() else {}
+    mode = data.get("base_colour", "upscaled")
+    if mode not in ("upscaled", "original"):
+        sys.exit('materials.json "base_colour": %r (use "upscaled" or "original")' % mode)
+    return mode
+
+
 def relief_rules_for() -> str:
     """materials.json "relief" "rules_for": names whose rule-based maps tools/textures/ai_maps.py
     --apply leaves in place instead of Marigold's."""
@@ -873,6 +890,8 @@ def main():
     code = hashlib.sha1(("".join(inspect.getsource(f) for f in SET_CODE) + repr((STONE_RADIUS, BUMP))).encode()).hexdigest()
     up_code = hashlib.sha1("".join(inspect.getsource(f) for f in UPSCALE_CODE).encode()).hexdigest()
     options = [args.scale, args.max, bool(args.esrgan)]
+    base_colour = base_colour_mode()
+    original = base_colour == "original"
 
     manifest, new_cache, jobs, todo, missing = {}, {}, [], {}, set()
     rules_for = relief_rules_for()
@@ -885,13 +904,13 @@ def main():
             rules["esrgan_model"] = available_model(wanted, args.esrgan)
             if rules["esrgan_model"] != wanted:
                 missing.add(wanted)
-        up = upscaled_path(key, rules["esrgan_model"], up_code) if args.esrgan else None
-        k = set_key(key, info, rules, options + [up.name if up else None], code)
+        up = upscaled_path(key, rules["esrgan_model"], up_code) if args.esrgan and not original else None
+        k = set_key(key, info, rules, options + [up.name if up else None, base_colour], code)
         old = cache.get(key)
         if old and old["key"] == k and all((OUT / f).exists() for f in old["files"]):
             manifest[key], new_cache[key] = old["entry"], old
         else:
-            jobs.append((key, info, rules, args.scale, args.max, str(up) if up else None))
+            jobs.append((key, info, rules, 1 if original else args.scale, args.max, str(up) if up else None, original))
             new_cache[key] = {"key": k}
             if up and not up.exists():
                 todo.setdefault(rules["esrgan_model"], []).append((key, bool(info.get("has_transparency")), up))
@@ -957,9 +976,12 @@ def main():
     cache_path.write_text(json.dumps(new_cache, indent=0, sort_keys=True))
     print("%d placeholder texture sets in %s: %d remade, %d unchanged, base colour %s (%.0f s)"
           % (len(manifest), OUT.relative_to(ROOT), len(jobs), len(manifest) - len(jobs),
-             (args.esrgan_model or "AI upscale (ESRGAN_RULES)") if args.esrgan else "Lanczos", time.time() - started))
+             "the originals (materials.json base_colour)" if original
+             else (args.esrgan_model or "AI upscale (ESRGAN_RULES)") if args.esrgan else "Lanczos", time.time() - started))
 
-    if args.relief == "auto":
+    if args.relief == "auto" and original:
+        print("relief: rule-based height/normal maps (base colour \"original\": the learned relief needs more detail than the originals have)")
+    elif args.relief == "auto":
         if RELIEF_PYTHON.exists():
             cmd = [str(RELIEF_PYTHON), str(ROOT / "tools" / "textures" / "ai_maps.py"), "--apply"]
             subprocess.run(cmd + (["--force"] if args.force else []), check=True)

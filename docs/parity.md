@@ -234,3 +234,7 @@ Things a finished milestone didn't do, or did without proof. Each lands in the m
 | ☐ | Movement | Steps over `mr.Move.StepCapCm` (3 m): the original lets you up the desert's cliffs (to 34 m) where they have no lower texture | A choice (2026-10-09): capped; 504 crossings | Any |
 | ☐ | Movement | Floors steeper than 45 degrees in our built zones (only roofs today) aren't walkable; runtime rooms allow 89 | Set the collision mesh's walkable slope in `build_world.py` if a reachable one appears | Any |
 | ☐ | Audio | The server's wading sound (`BP_PLAYER`) isn't played (the original splashes as you wade, less often the deeper) | Read into `MRNetWorld`, unused | Any |
+| ☐ | W3 | Steps the survey can't climb in Marion's crypts, as built zones: `mardun02` a 53 cm sloped climb, `mardun03` two 7 cm steps under a 1.86 m ceiling (a wall 1.6 m up) | Survey 4,408 of 4,411 (2026-10-10) | Any |
+| ☑ | W3 | Marion's lower crypts (base light 84) rendered almost black: built zones had no player light | Done 2026-10-10: the viewer's light (`moods.json` `viewer_light`, ADR 0003) | W3 |
+| ☐ | W3 | About 30 kinds of Marion object have no prop (crops, chests, candelabras, book pedestals, crafting stations, memorial trees); online they're drawn from their bitmaps, offline not at all | The sprite-to-3d pipeline | W3 |
+| ☐ | W3 | Rentable rooms (`barrent`, `marrent`, `kocrent`) have no room id, so the zone pipeline can't build them | Built at runtime | Any |

@@ -1,0 +1,47 @@
+{
+  "_doc": "Zone art for Green Acres Plantation (rid 206), pass 3 of the world remaster (Marion; docs/adr/0003, 2026-10-10): the town's recipe outdoors, no buildings rebuilt yet. Fences, railings and poles become solids; grime at the walls' feet; grass tufts on the grass.",
+  "rid": 206,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -988.8,
+        -955.8,
+        218.8,
+        1054.8
+      ],
+      "displacement": "none",
+      "_doc": "every non-foliage cut-out, rebuilt as a solid"
+    }
+  ],
+  "scatter": [
+    {
+      "name": "grass",
+      "_doc": "Grass tufts on the grass floors, as in Raza's Outskirts (zone_300.json); Marion's lawns a third sparser for their size.",
+      "meshes": [
+        "SM_GrassClump_A",
+        "SM_GrassClump_B",
+        "SM_GrassClump_C"
+      ],
+      "per_m2": {
+        "grd11000": 4.0,
+        "grd02302": 3.0
+      },
+      "scale": [
+        0.7,
+        1.4
+      ],
+      "cull_m": [
+        28,
+        42
+      ],
+      "shadows": true,
+      "seed": 1,
+      "keep_out_m": 0.12
+    }
+  ]
+}

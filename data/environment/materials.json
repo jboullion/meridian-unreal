@@ -9,6 +9,8 @@
   "flat": "sign|door|w/ ?dr|gate|win|glass|picture|tapestry|carpet|clock|tower|razmus|shelf|cab|frnt|weapons|torch|barrel|cloth",
   "_doc": "Relief from the height maps (T_<grd>_N/_H, Marigold) by texture. normals: normal maps on, except textures with painted windows or doors (facades.json openings, when flat_openings) and names matching flat (painted doors, gates, windows, pictures, signs, clocks that facades.json doesn't describe): inferred relief reads wrong on those. displacement: Nanite displacement (and the zone-art displacement grid). rules_for: names that keep make_placeholders.py's rule-based maps instead of Marigold's (Marigold gives roofs nearly flat normals; the rules give them relief that follows the painted strokes; the path, stone-path and rocky-ground floors use the rules' domed stones, chosen 2026-10-05 from tools/lookdev/ground_normals_test.ps1). true / false for the whole value switches both. 2026-10-05: normals on plain walls, roofs and ground; no displacement (see docs/adr/0003)."
  },
+ "base_colour": "original",
+ "_base_colour_doc": "Room textures' base colour (tools/textures/make_placeholders.py): \"upscaled\" = the AI 4x upscale (ADR 0003's default since 2026-10-05), \"original\" = the originals' own pixels, filtered smoothly in UE as the original D3D client and Meridian Shards draw them, with rule-based relief. Fires keep their upscale. 2026-10-10: \"original\" is the default, at the user's call after an in-engine comparison (ADR 0003 \"Original textures, filtered\").",
  "grime": {
   "enabled": true,
   "exclude": "water|marble|grass|field|forest|tree|sign",
@@ -100,6 +102,19 @@
    "tile_m": 2.2
   },
   "grd02305": {
+   "tile_m": 2.2
+  },
+  "grd11000": {
+   "tile_m": 2.2
+  },
+  "grd11032": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd02302": {
+   "tile_m": 2.2
+  },
+  "grd02304": {
    "tile_m": 2.2
   },
   "grd09603": {

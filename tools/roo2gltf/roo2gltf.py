@@ -741,13 +741,38 @@ def main():
     # subsystem).  Zones sit on a 2 km grid in UE space (X east, Y south, cm); a zone that shares
     # geometry with another is placed so the two overlay exactly.
     spacing_cm = 200000.0
-    slot = 0
     by_rid = {lay["rid"]: lay for lay in layouts}
-    for lay in sorted(layouts, key=lambda l: l["rid"]):
-        if "shares_geometry_with" in lay:
-            continue
+    # a zone keeps the slot it had (data/zone_layout.json), so adding zones never moves the others
+    # (look-dev cameras and anything else placed in world cm stay valid); new zones take the lowest
+    # free slots, in room id order
+    kept = {}
+    old_path = ROOT / "data" / "zone_layout.json"
+    if old_path.exists():
+        for old in json.loads(old_path.read_text(encoding="utf-8")).get("zones", []):
+            if "shares_geometry_with" not in old and "world_origin_cm" in old:
+                o = old["world_origin_cm"]
+                kept[old["rid"]] = int(round(o[1] / spacing_cm)) * 4 + int(round(o[0] / spacing_cm))
+    def cells(lay, slot):
+        """The grid cells (col, row) a zone covers from this slot: a map bigger than a cell (the
+        Marion plantation's outer sector, 2 km long) reserves the cells it reaches into."""
+        b = lay["bounds_m"]
+        c0, r0 = slot % 4, slot // 4
+        return {(c0 + dc, r0 + dr)
+                for dc in range(math.floor(b["min"][0] * 100 / spacing_cm), math.floor(b["max"][0] * 100 / spacing_cm) + 1)
+                for dr in range(math.floor(b["min"][2] * 100 / spacing_cm), math.floor(b["max"][2] * 100 / spacing_cm) + 1)}
+
+    placed = [l for l in layouts if "shares_geometry_with" not in l]
+    used = set()
+    for lay in placed:
+        if lay["rid"] in kept:
+            used |= cells(lay, kept[lay["rid"]])
+    for lay in sorted(placed, key=lambda l: l["rid"]):
+        slot = kept.get(lay["rid"])
+        if slot is None:
+            slot = next(s for s in range(10000)
+                        if all(0 <= c < 4 and (c, r) not in used for c, r in cells(lay, s)))
+            used |= cells(lay, slot)
         lay["world_origin_cm"] = [(slot % 4) * spacing_cm, (slot // 4) * spacing_cm, 0.0]
-        slot += 1
     for lay in layouts:
         sg = lay.get("shares_geometry_with")
         if sg and sg["rid"] in by_rid:

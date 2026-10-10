@@ -596,6 +596,7 @@ The maintainer set the order for the authored zones: (1) Raza and its interiors,
 - **The list:** `tools/world/map_inventory.py` (`npm run maps`) writes `docs/world-maps.md` and `data/world/maps.json` from `data/world/regions.json` (each map's pass, region, note and approval date, hand-kept) and what each built zone has (its art config, lighting profile and look-dev cameras). At the start: 2 remastered (Raza town and the Outskirts), 11 built without an art pass, 365 runtime.
 - **"Remastered" means the full art pass** (the zone-environment skill) and the maintainer's approval of its look-dev sheets, room by room.
 - **The Death Realm's moods** follow its own RIDs, but a built map serves them with the living room's profile. Give the Death Realm a profile when its first map is built.
+- **Progress (2026-10-10):** pass 1 (Raza's 11 maps) and pass 2 (the forest ring) approved; pass 3 began with Marion, its 15 maps approved the same day (the town, the plantation, the West Merchant Way, its interiors and the four crypt levels). 32 of 378 maps remastered. Next: Jasper.
 
 ## Alternatives considered
 

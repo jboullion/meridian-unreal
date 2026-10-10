@@ -719,7 +719,30 @@ def ensure_textures(specs):
             _texture_settings(tex, srgb, normal, clamp_v)
             eal.save_loaded_asset(tex)
             cache.done(path, key, "textures", True)
+    _fix_misread_normals([(out[s[0]], s) for s in specs if s[0] in out and len(s) > 2 and not s[2]])
     return out
+
+
+def _fix_misread_normals(colour_textures):
+    """The importer takes a mostly blue colour texture for a normal map (BC5: drawn green-yellow),
+    as it did the skyboxes and, 2026-10-10, Marion's water ("Water Stream 1", the merchant way's
+    streams). Colour textures go back to the default compression. Checked every build (cheap, and
+    outside the textures' cache key, so it reaches textures imported before it)."""
+    fixed = 0
+    for path, spec in colour_textures:
+        tex = eal.load_asset(path)
+        if not tex:
+            continue
+        srgb = bool(spec[1])
+        # (the guess also turns sRGB off, which stays after the compression is put back)
+        if (tex.get_editor_property("compression_settings") == unreal.TextureCompressionSettings.TC_NORMALMAP
+                or tex.get_editor_property("srgb") != srgb):
+            tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_DEFAULT)
+            tex.set_editor_property("srgb", srgb)
+            eal.save_loaded_asset(tex)
+            fixed += 1
+    if fixed:
+        log("%d colour textures had been imported as normal maps; set back to default compression" % fixed)
 
 
 def build_displaced_master(name, default_height, tessellation=True, range_cm=DISPLACEMENT_CM, glow=None, atlas=None):

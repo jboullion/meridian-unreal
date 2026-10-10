@@ -3,6 +3,9 @@
 #include "Audio/MRAudioSubsystem.h"
 
 #include "Components/LightComponent.h"
+#include "Components/PointLightComponent.h"
+#include "Engine/GameInstance.h"
+#include "Net/MRNetSubsystem.h"
 #include "Components/SkyLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/PostProcessVolume.h"
@@ -39,6 +42,9 @@ namespace
 	TAutoConsoleVariable<float> CVarUpdateSeconds(
 		TEXT("mr.Env.UpdateSeconds"), 5.f,
 		TEXT("How often (real seconds) the environment director re-evaluates time of day; it applies only changes."));
+	TAutoConsoleVariable<float> CVarViewLight(
+		TEXT("mr.Env.ViewLight"), 1.f,
+		TEXT("Scale on the viewer's light (moods.json \"viewer_light\": the original's player light around the camera); 0 turns it off."));
 	TAutoConsoleVariable<float> CVarSkyBurstSeconds(
 		TEXT("mr.Env.SkyBurstSeconds"), 0.25f,
 		TEXT("After a zone change, capture the sky light whole every frame for this long (s), then time-slice again."));
@@ -1096,6 +1102,7 @@ void UMREnvironmentSubsystem::Tick(float DeltaTime)
 		SkySliceRestoreAt = 0.0;
 	}
 	TickLightning(DeltaTime);
+	UpdateViewLight();
 	if (!bForce && Now < NextUpdate)
 	{
 		return;
@@ -1119,6 +1126,70 @@ void UMREnvironmentSubsystem::Tick(float DeltaTime)
 	UpdatePrecipitation(Zone);
 	UpdateAmbient(Zone);
 	UpdateSounds();
+}
+
+void UMREnvironmentSubsystem::UpdateViewLight()
+{
+	UWorld* World = GetWorld();
+	const APlayerController* PC = World && World->IsGameWorld() ? World->GetFirstPlayerController() : nullptr;
+	const TSharedPtr<FJsonObject>* Cfg = nullptr;
+	if (!PC || !PC->PlayerCameraManager || !Root.IsValid() || !Root->TryGetObjectField(TEXT("viewer_light"), Cfg))
+	{
+		return;
+	}
+	// the player's light: the server's (BP_PLAYER, BP_LIGHT_PLAYER) while in its game, else the default
+	int32 Value = static_cast<int32>((*Cfg)->GetNumberField(TEXT("default")));
+	const UGameInstance* GI = World->GetGameInstance();
+	if (const UMRNetSubsystem* Net = GI ? GI->GetSubsystem<UMRNetSubsystem>() : nullptr; Net && Net->GetPhase() == EMRNetPhase::InGame)
+	{
+		Value = Net->GetPlayer().PlayerLight;
+	}
+	const float Scale = FMath::Max(0.f, CVarViewLight.GetValueOnGameThread());
+	if (!ViewLight.IsValid())
+	{
+		FActorSpawnParameters Params;
+		Params.ObjectFlags |= RF_Transient;
+		AActor* Actor = World->SpawnActor<AActor>(AActor::StaticClass(), FTransform::Identity, Params);
+		if (!Actor)
+		{
+			return;
+		}
+		UPointLightComponent* Light = NewObject<UPointLightComponent>(Actor, TEXT("ViewLight"));
+		Actor->SetRootComponent(Light);
+		Light->SetMobility(EComponentMobility::Movable);
+		Light->SetCastShadows(false);
+		Light->bUseInverseSquaredFalloff = false;  // the original's falls off as 1 / distance, not its square
+		Light->SetSpecularScale(0.f);             // the original lights surfaces, never shines on them
+		Light->SetVolumetricScatteringIntensity(0.f);  // no glow in the interiors' haze around the camera
+		Light->RegisterComponent();
+		ViewLightActor = Actor;
+		ViewLight = Light;
+		ViewLightValue = -1;
+	}
+	UPointLightComponent* Light = ViewLight.Get();
+	Light->SetWorldLocation(PC->PlayerCameraManager->GetCameraLocation());
+	const int32 Key = Value * 1000 + FMath::RoundToInt(Scale * 100.f);
+	if (Key == ViewLightValue)
+	{
+		return;
+	}
+	ViewLightValue = Key;
+	// moods.json "viewer_light": brightness and reach per unit of the player's light
+	const double Per = (*Cfg)->GetNumberField(TEXT("intensity_per_unit"));
+	const double Reach = (*Cfg)->GetNumberField(TEXT("radius_m_per_unit"));
+	double Exponent = 1.0;
+	(*Cfg)->TryGetNumberField(TEXT("falloff_exponent"), Exponent);
+	FLinearColor Color = FLinearColor(1.f, 0.92f, 0.8f);
+	const TArray<TSharedPtr<FJsonValue>>* C = nullptr;
+	if ((*Cfg)->TryGetArrayField(TEXT("color"), C) && C->Num() >= 3)
+	{
+		Color = FLinearColor((*C)[0]->AsNumber(), (*C)[1]->AsNumber(), (*C)[2]->AsNumber());
+	}
+	Light->SetVisibility(Value > 0 && Scale > 0.f);
+	Light->SetIntensity(static_cast<float>(Per * Value * Scale));
+	Light->SetAttenuationRadius(static_cast<float>(FMath::Max(1.0, Reach * Value) * 100.0));
+	Light->SetLightFalloffExponent(static_cast<float>(Exponent));
+	Light->SetLightColor(Color);
 }
 
 TSharedPtr<FJsonValue> UMREnvironmentSubsystem::ProfileField(const TCHAR* Field) const

@@ -4559,5 +4559,4821 @@
    }
   ],
   "file": "Server-104/kod/object/active/holder/room/ghall/guildh7.kod"
+ },
+ {
+  "rid": 200,
+  "class": "Marion",
+  "parents": [
+   "MarionRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Marion",
+  "roo": "marion.roo",
+  "music": "city02.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2",
+   "ROOM_LAMPS"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_ROAD",
+   "TERRAIN_FOREST",
+   "TERRAIN_FIELDS"
+  ],
+  "teleport": {
+   "row": 56,
+   "col": 39,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 10,
+  "info": null,
+  "exits": [
+   {
+    "row": 32,
+    "col": 16,
+    "dest_rid": 205,
+    "dest_row": 4,
+    "dest_col": 10,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 56,
+    "col": 54,
+    "dest_rid": 202,
+    "dest_row": 4,
+    "dest_col": 3,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 62,
+    "col": 58,
+    "dest_rid": 202,
+    "dest_row": 12,
+    "dest_col": 5,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 50,
+    "col": 21,
+    "dest_rid": 204,
+    "dest_row": 6,
+    "dest_col": 20,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 31,
+    "col": 43,
+    "dest_rid": 201,
+    "dest_row": 11,
+    "dest_col": 4,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 70,
+    "col": 13,
+    "locked": true,
+    "message": "This gate was put in place to keep citizens safe from the dangers of the crypt."
+   },
+   {
+    "row": 70,
+    "col": 14,
+    "locked": true,
+    "message": "This gate was put in place to keep citizens safe from the dangers of the crypt."
+   },
+   {
+    "row": 71,
+    "col": 13,
+    "locked": true,
+    "message": "This gate was put in place to keep citizens safe from the dangers of the crypt."
+   },
+   {
+    "row": 71,
+    "col": 14,
+    "locked": true,
+    "message": "This gate was put in place to keep citizens safe from the dangers of the crypt."
+   },
+   {
+    "row": 80,
+    "col": 15,
+    "dest_rid": 2600,
+    "dest_row": 11,
+    "dest_col": 17,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [
+   {
+    "side": "LEAVE_WEST",
+    "dest_rid": 206,
+    "dest_row": 55,
+    "dest_col": 93,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "MarionElder",
+    "row": 80,
+    "col": 37,
+    "angle": 3072
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "rName": "the mimosa tree",
+     "rIcon": "treebot.bgf",
+     "rDesc": "This tree stands as a memorial of a fallen friend.  A small metal plaque is affixed near the ground; a few dried rose petals rest nearby.",
+     "rInsc": "The young girls\nCut their hair at your passing.\nNo bread was baked that day,\nAnd the wine tasted sour.\n\nWe sloughed our way up the hill\nIn the driving rain\nTo send you on your way.\nA bit further along into eternity\nThan your rain-soaked comrades.\n\nDiana kept your sword;\nAspasia, your muddy cloak of fine red wool.\nI kept your memory--and the dark tunic\nWe used to wipe your face.\nMore than that, I would not have done."
+    },
+    "row": 45,
+    "col": 7
+   },
+   {
+    "class": "Tree",
+    "params": {
+     "top": 1,
+     "bottom": 2
+    },
+    "row": 5,
+    "col": 17
+   },
+   {
+    "class": "Tree",
+    "params": {
+     "top": 1,
+     "bottom": 2
+    },
+    "row": 5,
+    "col": 24
+   },
+   {
+    "class": "Tree",
+    "params": {
+     "top": 1,
+     "bottom": 2
+    },
+    "row": 2,
+    "col": 21,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 78,
+    "col": 10,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "Brazier",
+    "row": 80,
+    "col": 10,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "Brazier",
+    "row": 82,
+    "col": 10,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32767,
+     "iIntensity": 5
+    },
+    "row": 45,
+    "col": 7,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Orange"
+     }
+    },
+    "row": 52,
+    "col": 55,
+    "fine_row": 24,
+    "fine_col": 2
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Orange"
+     }
+    },
+    "row": 65,
+    "col": 58,
+    "fine_row": 51,
+    "fine_col": 25
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Pear"
+     }
+    },
+    "row": 48,
+    "col": 22,
+    "fine_row": 13,
+    "fine_col": 22
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Pear"
+     }
+    },
+    "row": 52,
+    "col": 22,
+    "fine_row": 38,
+    "fine_col": 22
+   },
+   {
+    "class": "SplittingStump",
+    "row": 8,
+    "col": 10,
+    "angle": 3072
+   },
+   {
+    "class": "Flagpole",
+    "row": 36,
+    "col": 60,
+    "angle": 0,
+    "by": "territry.kod CreateOneFlagpole"
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/marnrm/marion.kod"
+ },
+ {
+  "rid": 201,
+  "class": "MarionSmithy",
+  "parents": [
+   "ObjectRoom",
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Ye Olde Slasher Salesman",
+  "roo": "marsmith.roo",
+  "music": "smithy.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 10,
+   "col": 4,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 5,
+  "info": null,
+  "exits": [
+   {
+    "row": 11,
+    "col": 4,
+    "dest_rid": 200,
+    "dest_row": 32,
+    "dest_col": 43,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 12,
+    "col": 4,
+    "dest_rid": 200,
+    "dest_row": 32,
+    "dest_col": 43,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": {
+   "monsters": [],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 100,
+   "init_count_min": 1,
+   "init_count_max": 5,
+   "monster_count_max": 10
+  },
+  "objects": [
+   {
+    "class": "MarionBlacksmith",
+    "row": 7,
+    "col": 4,
+    "angle": 1024
+   },
+   {
+    "class": "Firepit",
+    "row": 2,
+    "col": 6,
+    "fine_col": 0
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/objroom/marsmith.kod"
+ },
+ {
+  "rid": 202,
+  "class": "MarionInn",
+  "parents": [
+   "ObjectRoom",
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Limping Toad Inn and Tavern",
+  "roo": "marinn.roo",
+  "music": "bar.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2",
+   "ROOM_HOMETOWN",
+   "ROOM_SANCTUARY",
+   "ROOM_SAFELOGOFF"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 11,
+   "col": 6,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 5,
+  "info": null,
+  "exits": [
+   {
+    "row": 4,
+    "col": 1,
+    "dest_rid": 200,
+    "dest_row": 56,
+    "dest_col": 53,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 12,
+    "col": 5,
+    "dest_rid": 200,
+    "dest_row": 62,
+    "dest_col": 57,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 12,
+    "col": 4,
+    "dest_rid": 200,
+    "dest_row": 62,
+    "dest_col": 57,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 5,
+    "col": 9,
+    "locked": true,
+    "message": "The door won't budge.  Strangely, it doesn't look like it opens at all.  There is a small keyhole in the door, however.  Perhaps if you used a key in it, something interesting might happen."
+   },
+   {
+    "row": 5,
+    "col": 12,
+    "locked": true,
+    "message": "The door won't budge.  Strangely, it doesn't look like it opens at all.  There is a small keyhole in the door, however.  Perhaps if you used a key in it, something interesting might happen."
+   },
+   {
+    "row": 5,
+    "col": 15,
+    "locked": true,
+    "message": "The door won't budge.  Strangely, it doesn't look like it opens at all.  There is a small keyhole in the door, however.  Perhaps if you used a key in it, something interesting might happen."
+   },
+   {
+    "row": 5,
+    "col": 16,
+    "locked": true,
+    "message": "The door won't budge.  Strangely, it doesn't look like it opens at all.  There is a small keyhole in the door, however.  Perhaps if you used a key in it, something interesting might happen."
+   },
+   {
+    "row": 7,
+    "col": 11,
+    "locked": true,
+    "message": "The door won't budge.  Strangely, it doesn't look like it opens at all.  There is a small keyhole in the door, however.  Perhaps if you used a key in it, something interesting might happen."
+   },
+   {
+    "row": 7,
+    "col": 12,
+    "locked": true,
+    "message": "The door won't budge.  Strangely, it doesn't look like it opens at all.  There is a small keyhole in the door, however.  Perhaps if you used a key in it, something interesting might happen."
+   },
+   {
+    "row": 7,
+    "col": 15,
+    "locked": true,
+    "message": "The door won't budge.  Strangely, it doesn't look like it opens at all.  There is a small keyhole in the door, however.  Perhaps if you used a key in it, something interesting might happen."
+   },
+   {
+    "row": 7,
+    "col": 16,
+    "locked": true,
+    "message": "The door won't budge.  Strangely, it doesn't look like it opens at all.  There is a small keyhole in the door, however.  Perhaps if you used a key in it, something interesting might happen."
+   }
+  ],
+  "edge_exits": [],
+  "spawning": {
+   "monsters": [],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 100,
+   "init_count_min": 1,
+   "init_count_max": 5,
+   "monster_count_max": 10
+  },
+  "objects": [
+   {
+    "class": "Table",
+    "row": 11,
+    "col": 10,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "Table",
+    "row": 11,
+    "col": 13,
+    "fine_row": 32,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "Table",
+    "row": 11,
+    "col": 15,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "Table",
+    "row": 13,
+    "col": 14,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "Stool",
+    "row": 14,
+    "col": 12,
+    "fine_row": 0,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "Stool",
+    "row": 13,
+    "col": 11,
+    "fine_row": 32,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "Stool",
+    "row": 13,
+    "col": 9,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "Stool",
+    "row": 14,
+    "col": 7,
+    "fine_row": 0,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "Stool",
+    "row": 14,
+    "col": 15,
+    "fine_row": 8,
+    "fine_col": 8,
+    "angle": 0
+   },
+   {
+    "class": "Stool",
+    "row": 11,
+    "col": 14,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "Stool",
+    "row": 11,
+    "col": 12,
+    "fine_row": 32,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "Stool",
+    "row": 11,
+    "col": 9,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "NewsLink",
+    "params": {
+     "nid": 9,
+     "name": "Designers' News",
+     "desc": "Check here for information from the game administrators."
+    },
+    "row": 13,
+    "col": 16,
+    "fine_row": 0
+   },
+   {
+    "class": "MarionInnkeeper",
+    "row": 2,
+    "col": 4,
+    "fine_row": 48,
+    "fine_col": 32,
+    "angle": 1024
+   },
+   {
+    "class": "MarionBartender",
+    "row": 14,
+    "col": 9,
+    "fine_row": 48,
+    "fine_col": 0,
+    "angle": 3072
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/objroom/marinn.kod"
+ },
+ {
+  "rid": 203,
+  "class": "MarionElderHut",
+  "parents": [
+   "ObjectRoom",
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The home of the elder",
+  "roo": "marelder.roo",
+  "music": "innmusic.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 8,
+   "col": 3,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 5,
+  "info": null,
+  "exits": [
+   {
+    "row": 11,
+    "col": 4,
+    "dest_rid": 200,
+    "dest_row": 55,
+    "dest_col": 28,
+    "rotate": "ROTATE_45"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": {
+   "monsters": [],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 100,
+   "init_count_min": 1,
+   "init_count_max": 5,
+   "monster_count_max": 10
+  },
+  "objects": [
+   {
+    "class": "Table",
+    "row": 3,
+    "col": 5,
+    "angle": 1024
+   },
+   {
+    "class": "Table",
+    "row": 8,
+    "col": 2,
+    "angle": 1024
+   },
+   {
+    "class": "Brazier",
+    "row": 7,
+    "col": 2,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 10,
+    "col": 2,
+    "fine_col": 0
+   },
+   {
+    "expr": "oNews",
+    "row": 7,
+    "col": 5,
+    "fine_row": 0,
+    "fine_col": 0
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/objroom/marelder.kod"
+ },
+ {
+  "rid": 204,
+  "class": "MarHall",
+  "parents": [
+   "MarionRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Adventurer's Hall of Marion",
+  "roo": "marhall.roo",
+  "music": "main.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2",
+   "ROOM_SAFELOGOFF"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 5,
+   "col": 8,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 6,
+    "col": 21,
+    "dest_rid": 200,
+    "dest_row": 50,
+    "dest_col": 22,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 7,
+    "col": 21,
+    "dest_rid": 200,
+    "dest_row": 50,
+    "dest_col": 22,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "Brazier",
+    "row": 14,
+    "col": 12,
+    "fine_row": 0,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 14,
+    "col": 18,
+    "fine_row": 0,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 3,
+    "col": 13,
+    "fine_row": 32,
+    "fine_col": 48,
+    "angle": 0
+   },
+   {
+    "class": "Table",
+    "row": 12,
+    "col": 13,
+    "fine_row": 48,
+    "fine_col": 48,
+    "angle": 0
+   },
+   {
+    "class": "Table",
+    "row": 11,
+    "col": 16,
+    "fine_row": 16,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "Table",
+    "row": 12,
+    "col": 18,
+    "fine_row": 32,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "BookPedestal",
+    "params": {
+     "Name": "Territory Tactica",
+     "text": "A treatise on the rules of boundary conflict\n-Cylill, Councilor and Veteran to the Duke's army.\n\nIn the old Empire, long before the explorers came to Meridian 59, the ruling class of aristocracy used flags to mark the boundaries of their territories.  If a lord wished to gain the territory of another without mortal combat, he would command a small group of his soldiery to secretly and stealthily replace the flag of his opponent with one of his own.  Each feudal lord had soldiers that were experts at doing such a task, and the bloodshed in these boundary wars was kept to a minimum.  This practice grew outdated and soon was sent into disuse as the populace as the society grew towards a more exploratory and scholarly nature than a feudal one.\n\n¶However, the noble factions and the rebels vie for control of the lands once again.  The council, in its wisdom, has established rules for the conquest of land in the struggles between the factions.\n\nTHE RULES\n\nThese are the rules of the territory conquest, as determined by the council of Meridian:\n\nOnly a recognized soldier of the faction may possess the flag and try to claim the flagpole, but any faction member may support the claim with their presence.\nThere will need to be at least a score of the warriors of Meridian in the land, and a soldier will need to have at least two of his or her factions' members in the area at the time.\n¶A territory may only be claimed if it is adjacent to a territory that has already been claimed.  A territory is considered adjacent if the player can walk directly from one territory to the other without passing through other territories.  A special exception can be found below.\n\nOnce you stake the claim and place the flag, it will take eight minutes or so for the information to reach the faction leaders via scouts and the power will shift.  Unclaimed territories may have soldiers defending it, so be wary, it is best to eliminate the threat before proceeding with claiming the territory.  In some cases, common soldiers may be called to defend the flagpole from being taken.\n\nShould the soldier leave the area or be killed, the claim will be considered failed.  If failure occurs, it will be thirty minutes before an attempt can be made again.¶CITIES AND FACTIONS\n\nBecause of the civilians living in the cities, they cannot be taken by force.  However, claiming the land around a city will claim the city itself.  Please note that cities do not hold any special weight, they are simply another territory to capture in each faction's quest for the rulership of Meridian.\n\nEach faction will begin in a city.  If the city is lost to another faction, then the faction will relinquish all territory claims.  The starting cities are also special in that a faction can always reclaim flags around their starting city.  Therefore, a faction can always restart a conquest of the territories by starting at their home city.¶The faction of Her Majesty, Princess Kateriina, will start in the town of Barloque.  The Royal City may be claimed by any faction claiming the territories of The Queen's Way, the Main Gate of Barloque, and the Outskirts of Barloque.\n\nThe faction of the Duke Akardius, will start in the City of Tos.  The City of Tos may be claimed by any faction claiming the territories of the Main Gate of Tos, The Border of the Badlands, and the Outskirts of Tos.\n\nThe faction of Jonas, Rebel leader, will start in the town of Jasper.  The town of Jasper may be claimed by any faction claiming the territories of the Lake of Jala's Song, the Sweetgrass Prairies, and Deep in the Forest of Farol.\n¶Marion and Cor Noth are strategic positions, and if they are claimed it will count as a favor towards the liege that you follow.  I would recommend that you do not misinterpret the significance of these places in Meridian.\n\nThe town of Marion is a neutral place, but the taking of these two places will allow you to claim this town for your faction: Deep Woods of Ileria, and West Merchant's Way through Ilerain Woods.\n\nThe town of Cor Noth is a neutral place as well, but the taking of these two places will allow you to claim this town for your faction: The King's Way, and the Main Gate of Cor Noth.¶Please choose wisely when participating in this feudal war, for the council nor the fair Shal'ille will not shine highly on those that use this age-old way of warfare as an excuse to enact wholesale murder.  Do not dishonor your ancestors.\n\nCourage and Honor,\nCylill, Veteran of the Duke's Army, Councilor."
+    },
+    "row": 3,
+    "col": 19,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 1024
+   },
+   {
+    "class": "NewsLink",
+    "params": {
+     "nid": 20,
+     "name": "General News",
+     "desc": "See what people are saying around Meridian."
+    },
+    "row": 10,
+    "col": 3,
+    "fine_row": 0,
+    "fine_col": 32
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/marnrm/marhall.kod"
+ },
+ {
+  "rid": 205,
+  "class": "MarionHealerShop",
+  "parents": [
+   "MarionRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Lady Aftyn's Sanctuary",
+  "roo": "marheal.roo",
+  "music": "main.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 4,
+   "col": 7,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 4,
+    "col": 10,
+    "dest_rid": 200,
+    "dest_row": 32,
+    "dest_col": 17,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 5,
+    "col": 10,
+    "dest_rid": 200,
+    "dest_row": 32,
+    "dest_col": 17,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "MarionHealer",
+    "row": 5,
+    "col": 3,
+    "fine_row": 14,
+    "fine_col": 32
+   },
+   {
+    "class": "Candelabra",
+    "row": 2,
+    "col": 10
+   },
+   {
+    "class": "Candelabra",
+    "row": 7,
+    "col": 10
+   },
+   {
+    "class": "Candle",
+    "row": 5,
+    "col": 2
+   },
+   {
+    "class": "Candle",
+    "row": 4,
+    "col": 2
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/marnrm/marhlshp.kod"
+ },
+ {
+  "rid": 206,
+  "class": "MarionPlantation",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Green Acres Plantation",
+  "roo": "GreenPlantation.roo",
+  "music": "city02.ogg",
+  "flags": [
+   "ROOM_GUILD_PK_ONLY"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_ROAD",
+   "TERRAIN_FOREST",
+   "TERRAIN_FIELDS"
+  ],
+  "teleport": {
+   "row": 15,
+   "col": 5,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 10,
+  "info": null,
+  "exits": [
+   {
+    "row": 84,
+    "col": 32,
+    "dest_rid": 206,
+    "dest_row": 84,
+    "dest_col": 33,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 84,
+    "col": 33,
+    "dest_rid": 206,
+    "dest_row": 84,
+    "dest_col": 32,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 82,
+    "col": 47,
+    "dest_rid": 206,
+    "dest_row": 82,
+    "dest_col": 48,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 83,
+    "col": 47,
+    "dest_rid": 206,
+    "dest_row": 82,
+    "dest_col": 48,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 82,
+    "col": 48,
+    "dest_rid": 206,
+    "dest_row": 82,
+    "dest_col": 47,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 3,
+    "col": 84,
+    "dest_rid": 717,
+    "dest_row": 50,
+    "dest_col": 27,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 3,
+    "col": 85,
+    "dest_rid": 717,
+    "dest_row": 50,
+    "dest_col": 28,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 6,
+    "col": 84,
+    "dest_rid": 717,
+    "dest_row": 59,
+    "dest_col": 27,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 6,
+    "col": 85,
+    "dest_rid": 717,
+    "dest_row": 59,
+    "dest_col": 28,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 41,
+    "col": 72,
+    "dest_rid": 207,
+    "dest_row": 20,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 41,
+    "col": 73,
+    "dest_rid": 207,
+    "dest_row": 20,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 42,
+    "col": 72,
+    "dest_rid": 207,
+    "dest_row": 20,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 42,
+    "col": 73,
+    "dest_rid": 207,
+    "dest_row": 20,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 16,
+    "col": 35,
+    "dest_rid": 208,
+    "dest_row": 11,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 16,
+    "col": 36,
+    "dest_rid": 208,
+    "dest_row": 11,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 16,
+    "col": 40,
+    "dest_rid": 208,
+    "dest_row": 11,
+    "dest_col": 13,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 16,
+    "col": 44,
+    "dest_rid": 208,
+    "dest_row": 11,
+    "dest_col": 19,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 16,
+    "col": 45,
+    "dest_rid": 208,
+    "dest_row": 11,
+    "dest_col": 19,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 16,
+    "col": 48,
+    "dest_rid": 208,
+    "dest_row": 11,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 16,
+    "col": 49,
+    "dest_rid": 208,
+    "dest_row": 11,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 41,
+    "col": 77,
+    "dest_rid": 207,
+    "dest_row": 19,
+    "dest_col": 12,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 42,
+    "col": 77,
+    "dest_rid": 207,
+    "dest_row": 19,
+    "dest_col": 12,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [
+   {
+    "side": "LEAVE_EAST",
+    "dest_rid": 200,
+    "dest_row": 15,
+    "dest_col": 2,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_SOUTH",
+    "dest_rid": 516,
+    "dest_row": 5,
+    "dest_col": 47,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Cow",
+     "weight": 100
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 100,
+   "init_count_min": 1,
+   "init_count_max": 5,
+   "monster_count_max": 10
+  },
+  "objects": [
+   {
+    "class": "BoatCaptain",
+    "row": 14,
+    "col": 11,
+    "fine_row": 26,
+    "fine_col": 25
+   },
+   {
+    "class": "Fountain",
+    "row": 21,
+    "col": 41,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Orange"
+     }
+    },
+    "row": 80,
+    "col": 71,
+    "fine_row": 63,
+    "fine_col": 63
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Orange"
+     }
+    },
+    "row": 82,
+    "col": 67,
+    "fine_row": 31,
+    "fine_col": 33
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Orange"
+     }
+    },
+    "row": 84,
+    "col": 67,
+    "fine_row": 30,
+    "fine_col": 1
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Orange"
+     }
+    },
+    "row": 83,
+    "col": 69,
+    "fine_row": 34,
+    "fine_col": 28
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Orange"
+     }
+    },
+    "row": 84,
+    "col": 70,
+    "fine_row": 63,
+    "fine_col": 33
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Orange"
+     }
+    },
+    "row": 83,
+    "col": 72,
+    "fine_row": 32,
+    "fine_col": 33
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Pear"
+     }
+    },
+    "row": 83,
+    "col": 74,
+    "fine_row": 31,
+    "fine_col": 4
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Pear"
+     }
+    },
+    "row": 83,
+    "col": 75,
+    "fine_row": 32,
+    "fine_col": 2
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Pear"
+     }
+    },
+    "row": 83,
+    "col": 76,
+    "fine_row": 32,
+    "fine_col": 2
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Pear"
+     }
+    },
+    "row": 84,
+    "col": 78,
+    "fine_row": 33,
+    "fine_col": 2
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Pear"
+     }
+    },
+    "row": 83,
+    "col": 74,
+    "fine_row": 31,
+    "fine_col": 4
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Pear"
+     }
+    },
+    "row": 83,
+    "col": 80,
+    "fine_row": 33,
+    "fine_col": 29
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Apple"
+     }
+    },
+    "row": 84,
+    "col": 82,
+    "fine_row": 33,
+    "fine_col": 31
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Apple"
+     }
+    },
+    "row": 82,
+    "col": 82,
+    "fine_row": 0,
+    "fine_col": 4
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Apple"
+     }
+    },
+    "row": 81,
+    "col": 79,
+    "fine_row": 17,
+    "fine_col": 58
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Apple"
+     }
+    },
+    "row": 81,
+    "col": 77,
+    "fine_row": 1,
+    "fine_col": 34
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Apple"
+     }
+    },
+    "row": 81,
+    "col": 74,
+    "fine_row": 29,
+    "fine_col": 63
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 81,
+    "col": 20,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 81,
+    "col": 21,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 81,
+    "col": 22,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 81,
+    "col": 23,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 81,
+    "col": 24,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 81,
+    "col": 25,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 82,
+    "col": 20,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 82,
+    "col": 21,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 82,
+    "col": 22,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 82,
+    "col": 23,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 82,
+    "col": 24,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 82,
+    "col": 25,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 83,
+    "col": 20,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 83,
+    "col": 21,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 83,
+    "col": 22,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 83,
+    "col": 23,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 83,
+    "col": 24,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 83,
+    "col": 25,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 84,
+    "col": 20,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 84,
+    "col": 21,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 84,
+    "col": 22,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 84,
+    "col": 23,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 84,
+    "col": 24,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Tomato"
+     }
+    },
+    "row": 84,
+    "col": 25,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 44,
+    "col": 56,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 44,
+    "col": 57,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 44,
+    "col": 58,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 44,
+    "col": 59,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 44,
+    "col": 60,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 44,
+    "col": 61,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 45,
+    "col": 56,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 45,
+    "col": 57,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 45,
+    "col": 58,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 45,
+    "col": 59,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 45,
+    "col": 60,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 45,
+    "col": 61,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 46,
+    "col": 56,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 46,
+    "col": 57,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 46,
+    "col": 58,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 46,
+    "col": 59,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 46,
+    "col": 60,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 46,
+    "col": 61,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 47,
+    "col": 56,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 47,
+    "col": 57,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 47,
+    "col": 58,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 47,
+    "col": 59,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 47,
+    "col": 60,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "EarCorn"
+     }
+    },
+    "row": 47,
+    "col": 61,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 33,
+    "col": 83,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 33,
+    "col": 84,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 33,
+    "col": 85,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 33,
+    "col": 86,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 33,
+    "col": 87,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 33,
+    "col": 88,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 34,
+    "col": 83,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 34,
+    "col": 84,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 34,
+    "col": 85,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 34,
+    "col": 86,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 34,
+    "col": 87,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 34,
+    "col": 88,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 35,
+    "col": 83,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 35,
+    "col": 84,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 35,
+    "col": 85,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 35,
+    "col": 86,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 35,
+    "col": 87,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 35,
+    "col": 88,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 36,
+    "col": 83,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 36,
+    "col": 84,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 36,
+    "col": 85,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 36,
+    "col": 86,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 36,
+    "col": 87,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Carrot"
+     }
+    },
+    "row": 36,
+    "col": 88,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 27,
+    "col": 79,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 27,
+    "col": 80,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 27,
+    "col": 81,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 27,
+    "col": 82,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 27,
+    "col": 83,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 27,
+    "col": 84,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 28,
+    "col": 79,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 28,
+    "col": 80,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 28,
+    "col": 81,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 28,
+    "col": 82,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 28,
+    "col": 83,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 28,
+    "col": 84,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 29,
+    "col": 79,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 29,
+    "col": 80,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 29,
+    "col": 81,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 29,
+    "col": 82,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 29,
+    "col": 83,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 29,
+    "col": 84,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 30,
+    "col": 79,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 30,
+    "col": 80,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 30,
+    "col": 81,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 30,
+    "col": 82,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 30,
+    "col": 83,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Potatoes"
+     }
+    },
+    "row": 30,
+    "col": 84,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 21,
+    "col": 72,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 21,
+    "col": 73,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 21,
+    "col": 74,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 21,
+    "col": 75,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 21,
+    "col": 76,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 21,
+    "col": 77,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 22,
+    "col": 72,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 22,
+    "col": 73,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 22,
+    "col": 74,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 22,
+    "col": 75,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 22,
+    "col": 76,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 22,
+    "col": 77,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 23,
+    "col": 72,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 23,
+    "col": 73,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 23,
+    "col": 74,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 23,
+    "col": 75,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 23,
+    "col": 76,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 23,
+    "col": 77,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 24,
+    "col": 72,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 24,
+    "col": 73,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 24,
+    "col": 74,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 24,
+    "col": 75,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 24,
+    "col": 76,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Watermelon"
+     }
+    },
+    "row": 24,
+    "col": 77,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 18,
+    "col": 82,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 18,
+    "col": 83,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 18,
+    "col": 84,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 18,
+    "col": 85,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 18,
+    "col": 86,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 18,
+    "col": 87,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 19,
+    "col": 82,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 19,
+    "col": 83,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 19,
+    "col": 84,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 19,
+    "col": 85,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 19,
+    "col": 86,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 19,
+    "col": 87,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 20,
+    "col": 82,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 20,
+    "col": 83,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 20,
+    "col": 84,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 20,
+    "col": 85,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 20,
+    "col": 86,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 20,
+    "col": 87,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 21,
+    "col": 82,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 21,
+    "col": 83,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 21,
+    "col": 84,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 21,
+    "col": 85,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 21,
+    "col": 86,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Flour"
+     }
+    },
+    "row": 21,
+    "col": 87,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 8,
+    "col": 67,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 8,
+    "col": 68,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 8,
+    "col": 69,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 8,
+    "col": 70,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 8,
+    "col": 71,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 8,
+    "col": 72,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 9,
+    "col": 67,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 9,
+    "col": 68,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 9,
+    "col": 71,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 9,
+    "col": 72,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 10,
+    "col": 67,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 10,
+    "col": 68,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 10,
+    "col": 71,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 10,
+    "col": 72,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 11,
+    "col": 67,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 11,
+    "col": 68,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 11,
+    "col": 69,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 11,
+    "col": 70,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 11,
+    "col": 71,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Oats"
+     }
+    },
+    "row": 11,
+    "col": 72,
+    "fine_row": 16,
+    "fine_col": 32
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Eggs"
+     }
+    },
+    "row": 74,
+    "col": 5,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Eggs"
+     }
+    },
+    "row": 75,
+    "col": 5,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Eggs"
+     }
+    },
+    "row": 76,
+    "col": 5,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Eggs"
+     }
+    },
+    "row": 77,
+    "col": 5,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "FoodDispenser",
+    "params": {
+     "classtype": {
+      "class": "Eggs"
+     }
+    },
+    "row": 78,
+    "col": 5,
+    "fine_row": 0,
+    "fine_col": 0
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/marplan.kod"
+ },
+ {
+  "rid": 207,
+  "class": "PlantationHouse",
+  "parents": [
+   "MarionRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Green's Home",
+  "roo": "plantationhouse.roo",
+  "music": "main.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2",
+   "ROOM_SANCTUARY",
+   "ROOM_SAFELOGOFF"
+  ],
+  "terrain": [
+   "TERRAIN_CITY"
+  ],
+  "teleport": {
+   "row": 18,
+   "col": 10,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 19,
+    "col": 7,
+    "dest_rid": 206,
+    "dest_row": 41,
+    "dest_col": 71,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 20,
+    "col": 7,
+    "dest_rid": 206,
+    "dest_row": 41,
+    "dest_col": 71,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 18,
+    "col": 13,
+    "dest_rid": 206,
+    "dest_row": 41,
+    "dest_col": 78,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 19,
+    "col": 13,
+    "dest_rid": 206,
+    "dest_row": 41,
+    "dest_col": 78,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/marnrm/planthouse.kod"
+ },
+ {
+  "rid": 208,
+  "class": "MarionPlantationWorker1",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Workers quarters",
+  "roo": "workerhome1.roo",
+  "music": null,
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [
+   "TERRAIN_CITY"
+  ],
+  "teleport": {
+   "row": 9,
+   "col": 13,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 10,
+  "info": null,
+  "exits": [
+   {
+    "row": 11,
+    "col": 6,
+    "dest_rid": 206,
+    "dest_row": 16,
+    "dest_col": 35,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 11,
+    "col": 7,
+    "dest_rid": 206,
+    "dest_row": 16,
+    "dest_col": 35,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 11,
+    "col": 12,
+    "dest_rid": 206,
+    "dest_row": 16,
+    "dest_col": 40,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 11,
+    "col": 13,
+    "dest_rid": 206,
+    "dest_row": 16,
+    "dest_col": 40,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 11,
+    "col": 18,
+    "dest_rid": 206,
+    "dest_row": 16,
+    "dest_col": 45,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 11,
+    "col": 19,
+    "dest_rid": 206,
+    "dest_row": 16,
+    "dest_col": 45,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 11,
+    "col": 24,
+    "dest_rid": 206,
+    "dest_row": 16,
+    "dest_col": 49,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 11,
+    "col": 25,
+    "dest_rid": 206,
+    "dest_row": 16,
+    "dest_col": 49,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": {
+   "monsters": [],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 100,
+   "init_count_min": 1,
+   "init_count_max": 5,
+   "monster_count_max": 10
+  },
+  "objects": [
+   {
+    "class": "Fountain",
+    "row": 21,
+    "col": 41,
+    "fine_row": 0,
+    "fine_col": 0
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/marplanwork1.kod"
+ },
+ {
+  "rid": 535,
+  "class": "OutdoorsC5",
+  "parents": [
+   "ObjectRoom",
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "West Merchant Way through Ilerian Woods",
+  "roo": "c5.roo",
+  "music": "walk1.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_LAKE",
+   "TERRAIN_WATERFALL",
+   "TERRAIN_ROAD",
+   "TERRAIN_FOREST"
+  ],
+  "teleport": {
+   "row": 19,
+   "col": 18,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 8,
+  "info": null,
+  "exits": [
+   {
+    "row": 50,
+    "col": 35,
+    "dest_rid": 706,
+    "dest_row": 2,
+    "dest_col": 9,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [
+   {
+    "side": "LEAVE_NORTH",
+    "dest_rid": 200,
+    "dest_row": 83,
+    "dest_col": 52,
+    "rotate": "ANGLE_NORTH"
+   },
+   {
+    "side": "LEAVE_SOUTH",
+    "dest_rid": 536,
+    "dest_row": 4,
+    "dest_col": 6,
+    "rotate": "ANGLE_SOUTH"
+   },
+   {
+    "side": "LEAVE_EAST",
+    "dest_rid": 545,
+    "dest_row": 21,
+    "dest_col": 6,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_EAST",
+    "dest_rid": 545,
+    "dest_row": 33,
+    "dest_col": 6,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "SpiderBaby",
+     "weight": 30
+    },
+    {
+     "class": "GiantRat",
+     "weight": 70
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 20000,
+   "gen_percent": 70,
+   "init_count_min": 1,
+   "init_count_max": 4,
+   "monster_count_max": 10
+  },
+  "objects": [
+   {
+    "class": "Flagpole",
+    "row": 26,
+    "col": 28,
+    "angle": 0,
+    "by": "territry.kod CreateOneFlagpole"
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/objroom/c5.kod"
+ },
+ {
+  "rid": 717,
+  "class": "GuildHall17",
+  "parents": [
+   "GuildHall",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Green's workshop",
+  "roo": "guildh17.roo",
+  "music": "walk7.ogg",
+  "flags": [
+   "ROOM_GUILD_PK_ONLY"
+  ],
+  "terrain": [
+   "TERRAIN_GUILDHALL",
+   "TERRAIN_CITY"
+  ],
+  "teleport": {
+   "row": 58,
+   "col": 27,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 0,
+  "info": null,
+  "exits": [
+   {
+    "row": 50,
+    "col": 27,
+    "dest_rid": 206,
+    "dest_row": 3,
+    "dest_col": 84,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 50,
+    "col": 28,
+    "dest_rid": 206,
+    "dest_row": 3,
+    "dest_col": 85,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 60,
+    "col": 27,
+    "dest_rid": 206,
+    "dest_row": 7,
+    "dest_col": 84,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 60,
+    "col": 28,
+    "dest_rid": 206,
+    "dest_row": 7,
+    "dest_col": 85,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [
+   {
+    "side": "LEAVE_NORTH",
+    "dest_rid": 511,
+    "dest_row": 49,
+    "dest_col": 23,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "Chest",
+    "row": 22,
+    "col": 17,
+    "fine_row": 48,
+    "fine_col": 16,
+    "angle": 0
+   },
+   {
+    "class": "Chest",
+    "row": 26,
+    "col": 17,
+    "fine_row": 0,
+    "fine_col": 16,
+    "angle": 0
+   },
+   {
+    "class": "Chest",
+    "row": 22,
+    "col": 22,
+    "fine_row": 48,
+    "fine_col": 16,
+    "angle": 2048
+   },
+   {
+    "class": "Chest",
+    "row": 26,
+    "col": 22,
+    "fine_row": 0,
+    "fine_col": 16,
+    "angle": 2048
+   },
+   {
+    "class": "Chest",
+    "row": 21,
+    "col": 23,
+    "fine_row": 48,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "Chest",
+    "row": 29,
+    "col": 33,
+    "fine_row": 48,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "Fountain",
+    "row": 42,
+    "col": 24,
+    "fine_row": 12,
+    "fine_col": 8
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 5
+    },
+    "row": 45,
+    "col": 6,
+    "fine_row": 32,
+    "fine_col": 4
+   },
+   {
+    "class": "Dice",
+    "params": {
+     "pair": 0
+    },
+    "row": 39,
+    "col": 12,
+    "fine_row": 4,
+    "fine_col": 0,
+    "angle": 3072
+   },
+   {
+    "class": "Dice",
+    "params": {
+     "pair": 1
+    },
+    "row": 39,
+    "col": 13,
+    "fine_row": 4,
+    "fine_col": 16,
+    "angle": 3072
+   },
+   {
+    "class": "Dice",
+    "params": {
+     "pair": 0
+    },
+    "row": 40,
+    "col": 13,
+    "fine_row": 20,
+    "fine_col": 16,
+    "angle": 3072
+   },
+   {
+    "class": "Dice",
+    "params": {
+     "pair": 1
+    },
+    "row": 40,
+    "col": 12,
+    "fine_row": 20,
+    "fine_col": 0,
+    "angle": 3072
+   },
+   {
+    "class": "Pillow",
+    "row": 21,
+    "col": 32,
+    "fine_row": 48,
+    "fine_col": 16,
+    "angle": 2048
+   },
+   {
+    "class": "Tree",
+    "params": {
+     "top": 3,
+     "bottom": 3
+    },
+    "row": 6,
+    "col": 50
+   },
+   {
+    "class": "Throne",
+    "row": 42,
+    "col": 10,
+    "fine_row": 32,
+    "fine_col": 40,
+    "angle": 1024
+   },
+   {
+    "class": "Stool",
+    "row": 45,
+    "col": 14,
+    "fine_row": 0,
+    "fine_col": 48
+   },
+   {
+    "class": "Stool",
+    "row": 45,
+    "col": 13,
+    "fine_row": 32,
+    "fine_col": 48
+   },
+   {
+    "class": "Stool",
+    "row": 47,
+    "col": 13,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Stool",
+    "row": 48,
+    "col": 13,
+    "fine_row": 16,
+    "fine_col": 0
+   },
+   {
+    "class": "Table",
+    "row": 40,
+    "col": 9,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "Stool",
+    "row": 40,
+    "col": 8,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "Stool",
+    "row": 40,
+    "col": 9,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "Stool",
+    "row": 35,
+    "col": 10,
+    "fine_row": 56,
+    "fine_col": 48
+   },
+   {
+    "class": "Stool",
+    "row": 35,
+    "col": 12,
+    "fine_row": 56,
+    "fine_col": 0
+   },
+   {
+    "class": "Stool",
+    "row": 40,
+    "col": 36,
+    "fine_row": 32,
+    "fine_col": 16
+   },
+   {
+    "class": "Stool",
+    "row": 41,
+    "col": 37,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "Stool",
+    "row": 42,
+    "col": 38,
+    "fine_row": 24,
+    "fine_col": 16
+   },
+   {
+    "class": "Stool",
+    "row": 42,
+    "col": 39,
+    "fine_row": 24,
+    "fine_col": 56
+   },
+   {
+    "class": "Stool",
+    "row": 41,
+    "col": 41,
+    "fine_row": 48,
+    "fine_col": 16
+   },
+   {
+    "class": "Stool",
+    "row": 40,
+    "col": 42,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "Stool",
+    "row": 37,
+    "col": 34,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "Stool",
+    "row": 38,
+    "col": 35,
+    "fine_row": 0,
+    "fine_col": 32
+   },
+   {
+    "class": "Stool",
+    "row": 38,
+    "col": 36,
+    "fine_row": 48,
+    "fine_col": 8
+   },
+   {
+    "class": "Table",
+    "row": 42,
+    "col": 33,
+    "fine_row": 40,
+    "fine_col": 40
+   },
+   {
+    "class": "Stool",
+    "row": 42,
+    "col": 33,
+    "fine_row": 0,
+    "fine_col": 8
+   },
+   {
+    "class": "Stool",
+    "row": 43,
+    "col": 34,
+    "fine_row": 16,
+    "fine_col": 8
+   },
+   {
+    "class": "Stool",
+    "row": 49,
+    "col": 41,
+    "fine_row": 0,
+    "fine_col": 16
+   },
+   {
+    "class": "Stool",
+    "row": 49,
+    "col": 42,
+    "fine_row": 0,
+    "fine_col": 32
+   },
+   {
+    "class": "Stool",
+    "row": 49,
+    "col": 43,
+    "fine_row": 0,
+    "fine_col": 48
+   },
+   {
+    "class": "Stool",
+    "row": 49,
+    "col": 45,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Stool",
+    "row": 49,
+    "col": 46,
+    "fine_row": 0,
+    "fine_col": 16
+   },
+   {
+    "class": "Stool",
+    "row": 47,
+    "col": 46,
+    "fine_row": 48,
+    "fine_col": 16
+   },
+   {
+    "class": "Stool",
+    "row": 46,
+    "col": 46,
+    "fine_row": 32,
+    "fine_col": 16
+   },
+   {
+    "class": "Stool",
+    "row": 45,
+    "col": 46,
+    "fine_row": 12,
+    "fine_col": 16
+   },
+   {
+    "class": "Table",
+    "row": 44,
+    "col": 34,
+    "fine_row": 16,
+    "fine_col": 0
+   },
+   {
+    "class": "Stool",
+    "row": 44,
+    "col": 33,
+    "fine_row": 16,
+    "fine_col": 30
+   },
+   {
+    "class": "Stool",
+    "row": 44,
+    "col": 34,
+    "fine_row": 16,
+    "fine_col": 30
+   },
+   {
+    "class": "Table",
+    "row": 45,
+    "col": 37,
+    "fine_row": 16,
+    "fine_col": 16
+   },
+   {
+    "class": "Stool",
+    "row": 44,
+    "col": 37,
+    "fine_row": 32,
+    "fine_col": 16
+   },
+   {
+    "class": "Stool",
+    "row": 46,
+    "col": 37,
+    "fine_row": 0,
+    "fine_col": 16
+   },
+   {
+    "class": "Table",
+    "row": 48,
+    "col": 33,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "Stool",
+    "row": 49,
+    "col": 32,
+    "fine_row": 6,
+    "fine_col": 62
+   },
+   {
+    "class": "Stool",
+    "row": 47,
+    "col": 34,
+    "fine_row": 58,
+    "fine_col": 2
+   },
+   {
+    "class": "Table",
+    "row": 49,
+    "col": 35,
+    "fine_row": 0,
+    "fine_col": 32
+   },
+   {
+    "class": "Stool",
+    "row": 48,
+    "col": 35,
+    "fine_row": 16,
+    "fine_col": 16
+   },
+   {
+    "class": "Stool",
+    "row": 49,
+    "col": 35,
+    "fine_row": 40,
+    "fine_col": 48
+   },
+   {
+    "class": "SpinningWheel",
+    "row": 27,
+    "col": 33,
+    "fine_row": 0,
+    "fine_col": 32
+   },
+   {
+    "class": "Loom",
+    "row": 24,
+    "col": 46,
+    "fine_row": 32,
+    "fine_col": 0
+   },
+   {
+    "class": "Forge",
+    "row": 21,
+    "col": 34,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "KocatanForge",
+    "row": 21,
+    "col": 37,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "CraftingAnvil",
+    "row": 27,
+    "col": 37,
+    "fine_row": 0,
+    "fine_col": 32
+   },
+   {
+    "class": "ShaveHorse",
+    "row": 33,
+    "col": 46,
+    "fine_row": 32,
+    "fine_col": 0
+   },
+   {
+    "class": "TanningRack",
+    "row": 35,
+    "col": 39,
+    "fine_row": 0,
+    "fine_col": 0,
+    "angle": 3072
+   },
+   {
+    "class": "KocatanTanningRack",
+    "row": 35,
+    "col": 43,
+    "fine_row": 0,
+    "fine_col": 0,
+    "angle": 3072
+   },
+   {
+    "class": "SplittingStump",
+    "row": 27,
+    "col": 43,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "KocatanSplittingStump",
+    "row": 32,
+    "col": 37,
+    "fine_row": 0,
+    "fine_col": 32
+   },
+   {
+    "class": "GoadsAnvil",
+    "row": 38,
+    "col": 39,
+    "fine_row": 48,
+    "fine_col": 16
+   },
+   {
+    "class": "KocatanAnvil",
+    "row": 32,
+    "col": 43,
+    "fine_row": 0,
+    "fine_col": 0
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/ghall/guildh17.kod"
+ },
+ {
+  "rid": 2600,
+  "class": "MarionCrypt1",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The crypt in Marion",
+  "roo": "mardun01.roo",
+  "music": "nec01.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CAVES",
+   "TERRAIN_NECROPOLIS"
+  ],
+  "teleport": {
+   "row": 11,
+   "col": 23,
+   "angle": null
+  },
+  "base_light": 124,
+  "outside_factor": 0,
+  "info": null,
+  "exits": [
+   {
+    "row": 11,
+    "col": 17,
+    "dest_rid": 200,
+    "dest_row": 80,
+    "dest_col": 15,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 38,
+    "col": 6,
+    "dest_rid": 2601,
+    "dest_row": 3,
+    "dest_col": 26,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 38,
+    "col": 7,
+    "dest_rid": 2601,
+    "dest_row": 3,
+    "dest_col": 27,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "SpectralMummy",
+     "weight": 100
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 100,
+   "init_count_min": 10,
+   "init_count_max": 12,
+   "monster_count_max": 25
+  },
+  "objects": [
+   {
+    "class": "Skull",
+    "row": 11,
+    "col": 21,
+    "fine_row": 32,
+    "fine_col": 40
+   },
+   {
+    "class": "Skull",
+    "row": 22,
+    "col": 11,
+    "fine_row": 24,
+    "fine_col": 56
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 164
+    },
+    "row": 19,
+    "col": 18,
+    "fine_row": 0,
+    "fine_col": 40
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 164
+    },
+    "row": 23,
+    "col": 8,
+    "fine_row": 40,
+    "fine_col": 16
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 164
+    },
+    "row": 25,
+    "col": 14,
+    "fine_row": 0,
+    "fine_col": 40
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 164
+    },
+    "row": 32,
+    "col": 14,
+    "fine_row": 0,
+    "fine_col": 40
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 164
+    },
+    "row": 30,
+    "col": 40,
+    "fine_row": 0,
+    "fine_col": 24
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 164
+    },
+    "row": 27,
+    "col": 33,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 164
+    },
+    "row": 19,
+    "col": 32,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 164
+    },
+    "row": 17,
+    "col": 40,
+    "fine_row": 0,
+    "fine_col": 24
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 164
+    },
+    "row": 13,
+    "col": 40,
+    "fine_row": 0,
+    "fine_col": 24
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 164
+    },
+    "row": 9,
+    "col": 34,
+    "fine_row": 0,
+    "fine_col": 24
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 164
+    },
+    "row": 4,
+    "col": 28,
+    "fine_row": 40,
+    "fine_col": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 164
+    },
+    "row": 2,
+    "col": 26,
+    "fine_row": 0,
+    "fine_col": 40
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 164
+    },
+    "row": 2,
+    "col": 40,
+    "fine_row": 0,
+    "fine_col": 24
+   },
+   {
+    "class": "Brazier",
+    "row": 9,
+    "col": 18,
+    "fine_row": 0,
+    "fine_col": 48
+   },
+   {
+    "class": "Brazier",
+    "row": 14,
+    "col": 18,
+    "fine_row": 0,
+    "fine_col": 48
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/marcryp1.kod"
+ },
+ {
+  "rid": 2601,
+  "class": "MarionCrypt2",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Resting place of Marion's ancestors",
+  "roo": "mardun02.roo",
+  "music": "Song.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CAVES",
+   "TERRAIN_NECROPOLIS"
+  ],
+  "teleport": {
+   "row": 17,
+   "col": 18,
+   "angle": null
+  },
+  "base_light": 124,
+  "outside_factor": 0,
+  "info": null,
+  "exits": [
+   {
+    "row": 2,
+    "col": 26,
+    "dest_rid": 2600,
+    "dest_row": 37,
+    "dest_col": 6,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 2,
+    "col": 27,
+    "dest_rid": 2600,
+    "dest_row": 37,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 38,
+    "col": 26,
+    "dest_rid": 2602,
+    "dest_row": 31,
+    "dest_col": 17,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 38,
+    "col": 27,
+    "dest_rid": 2602,
+    "dest_row": 31,
+    "dest_col": 17,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Skeleton",
+     "weight": 80
+    },
+    {
+     "class": "BatteredSkeleton",
+     "weight": 20
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 100,
+   "init_count_min": 1,
+   "init_count_max": 3,
+   "monster_count_max": 25
+  },
+  "objects": [
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "By order of the King Far'Nohl none are to venture beyond this point.  This place is lost to civility and those that enter are likely to die.  No pity shall be given to those that cross this order. ",
+     "name": "Warning!"
+    },
+    "row": 38,
+    "col": 27,
+    "fine_row": 0,
+    "fine_col": 0
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/marcryp2.kod"
+ },
+ {
+  "rid": 2602,
+  "class": "MarionCrypt3a",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Affirmation of the Forsaken",
+  "roo": "mardun03.roo",
+  "music": "song10.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CAVES",
+   "TERRAIN_NECROPOLIS"
+  ],
+  "teleport": {
+   "row": 18,
+   "col": 21,
+   "angle": null
+  },
+  "base_light": 84,
+  "outside_factor": 0,
+  "info": null,
+  "exits": [
+   {
+    "row": 30,
+    "col": 17,
+    "dest_rid": 2601,
+    "dest_row": 37,
+    "dest_col": 27,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 30,
+    "col": 18,
+    "dest_rid": 2601,
+    "dest_row": 37,
+    "dest_col": 27,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 35,
+    "col": 26,
+    "dest_rid": 2603,
+    "dest_row": 39,
+    "dest_col": 6,
+    "rotate": "ROTATE_225"
+   },
+   {
+    "row": 35,
+    "col": 27,
+    "dest_rid": 2603,
+    "dest_row": 39,
+    "dest_col": 6,
+    "rotate": "ROTATE_225"
+   },
+   {
+    "row": 22,
+    "col": 26,
+    "locked": true,
+    "message": "Your efforts prove fruitless, it holds firm."
+   },
+   {
+    "row": 23,
+    "col": 26,
+    "locked": true,
+    "message": "Your efforts prove fruitless, it holds firm."
+   },
+   {
+    "row": 14,
+    "col": 8,
+    "locked": true,
+    "message": "Your efforts prove fruitless, it holds firm."
+   },
+   {
+    "row": 14,
+    "col": 9,
+    "locked": true,
+    "message": "Your efforts prove fruitless, it holds firm."
+   },
+   {
+    "row": 15,
+    "col": 8,
+    "locked": true,
+    "message": "Your efforts prove fruitless, it holds firm."
+   },
+   {
+    "row": 15,
+    "col": 9,
+    "locked": true,
+    "message": "Your efforts prove fruitless, it holds firm."
+   },
+   {
+    "row": 31,
+    "col": 27,
+    "locked": true,
+    "message": "Your efforts prove fruitless, it holds firm."
+   },
+   {
+    "row": 31,
+    "col": 28,
+    "locked": true,
+    "message": "Your efforts prove fruitless, it holds firm."
+   },
+   {
+    "row": 32,
+    "col": 27,
+    "locked": true,
+    "message": "Your efforts prove fruitless, it holds firm."
+   },
+   {
+    "row": 32,
+    "col": 28,
+    "locked": true,
+    "message": "Your efforts prove fruitless, it holds firm."
+   }
+  ],
+  "edge_exits": [],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Thrasher",
+     "weight": 100
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 100,
+   "init_count_min": 1,
+   "init_count_max": 5,
+   "monster_count_max": 13
+  },
+  "objects": [
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 320,
+     "iIntensity": 5
+    },
+    "row": 37,
+    "col": 14,
+    "fine_row": 0,
+    "fine_col": 24
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 320,
+     "iIntensity": 5
+    },
+    "row": 25,
+    "col": 15,
+    "fine_row": 0,
+    "fine_col": 8
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 320,
+     "iIntensity": 5
+    },
+    "row": 9,
+    "col": 2,
+    "fine_row": 24,
+    "fine_col": 0
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 320,
+     "iIntensity": 5
+    },
+    "row": 32,
+    "col": 35,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 320,
+     "iIntensity": 50
+    },
+    "row": 1,
+    "col": 15,
+    "fine_row": 32,
+    "fine_col": 8
+   },
+   {
+    "expr": "poChest",
+    "row": 33,
+    "col": 25
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/marcry3a.kod"
+ },
+ {
+  "rid": 2603,
+  "class": "MarionCrypt4",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Laboratory of the Mad Brothers",
+  "roo": "marcrypt4.roo",
+  "music": "castle2.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CAVES",
+   "TERRAIN_NECROPOLIS"
+  ],
+  "teleport": {
+   "row": 39,
+   "col": 6,
+   "angle": null
+  },
+  "base_light": 84,
+  "outside_factor": 0,
+  "info": null,
+  "exits": [
+   {
+    "row": 39,
+    "col": 4,
+    "dest_rid": 2602,
+    "dest_row": 34,
+    "dest_col": 27,
+    "rotate": "ROTATE_135"
+   },
+   {
+    "row": 40,
+    "col": 5,
+    "dest_rid": 2602,
+    "dest_row": 34,
+    "dest_col": 27,
+    "rotate": "ROTATE_135"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Thrasher",
+     "weight": 100
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 100,
+   "init_count_min": 1,
+   "init_count_max": 5,
+   "monster_count_max": 10
+  },
+  "objects": [
+   {
+    "class": "BookPedestal",
+    "params": {
+     "Name": "The Ritual",
+     "Text": "After our recent experiments with the flesh golems a rip in space appeared before us. Unsure of whats to come of it we have decided to startdocumenting our future movements as we fear the worse might happen. though our creations are strong they are nothing compared to what might come through this rift. With that said we are not sure where this leads. So to begin we will leave behind the ritual used to open the portal shall fate decide it would close during or expedition. Located in the main room of our lab is a summoning array. This is capabale of channeling the power of the gods if you are able to provide a catalyst. We keep a few in the chest outside the lab, not to interfer with any current experiments. You will need six offerings in total. These offerings must have a strong bond with the god. Strong enough to tip the scale of the entire realm. Once you have these they must be placed on each of the short pedestals, with our great leader Qor having his offering placed in the center. Once all are placed you must ask Qor for his magical strength, for our bodys can not contain enough magic for a true ritual. You must recite the phrase, \n'Hear me Qor, accept my offer. Open your realm and lend me your strength.'"
+    },
+    "row": 15,
+    "col": 11,
+    "fine_row": 48,
+    "fine_col": 34,
+    "angle": 1536
+   },
+   {
+    "class": "DeathRealmEntrance",
+    "params": {
+     "desc": "Through the portal, you see...darkness..and a red sky..",
+     "dest_room_num": 3028,
+     "dest_col": 8,
+     "dest_row": 17,
+     "fine_row": 15,
+     "fine_col": 32
+    },
+    "row": 53,
+    "col": 54,
+    "fine_row": 16,
+    "fine_col": 50,
+    "angle": 3072
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/marcryp4.kod"
  }
 ]

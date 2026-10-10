@@ -1,0 +1,25 @@
+{
+  "_doc": "Zone art for Affirmation of the Forsaken (rid 2602), pass 3 (Marion; docs/adr/0003, 2026-10-10): the interiors' recipe. Cut-outs become solids; indoor grime along the wall feet and under the ceiling.",
+  "rid": 2602,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        0.6,
+        -1.0,
+        76.3,
+        80.8
+      ],
+      "displacement": "none",
+      "_doc": "every cut-out, rebuilt as a solid"
+    }
+  ],
+  "grime": {
+    "base": "indoor_base",
+    "ceiling": "ceiling"
+  }
+}

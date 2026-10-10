@@ -1358,7 +1358,7 @@
    "roo": "c5",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 535,
@@ -1374,12 +1374,17 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 535,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_merchantway",
+     "out_merchantway_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
@@ -3551,7 +3556,7 @@
    "roo": "greenplantation",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 206,
@@ -3561,12 +3566,17 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 206,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_plantation",
+     "out_plantation_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
@@ -3783,7 +3793,7 @@
    "roo": "guildh17",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 717,
@@ -3793,12 +3803,16 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 717,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_greenworkshop_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
@@ -6153,7 +6167,7 @@
    "roo": "marcrypt4",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2603,
@@ -6163,19 +6177,24 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 2603,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_marcrypt4",
+     "int_marcrypt4_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
    "roo": "mardun01",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2600,
@@ -6185,19 +6204,24 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 2600,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_marcrypt1",
+     "int_marcrypt1_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
    "roo": "mardun02",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2601,
@@ -6207,19 +6231,24 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 2601,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_marcrypt2",
+     "int_marcrypt2_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
    "roo": "mardun03",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2602,
@@ -6229,19 +6258,24 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 2602,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_marcrypt3",
+     "int_marcrypt3_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
    "roo": "marelder",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 203,
@@ -6251,19 +6285,24 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 203,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_marelder",
+     "int_marelder_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
    "roo": "marhall",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 204,
@@ -6273,19 +6312,24 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 204,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_marhall",
+     "int_marhall_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
    "roo": "marheal",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 205,
@@ -6295,19 +6339,24 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 205,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_marheal",
+     "int_marheal_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
    "roo": "marinn",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 202,
@@ -6317,19 +6366,24 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 202,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_marinn",
+     "int_marinn_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
    "roo": "marion",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 200,
@@ -6345,12 +6399,17 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 200,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_marion",
+     "out_marion_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
@@ -6372,7 +6431,7 @@
    "roo": "marsmith",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 201,
@@ -6382,12 +6441,17 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 201,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_marsmith",
+     "int_marsmith_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
@@ -7181,7 +7245,7 @@
    "roo": "plantationhouse",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 207,
@@ -7191,12 +7255,17 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 207,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_plantationhouse",
+     "int_plantationhouse_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {
@@ -8781,7 +8850,7 @@
    "roo": "workerhome1",
    "pass": 3,
    "region": "Marion",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 208,
@@ -8791,12 +8860,16 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
+   "built": {
+    "zone": 208,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_workers"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
    "note": ""
   },
   {

@@ -1,0 +1,25 @@
+{
+  "_doc": "Zone art for Green's workshop (rid 717), pass 3 (Marion; docs/adr/0003, 2026-10-10): the interiors' recipe. Cut-outs become solids; indoor grime along the wall feet and under the ceiling.",
+  "rid": 717,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        2.3,
+        -10.9,
+        129.7,
+        131.9
+      ],
+      "displacement": "none",
+      "_doc": "every cut-out, rebuilt as a solid"
+    }
+  ],
+  "grime": {
+    "base": "indoor_base",
+    "ceiling": "ceiling"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "_doc": "Zone art for The home of the elder (rid 203), pass 3 (Marion; docs/adr/0003, 2026-10-10): the interiors' recipe. Cut-outs become solids; indoor grime along the wall feet and under the ceiling.",
+  "rid": 203,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        0.1,
+        2.3,
+        13.1,
+        24.1
+      ],
+      "displacement": "none",
+      "_doc": "every cut-out, rebuilt as a solid"
+    }
+  ],
+  "grime": {
+    "base": "indoor_base",
+    "ceiling": "ceiling"
+  }
+}

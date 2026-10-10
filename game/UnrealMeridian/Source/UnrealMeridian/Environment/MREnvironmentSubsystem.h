@@ -142,6 +142,13 @@ private:
 	class UMaterialInstanceDynamic* SkyDomeMaterial();
 	void ApplySkybox(const TSharedPtr<FJsonObject>& State, const TSharedPtr<FJsonObject>& SkyCfg, double Hour);
 	void TickLightning(float DeltaTime);
+	/**
+	 * The viewer's light (moods.json "viewer_light"): the original lights what's near the viewer by the
+	 * player's light value (BP_PLAYER, usually 5; more under a light spell), falling off with distance,
+	 * which is what keeps its dark rooms readable (clientd3d draw3d.c, dark sectors). A point light that
+	 * follows the camera, unshadowed and without specular. Online the server's value, offline "default".
+	 */
+	void UpdateViewLight();
 	bool IsOutdoor() const;
 
 	TSharedPtr<FJsonObject> Root;
@@ -189,6 +196,11 @@ private:
 	// sounds
 	TArray<double> ThunderAt;
 	TWeakObjectPtr<class UMaterialInstanceDynamic> BoltMID;
+
+	// the viewer's light (UpdateViewLight)
+	TWeakObjectPtr<AActor> ViewLightActor;
+	TWeakObjectPtr<class UPointLightComponent> ViewLight;
+	int32 ViewLightValue = -1;
 
 	// lightning
 	TWeakObjectPtr<ULightComponent> LightningLight;
