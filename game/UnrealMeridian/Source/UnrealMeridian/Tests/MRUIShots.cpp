@@ -9,6 +9,7 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "HAL/FileManager.h"
+#include "HAL/IConsoleManager.h"
 #include "UnrealMeridian.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Paths.h"
@@ -95,6 +96,18 @@ namespace
 	}
 }
 
+namespace
+{
+	/** HUD Size for a picture, without keeping it (MRSettings would save it). */
+	void SetHudSize(int32 Percent)
+	{
+		if (IConsoleVariable* V = IConsoleManager::Get().FindConsoleVariable(TEXT("mr.UI.HudSize")))
+		{
+			V->Set(Percent, ECVF_SetByCode);
+		}
+	}
+}
+
 bool UMRUIShots::IsRequested()
 {
 	return FParse::Param(FCommandLine::Get(), TEXT("MRUIShots"));
@@ -125,9 +138,27 @@ void UMRUIShots::Start(APlayerController* InController)
 	Steps = {
 		{TEXT("hud"), [](APlayerController* PC) {}, 1.f},
 		{TEXT("hud_select"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->OnHotbarKey(3); }, 0.4f},
+		// selecting doesn't wield; a click on the hotbar item does (the sword in the first slot)
+		{TEXT("hud_use_sword"), [](APlayerController* PC)
+			{
+				if (UMRUISubsystem* UI = UIOf(PC))
+				{
+					UE_LOG(LogMeridian, Display, TEXT("MRUIShots: right hand after selecting slot 4: %s"),
+						*UI->GetSource()->Get(FMRSlotRef::Equip(EMREquipSlot::RightHand)).Id.ToString());
+					UI->UseHotbarSlot(0);
+					UE_LOG(LogMeridian, Display, TEXT("MRUIShots: right hand after clicking slot 1: %s"),
+						*UI->GetSource()->Get(FMRSlotRef::Equip(EMREquipSlot::RightHand)).Id.ToString());
+				}
+			}, 0.5f},
 		{TEXT("hud_cast"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->OnSpellKey(1); }, 0.4f},
 		{TEXT("hud_low_health"), [](APlayerController* PC) { SetHealth(PC, 6.f); }, 1.5f},
 		{TEXT(""), [](APlayerController* PC) { SetHealth(PC, 20.f); }, 0.5f},
+		// HUD Size (Options > Game) at its ends, not saved; Hide Interface (H) and its note
+		{TEXT("hud_size_75"), [](APlayerController* PC) { SetHudSize(75); }, 0.6f},
+		{TEXT("hud_size_150"), [](APlayerController* PC) { SetHudSize(150); }, 0.6f},
+		{TEXT(""), [](APlayerController* PC) { SetHudSize(100); }, 0.3f},
+		{TEXT("hud_hidden"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->ToggleHudHidden(); }, 0.5f},
+		{TEXT(""), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->ToggleHudHidden(); }, 1.6f},
 		{TEXT("inventory"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->SetInventoryOpen(true); }, 1.5f},
 		{TEXT("inventory_tooltip"), [Bag](APlayerController* PC) { PointAt(PC, Bag, 9); }, 2.f},
 		{TEXT("inventory_carry"), [Bag](APlayerController* PC)
@@ -139,6 +170,17 @@ void UMRUIShots::Start(APlayerController* InController)
 				}
 			}, 0.8f},
 		{TEXT(""), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->GetSource()->ReturnCursor(); PC->SetMouseLocation(5, 5); }, 0.3f},
+		// an item carried and dropped on the figure goes on (the helmet in the bag's fourth box)
+		{TEXT("inventory_drop_on_avatar"), [](APlayerController* PC)
+			{
+				if (UMRUISubsystem* UI = UIOf(PC))
+				{
+					UI->GetSource()->Click(FMRSlotRef(EMRSlotArea::Bag, 3), false);
+					UI->DropOnAvatar();
+					UE_LOG(LogMeridian, Display, TEXT("MRUIShots: head after the drop: %s"),
+						*UI->GetSource()->Get(FMRSlotRef::Equip(EMREquipSlot::Head)).Id.ToString());
+				}
+			}, 0.8f},
 		{TEXT("inventory_avatar_turned"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->TurnAvatar(3); }, 0.8f},
 		{TEXT("tab_spells"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->SetInventoryTab(1); }, 0.8f},
 		{TEXT("tab_spells_folded"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) { UI->DebugFoldSpellSchool(1); UI->DebugFoldSpellSchool(3); } }, 0.8f},

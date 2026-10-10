@@ -127,6 +127,16 @@ void AMRAvatarPreview::SetBackdrop(const FLinearColor& Colour)
 	}
 }
 
+void AMRAvatarPreview::SetTransparent(bool bTransparent)
+{
+	Capture->CaptureSource = bTransparent ? ESceneCaptureSource::SCS_SceneColorHDR : ESceneCaptureSource::SCS_FinalColorLDR;
+	if (Target)
+	{
+		Target->ClearColor = bTransparent ? FLinearColor(0.f, 0.f, 0.f, 1.f) : FLinearColor::Black;
+		Target->UpdateResourceImmediate(true);
+	}
+}
+
 void AMRAvatarPreview::PlaceCamera()
 {
 	// in front of the character (it faces +X): level with its middle, or with its face
@@ -142,21 +152,22 @@ void AMRAvatarPreview::PlaceCamera()
 	Capture->SetWorldLocationAndRotation(At, FRotator(0.f, 180.f, 0.f));
 }
 
-void AMRAvatarPreview::SetAppearance(const FMRSpriteAppearance& A)
+bool AMRAvatarPreview::SetAppearance(const FMRSpriteAppearance& A)
 {
 	if (!Body)
 	{
-		return;
+		return false;
 	}
 	if (bHasAppearance && A == Shown)
 	{
-		return;
+		return false;
 	}
 	Body->SetAppearance(A);
 	Body->SetHeightScale(A.HeightPct > 0 ? A.HeightPct / 100.f : 1.f);
 	Shown = A;
 	PlaceCamera();
 	bHasAppearance = true;
+	return true;
 }
 
 void AMRAvatarPreview::SetCapturing(bool bCapture)
@@ -167,6 +178,11 @@ void AMRAvatarPreview::SetCapturing(bool bCapture)
 	{
 		Body->SetComponentTickEnabled(bCapture);
 	}
+}
+
+void AMRAvatarPreview::CaptureNow()
+{
+	Capture->CaptureScene();
 }
 
 void AMRAvatarPreview::Turn(int32 Steps)

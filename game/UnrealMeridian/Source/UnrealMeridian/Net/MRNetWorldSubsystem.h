@@ -61,7 +61,7 @@ public:
 	/** Take what the crosshair is on as the target (or clear it when it's on nothing). */
 	void TargetAim();
 	/** Look (BP_REQ_LOOK) at the target, else at what the crosshair is on. False: nothing to look at. */
-	bool LookAtTarget();
+	bool LookAtTarget(bool bAimFirst = false);
 	/** Every object at the crosshair, nearest the middle first (the Look picker when there are several). */
 	TArray<uint32> ObjectsAtAim() const { return AimStack; }
 	/** The things at the crosshair that can be picked up (OF_GETTABLE), nearest the middle first. */

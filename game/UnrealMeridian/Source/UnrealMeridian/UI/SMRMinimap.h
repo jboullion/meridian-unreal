@@ -50,11 +50,16 @@ class UNREALMERIDIAN_API SMRMinimap : public SLeafWidget
 {
 public:
 	DECLARE_DELEGATE_OneParam(FOnMapClick, FVector2D /* the room's own position, UE cm */);
-	SLATE_BEGIN_ARGS(SMRMinimap) : _Side(0.f), _bWhole(false) {}
-		/** The map's side in original pixels (0: ui_style.json minimap_px). */
+	SLATE_BEGIN_ARGS(SMRMinimap) : _Side(0.f), _bWhole(false), _bRound(false) {}
+		/** The map's side in original pixels (0: ui_style.json minimap_px); in HUD pixels when round. */
 		SLATE_ARGUMENT(float, Side)
 		/** The whole room, not the square around the player, with the notes on it (the large map). */
 		SLATE_ARGUMENT(bool, bWhole)
+		/**
+		 * The HUD's map (Shards' .map-ring): the picture clipped to a circle in a dark rim with a
+		 * gold ring, nothing written under it (SMRMapCluster puts the room's name there).
+		 */
+		SLATE_ARGUMENT(bool, bRound)
 		/** A click on the map (the large map: where a note goes). */
 		SLATE_EVENT(FOnMapClick, OnClicked)
 	SLATE_END_ARGS()
@@ -72,6 +77,9 @@ private:
 	float SidePx() const;
 	float SideArg = 0.f;
 	bool bWhole = false;
+	bool bRound = false;
+	/** The round map's picture, rim and ring. */
+	int32 PaintRound(const FGeometry& Geo, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& WStyle) const;
 	FOnMapClick OnClicked;
 	TWeakObjectPtr<UMRUISubsystem> UI;
 	int32 GeometryRid = -1;

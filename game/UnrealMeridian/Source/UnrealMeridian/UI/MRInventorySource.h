@@ -47,7 +47,14 @@ public:
 	virtual void DropCursor(bool bOne);
 	/** Put the carried stack back (closing the window): into its old slot or any free one. */
 	virtual void ReturnCursor();
+	/**
+	 * The carried item dropped on the avatar: put it on, in its own equipment slot (a free one
+	 * first: the second ring slot for a second ring). False if it has none.
+	 */
+	bool EquipCarried();
 	virtual void SelectHotbar(int32 Index);
+	/** A hotbar item clicked on purpose (the HUD, the dialog closed): select it and use it (equip what can be worn or wielded). */
+	virtual void UseHotbar(int32 Index);
 	int32 GetSelectedHotbar() const { return SelectedHotbar; }
 
 	/** Known spells (spell book order) and skills with their percentages. */
@@ -161,6 +168,7 @@ public:
 	virtual void Click(const FMRSlotRef& Slot, bool bRight) override;
 	virtual void QuickMove(const FMRSlotRef& Slot) override;
 	virtual void SwapWithHotbar(const FMRSlotRef& Slot, int32 HotbarIndex) override;
+	virtual void UseHotbar(int32 Index) override;
 	virtual void DropCursor(bool bOne) override;
 	virtual void ReturnCursor() override;
 

@@ -13,6 +13,7 @@
 #include "GameFramework/PlayerController.h"
 #include "UnrealMeridian.h"
 #include "Dom/JsonObject.h"
+#include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
 #include "Net/MRNetSubsystem.h"
 #include "Serialization/JsonReader.h"
@@ -53,6 +54,12 @@ namespace
 	constexpr float SpellCooldownSeconds = 1.5f;  // mock: the spell bar's sweep after a cast
 	TAutoConsoleVariable<int32> CVarDamageNumbers(TEXT("mr.UI.DamageNumbers"), 1,
 		TEXT("Damage numbers over what we hit and over ourselves when hit (ours; the original only printed the line). 0 hides them."));
+	TAutoConsoleVariable<int32> CVarHudSize(TEXT("mr.UI.HudSize"), 100,
+		TEXT("HUD Size in percent (75-150): the HUD's clusters grow where they stand (Options > Game; Shards' HUD Size)."));
+	TAutoConsoleVariable<int32> CVarFreeCursor(TEXT("mr.Input.FreeCursor"), 1,
+		TEXT("1: the cursor stays free and aims; holding the right mouse button turns the view (a right click looks). 0: the mouse always turns the view, aiming with the crosshair (Options > Controls)."));
+	TAutoConsoleVariable<float> CVarChatWidth(TEXT("mr.UI.ChatWidth"), 0.f,
+		TEXT("The chat's width in HUD pixels, as last dragged by its right edge (0: ui_style.json hud chat_width)."));
 }
 
 void UMRUISubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -830,6 +837,12 @@ void UMRUISubsystem::RemoveHUD()
 		Avatar->Destroy();
 		Avatar = nullptr;
 	}
+	if (IsValid(SelfPortrait))
+	{
+		SelfPortrait->Destroy();
+	}
+	SelfPortrait = nullptr;
+	bSelfCapturing = false;
 }
 
 void UMRUISubsystem::OnStyleReloaded()
@@ -848,6 +861,15 @@ void UMRUISubsystem::OnHotbarKey(int32 Index)
 	if (Source)
 	{
 		Source->SelectHotbar(Index);
+	}
+}
+
+void UMRUISubsystem::UseHotbarSlot(int32 Index)
+{
+	if (Source)
+	{
+		Source->UseHotbar(Index);
+		SelectionTime = Now();
 	}
 }
 
@@ -1027,6 +1049,14 @@ void UMRUISubsystem::ApplyInputMode()
 	{
 		return;  // the login screen owns the input (ShowLogin)
 	}
+	// a window, the menu, the chat line or the dialog coming up stops us: keys held now would never
+	// see their release (the UI has them), and we ran on by ourselves
+	const bool bInGame = !(bLookOpen || bStatChangeOpen || bTradeOpen || OpenWindows != 0 || bGameMenuOpen || bChatOpen || bInventoryOpen);
+	if (bWasInGame && !bInGame)
+	{
+		PC->FlushPressedKeys();
+	}
+	bWasInGame = bInGame;
 	if ((bLookOpen || bStatChangeOpen || bTradeOpen || OpenWindows != 0) && !bGameMenuOpen)
 	{
 		// reading (or writing one's description): the dialog has the keyboard and the mouse
@@ -1056,7 +1086,7 @@ void UMRUISubsystem::ApplyInputMode()
 	{
 		// typing: every key goes to the chat line (no walking off while you write)
 		PC->SetInputMode(FInputModeUIOnly());
-		PC->bShowMouseCursor = false;
+		PC->bShowMouseCursor = UsesFreeCursor();
 		PC->SetIgnoreLookInput(true);
 	}
 	else if (bInventoryOpen)
@@ -1069,12 +1099,46 @@ void UMRUISubsystem::ApplyInputMode()
 		PC->bShowMouseCursor = true;
 		PC->SetIgnoreLookInput(true);
 	}
+	else if (UsesFreeCursor())
+	{
+		// the cursor stays free (it aims: UMRNetWorldSubsystem::UpdateAim); holding the right button
+		// hides it and the mouse turns the view, and it comes back where it was
+		FInputModeGameAndUI Mode;
+		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::LockOnCapture);
+		Mode.SetHideCursorDuringCapture(true);
+		PC->SetInputMode(Mode);
+		if (UGameViewportClient* VC = PC->GetWorld() ? PC->GetWorld()->GetGameViewport() : nullptr)
+		{
+			VC->SetMouseCaptureMode(EMouseCaptureMode::CaptureDuringRightMouseDown);
+		}
+		PC->bShowMouseCursor = true;
+		PC->ResetIgnoreLookInput();
+	}
 	else
 	{
 		PC->SetInputMode(FInputModeGameOnly());
 		PC->bShowMouseCursor = false;
 		PC->ResetIgnoreLookInput();
 	}
+}
+
+bool UMRUISubsystem::UsesFreeCursor()
+{
+	// the test tours aim with the middle of the view, wherever the mouse happens to be
+	static const bool bTest = []()
+	{
+		const FString Cmd = FCommandLine::Get();
+		for (const TCHAR* Flag : {TEXT("-MRNetTest"), TEXT("-MRMoveTest"), TEXT("-MRStepSurvey"), TEXT("-MRScreenshots"), TEXT("-MRProfile"),
+			TEXT("-MRLookDev"), TEXT("-MRUIShots"), TEXT("-MRMapCapture"), TEXT("-MRHitchTour"), TEXT("-MRMonsterTour"), TEXT("-MRSpriteClip")})
+		{
+			if (Cmd.Contains(Flag))
+			{
+				return true;
+			}
+		}
+		return false;
+	}();
+	return !bTest && CVarFreeCursor.GetValueOnGameThread() != 0;
 }
 
 // ------------------------------------------------------------------------------ slots
@@ -1130,6 +1194,26 @@ void UMRUISubsystem::SetHoveredSlot(const FMRSlotRef& Slot, bool bHovered)
 	{
 		HoveredSlot = FMRSlotRef();
 	}
+}
+
+bool UMRUISubsystem::IsCarrying() const
+{
+	return Source && !Source->Get(FMRSlotRef(EMRSlotArea::Cursor, 0)).IsEmpty();
+}
+
+void UMRUISubsystem::DropOnAvatar()
+{
+	if (!IsCarrying())
+	{
+		return;
+	}
+	// (Shards' character window: drop an item on the figure to put it on)
+	if (!Source->EquipCarried() && IsCarrying())
+	{
+		Source->ReturnCursor();  // nothing to wear: back where it came from
+	}
+	bPickedOnPress = false;
+	PressSlot = FMRSlotRef();
 }
 
 void UMRUISubsystem::OnClickOutside(bool bRight)
@@ -1510,6 +1594,37 @@ uint32 UMRUISubsystem::ItemToApply() const
 	return Source->Get(FMRSlotRef(EMRSlotArea::Hotbar, Source->GetSelectedHotbar())).ObjectId;
 }
 
+bool UMRUISubsystem::GetCarried(bool bWeight, int32& OutValue, int32& OutMax) const
+{
+	OutValue = OutMax = 0;
+	const TCHAR* Name = bWeight ? TEXT("Weight Carried") : TEXT("Bulk Carried");
+	const UMRNetSubsystem* Net = GetNet();
+	const FMRNetStatGroup* G = Net && Net->GetPhase() == EMRNetPhase::InGame ? Net->FindStatGroup(2) : nullptr;
+	if (G && G->bReceived)
+	{
+		for (const FMRNetStat& S : G->Stats)
+		{
+			if (S.Type == FMRNetStat::Numeric && S.Name.Equals(Name, ESearchCase::IgnoreCase))
+			{
+				OutValue = S.Value;
+				OutMax = S.CurrentMax > 0 ? S.CurrentMax : S.Max;
+				return true;
+			}
+		}
+		return false;
+	}
+	for (const FMRStatView& S : Source ? Source->GetStats() : TArray<FMRStatView>())
+	{
+		if (S.Name.Equals(Name, ESearchCase::IgnoreCase))
+		{
+			OutValue = S.Value;
+			OutMax = S.Max;
+			return true;
+		}
+	}
+	return false;
+}
+
 void UMRUISubsystem::GetStatSections(TArray<FMRStatSection>& Out) const
 {
 	Out.Reset();
@@ -1657,6 +1772,114 @@ bool UMRUISubsystem::GetVital(int32 Index, float& OutValue, float& OutMax) const
 	return true;
 }
 
+bool UMRUISubsystem::GetVitalBar(int32 Index, float& OutValue, float& OutMax, float& OutLimit) const
+{
+	OutValue = OutMax = OutLimit = 0.f;
+	const UMRNetSubsystem* Net = GetNet();
+	const FMRNetStatGroup* G = Net && Net->GetPhase() == EMRNetPhase::InGame ? Net->FindStatGroup(1) : nullptr;
+	if (G && G->bReceived && G->Stats.IsValidIndex(Index))
+	{
+		// Server 104's group 1, Condition: health, mana, vigor, experience. Health and mana run to
+		// their current maximum (StatsMainChange); vigor's bar is its whole scale, with the limit
+		// fill up to what it can reach now
+		const FMRNetStat& S = G->Stats[Index];
+		OutValue = static_cast<float>(S.Value - S.Min);
+		const bool bToCurrent = Index <= 1 && S.CurrentMax > 0;
+		OutMax = static_cast<float>((bToCurrent ? S.CurrentMax : S.Max) - S.Min);
+		OutLimit = Index == 3 ? OutValue : static_cast<float>((S.CurrentMax > 0 ? S.CurrentMax : S.Max) - S.Min);
+		return true;
+	}
+	if (Index > 2 || (G && G->bReceived))
+	{
+		return false;  // experience is the server's
+	}
+	if (!GetVital(Index, OutValue, OutMax))
+	{
+		return false;
+	}
+	OutLimit = OutMax;
+	return true;
+}
+
+UObject* UMRUISubsystem::UpdateSelfPortrait()
+{
+	APlayerController* PC = GetPlayerController();
+	const AMRCharacter* Char = PC ? Cast<AMRCharacter>(PC->GetPawn()) : nullptr;
+	if (!IsValid(SelfPortrait))
+	{
+		SelfPortrait = nullptr;
+		if (!Char)
+		{
+			return nullptr;
+		}
+		// (apart from the other previews: each capture shows only its own body)
+		SelfPortrait = SpawnPreview(FVector(0.0, -4000.0, 0.0));
+		if (!SelfPortrait)
+		{
+			return nullptr;
+		}
+		SelfPortrait->SetPortrait(true);
+		SelfPortrait->SetBackdrop(GetStyle() ? GetStyle()->HudColor(TEXT("portrait_bg"), FLinearColor(0.008f, 0.007f, 0.005f))
+			: FLinearColor(0.008f, 0.007f, 0.005f));
+		bSelfCapturing = false;
+	}
+	if (Char && SelfPortrait->SetAppearance(Char->GetSpriteAppearance()))
+	{
+		// a few seconds of captures: the sprite's pictures may still be arriving
+		SelfCaptureUntil = Now() + 3.0;
+	}
+	const bool bCapture = Now() < SelfCaptureUntil;
+	if (bCapture != bSelfCapturing)
+	{
+		SelfPortrait->SetCapturing(bCapture);
+		bSelfCapturing = bCapture;
+	}
+	if (!bCapture && Now() - SelfCapturedAt > 1.0)
+	{
+		// now and then after that: a material still compiling or a picture still loading shows up
+		SelfPortrait->CaptureNow();
+		SelfCapturedAt = Now();
+	}
+	return SelfPortrait->GetTarget();
+}
+
+void UMRUISubsystem::ToggleHudHidden()
+{
+	bHudHidden = !bHudHidden;
+	const FText Key = MRKeys::Get(TEXT("HideInterface")).GetDisplayName();
+	ShowHudNote(bHudHidden ? FText::Format(LOCTEXT("HudHidden", "Interface hidden ({0} brings it back)"), Key) : LOCTEXT("HudShown", "Interface shown"));
+}
+
+void UMRUISubsystem::ShowHudNote(const FText& Text)
+{
+	HudNote = Text.ToString();
+	HudNoteTime = Now();
+}
+
+bool UMRUISubsystem::GetHudNote(FString& OutText, double& OutAge) const
+{
+	OutText = HudNote;
+	OutAge = Now() - HudNoteTime;
+	return !HudNote.IsEmpty() && OutAge >= 0.0 && OutAge < 10.0;
+}
+
+float UMRUISubsystem::GetHudScale()
+{
+	return FMath::Clamp(CVarHudSize.GetValueOnGameThread(), 75, 150) / 100.f;
+}
+
+float UMRUISubsystem::GetChatWidth() const
+{
+	const float Saved = CVarChatWidth.GetValueOnGameThread();
+	const UMRUIStyle* S = GetStyle();
+	return Saved > 0.f ? Saved : S ? S->HudNumber(TEXT("chat_width"), 340.f) : 340.f;
+}
+
+void UMRUISubsystem::SetChatWidth(float HudPixels)
+{
+	MRSettings::SetCVar(TEXT("mr.UI.ChatWidth"), FMath::RoundToFloat(HudPixels));
+}
+
 // ------------------------------------------------------------------------------ avatar and map
 
 void UMRUISubsystem::EnsureAvatar()
@@ -1673,6 +1896,10 @@ void UMRUISubsystem::EnsureAvatar()
 		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		Params.ObjectFlags |= RF_Transient;
 		Avatar = World->SpawnActor<AMRAvatarPreview>(AMRAvatarPreview::StaticClass(), AMRAvatarPreview::Location(), FRotator::ZeroRotator, Params);
+		if (Avatar)
+		{
+			Avatar->SetTransparent(true);  // the dialog's dark stone behind it (SMRAvatar)
+		}
 	}
 	if (Avatar)
 	{

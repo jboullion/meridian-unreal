@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -41,6 +42,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 from server104 import SERVER104  # noqa: E402
 
 MERINTR = SERVER104 / "module" / "merintr" / "bitmap"
+MAILNEWS = SERVER104 / "module" / "mailnews" / "bitmap"
 CLIENT = SERVER104 / "clientd3d" / "bitmap"
 STYLE = ROOT / "data" / "ui" / "ui_style.json"
 OUT = ROOT / "build" / "ui" / "art"
@@ -48,6 +50,10 @@ VENV_PY = ROOT / "build" / "texai" / ".venv" / "Scripts" / "python.exe"
 MODELS = ROOT / "build" / "texai" / "models"
 CYAN = (0, 255, 255)
 SCALE = 4
+# the original's title face (font.c FONT_TITLES), installed beside the client; the HUD's names use
+# it (UMRUIStyle::TitleFont). data/runtime/ is git-ignored and packaged with data/.
+CLIENT_DIRS = [Path(os.environ.get("LOCALAPPDATA", "")) / "Meridian-104", Path("H:/Steam/steamapps/common/Meridian 59")]
+TITLE_FONT = ROOT / "data" / "runtime" / "fonts" / "heidelb1.ttf"
 
 # frame sets: name -> (folder, {slot: file}). Slots: the eight corner strips and four repeaters.
 FRAMES = {
@@ -114,12 +120,13 @@ PIECES["tab_mid_up"] = (MERINTR, "statbtn_mid", True, (0, 0, 2, 20))
 PIECES["tab_mid_down"] = (MERINTR, "statbtn_mid", True, (2, 0, 4, 20))
 PIECES["tab_right_up"] = (MERINTR, "statbtn_right", False, (0, 0, 4, 20))
 PIECES["tab_right_down"] = (MERINTR, "statbtn_right", False, (4, 0, 8, 20))
-for _btn in ("cast", "map", "stand", "rest"):          # 72x36: two 36x36
+for _btn in ("cast", "map", "stand"):                  # 72x36: two 36x36
     PIECES["btn_%s_up" % _btn] = (MERINTR, _btn, False, (0, 0, 36, 36))
     PIECES["btn_%s_down" % _btn] = (MERINTR, _btn, False, (36, 0, 72, 36))
-for _btn in ("drop", "get", "help"):                  # 48x20: two 24x20
-    PIECES["btn_%s_up" % _btn] = (MERINTR, _btn, False, (0, 0, 24, 20))
-    PIECES["btn_%s_down" % _btn] = (MERINTR, _btn, False, (24, 0, 48, 20))
+# the toolbar's buttons (toolbar.c; 48x20: up | down): Rest/Stand and the mailbox sit by the HUD's face
+for _folder, _btn in ((MERINTR, "drop"), (MERINTR, "get"), (MERINTR, "help"), (MERINTR, "rest"), (MAILNEWS, "mailbox")):
+    PIECES["btn_%s_up" % _btn] = (_folder, _btn, False, (0, 0, 24, 20))
+    PIECES["btn_%s_down" % _btn] = (_folder, _btn, False, (24, 0, 48, 20))
 
 
 def find_bmp(folder: Path, stem: str) -> Path:
@@ -299,6 +306,18 @@ def build(variant: str, cfg: dict) -> None:
     print("%s: %d pieces -> %s" % (variant, len(big), out))
 
 
+def copy_title_font() -> None:
+    """Heidelb1.ttf from the installed client to data/runtime/fonts/ (original data: stays out of git)."""
+    for d in CLIENT_DIRS:
+        found = [p for p in d.glob("*.ttf") if p.name.lower() == "heidelb1.ttf"] if d.is_dir() else []
+        if found:
+            TITLE_FONT.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(found[0], TITLE_FONT)
+            print("title font: %s -> %s" % (found[0], TITLE_FONT))
+            return
+    print("title font: Heidelb1.ttf not found in %s; the HUD's names use the UI font" % ", ".join(map(str, CLIENT_DIRS)))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--variant", action="append", help="build only these variants (default: all in ui_style.json)")
@@ -307,6 +326,7 @@ def main():
     variants = style["art_variants"]
     for v in a.variant or list(variants):
         build(v, variants[v])
+    copy_title_font()
 
 
 if __name__ == "__main__":

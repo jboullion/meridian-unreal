@@ -856,7 +856,13 @@ void UMRNetWorldSubsystem::UpdateAim()
 	}
 	int32 W = 0, H = 0;
 	PC->GetViewportSize(W, H);
-	const FVector2D Centre(W * 0.5, H * 0.5);
+	// what's under the free cursor (UMRUISubsystem::UsesFreeCursor), else the middle of the view
+	FVector2D Centre(W * 0.5, H * 0.5);
+	float MouseX = 0.f, MouseY = 0.f;
+	if (PC->bShowMouseCursor && UMRUISubsystem::UsesFreeCursor() && PC->GetMousePosition(MouseX, MouseY))
+	{
+		Centre = FVector2D(MouseX, MouseY);
+	}
 	TArray<TPair<double, uint32>> Hits;
 	for (const TPair<uint32, TWeakObjectPtr<AMRNetObject>>& Pair : Actors)
 	{
@@ -953,10 +959,11 @@ bool UMRNetWorldSubsystem::UseAim()
 	return false;
 }
 
-bool UMRNetWorldSubsystem::LookAtTarget()
+bool UMRNetWorldSubsystem::LookAtTarget(bool bAimFirst)
 {
 	UMRNetSubsystem* Net = GetNet();
-	const uint32 Id = TargetId ? TargetId : AimId;
+	// (a right click with the free cursor looks at what it's on, as the original's right click)
+	const uint32 Id = bAimFirst && AimId ? AimId : TargetId ? TargetId : AimId;
 	if (!Net || !Id)
 	{
 		return false;

@@ -227,6 +227,12 @@ protected:
 	void OnPhoto();
 	/** Keep the third-person camera within mr.Camera.ThirdPersonPitch of eye level. */
 	void ClampThirdPersonPitch();
+public:
+	/** How far the mouse has turned the view since ResetLookTravel (a right click or a drag). */
+	float GetLookTravel() const { return LookTravel; }
+	void ResetLookTravel() { LookTravel = 0.f; }
+protected:
+	float LookTravel = 0.f;
 
 	UPROPERTY(Transient) TObjectPtr<UInputMappingContext> DefaultContext;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> MoveAction;

@@ -242,6 +242,12 @@ TSharedRef<SWidget> SMROptionsDialog::MakeControls()
 	const float Px = S->Px();
 	TWeakPtr<SMROptionsDialog> Weak = SharedThis(this);
 	TSharedRef<SVerticalBox> List = SNew(SVerticalBox);
+	// the free cursor (aims; the right button held turns the view, a right click looks), else the
+	// mouse always turns it and the crosshair aims (UMRUISubsystem::UsesFreeCursor)
+	List->AddSlot().AutoHeight().Padding(0.f, 0.5f * Px, 0.f, 3.f * Px)
+	[
+		Row(S, LOCTEXT("FreeCursor", "Free cursor (hold the right button to turn)"), CVarToggle(Ui, TEXT("mr.Input.FreeCursor")))
+	];
 	for (const FMRKeyBinding& B : MRKeys::All())
 	{
 		const FName Id = B.Id;
@@ -382,6 +388,8 @@ TSharedRef<SWidget> SMROptionsDialog::MakeGame()
 	{
 		Box->AddSlot().AutoHeight().Padding(0.f, 1.5f * Px)[MRUI::Label(S, LOCTEXT("NoPrefs", "The server keeps more options: they show once you're in the game."), 9.f, false, Dim)];
 	}
+	// Shards' HUD Size: the bars, slots, map, target and chat together, each grown where it stands
+	Add(LOCTEXT("HudSize", "HUD size (%)"), CVarSlider(Ui, TEXT("mr.UI.HudSize"), 75, 150));
 	Add(LOCTEXT("Damage", "Damage numbers"), CVarToggle(Ui, TEXT("mr.UI.DamageNumbers")));
 	Add(LOCTEXT("OriginalTyping", "Every line a command"), CVarToggle(Ui, TEXT("mr.Chat.OriginalTyping")));
 	Box->AddSlot().AutoHeight()[MRUI::Label(S, LOCTEXT("OriginalTypingHelp", "(as the original client: \"say\" to speak)"), 8.5f, false, Dim)];

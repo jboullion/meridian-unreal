@@ -63,10 +63,8 @@ int32 UMRInventorySource::NumSlots(EMRSlotArea Area) const
 
 FMRSlotRef UMRInventorySource::Resolve(const FMRSlotRef& Slot) const
 {
-	if (Slot.Area == EMRSlotArea::Equipment && Slot.Index == static_cast<int32>(EMREquipSlot::RightHand))
-	{
-		return FMRSlotRef(EMRSlotArea::Hotbar, SelectedHotbar);
-	}
+	// (until 2026-10-10 the right hand was the selected hotbar slot, as Minecraft's; it is a slot of
+	// its own now, offline as online: selecting a hotbar slot doesn't wield it)
 	return Slot;
 }
 
@@ -264,6 +262,28 @@ FMRSlotContent UMRInventorySource::Insert(EMRSlotArea Area, FMRSlotContent Conte
 	return Content.Count > 0 ? Content : FMRSlotContent();
 }
 
+bool UMRInventorySource::EquipCarried()
+{
+	const FMRSlotContent Cur = Get(CursorSlot);
+	if (Cur.IsEmpty() || Cur.bSpell)
+	{
+		return false;
+	}
+	for (const bool bFreeOnly : {true, false})
+	{
+		for (int32 i = 0; i < static_cast<int32>(EMREquipSlot::Count); ++i)
+		{
+			const FMRSlotRef E = FMRSlotRef::Equip(static_cast<EMREquipSlot>(i));
+			if (Accepts(E, Cur) && (!bFreeOnly || Get(E).IsEmpty()))
+			{
+				Click(E, false);  // the slot's own rules (online: the server uses it)
+				return Get(CursorSlot).IsEmpty();
+			}
+		}
+	}
+	return false;
+}
+
 void UMRInventorySource::QuickMove(const FMRSlotRef& Slot)
 {
 	const FMRSlotRef S = Resolve(Slot);
@@ -293,7 +313,7 @@ void UMRInventorySource::QuickMove(const FMRSlotRef& Slot)
 		// equip it if its slot is free (the first free ring slot for rings), else to the hotbar
 		const FMRItemDef* Item = Data ? Data->FindItem(In.Id) : nullptr;
 		const EMREquipSlot Fit = Item ? Data->EquipSlotFor(*Item) : EMREquipSlot::Count;
-		if (Fit != EMREquipSlot::Count && Fit != EMREquipSlot::RightHand)
+		if (Fit != EMREquipSlot::Count)
 		{
 			for (EMREquipSlot E : {Fit, Fit == EMREquipSlot::Ring1 ? EMREquipSlot::Ring2 : Fit})
 			{
@@ -399,7 +419,44 @@ void UMRInventorySource::SelectHotbar(int32 Index)
 	}
 	SelectedHotbar = New;
 	OnSelectionChanged.Broadcast();
-	Changed();  // the right hand shows the new selection
+	Changed();
+}
+
+void UMRInventorySource::UseHotbar(int32 Index)
+{
+	// a click on a hotbar item: put it on, in its own slot (the second ring slot for a second ring),
+	// what was there taking its place on the hotbar; anything else is only selected
+	const FMRSlotRef H(EMRSlotArea::Hotbar, FMath::Clamp(Index, 0, HotbarSlots - 1));
+	SelectHotbar(H.Index);
+	const FMRSlotContent In = GetRaw(H);
+	const FMRItemDef* Item = !In.IsEmpty() && !In.bSpell && Data ? Data->FindItem(In.Id) : nullptr;
+	EMREquipSlot Fit = Item ? Data->EquipSlotFor(*Item) : EMREquipSlot::Count;
+	if (Fit == EMREquipSlot::Count)
+	{
+		return;
+	}
+	if (Fit == EMREquipSlot::Ring1 && !GetRaw(FMRSlotRef::Equip(EMREquipSlot::Ring1)).IsEmpty()
+		&& GetRaw(FMRSlotRef::Equip(EMREquipSlot::Ring2)).IsEmpty())
+	{
+		Fit = EMREquipSlot::Ring2;
+	}
+	const FMRSlotRef E = FMRSlotRef::Equip(Fit);
+	const FMRSlotContent Was = GetRaw(E);
+	SetRaw(E, FMRSlotContent(In.Id, 1));
+	FMRSlotContent Rest = In.Count > 1 ? FMRSlotContent(In.Id, In.Count - 1) : FMRSlotContent();
+	if (!Was.IsEmpty())
+	{
+		if (Rest.IsEmpty())
+		{
+			Rest = Was;
+		}
+		else
+		{
+			Insert(EMRSlotArea::Bag, Was);
+		}
+	}
+	SetRaw(H, Rest);
+	Changed();
 }
 
 void UMRInventorySource::OnDropped(const FMRSlotContent& Content)
@@ -978,6 +1035,18 @@ void UMRNetInventory::QuickMove(const FMRSlotRef& Slot)
 	}
 	// use it: wear, wield, or whatever using does for it (eat, read): the server says
 	N->UseItem(In.ObjectId);
+}
+
+void UMRNetInventory::UseHotbar(int32 Index)
+{
+	// the server's use: wield, wear, eat, read... (a worn item leaves the hotbar for its equipment
+	// slot while in use, and comes back to it when taken off)
+	SelectHotbar(Index);
+	const FMRSlotContent In = GetRaw(FMRSlotRef(EMRSlotArea::Hotbar, FMath::Clamp(Index, 0, HotbarSlots - 1)));
+	if (UMRNetSubsystem* N = Net.Get(); N && In.ObjectId)
+	{
+		N->UseItem(In.ObjectId);
+	}
 }
 
 void UMRNetInventory::SwapWithHotbar(const FMRSlotRef& Slot, int32 HotbarIndex)

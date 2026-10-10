@@ -139,6 +139,7 @@ void AMRPlayerController::BuildUIInput()
 	MailAction = MakeAction(TEXT("IA_Mail"), EInputActionValueType::Boolean);
 	GuildAction = MakeAction(TEXT("IA_Guild"), EInputActionValueType::Boolean);
 	MapWindowAction = MakeAction(TEXT("IA_MapWindow"), EInputActionValueType::Boolean);
+	HideInterfaceAction = MakeAction(TEXT("IA_HideInterface"), EInputActionValueType::Boolean);
 	MapUIKeys();
 }
 
@@ -198,6 +199,7 @@ void AMRPlayerController::MapUIKeys()
 	Map(MailAction, TEXT("Mail"));
 	Map(GuildAction, TEXT("Guild"));
 	Map(MapWindowAction, TEXT("Map"));
+	Map(HideInterfaceAction, TEXT("HideInterface"));
 }
 
 void AMRPlayerController::RemapKeysIfChanged()
@@ -250,6 +252,7 @@ void AMRPlayerController::SetupInputComponent()
 	Input->BindAction(TargetSelfAction, ETriggerEvent::Started, this, &AMRPlayerController::OnTargetSelf);
 	Input->BindAction(TargetAimAction, ETriggerEvent::Started, this, &AMRPlayerController::OnTargetAim);
 	Input->BindAction(LookAction, ETriggerEvent::Started, this, &AMRPlayerController::OnLookKey);
+	Input->BindAction(LookAction, ETriggerEvent::Completed, this, &AMRPlayerController::OnLookReleased);
 	Input->BindAction(GetAction, ETriggerEvent::Started, this, &AMRPlayerController::OnGetKey);
 	Input->BindAction(UseAction, ETriggerEvent::Started, this, &AMRPlayerController::OnUseKey);
 	Input->BindAction(RestAction, ETriggerEvent::Started, this, &AMRPlayerController::OnRestKey);
@@ -262,6 +265,7 @@ void AMRPlayerController::SetupInputComponent()
 	Input->BindAction(MailAction, ETriggerEvent::Started, this, &AMRPlayerController::OnWindowKey, EMRWindow::Mail);
 	Input->BindAction(GuildAction, ETriggerEvent::Started, this, &AMRPlayerController::OnWindowKey, EMRWindow::Guild);
 	Input->BindAction(MapWindowAction, ETriggerEvent::Started, this, &AMRPlayerController::OnWindowKey, EMRWindow::Map);
+	Input->BindAction(HideInterfaceAction, ETriggerEvent::Started, this, &AMRPlayerController::OnHideInterfaceKey);
 }
 
 UMRUISubsystem* AMRPlayerController::GetUI() const
@@ -404,6 +408,37 @@ void AMRPlayerController::OnTargetAim()
 
 void AMRPlayerController::OnLookKey()
 {
+	if (UMRUISubsystem::UsesFreeCursor() && MRKeys::Get(TEXT("Look")) == EKeys::RightMouseButton)
+	{
+		// the right button also turns the view while held: a click without a drag looks (OnLookReleased)
+		bLookPending = true;
+		LookPressTime = GetWorld()->GetRealTimeSeconds();
+		if (AMRCharacter* Char = Cast<AMRCharacter>(GetPawn()))
+		{
+			Char->ResetLookTravel();
+		}
+		return;
+	}
+	LookAtAim(false);
+}
+
+void AMRPlayerController::OnLookReleased()
+{
+	if (!bLookPending)
+	{
+		return;
+	}
+	bLookPending = false;
+	const AMRCharacter* Char = Cast<AMRCharacter>(GetPawn());
+	const float Travel = Char ? Char->GetLookTravel() : 0.f;
+	if (Travel < 4.f && GetWorld()->GetRealTimeSeconds() - LookPressTime < 0.6)
+	{
+		LookAtAim(true);
+	}
+}
+
+void AMRPlayerController::LookAtAim(bool bCursorFirst)
+{
 	UMRNetWorldSubsystem* NetWorld = GetNetWorld();
 	if (!NetWorld)
 	{
@@ -419,7 +454,7 @@ void AMRPlayerController::OnLookKey()
 			return;
 		}
 	}
-	NetWorld->LookAtTarget();
+	NetWorld->LookAtTarget(bCursorFirst);
 }
 
 void AMRPlayerController::OnRestKey()
@@ -441,6 +476,14 @@ void AMRPlayerController::OnApplyKey()
 	if (const uint32 Item = UI->ItemToApply())
 	{
 		NetWorld->ApplyItem(Item);
+	}
+}
+
+void AMRPlayerController::OnHideInterfaceKey()
+{
+	if (UMRUISubsystem* UI = GetUI())
+	{
+		UI->ToggleHudHidden();
 	}
 }
 

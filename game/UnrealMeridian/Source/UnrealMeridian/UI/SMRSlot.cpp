@@ -15,12 +15,13 @@ void SMRSlot::Construct(const FArguments& InArgs, UMRUISubsystem* InUI, const FM
 	bSelectable = InArgs._bSelectable;
 	bToolTip = InArgs._bToolTip;
 	HintIcon = InArgs._HintIcon;
+	bHud = InArgs._bHud;
 }
 
 FVector2D SMRSlot::ComputeDesiredSize(float) const
 {
 	const UMRUIStyle* Style = UI.IsValid() ? UI->GetStyle() : nullptr;
-	const float S = SizePx * (Style ? Style->Px() : 2.f);
+	const float S = SizePx * (Style ? (bHud ? Style->HudPx() : Style->Px()) : 2.f);
 	return FVector2D(S, S);
 }
 
@@ -38,6 +39,10 @@ int32 SMRSlot::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlat
 	const FVector2f Size(Geo.GetLocalSize());
 	const float Px = Style->Px();
 	Ui->NoteSlotDrawn(SlotRef, FVector2f(Geo.LocalToAbsolute(FVector2D(Size * 0.5f))));
+	if (bHud)
+	{
+		return PaintHud(Geo, Out, Layer, WStyle);
+	}
 
 	// the sunk stone square
 	MRPaint::Box(Out, Layer, Geo, Style->Brush(TEXT("slot")), FVector2f::ZeroVector, Size, Tint);
@@ -97,10 +102,89 @@ int32 SMRSlot::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlat
 	return Layer + 6;
 }
 
+int32 SMRSlot::PaintHud(const FGeometry& Geo, FSlateWindowElementList& Out, int32 Layer, const FWidgetStyle& WStyle) const
+{
+	// Shards' quick slot (styles.css .game.modern-ui .hotbar-slot): a box sunk into the stone, a
+	// black edge that turns gold on the selected slot or under the mouse, the key top left and the
+	// count bottom right
+	UMRUISubsystem* Ui = UI.Get();
+	UMRUIStyle* Style = Ui->GetStyle();
+	UMRInventorySource* Source = Ui->GetSource();
+	const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
+	const FVector2f Size(Geo.GetLocalSize());
+	const float Px = Style->HudPx();
+	const float Radius = 2.f * Px;
+	MRPaint::Rounded(Out, Layer, Geo, FVector2f::ZeroVector, Size, Style->HudColor(TEXT("slot_bg"), FLinearColor(0.011f, 0.011f, 0.011f)) * Tint, Radius);
+	MRPaint::Tile(Out, Layer + 1, Geo, Style->Brush(TEXT("invbkgnd"), true), FVector2f(Px, Px), Size - FVector2f(2.f * Px, 2.f * Px), Tint);
+	// the inset shadow (inset 2px 2px 4px black 0.8; inset -1px -1px 0 white 0.08)
+	const FLinearColor Dark = FLinearColor(0.f, 0.f, 0.f, 0.8f) * Tint;
+	const float Band = 4.f * Px;
+	FSlateDrawElement::MakeGradient(Out, Layer + 2, Geo.ToPaintGeometry(FVector2f(Size.X, Band), FSlateLayoutTransform(FVector2f::ZeroVector)),
+		{FSlateGradientStop(FVector2f(0.f, 0.f), Dark), FSlateGradientStop(FVector2f(0.f, Band), FLinearColor::Transparent)}, Orient_Horizontal);
+	FSlateDrawElement::MakeGradient(Out, Layer + 2, Geo.ToPaintGeometry(FVector2f(Band, Size.Y), FSlateLayoutTransform(FVector2f::ZeroVector)),
+		{FSlateGradientStop(FVector2f(0.f, 0.f), Dark), FSlateGradientStop(FVector2f(Band, 0.f), FLinearColor::Transparent)}, Orient_Vertical);
+	const FLinearColor Lit = FLinearColor(1.f, 1.f, 1.f, 0.08f) * Tint;
+	MRPaint::Box(Out, Layer + 2, Geo, Style->White(), FVector2f(Px, Size.Y - 2.f * Px), FVector2f(Size.X - 2.f * Px, Px), Lit);
+	MRPaint::Box(Out, Layer + 2, Geo, Style->White(), FVector2f(Size.X - 2.f * Px, Px), FVector2f(Px, Size.Y - 3.f * Px), Lit);
+
+	const FMRSlotContent C = Source->Get(SlotRef);
+	const float Pad = 4.f * Px;  // its 3 px padding inside the 1 px edge
+	if (!C.IsEmpty())
+	{
+		MRPaint::Box(Out, Layer + 3, Geo, Ui->IconFor(C), FVector2f(Pad, Pad), Size - FVector2f(2.f * Pad, 2.f * Pad), Tint);
+	}
+	if (SlotRef.Area == EMRSlotArea::SpellBar)
+	{
+		const float Cd = Ui->SpellCooldown(SlotRef.Index);
+		if (Cd > 0.f)
+		{
+			MRPaint::Box(Out, Layer + 4, Geo, Style->White(), FVector2f(Px, Px + (Size.Y - 2.f * Px) * (1.f - Cd)),
+				FVector2f(Size.X - 2.f * Px, (Size.Y - 2.f * Px) * Cd), Tint * FLinearColor(0.f, 0.f, 0.f, 0.55f));
+		}
+	}
+	const FLinearColor Gold = Style->HudColor(TEXT("gold"), FLinearColor(0.87f, 0.63f, 0.01f));
+	const bool bSelected = bSelectable && SlotRef.Area == EMRSlotArea::Hotbar && Source->GetSelectedHotbar() == SlotRef.Index;
+	MRPaint::Rounded(Out, Layer + 5, Geo, FVector2f::ZeroVector, Size, FLinearColor::Transparent, Radius,
+		(bSelected || IsHovered() ? Gold : FLinearColor::Black) * Tint, Px);
+	if (bSelected)
+	{
+		// Shards' in-use glow (inset 0 0 6px gold 0.6)
+		MRPaint::Rounded(Out, Layer + 5, Geo, FVector2f(Px, Px), Size - FVector2f(2.f * Px, 2.f * Px), FLinearColor::Transparent, Radius,
+			Gold * FLinearColor(1.f, 1.f, 1.f, 0.35f) * Tint, 3.f * Px);
+	}
+	const FSlateFontInfo Font = Style->HudFont(Style->HudNumber(TEXT("slot_text_size"), 10.f), true);
+	const FLinearColor TextColor = Style->HudColor(TEXT("slot_text"), FLinearColor(0.89f, 0.76f, 0.46f)) * Tint;
+	if (!KeyLabel.IsEmpty())
+	{
+		MRPaint::Text(Out, Layer + 6, Geo, KeyLabel, Font, FVector2f(3.f * Px, 1.f * Px), TextColor, Px);
+	}
+	if (!C.IsEmpty() && C.Count > 1)
+	{
+		const FString Count = FString::FromInt(C.Count);
+		const FVector2f M = MRPaint::MeasureText(Count, Font);
+		MRPaint::Text(Out, Layer + 6, Geo, Count, Font, Size - M - FVector2f(3.f * Px, 1.f * Px), TextColor, Px);
+	}
+	return Layer + 8;
+}
+
 FReply SMRSlot::OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event)
 {
 	const bool bLeft = Event.GetEffectingButton() == EKeys::LeftMouseButton;
 	const bool bRight = Event.GetEffectingButton() == EKeys::RightMouseButton;
+	if (UI.IsValid() && bHud && bLeft && !UI->IsInventoryOpen())
+	{
+		// the action bar with the dialog closed: a click uses the slot (an item is put on, a spell cast)
+		if (SlotRef.Area == EMRSlotArea::Hotbar)
+		{
+			UI->UseHotbarSlot(SlotRef.Index);
+			return FReply::Handled();
+		}
+		if (SlotRef.Area == EMRSlotArea::SpellBar)
+		{
+			UI->OnSpellKey(SlotRef.Index);
+			return FReply::Handled();
+		}
+	}
 	if (!UI.IsValid() || !(bLeft || bRight) || !UI->IsInventoryOpen())
 	{
 		return FReply::Unhandled();

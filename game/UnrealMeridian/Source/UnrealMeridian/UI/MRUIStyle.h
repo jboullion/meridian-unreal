@@ -66,12 +66,33 @@ public:
 	/** A plain white brush for tinted fills (bars, highlights). */
 	const FSlateBrush* White() const { return &WhiteBrush; }
 
+	// --- the HUD over the view (ui_style.json "hud"; after Meridian Shards' Modern interface)
+	/** Slate units per HUD pixel (Shards' CSS pixels at 1080p). HUD Size scales each cluster on top (SDPIScaler). */
+	float HudPx() const { return HudScale; }
+	/** A size in HUD pixels, in Slate units. */
+	float HudPx(float HudPixels) const { return HudPixels * HudScale; }
+	/** A number from "hud" (in HUD pixels for sizes). */
+	float HudNumber(const TCHAR* Key, float Default) const;
+	/** A colour from "hud" "colors". */
+	FLinearColor HudColor(const TCHAR* Key, const FLinearColor& Default = FLinearColor::White) const;
+	/** The HUD's plain text: the UI font at a size in HUD pixels (CSS px). */
+	FSlateFontInfo HudFont(float SizePx, bool bBold = false) const;
+	/**
+	 * Names and titles: Heidelberg, the original client's title face (font.c FONT_TITLES), copied
+	 * from the installed client to data/runtime/fonts/heidelb1.ttf by tools/ui/build_ui_art.py;
+	 * the UI font when it isn't there. Size in HUD pixels.
+	 */
+	FSlateFontInfo TitleFont(float SizePx) const;
+
 	FSimpleMulticastDelegate OnReloaded;
 
 private:
 	TSharedPtr<FJsonObject> Json;
 	float UIScale = 2.f;
 	float TextScale = 1.f;
+	float HudScale = 1.f;
+	/** data/runtime/fonts/heidelb1.ttf as a font, if it's there (null: the UI font stands in). */
+	TSharedPtr<const struct FCompositeFont> TitleComposite;
 	int32 ArtScale = 4;  // art texels per original pixel (tools/ui/build_ui_art.py SCALE)
 
 	UPROPERTY(Transient)
@@ -102,4 +123,16 @@ namespace MRPaint
 	UNREALMERIDIAN_API void Text(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, const FString& Text,
 		const FSlateFontInfo& Font, FVector2f Pos, const FLinearColor& Color, float Shadow = 1.f);
 	UNREALMERIDIAN_API FVector2f MeasureText(const FString& Text, const FSlateFontInfo& Font);
+	/** A rounded box: its fill and an outline drawn inside its edge (OutlineWidth 0: none). */
+	UNREALMERIDIAN_API void Rounded(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, FVector2f Pos, FVector2f Size,
+		const FLinearColor& Fill, float Radius, const FLinearColor& Outline = FLinearColor::Transparent, float OutlineWidth = 0.f);
+	/** A vertical gradient from Top to Bottom with rounded corners. */
+	UNREALMERIDIAN_API void Gradient(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, FVector2f Pos, FVector2f Size,
+		const FLinearColor& Top, const FLinearColor& Bottom, float Radius = 0.f);
+	/** A soft shadow under a box (CSS box-shadow 0 Y Blur): a few widening, fading rounded boxes. */
+	UNREALMERIDIAN_API void SoftShadow(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, FVector2f Pos, FVector2f Size,
+		float Radius, float OffsetY, float Blur, const FLinearColor& Color);
+	/** The HUD's panel (Shards' --hud-panel and --hud-edge): shadow, translucent dark fill, thin gold edge. Radius in Slate units. */
+	UNREALMERIDIAN_API void HudPanel(FSlateWindowElementList& Out, int32 Layer, const FGeometry& Geo, UMRUIStyle* Style, FVector2f Pos,
+		FVector2f Size, float Radius, float Opacity = 1.f, const FLinearColor* Edge = nullptr);
 }

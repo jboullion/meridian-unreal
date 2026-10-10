@@ -20,6 +20,12 @@ const TArray<const TCHAR*>& MRSettings::SavedCVars()
 		TEXT("mr.Audio.Music"), TEXT("mr.Audio.MusicVolume"), TEXT("mr.Audio.Sound"), TEXT("mr.Audio.SoundVolume"),
 		TEXT("mr.Audio.Loops"), TEXT("mr.Audio.Random"), TEXT("mr.UI.DamageNumbers"), TEXT("mr.Camera.FOV"),
 		TEXT("mr.Chat.OriginalTyping"),
+		// the HUD (Options > Game > HUD size; the chat's dragged width)
+		TEXT("mr.UI.HudSize"), TEXT("mr.UI.ChatWidth"),
+		// Options > Controls: the free cursor, or the mouse always turning the view
+		TEXT("mr.Input.FreeCursor"),
+		// Options > Graphics > Grass (AMRScatterActor)
+		TEXT("mr.Grass.Density"), TEXT("mr.Grass.Distance"), TEXT("mr.Grass.Shadows"),
 	};
 	return Names;
 }
@@ -94,6 +100,7 @@ const TArray<FMRKeyBinding>& MRKeys::All()
 		{TEXT("Map"), LOCTEXT("Map", "The large map"), EKeys::M, EKeys::M},
 		{TEXT("MapZoomIn"), LOCTEXT("MapZoomIn", "Map closer"), EKeys::Equals, EKeys::Add},
 		{TEXT("MapZoomOut"), LOCTEXT("MapZoomOut", "Map farther"), EKeys::Hyphen, EKeys::Subtract},
+		{TEXT("HideInterface"), LOCTEXT("HideInterface", "Hide the interface"), EKeys::H, EKeys::H},
 	};
 	return Bindings;
 }

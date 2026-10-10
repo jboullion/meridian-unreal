@@ -147,11 +147,11 @@ int32 SMRWorldOverlay::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, con
 			At = FVector2f(Px2) * ToLocal - FVector2f(0.f, 12.f * Px);  // over its name
 		}
 		At.Y -= static_cast<float>(Age / UMRUISubsystem::FloaterSeconds) * 26.f * Px;
-		const FSlateFontInfo Font = S->Font(11.f, true);
+		const FSlateFontInfo Font = S->Font(16.5f, true);  // (11 until 2026-10-10: half again, to read in a fight)
 		const FVector2f M = MRPaint::MeasureText(F.Text, Font);
 		FLinearColor Color = F.Color;
 		Color.A = FMath::Clamp(static_cast<float>((UMRUISubsystem::FloaterSeconds - Age) / 0.5), 0.f, 1.f);
-		MRPaint::Text(Out, Layer + 2, Geo, F.Text, Font, At - FVector2f(M.X * 0.5f, M.Y), Color, Px * 0.6f);
+		MRPaint::Text(Out, Layer + 2, Geo, F.Text, Font, At - FVector2f(M.X * 0.5f, M.Y), Color, Px * 0.8f);
 	}
 
 	// a spell or an item waiting for its target: say so under the crosshair
