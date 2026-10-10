@@ -59,9 +59,10 @@ def main():
     print("|---|---:|---:|---:|---:|---:|")
     tess, grass, fire = [], [], []
     for cam, v in caps.items():
-        if not all(k in v for k in VARIANTS[:3]):
+        if "full" not in v or "no_grass" not in v:
             continue
-        full, nt, ng = (gpu_total(v[k]) for k in VARIANTS[:3])
+        full, ng = gpu_total(v["full"]), gpu_total(v["no_grass"])
+        nt = gpu_total(v["no_tess"]) if "no_tess" in v else full  # no variant since tessellation went off (2026-10-10)
         nf = gpu_total(v["no_fire"]) if "no_fire" in v else full  # captures from before the variant
         tess.append(full - nt)
         grass.append(full - ng)

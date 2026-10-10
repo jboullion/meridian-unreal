@@ -2285,10 +2285,24 @@
    }
   },
   {
+   "class": "Flagpole",
+   "params": {},
+   "pos": [
+    21.763,
+    0.0,
+    -56.635
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Flagpole",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
    "class": "SingleTree",
    "params": {},
    "pos": [
-    29.1,
+    31.775,
     0.0,
     -56.635
    ],
@@ -4361,17 +4375,27 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_spdrtree_123",
-   "mesh": "SM_GallerySprite_spdrtree",
-   "texture": "T_GallerySprite_spdrtree.png",
+   "label": "Gallery_Sprite_flagpole_123",
+   "mesh": "SM_GallerySprite_flagpole",
+   "texture": "T_GallerySprite_flagpole.png",
    "pos": [
-    23.466,
+    21.026,
     0.0,
     -56.635
    ]
   },
   {
-   "label": "Gallery_Sprite_appletree_124",
+   "label": "Gallery_Sprite_spdrtree_124",
+   "mesh": "SM_GallerySprite_spdrtree",
+   "texture": "T_GallerySprite_spdrtree.png",
+   "pos": [
+    26.141,
+    0.0,
+    -56.635
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_appletree_125",
    "mesh": "SM_GallerySprite_appletree",
    "texture": "T_GallerySprite_appletree.png",
    "pos": [
@@ -4381,7 +4405,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_orangetree_125",
+   "label": "Gallery_Sprite_orangetree_126",
    "mesh": "SM_GallerySprite_orangetree",
    "texture": "T_GallerySprite_orangetree.png",
    "pos": [
@@ -4391,7 +4415,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_peartree_126",
+   "label": "Gallery_Sprite_peartree_127",
    "mesh": "SM_GallerySprite_peartree",
    "texture": "T_GallerySprite_peartree.png",
    "pos": [
@@ -4401,7 +4425,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_razshrub_127",
+   "label": "Gallery_Sprite_razshrub_128",
    "mesh": "SM_GallerySprite_razshrub",
    "texture": "T_GallerySprite_razshrub.png",
    "pos": [
@@ -4411,7 +4435,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_raztree1_128",
+   "label": "Gallery_Sprite_raztree1_129",
    "mesh": "SM_GallerySprite_raztree1",
    "texture": "T_GallerySprite_raztree1.png",
    "pos": [
@@ -4421,7 +4445,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_roundshrub_129",
+   "label": "Gallery_Sprite_roundshrub_130",
    "mesh": "SM_GallerySprite_roundshrub",
    "texture": "T_GallerySprite_roundshrub.png",
    "pos": [
@@ -4431,7 +4455,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_midtree1_130",
+   "label": "Gallery_Sprite_midtree1_131",
    "mesh": "SM_GallerySprite_midtree1",
    "texture": "T_GallerySprite_midtree1.png",
    "pos": [
@@ -4441,7 +4465,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_midtree2_131",
+   "label": "Gallery_Sprite_midtree2_132",
    "mesh": "SM_GallerySprite_midtree2",
    "texture": "T_GallerySprite_midtree2.png",
    "pos": [
@@ -4451,7 +4475,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_midtree3_132",
+   "label": "Gallery_Sprite_midtree3_133",
    "mesh": "SM_GallerySprite_midtree3",
    "texture": "T_GallerySprite_midtree3.png",
    "pos": [
@@ -4461,7 +4485,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_midtree4_133",
+   "label": "Gallery_Sprite_midtree4_134",
    "mesh": "SM_GallerySprite_midtree4",
    "texture": "T_GallerySprite_midtree4.png",
    "pos": [
@@ -4471,7 +4495,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_talltree1_134",
+   "label": "Gallery_Sprite_talltree1_135",
    "mesh": "SM_GallerySprite_talltree1",
    "texture": "T_GallerySprite_talltree1.png",
    "pos": [
@@ -4481,7 +4505,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_talltree2_135",
+   "label": "Gallery_Sprite_talltree2_136",
    "mesh": "SM_GallerySprite_talltree2",
    "texture": "T_GallerySprite_talltree2.png",
    "pos": [
@@ -4491,7 +4515,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_talltree3_136",
+   "label": "Gallery_Sprite_talltree3_137",
    "mesh": "SM_GallerySprite_talltree3",
    "texture": "T_GallerySprite_talltree3.png",
    "pos": [
@@ -4501,7 +4525,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_shrubee1_137",
+   "label": "Gallery_Sprite_shrubee1_138",
    "mesh": "SM_GallerySprite_shrubee1",
    "texture": "T_GallerySprite_shrubee1.png",
    "pos": [
@@ -4511,7 +4535,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_palm_138",
+   "label": "Gallery_Sprite_palm_139",
    "mesh": "SM_GallerySprite_palm",
    "texture": "T_GallerySprite_palm.png",
    "pos": [
@@ -4521,7 +4545,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_tree1_139",
+   "label": "Gallery_Sprite_tree1_140",
    "mesh": "SM_GallerySprite_tree1",
    "texture": "T_GallerySprite_tree1.png",
    "pos": [
@@ -4531,7 +4555,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_tree2_140",
+   "label": "Gallery_Sprite_tree2_141",
    "mesh": "SM_GallerySprite_tree2",
    "texture": "T_GallerySprite_tree2.png",
    "pos": [
@@ -4541,7 +4565,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_tree3_141",
+   "label": "Gallery_Sprite_tree3_142",
    "mesh": "SM_GallerySprite_tree3",
    "texture": "T_GallerySprite_tree3.png",
    "pos": [
@@ -4551,7 +4575,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_shrub_142",
+   "label": "Gallery_Sprite_shrub_143",
    "mesh": "SM_GallerySprite_shrub",
    "texture": "T_GallerySprite_shrub.png",
    "pos": [
@@ -4561,7 +4585,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_tallbush_143",
+   "label": "Gallery_Sprite_tallbush_144",
    "mesh": "SM_GallerySprite_tallbush",
    "texture": "T_GallerySprite_tallbush.png",
    "pos": [
@@ -4571,7 +4595,7 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_yrxltree_144",
+   "label": "Gallery_Sprite_yrxltree_145",
    "mesh": "SM_GallerySprite_yrxltree",
    "texture": "T_GallerySprite_yrxltree.png",
    "pos": [
@@ -6719,9 +6743,25 @@
    ]
   },
   {
+   "text": "sprite flagpole",
+   "pos": [
+    21.026,
+    0.02,
+    -54.574
+   ]
+  },
+  {
+   "text": "Flagpole\nFlagpole",
+   "pos": [
+    21.763,
+    0.02,
+    -54.574
+   ]
+  },
+  {
    "text": "sprite spdrtree",
    "pos": [
-    23.466,
+    26.141,
     0.02,
     -54.574
    ]
@@ -6729,7 +6769,7 @@
   {
    "text": "Spdrtree\nSingleTree",
    "pos": [
-    29.1,
+    31.775,
     0.02,
     -54.574
    ]

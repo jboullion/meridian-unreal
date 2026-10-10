@@ -185,6 +185,8 @@ Measured with `run_lookdev.ps1 -Profile` (per camera: everything on / `r.Nanite.
 | Grass scatter (137k instances, shadows on) | +0.40 to +2.52, mean +1.38 (shadow depths +0.9, base pass +0.45, velocities +0.33) |
 | Biggest fixed costs | shadow depths 1.8, TSR 1.7, volumetric clouds 1.2, deferred lighting 1.2, volumetric fog 0.7 |
 
+**2026-10-10:** the grass is now half as dense (6/m²; 68,612 instances in Raza) and is drawn to 28–42 m, not 40–60 m. Its shadows stay: without them it looks flat. This saves about 1 ms a frame (`docs/performance.md` "Lighting and grass options"). In play, `mr.Grass.Density`, `mr.Grass.Shadows` and `mr.Grass.Distance` thin it further, turn its shadows off and shorten its distance.
+
 Asset side: the Raza art meshes total 657k base triangles and 21 MB of uasset. Most of those triangles come from the 25 cm grid that the displacement mask needs. Displacement and the triangle count are not the bottleneck; grass shadows, clouds and TSR are bigger levers.
 
 ### Decision: runtime displacement everywhere, Blender overrides where needed (2026-10-04)
@@ -198,6 +200,7 @@ We compared three ways of giving the Inn its relief, using the same cameras and 
 
 - Runtime displacement covers almost everything at the lowest asset cost and edit effort, so it stays the default for every building (`"displacement": "runtime"`).
 - Baking (B) buys nothing at runtime and costs about 20 times the disk space. It stays available (`"displacement": "baked"`) in case tessellation ever has to be switched off.
+- **2026-10-10:** `r.Nanite.Tessellation=0` by default (`AllowTessellation` stays 1, so no shader recompiles). Nothing displaces since `relief.displacement` went false, and tessellation is linked to the first-frame `PatchSplit` GPU crash. See `docs/performance.md`. The look-dev profile no longer has a "no_tess" variant; its "full" leaves tessellation off, so it reads about 0.5 ms below `perf1`.
 - **Hybrid for hero buildings:** when a building needs more than relief, an override replaces it. `--seed-override <Building>` writes `art_src/environment/zones/<rid>/<Building>.blend` from the generated mesh; edit that in Blender and the generator uses it from then on. The detail options from C (`"detail": ["timber", "tiles", "window_boxes"]`, `tools/blender/zone_detail.py`) are a starting point for such a building. They're opt-in per building and off by default.
 
 ### Texture alignment fix

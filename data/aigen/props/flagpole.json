@@ -1,0 +1,59 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json. The faction flagpole (flag.kod Flagpole): only the pole is made 3D; a claimed flag is the server's overlay (flagduke, flagprnc, flagjspr) and stays the original's animated sprite, drawn at the pole's hotspot.",
+  "name": "flagpole",
+  "kind": "props",
+  "class": "Flagpole",
+  "bgf": "flagpole",
+  "frame": 0,
+  "describe": "a tall thin round wooden flagpole of polished brown wood, straight and plain, with a small round brass ball finial on top, standing upright, no flag",
+  "mesh": "SM_AI_Flagpole",
+  "size_by": "height",
+  "symmetrical": true,
+  "polycount": 1000,
+  "placed": 3,
+  "rooms": 3,
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "height_m": 4.4,
+  "width_m": 0.275,
+  "lift_m": 0.0,
+  "sprite_px": [32, 128],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": 28.6,
+      "batch": null,
+      "file": "build/aigen/props/flagpole/02_restyle/openai_front.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "SYM": {
+        "tripo_task": "c5327098-cf10-45bc-bdeb-711819baddf8",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, multi-view Front + mirrored Back (45 credits)",
+        "tripo_name": "wooden baton 3d model",
+        "tris_raw": 718,
+        "file": "build/aigen/props/flagpole/04_tripo_out/SYM.glb",
+        "digest": "fde141b515638c0d",
+        "tris": 718,
+        "size_m": [0.0723, 0.0685, 0.9826]
+      }
+    },
+    "chosen": {
+      "variant": "SYM",
+      "file": "build/aigen/props/flagpole/04_tripo_out/SYM.glb",
+      "tripo_task": "c5327098-cf10-45bc-bdeb-711819baddf8",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 1000 faces, multi-view Front + mirrored Back (45 credits)",
+      "tripo_name": "wooden baton 3d model",
+      "tris_raw": 718,
+      "digest": "fde141b515638c0d",
+      "tris": 718,
+      "size_m": [0.0723, 0.0685, 0.9826]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Flagpole.glb",
+    "tris": 718,
+    "size_m": [0.324, 0.3068, 4.4],
+    "scale": 4.47775
+  }
+}

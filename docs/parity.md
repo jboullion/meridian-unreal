@@ -52,8 +52,8 @@ Last survey: 2026-10-08. M0 to M9 done the same day; what they left over is in "
 |---|---|---|---|---|
 | Creatures as sprites (players, monsters, NPCs) | `BP_ROOM_CONTENTS`, `BP_CREATE`, `BP_MOVE`, ... | Done, for converted sprites | Done | — |
 | Items, containers, signs and ornaments | the same | Done: drawn from their bitmaps, or by the world build's props in built zones | Done | M2 |
-| Sprites we haven't converted | `.bgf` | Done: drawn from the server's bitmap (no overlays or colours yet) | Done | M1 |
-| Draw effects, name colours, object lights | object fields | Partial: invisible, black and translucent (dithered) on bitmap sprites; name colours; object lights not yet (left over) | Done | M2, M7 |
+| Sprites we haven't converted | `.bgf` | Done: drawn from the server's bitmap with its overlays (since 2026-10-10: the flagpole's flag, hung on its 3D pole) but no colours yet; since 2026-10-10 anything sent with a player's body overlays (soldiers and guards, `human.kod`; a logged-off player's ghost) is drawn as a player figure instead of its bare torso (`MRNetLook::IsPlayerFigure`) | Done | M1 |
+| Draw effects, name colours, object lights | object fields | Partial: invisible, black and translucent (dithered) on bitmap sprites and, since 2026-10-10, on our sprite bodies (a logged-off ghost); name colours; object lights not yet (left over) | Done | M2, M7 |
 | Name plates | — | Done: the original's rules (15 squares, signs, the target), not through walls | Done | M2 |
 | Armour, weapons and hats on players | overlays | Done: torsos, arms, legs, weapons, shields, bows and helmets from the server's overlays, all 165 bitmaps converted; arms bend as the original's | Done | M2b |
 | First-person weapon and shield | `BP_PLAYER_OVERLAY` | Done: the server's slots drawn in their screen corners and animated; the local swing shows first | Done | M2b |
@@ -79,7 +79,7 @@ Last survey: 2026-10-08. M0 to M9 done the same day; what they left over is in "
 | Feature | Messages | UE | Shards | M |
 |---|---|---|---|---|
 | Attack (aim picks the target) | `BP_REQ_ATTACK` | Done: left mouse attacks the target (if in view), else what the crosshair is on, else the nearest attackable within 5 squares; the server's swing shows in first and third person | Done (click target) | M4 |
-| Targeting: aim, Tab, self, clear, halo | — | Done: the crosshair aims, T takes it, Tab / [ ] cycle, \ self, Esc clears; brackets | Done | M2 |
+| Targeting: aim, Tab, self, clear, halo | — | Done: the crosshair (since 2026-10-10 the free cursor, ADR 0009) aims; objects drawn by a world-build prop can be aimed at and looked at since 2026-10-10 (the sight line ignores their own prop), T takes it, Tab / [ ] cycle, \ self, Esc clears; brackets | Done | M2 |
 | Projectiles | `BP_SHOOT`, `BP_RADIUS_SHOOT` | Done: the server's bitmap flies at its speed, with its light (not yet seen against a real caster) | Done | M4 |
 | Screen effects: blind, paralyze, shake, invert, pain, whiteout, flash | `BP_EFFECT` | Done: tints and blindness over the view, paralysis stops walking, shake moves the eye; invert approximated (the grading is before the tonemapper) | Done | M4 |
 | Blur, waver, rain, snow, sand | `BP_EFFECT` | Done: blur as depth of field, waver as a sway; online the room's rain, snow and sand are the server's (fireworks not drawn) | Missing | M4 |

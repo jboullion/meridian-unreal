@@ -58,6 +58,13 @@ public:
 	void ShowLogin(APlayerController* PC);
 	void HideLogin();
 	bool IsLoginShown() const { return Login.IsValid(); }
+	/**
+	 * The loading screen over everything until the world has warmed up (UMRWarmup): shaders,
+	 * pipeline states, meshes and textures. Removes itself when the warm-up is Ready; offline the
+	 * player can't walk or look meanwhile.
+	 */
+	void ShowWarmup(APlayerController* PC);
+	bool IsWarmupShown() const { return Loading.IsValid(); }
 	/** The character creator on the login screen (tests), or null. */
 	TSharedPtr<class SMRCharCreator> GetCreator() const;
 
@@ -307,6 +314,9 @@ private:
 	TWeakObjectPtr<APlayerController> OwnerPC;
 	TSharedPtr<SMRHUDRoot> HUD;
 	TSharedPtr<class SMRLoginScreen> Login;
+	TSharedPtr<class SMRLoadingScreen> Loading;
+	FDelegateHandle WarmupHandle;
+	void HideWarmup();
 	bool bInventoryOpen = false;
 	bool bChatOpen = false;
 	bool bGameMenuOpen = false;

@@ -16,6 +16,7 @@
 #include "Net/MRNetSubsystem.h"
 #include "Net/MRNetWorldSubsystem.h"
 #include "Player/MRPlayerState.h"
+#include "Tests/MRHitchTour.h"
 #include "Tests/MRLookDevTour.h"
 #include "Tests/MRProfileTour.h"
 #include "Tests/MRScreenshotTour.h"
@@ -53,6 +54,11 @@ void AMRPlayerController::BeginPlay()
 		{
 			ProfileTour = NewObject<UMRProfileTour>(this);
 			ProfileTour->Start(this);
+		}
+		else if (UMRHitchTour::IsRequested())
+		{
+			HitchTour = NewObject<UMRHitchTour>(this);
+			HitchTour->Start(this);
 		}
 		else if (UMRMonsterTour::IsRequested())
 		{

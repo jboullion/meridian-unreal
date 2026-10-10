@@ -126,10 +126,10 @@ def blender(*args) -> dict:
 
 def step_sprite(m: dict, a):
     out = work_dir(m) / "01_upscale"
-    img, meta = sprite.frame(m["bgf"], m.get("frame", 0))
+    img, meta = sprite.source_frame(m, m.get("frame", 0))
     # world size from the visible pixels of the frame that sets it ("size_frame", default "frame"):
     # height, width, and the empty rows under it (a hanging chandelier: "lift_m" off the floor)
-    sized, _ = sprite.frame(m["bgf"], m.get("size_frame", m.get("frame", 0)))
+    sized, _ = sprite.source_frame(m, m.get("size_frame", m.get("frame", 0)))
     x0, y0, x1, y1 = sized.getchannel("A").getbbox()
     mpp = sprite.bgf2png.M_PER_SQUARE / 64.0 / meta["shrink"]
     m["height_m"], m["width_m"] = round((y1 - y0) * mpp, 4), round((x1 - x0) * mpp, 4)
@@ -143,7 +143,7 @@ def step_sprite(m: dict, a):
         m["angles"] = angles
     else:
         m.pop("angles", None)
-    views = {v: sprite.frame(m["bgf"], b)[0] for v, b in angles.items()}
+    views = {v: sprite.source_frame(m, b)[0] for v, b in angles.items()}
     views = {v: im.crop(im.getchannel("A").getbbox()) for v, im in views.items()}
     fit = max(max(im.size) for im in [img] + list(views.values())) * sprite.SCALE if views else 0
     model = m.get("upscale_model", sprite.UPSCALE_MODEL)
@@ -164,7 +164,7 @@ def step_sprite(m: dict, a):
         sprite.on_canvas(vbig, fit=fit).save(out / ("%s_grey.png" % v))
     stamp.write_text(json.dumps({"key": key, "model": model}))
     print("sprite: %s frame %d %dx%d -> %dx%d, height %.3f m%s (%s)" % (
-        m["bgf"], m.get("frame", 0), *img.size, *big.size, m["height_m"],
+        m.get("bgf") or m.get("texture"), m.get("frame", 0), *img.size, *big.size, m["height_m"],
         ", original views %s" % ", ".join("%s=%d" % kv for kv in angles.items()) if angles else "", rel(out)))
 
 

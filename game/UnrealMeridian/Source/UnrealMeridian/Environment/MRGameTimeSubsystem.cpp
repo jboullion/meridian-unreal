@@ -107,6 +107,10 @@ double UMRGameTimeSubsystem::GetGameHour() const
 	{
 		return PinnedHour;
 	}
+	if (StartHour >= 0.0)
+	{
+		return FMath::Fmod(StartHour + (FPlatformTime::Seconds() - StartedAt) / SecondsPerGameHour, 24.0);
+	}
 	return GameHourAt(FDateTime::UtcNow());
 }
 
@@ -118,6 +122,12 @@ void UMRGameTimeSubsystem::Initialize(FSubsystemCollectionBase& InCollection)
 	if (FParse::Value(FCommandLine::Get(), TEXT("MRGameHour="), Hour) && Hour >= 0.f)
 	{
 		PinnedHour = FMath::Fmod(double(Hour), 24.0);
+	}
+	// -MRGameHourFrom=<h>: start at that hour and let the clock run (the hitch test: the sun keeps moving)
+	if (FParse::Value(FCommandLine::Get(), TEXT("MRGameHourFrom="), Hour) && Hour >= 0.f)
+	{
+		StartHour = FMath::Fmod(double(Hour), 24.0);
+		StartedAt = FPlatformTime::Seconds();
 	}
 	int32 Season = -1;
 	if (FParse::Value(FCommandLine::Get(), TEXT("MRSeason="), Season) && Season >= 0)

@@ -27,7 +27,9 @@
 #include "UI/SMRHUD.h"
 #include "UI/SMRInventoryScreen.h"
 #include "UI/SMRCharCreator.h"
+#include "UI/SMRLoadingScreen.h"
 #include "UI/SMRLoginScreen.h"
+#include "Core/MRWarmup.h"
 #include "UI/SMRLookDialog.h"
 #include "UI/SMRStatChange.h"
 #include "UI/SMRTradeDialog.h"
@@ -749,6 +751,57 @@ void UMRUISubsystem::HideLogin()
 	}
 	Login.Reset();
 	ApplyInputMode();
+}
+
+// ------------------------------------------------------------------------------ warm-up
+
+void UMRUISubsystem::ShowWarmup(APlayerController* PC)
+{
+	if (!PC || !PC->IsLocalController() || !FSlateApplication::IsInitialized() || !FApp::CanEverRender() || Loading.IsValid())
+	{
+		return;
+	}
+	UWorld* World = PC->GetWorld();
+	UMRWarmup* Warmup = World ? World->GetSubsystem<UMRWarmup>() : nullptr;
+	UGameViewportClient* Viewport = World ? World->GetGameViewport() : nullptr;
+	if (!Warmup || Warmup->IsReady() || !Viewport)
+	{
+		return;
+	}
+	OwnerPC = PC;
+	Loading = SNew(SMRLoadingScreen, this, Warmup);
+	Viewport->AddViewportWidgetForPlayer(GetLocalPlayer(), Loading.ToSharedRef(), 100);
+	// offline the game is already running underneath: nobody walks off before it is shown
+	PC->SetIgnoreMoveInput(true);
+	PC->SetIgnoreLookInput(true);
+	WarmupHandle = Warmup->OnReady.AddUObject(this, &UMRUISubsystem::HideWarmup);
+	UE_LOG(LogMeridian, Log, TEXT("UI: loading screen shown"));
+}
+
+void UMRUISubsystem::HideWarmup()
+{
+	if (!Loading.IsValid())
+	{
+		return;
+	}
+	APlayerController* PC = OwnerPC.Get();
+	UWorld* World = PC ? PC->GetWorld() : nullptr;
+	if (UMRWarmup* Warmup = World ? World->GetSubsystem<UMRWarmup>() : nullptr)
+	{
+		Warmup->OnReady.Remove(WarmupHandle);
+	}
+	if (UGameViewportClient* Viewport = World ? World->GetGameViewport() : nullptr)
+	{
+		Viewport->RemoveViewportWidgetForPlayer(GetLocalPlayer(), Loading.ToSharedRef());
+	}
+	Loading.Reset();
+	if (PC)
+	{
+		PC->SetIgnoreMoveInput(false);
+		PC->SetIgnoreLookInput(false);
+	}
+	ApplyInputMode();
+	UE_LOG(LogMeridian, Log, TEXT("UI: loading screen hidden"));
 }
 
 // ------------------------------------------------------------------------------ chat

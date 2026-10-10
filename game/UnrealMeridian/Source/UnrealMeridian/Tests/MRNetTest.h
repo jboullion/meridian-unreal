@@ -127,6 +127,12 @@ private:
 	double StageTime = 0.0;
 	/** Look: what we asked about, how many descriptions have come, and our marker text. */
 	uint32 LookId = 0;
+	/** The object drawn by a prop the aim is checked on (LookStage 5, 6). */
+	uint32 PropAimId = 0;
+	/** The flagpole's picture in Farol West (Travel): 0 not yet, 1 turned to it, 2 done. */
+	int32 FlagShot = 0;
+	double FlagShotTime = 0.0;
+	FString PropAimName;
 	int32 Descriptions = 0;
 	int32 DescriptionsBefore = 0;
 	int32 LookStage = 0;

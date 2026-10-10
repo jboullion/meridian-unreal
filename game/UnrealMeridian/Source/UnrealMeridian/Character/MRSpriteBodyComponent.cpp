@@ -18,6 +18,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetRenderingLibrary.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "ProfilingDebugging/CsvProfiler.h"
 #include "UnrealMeridian.h"
 #include "UObject/ConstructorHelpers.h"
 #include "UnrealClient.h"
@@ -356,6 +357,7 @@ float UMRSpriteBodyComponent::GetStandingHeightCm() const
 
 void UMRSpriteBodyComponent::EnsureTarget()
 {
+	CSV_SCOPED_TIMING_STAT_EXCLUSIVE(MRSpriteTargets);
 	if (Target || !Look)
 	{
 		return;
@@ -412,6 +414,15 @@ void UMRSpriteBodyComponent::EnsureTarget()
 	LastDrawKey = 0;
 }
 
+void UMRSpriteBodyComponent::SetOpacity(float InOpacity)
+{
+	Opacity = FMath::Clamp(InOpacity, 0.f, 1.f);
+	if (Material)
+	{
+		Material->SetScalarParameterValue(TEXT("Opacity"), Opacity);
+	}
+}
+
 void UMRSpriteBodyComponent::ApplyMaterial()
 {
 	bUnlit = WantsUnlit();
@@ -424,6 +435,7 @@ void UMRSpriteBodyComponent::ApplyMaterial()
 		return;
 	}
 	Material = UMaterialInstanceDynamic::Create(Base, this);
+	Material->SetScalarParameterValue(TEXT("Opacity"), Opacity);
 	Material->SetTextureParameterValue(TEXT("Sprite"), Target);
 	Material->SetTextureParameterValue(TEXT("SpriteCode"), CodeTarget);
 	Material->SetTextureParameterValue(TEXT("SpriteRamp"), RampTarget);
@@ -907,6 +919,7 @@ void UMRSpriteBodyComponent::Compose(int32 Angle, float DeltaTime)
 
 void UMRSpriteBodyComponent::DrawItems(const TArray<FDrawItem>& AllItems)
 {
+	CSV_SCOPED_TIMING_STAT_EXCLUSIVE(MRSpriteDraw);
 	const FMRSpriteLibrary& Lib = FMRSpriteLibrary::Get();
 	TArray<FDrawItem> Some;
 	if (!OnlyParts.IsEmpty())
@@ -965,6 +978,10 @@ void UMRSpriteBodyComponent::DrawItems(const TArray<FDrawItem>& AllItems)
 			if (Kind == EPass::Ramp && !Tex && Atlas->RampTexture.IsEmpty())
 			{
 				continue;  // a creature: never translated
+			}
+			if (!Tex)
+			{
+				continue;  // missing (failed to import): drawing again every frame wouldn't bring it
 			}
 			if (!IsReady(Tex))
 			{
@@ -1114,6 +1131,7 @@ void UMRSpriteBodyComponent::UpdateSun(float DeltaTime)
 
 void UMRSpriteBodyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
+	CSV_SCOPED_TIMING_STAT_EXCLUSIVE(MRSpriteTick);
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	AActor* Owner = GetOwner();
 	if (!Look || !Owner)

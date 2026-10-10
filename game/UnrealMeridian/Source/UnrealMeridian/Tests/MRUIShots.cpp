@@ -18,6 +18,7 @@
 #include "TimerManager.h"
 #include "UI/MRInventorySource.h"
 #include "UI/MRUISubsystem.h"
+#include "UI/SMROptions.h"
 #include "UI/SMRCharCreator.h"
 #include "UnrealClient.h"
 #include "Widgets/SViewport.h"
@@ -200,6 +201,16 @@ void UMRUIShots::Start(APlayerController* InController)
 		// the Escape menu (offline: no Log Off)
 		{TEXT("game_menu"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->SetGameMenuOpen(true); }, 0.8f},
 		{TEXT(""), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->SetGameMenuOpen(false); }, 0.3f},
+		{TEXT("options_graphics"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->ShowOptions(TEXT("Graphics")); }, 0.8f},
+		{TEXT("options_graphics_end"), [](APlayerController* PC)
+			{
+				UMRUISubsystem* UI = UIOf(PC);
+				if (TSharedPtr<SMRSocialWindow> W = UI ? UI->GetWindow(EMRWindow::Options) : nullptr)
+				{
+					StaticCastSharedPtr<SMROptionsDialog>(W)->DebugScrollToEnd();
+				}
+			}, 0.8f},
+		{TEXT(""), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->SetWindowOpen(EMRWindow::Options, false); }, 0.3f},
 		// retraining (a town elder's BP_STAT_CHANGE): the dialog with an offer, as the server would send it
 		{TEXT("stat_change"), [](APlayerController* PC)
 			{

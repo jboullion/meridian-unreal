@@ -113,6 +113,10 @@ private:
 	UPROPERTY()
 	TObjectPtr<class UMRProfileTour> ProfileTour;
 
+	/** -MRHitchTour frame-time measurement while playing. */
+	UPROPERTY()
+	TObjectPtr<class UMRHitchTour> HitchTour;
+
 	/** -MRLookDev environment captures. */
 	UPROPERTY()
 	TObjectPtr<class UMRLookDevTour> LookDevTour;

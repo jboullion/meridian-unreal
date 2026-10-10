@@ -7,6 +7,7 @@
 #include "Net/MRNetSubsystem.h"
 #include "Net/MRNetWorldSubsystem.h"
 #include "Net/MRProtocol.h"
+#include "ProfilingDebugging/CsvProfiler.h"
 #include "Rendering/DrawElements.h"
 #include "UI/MRUIStyle.h"
 #include "UI/MRUISubsystem.h"
@@ -49,6 +50,7 @@ void SMRWorldOverlay::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 int32 SMRWorldOverlay::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
 	int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const
 {
+	CSV_SCOPED_TIMING_STAT_EXCLUSIVE(MRWorldOverlayPaint);
 	UMRUISubsystem* Ui = UI.Get();
 	UMRUIStyle* S = Ui ? Ui->GetStyle() : nullptr;
 	APlayerController* PC = Ui ? Ui->GetPlayerController() : nullptr;

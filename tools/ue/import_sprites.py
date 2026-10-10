@@ -285,7 +285,16 @@ def build_body_material(name, lit, classes):
     col = _expr(mat, unreal.MaterialExpressionMultiply, -550, 50)
     mel.connect_material_expressions(rgb, "", col, "A")
     mel.connect_material_expressions(tint, "", col, "B")
-    mel.connect_material_property(alpha, "", unreal.MaterialProperty.MP_OPACITY_MASK)
+    # "Opacity" < 1 dithers the body away (a logged-off player's ghost: the original's
+    # DRAWFX_DITHERINVIS), as M_RuntimeRoom does for bitmap sprites
+    opacity = _expr(mat, unreal.MaterialExpressionScalarParameter, -750, 380, parameter_name="Opacity", default_value=1.0)
+    dither = _expr(mat, unreal.MaterialExpressionMaterialFunctionCall, -550, 380)
+    dither.set_editor_property("material_function", eal.load_asset("/Engine/Functions/Engine_MaterialFunctions02/Utility/DitherTemporalAA"))
+    mel.connect_material_expressions(opacity, "", dither, "Alpha Threshold")
+    mask = _expr(mat, unreal.MaterialExpressionMultiply, -350, 300)
+    mel.connect_material_expressions(alpha, "", mask, "A")
+    mel.connect_material_expressions(dither, "Result", mask, "B")
+    mel.connect_material_property(mask, "", unreal.MaterialProperty.MP_OPACITY_MASK)
     if lit:
         albedo = _expr(mat, unreal.MaterialExpressionScalarParameter, -550, 200, parameter_name="Albedo", default_value=0.8)
         base = _expr(mat, unreal.MaterialExpressionMultiply, -350, 50)

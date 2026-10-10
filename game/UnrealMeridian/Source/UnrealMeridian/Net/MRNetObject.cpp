@@ -142,6 +142,16 @@ void AMRNetObject::SetDrawEffect(uint8 Effect)
 	if (SpriteBody)
 	{
 		SpriteBody->SetVisibility(!bInvisible, true);
+		// as the bitmap sprites (UMRBgfSpriteComponent::SetDrawEffect): a ghost (DRAWFX_DITHERINVIS) half shows
+		float Opacity = 1.f;
+		switch (Effect)
+		{
+		case MRMsg::DRAWFX_TRANSLUCENT25: Opacity = 0.25f; break;
+		case MRMsg::DRAWFX_TRANSLUCENT50: case MRMsg::DRAWFX_DITHERINVIS: case MRMsg::DRAWFX_DITHERGREY: Opacity = 0.5f; break;
+		case MRMsg::DRAWFX_TRANSLUCENT75: Opacity = 0.75f; break;
+		default: break;
+		}
+		SpriteBody->SetOpacity(Opacity);
 	}
 }
 

@@ -70,6 +70,11 @@ void AMRHUD::BeginPlay()
 		{
 			UI->ShowHUD(PC);
 		}
+		// over both: the loading screen until shaders and the rest are ready (UMRWarmup)
+		if (UMRUISubsystem* UI = PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>())
+		{
+			UI->ShowWarmup(PC);
+		}
 	}
 }
 

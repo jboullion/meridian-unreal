@@ -511,7 +511,7 @@
       }
      },
      "pos": [
-      27.5,
+      26.538,
       0.481,
       19.388
      ],
@@ -525,7 +525,7 @@
       }
      },
      "pos": [
-      27.5,
+      26.538,
       0.481,
       8.525
      ],
@@ -1368,6 +1368,16 @@
       64.9
      ],
      "yaw_kod": null
+    },
+    {
+     "class": "Flagpole",
+     "params": null,
+     "pos": [
+      12.1,
+      0.481,
+      42.9
+     ],
+     "yaw_kod": 0
     }
    ],
    "generators": [],
@@ -16746,6 +16756,16 @@
       98.381
      ],
      "yaw_kod": 0
+    },
+    {
+     "class": "Flagpole",
+     "params": null,
+     "pos": [
+      135.3,
+      0.344,
+      18.7
+     ],
+     "yaw_kod": 0
     }
    ],
    "generators": [
@@ -23201,7 +23221,18 @@
      "rotate": "ROTATE_NONE"
     }
    ],
-   "objects": [],
+   "objects": [
+    {
+     "class": "Flagpole",
+     "params": null,
+     "pos": [
+      89.1,
+      4.4,
+      5.5
+     ],
+     "yaw_kod": 0
+    }
+   ],
    "generators": [],
    "depth_areas": [],
    "step_walls": [

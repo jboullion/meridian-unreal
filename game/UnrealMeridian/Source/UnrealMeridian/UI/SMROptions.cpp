@@ -85,6 +85,14 @@ void SMROptionsDialog::SetTab(const FString& InTab)
 	Rebuild();
 }
 
+void SMROptionsDialog::DebugScrollToEnd()
+{
+	if (GraphicsScroll.IsValid())
+	{
+		GraphicsScroll->ScrollToEnd();
+	}
+}
+
 void SMROptionsDialog::OnPassword(bool bOk)
 {
 	Status = bOk ? TEXT("Password changed.") : TEXT("Your old password was wrong: the password is NOT changed.");
@@ -143,6 +151,31 @@ namespace
 		return Toggle(Ui, [Name]() { return MRSettings::GetCVar(Name) != 0.f; }, [Name](bool b) { MRSettings::SetCVar(Name, b ? 1.f : 0.f); });
 	}
 
+	/** Low, Medium, High, Epic on one of UGameUserSettings' scalability groups. */
+	TSharedRef<SWidget> Quality(UMRUISubsystem* Ui, TFunction<int32(const UGameUserSettings*)> Get, TFunction<void(UGameUserSettings*, int32)> Set)
+	{
+		return Choices(Ui, {LOCTEXT("Low", "Low"), LOCTEXT("Medium", "Medium"), LOCTEXT("High", "High"), LOCTEXT("Epic", "Epic")},
+			[Get]() { const UGameUserSettings* G = Graphics(); return G ? Get(G) : -1; },
+			[Set](int32 i) { if (UGameUserSettings* G = Graphics()) { Set(G, i); SaveGraphics(false); } });
+	}
+
+	/** The grass (AMRScatterActor's mr.Grass.*): 0 none, 1 half of it without shadows, nearer, 2 all of it. */
+	int32 GrassLevel()
+	{
+		if (MRSettings::GetCVar(TEXT("mr.Grass.Density"), 1.f) <= 0.f)
+		{
+			return 0;
+		}
+		return MRSettings::GetCVar(TEXT("mr.Grass.Density"), 1.f) < 1.f ? 1 : 2;
+	}
+
+	void SetGrassLevel(int32 Level)
+	{
+		MRSettings::SetCVar(TEXT("mr.Grass.Density"), Level == 0 ? 0.f : Level == 1 ? 0.5f : 1.f);
+		MRSettings::SetCVar(TEXT("mr.Grass.Distance"), Level == 2 ? 1.f : 0.7f);
+		MRSettings::SetCVar(TEXT("mr.Grass.Shadows"), Level == 2 ? 1.f : 0.f);
+	}
+
 	TSharedRef<SWidget> CVarSlider(UMRUISubsystem* Ui, const TCHAR* Name, int32 Min, int32 Max)
 	{
 		const float Px = Ui->GetStyle()->Px();
@@ -169,9 +202,64 @@ TSharedRef<SWidget> SMROptionsDialog::MakeGraphics()
 	const float Px = S->Px();
 	TSharedRef<SVerticalBox> Box = SNew(SVerticalBox);
 	auto Add = [&](const FText& Label, const TSharedRef<SWidget>& W) { Box->AddSlot().AutoHeight().Padding(0.f, 1.5f * Px)[Row(S, Label, W)]; };
+	// Quality sets every group below at once (none pressed: they differ); the defaults are Epic with Medium
+	// lighting (Config/DefaultGameUserSettings.ini, docs/performance.md)
 	Add(LOCTEXT("Quality", "Quality"), Choices(Ui, {LOCTEXT("Low", "Low"), LOCTEXT("Medium", "Medium"), LOCTEXT("High", "High"), LOCTEXT("Epic", "Epic")},
 		[]() { const UGameUserSettings* G = Graphics(); return G ? G->GetOverallScalabilityLevel() : -1; },
-		[](int32 i) { if (UGameUserSettings* G = Graphics()) { G->SetOverallScalabilityLevel(i); SaveGraphics(false); } }));
+		[](int32 i)
+		{
+			if (UGameUserSettings* G = Graphics())
+			{
+				G->SetOverallScalabilityLevel(i);
+				SaveGraphics(false);
+			}
+			SetGrassLevel(i <= 0 ? 0 : i == 1 ? 1 : 2);
+		}));
+	Add(LOCTEXT("Lighting", "Lighting"), Quality(Ui, [](const UGameUserSettings* G) { return G->GetGlobalIlluminationQuality(); },
+		// the reflections follow the lighting: Medium and below use screen-space reflections, not Lumen's
+		[](UGameUserSettings* G, int32 i) { G->SetGlobalIlluminationQuality(i); G->SetReflectionQuality(i); }));
+	Add(LOCTEXT("Shadows", "Shadows"), Quality(Ui, [](const UGameUserSettings* G) { return G->GetShadowQuality(); },
+		[](UGameUserSettings* G, int32 i) { G->SetShadowQuality(i); }));
+	Add(LOCTEXT("Effects", "Effects"), Quality(Ui, [](const UGameUserSettings* G) { return G->GetVisualEffectQuality(); },
+		[](UGameUserSettings* G, int32 i) { G->SetVisualEffectQuality(i); }));
+	Add(LOCTEXT("Textures", "Textures"), Quality(Ui, [](const UGameUserSettings* G) { return G->GetTextureQuality(); },
+		[](UGameUserSettings* G, int32 i) { G->SetTextureQuality(i); }));
+	Add(LOCTEXT("Grass", "Grass"), Choices(Ui, {LOCTEXT("GrassOff", "Off"), LOCTEXT("GrassLow", "Low"), LOCTEXT("GrassHigh", "High")},
+		[]() { return GrassLevel(); }, [](int32 i) { SetGrassLevel(i); }));
+	// the share of the screen's pixels drawn before upscaling (TSR); Auto: the engine's choice for the display
+	Add(LOCTEXT("ResScale", "Resolution scale"), Choices(Ui,
+		{LOCTEXT("ResAuto", "Auto"), FText::FromString(TEXT("50%")), FText::FromString(TEXT("67%")), FText::FromString(TEXT("75%")),
+			FText::FromString(TEXT("85%")), FText::FromString(TEXT("100%"))},
+		[]()
+		{
+			const UGameUserSettings* G = Graphics();
+			if (!G)
+			{
+				return -1;
+			}
+			float Normalized = 0.f, Value = 0.f, Min = 0.f, Max = 0.f;
+			G->GetResolutionScaleInformationEx(Normalized, Value, Min, Max);  // Value: sg.ResolutionQuality, 0 = Auto
+			if (Value <= 0.f)
+			{
+				return 0;
+			}
+			const float Steps[] = {0.f, 50.f, 67.f, 75.f, 85.f, 100.f};
+			int32 Best = 1;
+			for (int32 i = 2; i < UE_ARRAY_COUNT(Steps); ++i)
+			{
+				Best = FMath::Abs(Steps[i] - Value) < FMath::Abs(Steps[Best] - Value) ? i : Best;
+			}
+			return Best;
+		},
+		[](int32 i)
+		{
+			if (UGameUserSettings* G = Graphics())
+			{
+				const float Steps[] = {0.f, 50.f, 67.f, 75.f, 85.f, 100.f};
+				G->SetResolutionScaleValueEx(Steps[i]);
+				SaveGraphics(false);
+			}
+		}, 27.f));
 	Add(LOCTEXT("ViewDistance", "View distance"), Choices(Ui, {LOCTEXT("Near", "Near"), LOCTEXT("Medium", "Medium"), LOCTEXT("Far", "Far"), LOCTEXT("Farthest", "Farthest")},
 		[]() { const UGameUserSettings* G = Graphics(); return G ? G->GetViewDistanceQuality() : -1; },
 		[](int32 i) { if (UGameUserSettings* G = Graphics()) { G->SetViewDistanceQuality(i); SaveGraphics(false); } }));
@@ -212,11 +300,20 @@ TSharedRef<SWidget> SMROptionsDialog::MakeGraphics()
 	Add(LOCTEXT("Resolution", "Screen size"), Res);
 	Add(LOCTEXT("VSync", "Vertical sync"), Toggle(Ui, []() { const UGameUserSettings* G = Graphics(); return G && G->IsVSyncEnabled(); },
 		[](bool b) { if (UGameUserSettings* G = Graphics()) { G->SetVSyncEnabled(b); SaveGraphics(false); } }));
-	Add(LOCTEXT("Frames", "Frame limit"), Choices(Ui, {LOCTEXT("F30", "30"), LOCTEXT("F60", "60"), LOCTEXT("F120", "120"), LOCTEXT("FNone", "None")},
-		[]() { const UGameUserSettings* G = Graphics(); const float F = G ? G->GetFrameRateLimit() : 0.f; return F <= 0.f ? 3 : F <= 30.f ? 0 : F <= 60.f ? 1 : 2; },
-		[](int32 i) { if (UGameUserSettings* G = Graphics()) { const float L[] = {30.f, 60.f, 120.f, 0.f}; G->SetFrameRateLimit(L[i]); SaveGraphics(false); } }, 34.f));
+	// 60 unless chosen (Config/DefaultGameUserSettings.ini): uncapped, the CPU stalls now and then
+	Add(LOCTEXT("Frames", "Frame limit"), Choices(Ui, {LOCTEXT("F30", "30"), LOCTEXT("F60", "60"), LOCTEXT("F120", "120"), LOCTEXT("F144", "144"),
+			LOCTEXT("FNone", "Uncapped")},
+		[]()
+		{
+			const UGameUserSettings* G = Graphics();
+			const float F = G ? G->GetFrameRateLimit() : 0.f;
+			return F <= 0.f ? 4 : F <= 30.f ? 0 : F <= 60.f ? 1 : F <= 120.f ? 2 : 3;
+		},
+		[](int32 i) { if (UGameUserSettings* G = Graphics()) { const float L[] = {30.f, 60.f, 120.f, 144.f, 0.f}; G->SetFrameRateLimit(L[i]); SaveGraphics(false); } },
+		32.f));
 	Add(LOCTEXT("FOV", "Field of view"), CVarSlider(Ui, TEXT("mr.Camera.FOV"), 70, 110));
-	return Box;
+	// more rows than the page is tall: it scrolls, like the keys
+	return SNew(SBox).HeightOverride(190.f * Px)[SAssignNew(GraphicsScroll, SScrollBox) + SScrollBox::Slot()[Box]];
 }
 
 TSharedRef<SWidget> SMROptionsDialog::MakeSound()

@@ -188,7 +188,14 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
 
 ## Options, the large map and the quick chat (2026-10-08, M9 of ADR 0012)
 - **The Options window** (`SMROptions`; the Escape menu's Options, or the "password" and "suicide" commands). Every change is kept at once.
-  - **Graphics** (the engine's `UGameUserSettings`): quality, view distance, window mode, screen size, vertical sync, a frame limit, and the field of view (`mr.Camera.FOV`).
+  - **Graphics** (the engine's `UGameUserSettings`):
+    - quality, view distance, window mode, screen size, vertical sync, a frame limit and the field of view (`mr.Camera.FOV`);
+    - since 2026-10-10 (`docs/performance.md`), also lighting (global illumination and reflections together), shadows, effects and textures (Low to Epic);
+    - grass (Off, Low, High: `mr.Grass.*`, kept with the other `mr.*` settings);
+    - a resolution scale (Auto, 50–100%);
+    - a frame limit of 30, 60, 120, 144 or Uncapped.
+
+    The defaults are Medium lighting and 60 fps (`Config/DefaultGameUserSettings.ini`). The page scrolls.
   - **Sound:** music and sounds on or off with their volumes, room sounds, random sounds (the `mr.Audio.*` console variables).
   - **Controls:** every key (`Core/MRSettings` `MRKeys`), with the presets:
     - **Modern:** WASD and the mouse;

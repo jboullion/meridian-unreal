@@ -26,6 +26,7 @@ try {
         Step "extract Kod data" { python tools/kod_extract/extract.py }
         Step "extract zone textures" { python tools/bgf2png/bgf2png.py --textures-for-zones }
         Step "palette for runtime rooms" { python tools/bgf2png/bgf2png.py --palette }
+        Step "original skyboxes" { python tools/textures/make_skyboxes.py }
         Step "convert rooms to blockouts" { python tools/roo2gltf/roo2gltf.py --preview }
     }
     if (-not $SkipBuild) {

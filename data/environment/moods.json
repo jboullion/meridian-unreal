@@ -12,7 +12,11 @@
     "moon_set": 34.0,
     "moon_max_elevation": 40.0,
     "moon_intensity": 0.12,
-    "moon_temperature": 8000
+    "moon_temperature": 8000,
+    "skybox": true,
+    "volumetric_clouds": false,
+    "_skybox_doc": "The original client's skyboxes on the sky dome (M_NightSky, tools/textures/make_skyboxes.py), in place of the volumetric clouds, which cost 1-55 ms a frame (docs/performance.md). skybox_keys: [game hour, dawn|day|dusk|night] (room.kod: dawn skyc, day skya, dusk skyb, night skyd; the original's phases: dawn 6-8, day 9-17, dusk 18-20), blended between keys. Each mood's \"SkyDome\" sets SkyboxBrightness for its exposure. volumetric_clouds true brings the clouds back (\"Clouds\" in raza_afternoon).",
+    "skybox_keys": [[0.0, "night"], [5.5, "night"], [6.5, "dawn"], [8.5, "dawn"], [9.5, "day"], [17.5, "day"], [18.5, "dusk"], [20.0, "dusk"], [21.0, "night"]]
   },
   "cycles": {
     "_doc": "Day/night cycles: [game hour, mood] keys. The environment director blends the two keys around the hour (numbers and colours interpolate, everything else switches halfway), wrapping over midnight. The original's phases: night before 6 and after 20, dawn 6-8, day 9-17, dusk 18-20 (kod).",
@@ -95,6 +99,7 @@
   "moods": {
     "storm_rain": {
       "_doc": "Overlay for a rainstorm (blended in by the storm's strength): overcast - the sun mostly gone, a dimmer sky, thick low clouds - grey rain haze close in, colours washed out, and an exposure that keeps the storm dark.",
+      "SkyDome": {"SkyboxBrightness": {"mul": 0.5}},
       "Sun": {"intensity": {"mul": 0.12}, "volumetric_scattering_intensity": {"mul": 0.3}, "atmosphere_sun_disk_color_scale": {"mul": [0.0, 0.0, 0.0, 1.0]}},
       "SkyLight": {"intensity": {"mul": 0.65}},
       "HeightFog": {"fog_density": {"mul": 3.0}, "fog_height_falloff": {"mul": 0.6}, "start_distance": 0, "fog_inscattering_luminance": {"mul": [0.75, 0.8, 0.9, 1.0]}, "directional_inscattering_luminance": {"mul": 0.15}},
@@ -103,6 +108,7 @@
     },
     "storm_snow": {
       "_doc": "Overlay for a snowstorm: a white, flat light - the sun dimmed, a brighter sky fill than rain, whiter haze, soft contrast.",
+      "SkyDome": {"SkyboxBrightness": {"mul": 0.7}},
       "Sun": {"intensity": {"mul": 0.25}, "volumetric_scattering_intensity": {"mul": 0.5}, "atmosphere_sun_disk_color_scale": {"mul": [0.0, 0.0, 0.0, 1.0]}},
       "SkyLight": {"intensity": {"mul": 0.85}},
       "HeightFog": {"fog_density": {"mul": 2.5}, "fog_height_falloff": {"mul": 0.6}, "start_distance": 0, "fog_inscattering_luminance": {"mul": [1.0, 1.03, 1.08, 1.0]}, "directional_inscattering_luminance": {"mul": 0.3}},
@@ -111,6 +117,7 @@
     },
     "storm_sand": {
       "_doc": "Overlay for a sandstorm (desert masks only; not in Raza): a dim, ochre, dusty light - the sun dimmed and hidden, thick low brown haze, warm washed-out colours.",
+      "SkyDome": {"SkyboxBrightness": {"mul": 0.6}},
       "Sun": {"intensity": {"mul": 0.3}, "atmosphere_sun_disk_color_scale": {"mul": [0.0, 0.0, 0.0, 1.0]}},
       "SkyLight": {"intensity": {"mul": 0.75}},
       "HeightFog": {"fog_density": {"mul": 4.0}, "fog_height_falloff": {"mul": 0.8}, "start_distance": 0, "fog_inscattering_luminance": {"mul": [1.25, 0.95, 0.62, 1.0]}, "directional_inscattering_luminance": {"mul": [1.4, 1.0, 0.6, 1.0]}},
@@ -124,6 +131,8 @@
     "raza_afternoon": {
       "_exposure_doc": "Fixed exposure (min = max), as inside: the camera never adapts (and switches between moods at once: adaptation speed 100, else a fixed exposure still eases to the next value), so walking up to a wall or out of a building doesn't fade the light (2026-10-06, the user). Each key mood names its EV, chosen by bracketing against what auto exposure had settled on in wide views (look-dev mood_zz_ev_*, ev_*.png): afternoon -0.7, morning -1.2, dusk -2.5, night -5.7, each a little brighter than the match to soften close shade; the cycle blends them by hour.",
       "_doc": "Late-afternoon sun raking across the Hall's long facades from the south-west, warm key against a cooler sky fill, light haze for depth. Shade floor: lumen_skylight_leaking keeps occluded corners from going black, local exposure lifts deep shade without flattening the sunlit areas; lamps and braziers (props.json) add warm pools.",
+      "Clouds": {"_doc": "The volumetric cloud layer (UVolumetricCloudComponent). 4 km thick, not the engine's 10: a ray's cost follows how far it travels inside the layer, and under a thick sky the 10 km layer took the cloud pass to 25-55 ms (docs/performance.md). Rays stop at 20 km (the engine's 50: past the town walls only the horizon's clouds are that far) and once 98% opaque.", "layer_height": 4.0, "tracing_max_distance": 20.0, "stop_tracing_transmittance_threshold": 0.02},
+      "SkyDome": {"SkyboxBrightness": 0.6},
       "Sun": {
         "rotation": [
           -38.0,
@@ -174,6 +183,7 @@
       },
       "GlobalPostProcess": {
         "settings": {
+          "dynamic_global_illumination_method": "Lumen",
           "auto_exposure_method": "AEM_HISTOGRAM",
           "auto_exposure_min_brightness": -0.7,
           "auto_exposure_max_brightness": -0.7,
@@ -225,6 +235,7 @@
     "raza_morning": {
       "_doc": "Early morning: low sun from the east-south-east, cool and hazy, a thin ground mist (fog dense near the ground, falling off fast with height, clear for the first 12 m; forward-scattering toward the sun) that softens the distance without hiding anything; long soft shadows across the square. Mist chosen 2026-10-05 over a fuller haze (look-dev mood_raza_morning_fogA/fogB).",
       "inherit": "raza_afternoon",
+      "SkyDome": {"SkyboxBrightness": 0.4},
       "Sun": {
         "rotation": [
           -16.0,
@@ -280,6 +291,7 @@
     "raza_dusk": {
       "_doc": "Dusk: the sun just above the west wall, deep orange key and long shadows, the sky fading; the first windows lit.",
       "inherit": "raza_afternoon",
+      "SkyDome": {"SkyboxBrightness": 0.17},
       "Sun": {
         "rotation": [
           -6.0,
@@ -318,6 +330,7 @@
       }
     },
     "raza_interior_day": {
+      "_lighting_doc": "No bounce lighting inside (dynamic_global_illumination_method None, whatever the Lighting option; the user's choice 2026-10-10): the original's warm, dark rooms, without the blue haze the sky put into Lumen's fill, and ~40% less GPU time. The outdoor moods set Lumen again (raza_afternoon). The Mausoleum inherits it (raza_crypt).",
       "_doc": "Inside a Raza building by day: no sun (the zone profile turns it off), the room's own lights, the painted windows lit with daylight (Collection WindowDaylight, scaled by the zone's daylight), a warm ambient floor so corners away from the lights stay readable (Lumen skylight leaking, tinted warm, over the sky light's constant lower hemisphere), a dusty haze that only the room's lights show up in (volumetric fog at density 0.3 with a near-black warm fog colour and the sky light mostly out of it: warm glows around the lamps, torches and candles, no grey veil; chosen 2026-10-05 from mood_zz_haze_* in look-dev, docs/adr/0005 \"Hazy interiors\"), and a fixed exposure (EV -1, chosen by bracketing: mood_raza_interior_day_ev*), as the original renders at a fixed brightness: the room light itself dims at night instead of the camera adapting it away.",
       "inherit": "raza_afternoon",
       "SkyLight": {
@@ -335,6 +348,7 @@
       },
       "GlobalPostProcess": {
         "settings": {
+          "dynamic_global_illumination_method": "None",
           "auto_exposure_min_brightness": -1.0,
           "auto_exposure_max_brightness": -1.0,
           "auto_exposure_bias": 0.0,
@@ -403,6 +417,7 @@
     "raza_night": {
       "_doc": "Night: cool moonlight (moods.json sky), the town lit by its lamps, braziers and glowing windows; a sky-light fill (intensity 1.0, skylight leaking 0.18; 2026-10-06, after the zone meshes got two-sided distance fields and Lumen could light walls with the sky at all: night_fill2.png) keeps shade readable instead of black; exposure allowed to go dark but kept below full adaptation so night reads as night.",
       "inherit": "raza_afternoon",
+      "SkyDome": {"SkyboxBrightness": 0.03},
       "Sun": {
         "rotation": [
           -40.0,

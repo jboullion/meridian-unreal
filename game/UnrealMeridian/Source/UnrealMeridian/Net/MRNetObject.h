@@ -36,6 +36,9 @@ public:
 	 * standing and moving (docs/adr/0012). BgfName is the object's icon ("rat.bgf").
 	 */
 	void SetBgfSprite(const FString& InBgfName, TSharedPtr<const FMRBgf> Bgf);
+	/** What its bitmap's overlays were made from (UMRNetWorldSubsystem: a new flag draws them again). */
+	const FString& GetOverlayKey() const { return OverlayKey; }
+	void SetOverlayKey(const FString& Key) { OverlayKey = Key; }
 	void SetServerAnimation(const FMRNetAnimation& Standing, const FMRNetAnimation& Moving);
 	/** Play a one-off action on its sprite body (a swing, a monster's bite: the server's ANIMATE_ONCE). */
 	void PlayAction(FName Action);
@@ -91,6 +94,7 @@ private:
 	FName Look;
 	FString ObjectName;
 	FString BgfName;
+	FString OverlayKey;
 	bool bStatic = false;
 	bool bShownByProp = false;
 	double PropTop = 0.0;

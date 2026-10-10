@@ -174,7 +174,12 @@ private:
 	/** A prop standing on this floor point's square, and its top. */
 	bool FindPropAt(const FVector& Floor, double& OutTop) const;
 	/** An object with no sprite of ours gets the server's bitmap (fetched through the asset cache, parsed once). */
-	void AttachBgfSprite(AMRNetObject* Actor, const FMRNetObject& Object);
+	/** The server's bitmap for an object (bBaseHidden: only to hang its overlays from, a prop draws it), and its overlays. */
+	void AttachBgfSprite(AMRNetObject* Actor, const FMRNetObject& Object, bool bBaseHidden = false);
+	/** The object's overlays on its bitmap (the flagpole's flag), once their bitmaps arrive. */
+	void AttachBgfOverlays(AMRNetObject* Actor, const FMRNetObject& Object);
+	/** The overlays an object shows, as a key (a change redraws it). */
+	static FString OverlayKeyOf(const FMRNetObject& Object);
 	void ClearObjects();
 	/** Put the pawn where the server says; bSameRoom (the room's data reloaded): only if it is far off. */
 	void PlacePlayer(bool bSameRoom);
@@ -184,7 +189,7 @@ private:
 	void SendMovement(double Now);
 	void UpdateAim();
 	/** In view of the camera and not behind a wall: where (in pixels) and how far. */
-	bool IsInSight(const AMRNetObject* A, FVector2D& OutScreen, double& OutDistance) const;
+	bool IsInSight(const AMRNetObject* A, FVector2D& OutScreen, double& OutDistance, double MaxDistance = -1.0) const;
 
 	bool bActive = false;
 	int32 Rid = 0;

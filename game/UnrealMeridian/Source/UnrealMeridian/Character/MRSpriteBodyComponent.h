@@ -81,6 +81,9 @@ public:
 	/** Render target texels per base (torso) pixel, whatever the distance (a portrait); 0 = automatic. */
 	void SetDensityOverride(float InTexelsPerBasePixel);
 
+	/** How much of the body shows (1 all; less dithers it away: a logged-off player's ghost). */
+	void SetOpacity(float InOpacity);
+
 	/** Always use the unlit material (the inventory avatar), whatever mr.Sprite.Unlit says. */
 	void SetForceUnlit(bool bInForceUnlit);
 
@@ -132,6 +135,7 @@ private:
 	void ApplyLightingParams();
 	float LastAlbedo = -1.f, LastNormalUp = -1.f, LastAmbient = -1.f;
 	UPROPERTY(Transient) TObjectPtr<UMaterialInstanceDynamic> Material;
+	float Opacity = 1.f;
 	/** Upright copy turned to the sun: casts the shadow (hidden itself). */
 	UPROPERTY(Transient) TObjectPtr<UStaticMeshComponent> ShadowCard;
 	UPROPERTY(Transient) TMap<FString, TObjectPtr<UTexture2D>> Textures;

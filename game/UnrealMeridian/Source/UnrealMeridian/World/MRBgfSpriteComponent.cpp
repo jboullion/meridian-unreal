@@ -5,6 +5,7 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "ProfilingDebugging/CsvProfiler.h"
 #include "UnrealMeridian.h"
 #include "Net/MRNetWorld.h"
 #include "Net/MRProtocol.h"
@@ -63,6 +64,76 @@ void UMRBgfSpriteComponent::SetBgf(TSharedPtr<const FMRBgf> InBgf)
 		}
 	}
 	Restart();
+}
+
+void UMRBgfSpriteComponent::SetBaseHidden(bool bHidden)
+{
+	bBaseHidden = bHidden;
+	if (bBaseHidden)
+	{
+		ClearAllMeshSections();
+	}
+	else if (Bgf && Bgf->Bitmaps.IsValidIndex(Shown))
+	{
+		Show(Shown);
+	}
+}
+
+void UMRBgfSpriteComponent::SetOverlays(const TArray<FOverlay>& InOverlays)
+{
+	for (UMRBgfSpriteComponent* C : OverlayComps)
+	{
+		if (C)
+		{
+			C->DestroyComponent();
+		}
+	}
+	OverlayComps.Reset();
+	OverlayHotspots.Reset();
+	for (const FOverlay& O : InOverlays)
+	{
+		if (!O.Bgf || O.Bgf->Bitmaps.Num() == 0)
+		{
+			continue;
+		}
+		UMRBgfSpriteComponent* C = NewObject<UMRBgfSpriteComponent>(GetOwner());
+		C->bIsOverlay = true;
+		C->SetupAttachment(this);
+		C->RegisterComponent();
+		C->SetBgf(O.Bgf);
+		C->SetAnimation(O.Animation, O.Animation);
+		OverlayComps.Add(C);
+		OverlayHotspots.Add(O.Hotspot);
+	}
+	PlaceOverlays();
+}
+
+void UMRBgfSpriteComponent::PlaceOverlays()
+{
+	if (!Bgf || !Bgf->Bitmaps.IsValidIndex(Shown))
+	{
+		return;
+	}
+	const FMRBgf::FBitmap& B = Bgf->Bitmaps[Shown];
+	for (int32 i = 0; i < OverlayComps.Num(); ++i)
+	{
+		UMRBgfSpriteComponent* C = OverlayComps[i];
+		const FMRBgf::FHotspot* H = B.Hotspots.FindByPredicate([Num = OverlayHotspots[i]](const FMRBgf::FHotspot& S) { return FMath::Abs(S.Num) == Num; });
+		if (!C)
+		{
+			continue;
+		}
+		C->SetVisibility(H != nullptr);
+		if (!H)
+		{
+			continue;  // (a hotspot on another overlay: not drawn yet)
+		}
+		// the overlay's own offsets count in the base's pixels (d3drender.c "add overlay offsets")
+		const FMRBgf::FBitmap* OvB = C->Bgf && C->Bgf->Bitmaps.IsValidIndex(C->Shown) ? &C->Bgf->Bitmaps[C->Shown]
+			: C->Bgf && C->Bgf->Bitmaps.Num() > 0 ? &C->Bgf->Bitmaps[0] : nullptr;
+		const double Px = H->X + (OvB ? OvB->XOffset : 0), Py = H->Y + (OvB ? OvB->YOffset : 0);
+		C->SetRelativeLocation(FVector(H->Num > 0 ? 1.0 : -1.0, -(Px - FeetX) * CmPerPx, (FeetY - Py) * CmPerPx));
+	}
 }
 
 void UMRBgfSpriteComponent::SetDrawEffect(uint8 Effect)
@@ -129,10 +200,17 @@ void UMRBgfSpriteComponent::Show(int32 Bitmap)
 {
 	Shown = Bitmap;
 	const FMRBgf::FBitmap& B = Bgf->Bitmaps[Bitmap];
-	// one pixel is 16/shrink Kod fine units; the feet as the original finds them (FMRSpriteLibrary::Place)
-	const double CmPerPx = 16.0 / Bgf->Shrink / 1024.0 * 220.0;
-	const double FeetX = B.Width * 0.5 - B.XOffset * Bgf->Shrink / 16.0;
-	const double FeetY = B.Height - B.YOffset * Bgf->Shrink / 4.0;
+	// one pixel is 16/shrink Kod fine units; the feet as the original finds them (FMRSpriteLibrary::Place);
+	// an overlay hangs from its top left corner (its parent places it: PlaceOverlays)
+	CmPerPx = 16.0 / Bgf->Shrink / 1024.0 * 220.0;
+	FeetX = bIsOverlay ? 0.0 : B.Width * 0.5 - B.XOffset * Bgf->Shrink / 16.0;
+	FeetY = bIsOverlay ? 0.0 : B.Height - B.YOffset * Bgf->Shrink / 4.0;
+	PlaceOverlays();
+	if (bBaseHidden)
+	{
+		ClearAllMeshSections();
+		return;
+	}
 	// the quad faces +X (the viewer); the viewer's right is -Y
 	auto Corner = [&](double Px, double Py) { return FVector(0.0, -(Px - FeetX) * CmPerPx, (FeetY - Py) * CmPerPx); };
 	const TArray<FVector> Pos = {Corner(0, 0), Corner(B.Width, 0), Corner(B.Width, B.Height), Corner(0, B.Height)};
@@ -153,6 +231,7 @@ void UMRBgfSpriteComponent::Show(int32 Bitmap)
 
 void UMRBgfSpriteComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
+	CSV_SCOPED_TIMING_STAT_EXCLUSIVE(MRBgfSpriteTick);
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	const APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
 	if (!Bgf || Bgf->Bitmaps.Num() == 0 || !PC || !PC->PlayerCameraManager)
@@ -163,8 +242,11 @@ void UMRBgfSpriteComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	const FVector Here = GetComponentLocation();
 	const FVector Camera = PC->PlayerCameraManager->GetCameraLocation();
 	const double YawToViewer = FMath::RadiansToDegrees(FMath::Atan2(Camera.Y - Here.Y, Camera.X - Here.X));
-	// upright and turned to the camera, as the original drew objects
-	SetWorldRotation(FRotator(0.0, YawToViewer, 0.0));
+	// upright and turned to the camera, as the original drew objects (an overlay turns with its parent)
+	if (!bIsOverlay)
+	{
+		SetWorldRotation(FRotator(0.0, YawToViewer, 0.0));
+	}
 
 	int32 Bitmap = 0;
 	const int32 Group = Track.Group - 1;  // server groups are 1-based (server.h BitmapGroupSToC)

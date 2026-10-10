@@ -6,6 +6,7 @@
 #include "Environment/MRFireActor.h"
 #include "GameFramework/PlayerController.h"
 #include "HAL/IConsoleManager.h"
+#include "ProfilingDebugging/CsvProfiler.h"
 #include "UnrealMeridian.h"
 
 namespace
@@ -16,7 +17,7 @@ namespace
 		TEXT("mr.Fire.Amplitude"), 0.16f,
 		TEXT("How far a fire light's intensity swings either way (0.16: the original's +-40 of 255)."));
 	TAutoConsoleVariable<float> CVarJitterCm(
-		TEXT("mr.Fire.JitterCm"), 1.5f, TEXT("How far a fire light's source wanders (cm)."));
+		TEXT("mr.Fire.JitterCm"), 1.5f, TEXT("How far a fire light's source wanders (cm); not the shadow-casting ones."));
 	TAutoConsoleVariable<float> CVarFlickerDistance(
 		TEXT("mr.Fire.FlickerDistanceM"), 30.f, TEXT("Fire lights farther than this (m) from the view hold steady."));
 	TAutoConsoleVariable<float> CVarCullDistance(
@@ -94,6 +95,7 @@ bool UMRFireSubsystem::ViewLocation(FVector& Out) const
 
 void UMRFireSubsystem::Tick(float DeltaTime)
 {
+	CSV_SCOPED_TIMING_STAT_EXCLUSIVE(MRFireTick);
 	Fires.RemoveAll([](const TWeakObjectPtr<AMRFireActor>& F) { return !F.IsValid(); });
 	if (Fires.Num() != LoggedFires)
 	{
@@ -137,7 +139,8 @@ void UMRFireSubsystem::Tick(float DeltaTime)
 			const float Dim = FMath::Min(0.f, M - 1.f);
 			const FLinearColor C = Fire->BaseColor;
 			Light->SetLightColor(FLinearColor(C.R, C.G * (1.f + 0.5f * Dim), C.B * (1.f + 1.2f * Dim)));
-			if (Jitter > 0.f)
+			// a shadow-casting light that moves re-renders its shadow every frame: those hold still
+			if (Jitter > 0.f && !Light->CastShadows)
 			{
 				const FVector Wander(FlickerAt(Now * 0.7, Fire->Seed + 101), FlickerAt(Now * 0.7, Fire->Seed + 202),
 					FlickerAt(Now * 0.7, Fire->Seed + 303));
