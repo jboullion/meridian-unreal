@@ -33,6 +33,11 @@ namespace
 {
 	const TCHAR* ConfigSection = TEXT("MR.Net");
 	constexpr int32 MaxChatLines = 200;
+	/** clientd3d statterm.h: MAX_ADMIN, the longest admin command; MAX_HISTORY, the admin text kept. */
+	constexpr int32 MaxAdminCommand = 250;
+	constexpr int32 MaxAdminText = 30000;
+	/** Game messages this long after a "dm" command are copied to the admin text (its answers). */
+	constexpr double DMAnswerSeconds = 3.0;
 
 	FAutoConsoleCommandWithWorldAndArgs CmdEffect(TEXT("MREffect"),
 		TEXT("MREffect <effect> [ms] [xlat]: a server screen effect, as if sent (BP_EFFECT; proto.h EFFECT_*: 1 invert, 2 shake, ")
@@ -134,6 +139,12 @@ void UMRNetSubsystem::SetPhase(EMRNetPhase InPhase, const FString& InStatus)
 	if (Phase != InPhase)
 	{
 		Phase = InPhase;
+		if (Phase != EMRNetPhase::Entering && Phase != EMRNetPhase::InGame)
+		{
+			// out of the game: the next character gets its own modules (the original unloaded them all)
+			bAdminModule = bDMModule = false;
+			AdminText.Reset();
+		}
 		OnPhaseChanged.Broadcast();
 	}
 }
@@ -350,6 +361,56 @@ void UMRNetSubsystem::SayAs(uint8 Kind, const FString& Text)
 	{
 		Connection->Send(FMRWriter(MRMsg::BP_SAY_TO).U8(Kind).Str(Line));
 	}
+}
+
+void UMRNetSubsystem::AdminCommand(const FString& Command)
+{
+	// game.c BP_REQ_ADMIN: one string, refused unless the account is ACCOUNT_ADMIN; the server echoes it
+	// ("> command") and runs it as its maintenance port would (TryAdminCommand), as this character
+	const FString Line = Command.TrimStartAndEnd().Left(MaxAdminCommand);
+	if (Connection.IsValid() && Phase == EMRNetPhase::InGame && bAdminModule && !Line.IsEmpty())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_ADMIN).Str(Line));
+	}
+}
+
+void UMRNetSubsystem::DMCommand(uint8 Command, const FString& Argument)
+{
+	// game.c BP_REQ_DM: u8 DM_CMD_*, string (a room number, or a player's object id); admin or DM accounts
+	const FString Arg = Argument.TrimStartAndEnd().Left(MaxAdminCommand);
+	if (Connection.IsValid() && Phase == EMRNetPhase::InGame && IsStaff() && !Arg.IsEmpty())
+	{
+		Connection->Send(FMRWriter(MRMsg::BP_REQ_DM).U8(Command).Str(Arg));
+	}
+}
+
+void UMRNetSubsystem::DMSay(const FString& Text)
+{
+	// module/dm command.c CommandDM: SendSay(SAY_DM, args); dm.kod (and admin.kod) UserSay reads it
+	if (!IsStaff() || Text.TrimStartAndEnd().IsEmpty())
+	{
+		return;
+	}
+	AppendAdminText(FString::Printf(TEXT("> dm %s\n"), *Text.TrimStartAndEnd()));
+	LastDMSayTime = FPlatformTime::Seconds();
+	SayAs(MRMsg::SAY_DM, Text.TrimStartAndEnd());
+}
+
+void UMRNetSubsystem::AppendAdminText(const FString& Text)
+{
+	// admin.c HandleAdmin -> the text window (statterm.h MAX_HISTORY: the last 30,000 characters)
+	AdminText += MRServerText::StripStyle(Text.Replace(TEXT("\r"), TEXT("")));
+	if (AdminText.Len() > MaxAdminText)
+	{
+		AdminText.RightChopInline(AdminText.Len() - MaxAdminText);
+	}
+	OnAdminText.Broadcast();
+}
+
+void UMRNetSubsystem::ClearAdminText()
+{
+	AdminText.Reset();
+	OnAdminText.Broadcast();
 }
 
 void UMRNetSubsystem::SayTo(const TArray<uint32>& Ids, const FString& Text)
@@ -1476,6 +1537,10 @@ void UMRNetSubsystem::AddChat(const FString& Text, uint8 Kind, EMRChatChannel Ch
 	Line.Time = FPlatformTime::Seconds();
 	Line.When = FDateTime::Now();
 	UE_LOG(LogMeridian, Log, TEXT("MRNet chat: %s"), *Line.Text);
+	if (Kind == 0 && Channel == EMRChatChannel::Game && Line.Time - LastDMSayTime < DMAnswerSeconds)
+	{
+		AppendAdminText(Line.Text + TEXT("\n"));  // a "dm" command's answer, for the admin console
+	}
 	Chat.Add(Line);
 	if (Chat.Num() > MaxChatLines)
 	{
@@ -1544,8 +1609,34 @@ void UMRNetSubsystem::HandleMessage(const TArray<uint8>& Body)
 		{
 			Connection->Send(FMRWriter(MRMsg::BP_SEND_CHARACTERS));
 		}
+		// staff: admin.kod and dm.kod UserLogonHook load these for Admin and DM characters only
+		else if (Module.StartsWith(TEXT("admin"), ESearchCase::IgnoreCase))
+		{
+			bAdminModule = true;
+		}
+		else if (Module.StartsWith(TEXT("dm"), ESearchCase::IgnoreCase))
+		{
+			bDMModule = true;
+		}
 		break;
 	}
+	case MRMsg::BP_UNLOAD_MODULE:
+	{
+		const FString Module = Resources.Get(R.U32());
+		if (Module.StartsWith(TEXT("admin"), ESearchCase::IgnoreCase))
+		{
+			bAdminModule = false;
+		}
+		else if (Module.StartsWith(TEXT("dm"), ESearchCase::IgnoreCase))
+		{
+			bDMModule = false;
+		}
+		break;
+	}
+	case MRMsg::BP_ADMIN:
+		// adminfn.c SendAdminBuffer / AdminSendBufferList: one string, newlines and all
+		AppendAdminText(R.Str());
+		break;
 	case MRMsg::BP_CHARACTERS:
 	{
 		Characters.Reset();

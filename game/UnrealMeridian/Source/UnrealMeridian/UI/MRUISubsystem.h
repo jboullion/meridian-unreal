@@ -27,7 +27,7 @@ struct FSlateBrush;
  */
 enum class EMRPickAction : uint8;
 
-/** The windows for the others (UI/SMRSocial.h). */
+/** The windows for the others (UI/SMRSocial.h), and the admin console (UI/SMRAdminConsole.h). */
 enum class EMRWindow : uint8
 {
 	Who,
@@ -36,6 +36,7 @@ enum class EMRWindow : uint8
 	Guild,
 	Options,
 	Map,
+	Admin,
 	Count,
 };
 enum class EMRObjectAction : uint8;

@@ -455,6 +455,18 @@ Server 104's face options (`system.kod:130-177`, `GetAllowed*Icons :2101-2153`):
   - **It also refuses within 10 minutes** of the character's last restart ("Give it a day."); a character just made through the creator wasn't held by that on our server.
   - **Otherwise** it renames the character to a placeholder ("Suicide<time>..."), resets it, and sends `UC_SEND_QUIT` (1). The client answers with `BP_REQ_QUIT` (`merintr.c HandleSendQuit`): back to the character list, where the slot is one to create anew.
 
+## Admins and DMs (`blakserv/game.c GameProtocolParse`, `GameDMCommand`; `adminfn.c`; `module/admin`, `module/dm`; Kod `dm.kod`, `admin.kod`)
+- **Who is staff:** the account's type (`account.h`: `ACCOUNT_NORMAL` 0, `ACCOUNT_ADMIN` 1, `ACCOUNT_DM` 2, `ACCOUNT_GUEST` 3) and the character's class.
+  - On the maintenance port: `create account admin <name> <password> <email>` makes an admin account, and `create admin <account id>` gives it an `Admin`-class character (`create dm` an account's `DM` character). The character is named at its first login, like any new one.
+  - **The client learns it from the modules:** on logon `admin.kod UserLogonHook` sends `BP_LOAD_MODULE` "admin.dll" (and "Welcome to the game, Administrator %s."), and `dm.kod UserLogonHook` sends "dm.dll" to every DM, admins included. They come just after the first room. `BP_UNLOAD_MODULE` (59) is `u32` resource, like the load.
+- **Server commands:** `BP_REQ_ADMIN` (60), one string (the original client's limit is 250 characters, `statterm.h MAX_ADMIN`; blakserv's buffer 500).
+  - Refused, with only a line in blakserv's error log, unless the account is `ACCOUNT_ADMIN`.
+  - The server echoes it (`> command`), then runs it as its maintenance port would (`TryAdminCommand`), as this session. The answers come as `BP_ADMIN` (162): one string with newlines, `\r` and all (`adminfn.c AdminSendBufferList`, `SendAdminBuffer`).
+  - Teleporting is `send object <own id> teleportto rid int <RID>` (`user.kod TeleportTo`); to a player `send object <own id> admingotoobject what object <their id>`, and the other way round brings them; `send object <id> admingotosafety` rescues one. `SELF` works only as a parameter's value, never as the object a message goes to.
+- **DM commands:** `BP_REQ_DM` (61): `u8` command, then a string. Admin or DM accounts only.
+  - `DM_CMD_GO_ROOM` 1 (a room number), `DM_CMD_GO_PLAYER` 2 and `DM_CMD_GET_PLAYER` 3 (a player's object id). blakserv turns them into the admin commands above, each allowed by its `[Rights]` setting (`GoRoom`, `GoRoomByNum`, `GoPlayer`, `GetPlayer` in `blakserv.cfg`, `config.c`: 0 nobody, 1 admins only, 2 DMs too, the default).
+- **DM say commands:** the original's typed "dm <text>" is `BP_SAY_TO` with `SAY_DM` (9) (`module/dm command.c CommandDM`). `dm.kod UserSay` (and `admin.kod UserSay` before it) read the text: `immortal`, `boost stats`, `get spells`, `item <name>`, `monster <name>`, `morning`, `systemmessage <text>`, `get roo`, `help`... Each is allowed by the character's `piDMFlags`; an admin's (`DMFLAG_SET_ADMIN`) allow them all. The answers are ordinary game messages (`BP_MESSAGE`), and every one is written to the server's `god.txt`.
+
 ## Session (`blakserv/game.c`, Kod `user.kod`; the client side is `clientd3d/game.c`, `com.c`)
 - **Leaving the game but not the server:**
   - The client sends `BP_REQ_QUIT` (54). The server logs the character off and answers `BP_QUIT` (149) (`GameProtocolParse`, `GameClientExit`).

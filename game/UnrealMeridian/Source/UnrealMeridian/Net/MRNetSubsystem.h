@@ -329,6 +329,32 @@ public:
 	void GuildCreate(const FString& Name, const TArray<FString>& Ranks, bool bSecret);
 	void GuildSetPassword(const FString& Password);
 
+	// --- staff (docs/research/blakserv-protocol.md "Admins and DMs"; the original's module/admin and module/dm)
+	/**
+	 * The server loaded the admin module for this character (admin.kod UserLogonHook: "admin.dll"):
+	 * an admin account's Admin character. Its commands are the maintenance port's (BP_REQ_ADMIN).
+	 */
+	bool IsAdmin() const { return bAdminModule; }
+	/** The DM module ("dm.dll", dm.kod UserLogonHook): a DM or an admin. "dm ..." lines work (SAY_DM). */
+	bool IsStaff() const { return bAdminModule || bDMModule; }
+	/** An admin command, run on the server as at its maintenance port (BP_REQ_ADMIN); the answer comes as admin text. */
+	void AdminCommand(const FString& Command);
+	/** A DM command (BP_REQ_DM, DM_CMD_*): go to a room or a player, or bring a player (blakserv's RIGHTS_* settings decide). */
+	void DMCommand(uint8 Command, const FString& Argument);
+	/**
+	 * A DM say command ("dm <text>": BP_SAY_TO SAY_DM, dm.kod UserSay): immortal, boost stats, item,
+	 * monster, morning... The server answers with game messages, which are copied to the admin text
+	 * for a few seconds after.
+	 */
+	void DMSay(const FString& Text);
+	/** The server's answers to admin commands (BP_ADMIN), the newest last; the original kept 30,000 characters. */
+	const FString& GetAdminText() const { return AdminText; }
+	void ClearAdminText();
+	/** The admin text grew or was cleared. */
+	FOnMRNetEvent OnAdminText;
+	/** Tests and UI shots: be an admin without a server. */
+	void DebugSetAdmin(bool bAdmin) { bAdminModule = bAdmin; bDMModule = bAdmin; }
+
 	/** A line of the client's own in the chat log, as the original's GameMessage (e.g. "You can't see your selected target."). */
 	void AddGameMessage(const FString& Text) { AddChat(Text, 0); }
 	/** Tests and UI shots: lines in the chat log as if the server had sent them. */
@@ -525,6 +551,13 @@ private:
 	FMRNetDescription Description;
 	bool bRequestedStats = false;
 	TSharedPtr<FMRAssetCache> Assets;
+	/** The modules the server loaded for this character (BP_LOAD_MODULE "admin.dll", "dm.dll"); cleared on leaving the game. */
+	bool bAdminModule = false;
+	bool bDMModule = false;
+	FString AdminText;
+	/** When the last "dm" command went: game messages until a few seconds after are its answers. */
+	double LastDMSayTime = -100.0;
+	void AppendAdminText(const FString& Text);
 
 	FTSTicker::FDelegateHandle TickHandle;
 };

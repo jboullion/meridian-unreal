@@ -18,6 +18,7 @@
 #include "UI/SMRTradeDialog.h"
 #include "UI/SMRSocial.h"
 #include "UI/SMROptions.h"
+#include "UI/SMRAdminConsole.h"
 #include "UI/SMRInventoryScreen.h"
 #include "UI/SMRMinimap.h"
 #include "UI/SMRSlot.h"
@@ -475,7 +476,8 @@ void SMRHUDRoot::Rebuild()
 	TradeDialog = SNew(SMRTradeDialog, Ui);
 	TradeDialog->SetVisibility(Ui->IsTradeOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 	GameMenu->SetVisibility(Ui->IsGameMenuOpen() ? EVisibility::Visible : EVisibility::Collapsed);
-	Windows = {SNew(SMRWhoDialog, Ui), SNew(SMRMailDialog, Ui), SNew(SMRNewsDialog, Ui), SNew(SMRGuildDialog, Ui), SNew(SMROptionsDialog, Ui), SNew(SMRMapWindow, Ui)};
+	Windows = {SNew(SMRWhoDialog, Ui), SNew(SMRMailDialog, Ui), SNew(SMRNewsDialog, Ui), SNew(SMRGuildDialog, Ui), SNew(SMROptionsDialog, Ui), SNew(SMRMapWindow, Ui),
+		SNew(SMRAdminConsole, Ui)};
 	TSharedRef<SOverlay> WindowLayer = SNew(SOverlay);
 	for (int32 i = 0; i < Windows.Num(); ++i)
 	{

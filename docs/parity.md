@@ -146,7 +146,7 @@ Last survey: 2026-10-08. M0 to M9 done the same day; what they left over is in "
 | Key rebinding, Modern and Original presets | Done (keyboard and mouse; the gamepad's stay) | Done | M9 |
 | Server-kept game options (`CF_*`) | Done: Options > Game, and the commands | Done | M8, M9 |
 | Tooltips | Done for items, spells and skills; not for buttons | Missing | M3, M9 |
-| Admin and guide commands | Missing (left over) | Missing | Any (optional) |
+| Admin and guide commands | Done: the Admin Console (Escape menu, admin and DM characters; ADR 0009) | Done | After M9 |
 
 ## World coverage
 
@@ -220,7 +220,7 @@ Things a finished milestone didn't do, or did without proof. Each lands in the m
 | ☐ | M8 | Italic text in the chat | The UI's font has no italic face | Any (a font with one) |
 | ☑ | M8 | "suicide" and "password" | Done in M9 (Options > Account) | M9 |
 | ☐ | M9 | Gamepad navigation of the windows, and a real font | ADR 0009's follow-ups, not started | Any |
-| ☐ | M9 | Admin and guide commands (`BP_REQ_ADMIN`, `BP_REQ_DM`) | Optional in the plan | Any |
+| ☑ | M9 | Admin and guide commands (`BP_REQ_ADMIN`, `BP_REQ_DM`) | Done after M9: the Admin Console (ADR 0009, `run_net_test.ps1 -Admin`); its Shift+4 key and the object box are left out | Any |
 | ☐ | M9 | Options: a separate Lumen switch; a hand-set quality shown as such; binding the left mouse button outside the presets | The dialog's limits | Any |
 | ☐ | M9 | The original's keys typing letters straight into the chat line | The Original preset maps the moves only | Any |
 | ☑ | Tests | `run_move_test.ps1`'s 3.9 m ledge jump failing in about half the runs | Done after M9: it was the movement, not the test (the round capsule bottom rolled off the ledge and lost 20 cm; ADR 0012 log); 8/8 in ten runs since | Any |

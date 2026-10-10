@@ -68,7 +68,7 @@ public:
 	void Start(APlayerController* InController);
 
 private:
-	enum class EStep : uint8 { Login, Enter, Say, Hold, Exit, Assets, Reload, Look, Social, Settings, Pair, Items, Spells, Trade, Combat, Travel, Death, Relog, Delete, Logoff, Done };
+	enum class EStep : uint8 { Login, Enter, Say, Hold, Admin, Exit, Assets, Reload, Look, Social, Settings, Pair, Items, Spells, Trade, Combat, Travel, Death, Relog, Delete, Logoff, Done };
 
 	void Tick();
 	void Pass(const FString& What);
@@ -179,6 +179,11 @@ private:
 	FVector CombatHome = FVector::ZeroVector;
 	/** -MRNetDeath: die and come back (its own time limit: dying takes a while). */
 	bool bDeath = false;
+	/** -MRNetAdmin: an admin account; after saying hello, only the admin console's checks (the Admin step), then log off. */
+	bool bAdmin = false;
+	int32 AdminStage = 0;
+	double AdminStageTime = 0.0;
+	int32 AdminTargetRid = 0;
 	int32 DeathStage = 0;
 	double DeathStart = 0.0;
 	/** When each mummy was last struck: each only now and then, so they gang up rather than die. */

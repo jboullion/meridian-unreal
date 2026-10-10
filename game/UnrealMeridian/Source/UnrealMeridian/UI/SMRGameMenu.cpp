@@ -1,6 +1,7 @@
 #include "UI/SMRGameMenu.h"
 
 #include "Framework/Application/SlateApplication.h"
+#include "Net/MRNetSubsystem.h"
 #include "UI/MRUIStyle.h"
 #include "UI/MRUISubsystem.h"
 #include "UI/SMRHUD.h"
@@ -39,6 +40,13 @@ void SMRGameMenu::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 	{
 		return Weak.IsValid() && Weak->CanLogOff() ? EVisibility::Visible : EVisibility::Collapsed;
 	}));
+	// only for the characters the server gave the admin or DM module (UMRNetSubsystem::IsStaff)
+	TSharedRef<SWidget> AdminConsole = Button(LOCTEXT("Admin", "Admin Console"), [Weak]() { if (Weak.IsValid()) Weak->SetWindowOpen(EMRWindow::Admin, true); });
+	AdminConsole->SetVisibility(TAttribute<EVisibility>::CreateLambda([Weak]()
+	{
+		const UMRNetSubsystem* Net = Weak.IsValid() ? Weak->GetNet() : nullptr;
+		return Net && Net->IsStaff() ? EVisibility::Visible : EVisibility::Collapsed;
+	}));
 
 	ChildSlot
 	.HAlign(HAlign_Center)
@@ -72,6 +80,10 @@ void SMRGameMenu::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 				[
 					Options
+				]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+				[
+					AdminConsole
 				]
 				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 				[

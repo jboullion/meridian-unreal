@@ -19,6 +19,10 @@
 #                                                               # tells, ignoring, broadcasts, its wave, a trade
 #   powershell -File tools/ue/run_net_test.ps1 -Create -Death   # also dies (the Forest of Farol's spiders), checks
 #                                                               # the Underworld and walks back to Raza
+#   powershell -File tools/ue/run_net_test.ps1 -Admin           # the local admin account (ueadmin): the admin
+#                                                               # console's server and DM commands and a teleport
+#                                                               # (DONE 9/9; 10/10 with -Render, which opens the
+#                                                               # console and photographs it: admin.png)
 #
 # The default account is a test account that only exists on the local dev server. Exit code 0 on success.
 param(
@@ -30,11 +34,18 @@ param(
     [switch]$Death,
     # a second player (tools/ue/second_player.ts, a scripted Shards client as uenetpal) for the Pair step
     [switch]$Pair,
+    # the admin console (docs/admin-console.md) as the local admin account, made on the maintenance port with
+    # "create account admin ueadmin ueadmin none" and "create admin <account id>"
+    [switch]$Admin,
     [string]$User = "uenettest",
     [string]$Pass = "uenettest-local",
     [int]$TimeoutSeconds = 240
 )
 $TimeoutSeconds += $Hold
+if ($Admin) {
+    $User = "ueadmin"
+    $Pass = "ueadmin"
+}
 if ($Death) { $TimeoutSeconds += 300 }
 if ($Create) {
     # an account the server hasn't seen: it is made at login, with no character yet
@@ -60,6 +71,7 @@ if ($Server -eq "Local") {
 
 $common = "-MRNetTest -MRServer=$Server -MRNetUser=$User -MRNetPass=$Pass -MRNetHold=$Hold -abslog=`"$log`""
 if ($Death) { $common += " -MRNetDeath" }
+if ($Admin) { $common += " -MRNetAdmin" }
 $pal = $null
 if ($Pair) {
     $palLog = Join-Path $logs "pal-$stamp.log"
@@ -89,7 +101,7 @@ if (Test-Path $log) {
     Select-String -Path $log -Pattern "LogMeridian.*(MRNetTest|MRNet:)" | ForEach-Object { $_.Line -replace '^\[[^\]]*\]\[[^\]]*\]', '' }
 }
 $done = if (Test-Path $log) { Select-String -Path $log -Pattern "MRNetTest: DONE (\d+)/(\d+)" | Select-Object -Last 1 } else { $null }
-if ($done -and $done.Matches[0].Groups[1].Value -eq $done.Matches[0].Groups[2].Value -and [int]$done.Matches[0].Groups[2].Value -ge 10) {
+if ($done -and $done.Matches[0].Groups[1].Value -eq $done.Matches[0].Groups[2].Value -and [int]$done.Matches[0].Groups[2].Value -ge $(if ($Admin) { 9 } else { 10 })) {
     Write-Host "PASS: $($done.Matches[0].Value)"
     exit 0
 }

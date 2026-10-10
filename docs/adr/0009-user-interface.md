@@ -231,6 +231,16 @@ The HUD over the view now copies Meridian Shards' Modern interface (`meridian-br
   - Pictures: `build/ui/shots/tweaks/` (`inventory`, `inventory_drop_on_avatar`).
 - Pictures: `build/ui/shots/shards/` (`run_ui_shots.ps1 -Label shards`: `hud_size_75`, `hud_size_150`, `hud_hidden` are new), online `Saved/Screenshots/MRNet/combat.png` and `names.png` (`run_net_test.ps1 -Render`, `DONE 58/58`).
 
+## The admin console (2026-10-10)
+- **"Admin Console"** in the Escape menu, shown only for characters the server gave the admin or DM module (`UMRNetSubsystem::IsStaff`; `docs/research/blakserv-protocol.md` "Admins and DMs"). A window like the others (`UI/SMRAdminConsole`, `EMRWindow::Admin`), after the original's admin window (`module/admin admindlg.c`) and Meridian Shards' `AdminConsole.tsx`, with buttons where the original made you type:
+  - **Travel**: every room in `data/net/rooms.json`, filtered by name, room file or number; Go there (or a double click) teleports; Where am I? asks `dm get roo` and `dm get coords`.
+  - **Players**: who is on, with Show, Go to, Bring here, Rescue and Tell.
+  - **Self** and **World**: the DM say commands (immortal, boost stats, spells, items, hiding, karma; the time of day, monsters, scenery, messages to everyone) and the server's own (who, status, save game).
+  - Under every page, the server's answers (selectable, in a fixed-width font) and a command line: a server command, or "dm ..." for a DM command; Up and Down recall what was sent. A DM who isn't an admin gets the DM buttons only; the server commands are greyed.
+  - Clear Inventory has to be pressed twice. Nothing else asks first: it's the live world, as the original's.
+- **Left out:** the original's key for it (Shift+4) and its object box (a shown object's properties to edit in place); the command line does both jobs by typing. Looking at something while the console is open doesn't show the object, as it did in the original and does in Shards.
+- Checked by `run_net_test.ps1 -Admin` (the local `ueadmin` account): `DONE 9/9`, and with `-Render` `DONE 10/10` and a picture of each page (`Saved/Screenshots/MRNet/admin.png`, `admin_players.png`, `admin_self.png`, `admin_world.png`).
+
 ## Consequences
 - Inventory and equipment are still **mock data offline** and empty online (M3). Spells don't cast; a "cast" plays the sprite's cast action and a cooldown sweep. Online, the vitals, stats, spells and skills come from the server's stat groups (`docs/research/blakserv-protocol.md`, "Stats"). Offline they come from the attributes and the mock file.
 - Equipment doesn't change the avatar yet (no equipment layers on the sprite body).

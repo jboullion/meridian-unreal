@@ -26,6 +26,7 @@
 #include "UI/SMRTradeDialog.h"
 #include "UI/SMRSocial.h"
 #include "UI/SMROptions.h"
+#include "UI/SMRAdminConsole.h"
 #include "UI/MRInventorySource.h"
 #include "Engine/LocalPlayer.h"
 #include "UnrealClient.h"
@@ -79,6 +80,7 @@ void UMRNetTest::Start(APlayerController* InController)
 	TestPassword = Pass;
 	FParse::Value(FCommandLine::Get(), TEXT("MRNetPal="), PalName);
 	bDeath = FParse::Param(FCommandLine::Get(), TEXT("MRNetDeath"));
+	bAdmin = FParse::Param(FCommandLine::Get(), TEXT("MRNetAdmin"));
 	int32 Server = INDEX_NONE;
 	for (int32 i = 0; Net && i < Net->GetServers().Num(); ++i)
 	{
@@ -642,14 +644,164 @@ void UMRNetTest::Tick()
 		{
 			Pass(FString::Printf(TEXT("said \"%s\" and heard it back"), *SayText));
 			LogCreatures();
-			Advance(HoldSeconds > 0.f ? EStep::Hold : EStep::Exit);
+			Advance(bAdmin ? EStep::Admin : HoldSeconds > 0.f ? EStep::Hold : EStep::Exit);
 		}
 		else if (bTimedOut)
 		{
 			Fail(TEXT("chat: our line never came back"));
-			Advance(EStep::Exit);
+			Advance(bAdmin ? EStep::Admin : EStep::Exit);
 		}
 		break;
+
+	case EStep::Admin:
+	{
+		// -MRNetAdmin: an admin account's character (docs/admin-console.md). The console is a HUD window,
+		// so it only exists with -Render; headless, the same commands go through UMRNetSubsystem.
+		UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+		const TSharedPtr<SMRAdminConsole> Console = UI ? StaticCastSharedPtr<SMRAdminConsole>(UI->GetWindow(EMRWindow::Admin)) : nullptr;
+		auto Run = [&](const FString& Line)
+		{
+			if (Console.IsValid())
+			{
+				Console->RunLine(Line);
+			}
+			else if (Line.StartsWith(TEXT("dm ")))
+			{
+				Net->DMSay(Line.Mid(3));
+			}
+			else
+			{
+				Net->AdminCommand(Line);
+			}
+		};
+		if (!bAsked)
+		{
+			bAsked = true;
+			AdminStage = 0;
+			AdminStageTime = Now;
+		}
+		const double StageAge = Now - AdminStageTime;
+		auto NextStage = [&]() { ++AdminStage; AdminStageTime = Now; };
+		if (AdminStage == 0)
+		{
+			// admin.kod and dm.kod UserLogonHook load the modules just after the room arrives
+			if (Net->IsAdmin() && Net->IsStaff())
+			{
+				Pass(TEXT("the server gave the character the admin and DM modules (admin.dll, dm.dll)"));
+				if (UI && UI->HasHUD())
+				{
+					UI->SetWindowOpen(EMRWindow::Admin, true);
+					if (UI->IsWindowOpen(EMRWindow::Admin) && Console.IsValid())
+					{
+						Pass(TEXT("the Admin Console opens"));
+					}
+					else
+					{
+						Fail(TEXT("the Admin Console doesn't open"));
+					}
+				}
+				NextStage();
+			}
+			else if (StageAge > 10.0)
+			{
+				Fail(TEXT("admin: the server never loaded the admin module: is the account an admin's (create account admin, create admin <id>)?"));
+				Advance(EStep::Logoff);
+			}
+		}
+		else if (AdminStage == 1)
+		{
+			Run(TEXT("show clock"));
+			NextStage();
+		}
+		else if (AdminStage == 2)
+		{
+			// game.c BP_REQ_ADMIN echoes the command ("> show clock"), then its answer follows (BP_ADMIN)
+			const FString& Text = Net->GetAdminText();
+			const int32 Echo = Text.Find(TEXT("> show clock"));
+			FString After = Echo != INDEX_NONE ? Text.Mid(Echo + 12).TrimStartAndEnd() : FString();
+			if (!After.IsEmpty())
+			{
+				Pass(FString::Printf(TEXT("a server command (BP_REQ_ADMIN \"show clock\"): %s"), *After.Left(80).Replace(TEXT("\n"), TEXT(" | "))));
+				Run(TEXT("dm get roo"));
+				NextStage();
+			}
+			else if (StageAge > 10.0)
+			{
+				Fail(FString::Printf(TEXT("admin: no answer to \"show clock\" (admin text: %s)"), *Text.Right(120)));
+				Advance(EStep::Logoff);
+			}
+		}
+		else if (AdminStage == 3)
+		{
+			// dm.kod UserSay "get roo": the room's name, file and number, as a game message copied to the admin text
+			const FString Roo = Net->GetPlayer().RoomFile;
+			const int32 Echo = Net->GetAdminText().Find(TEXT("> dm get roo"));
+			if (Echo != INDEX_NONE && !Roo.IsEmpty() && Net->GetAdminText().Mid(Echo).Contains(Roo))
+			{
+				Pass(FString::Printf(TEXT("a DM command (SAY_DM \"get roo\") answered with our room, %s"), *Roo));
+				// teleport through the console's Travel path: the Inn of Raza, or the Adventurer's Hall from the Inn
+				AdminTargetRid = NetWorld->GetRid() == 301 ? 302 : 301;
+				RoomsBefore = Net->GetRoomsEntered();
+				if (Console.IsValid())
+				{
+					Console->SetTab(TEXT("Travel"));
+					Console->GoToRoom(AdminTargetRid);
+				}
+				else
+				{
+					Net->AdminCommand(FString::Printf(TEXT("send object %u teleportto rid int %d"), Net->GetPlayer().Id, AdminTargetRid));
+				}
+				NextStage();
+			}
+			else if (StageAge > 10.0)
+			{
+				Fail(FString::Printf(TEXT("admin: \"dm get roo\" didn't answer with %s (admin text: %s)"), *Roo, *Net->GetAdminText().Right(160)));
+				Advance(EStep::Logoff);
+			}
+		}
+		else if (AdminStage == 4)
+		{
+			if (Net->GetRoomsEntered() > RoomsBefore && NetWorld->GetRid() == AdminTargetRid && PC->GetPawn() && !Net->IsWaiting())
+			{
+				Pass(FString::Printf(TEXT("teleported to room %d (%s) with the Travel page's Go there"), AdminTargetRid, *Net->GetPlayer().RoomName));
+				NextStage();
+			}
+			else if (StageAge > 20.0)
+			{
+				Fail(FString::Printf(TEXT("admin: no teleport to room %d (still in zone %d, %s)"), AdminTargetRid, NetWorld->GetRid(), *Net->GetPlayer().RoomName));
+				Advance(EStep::Logoff);
+			}
+		}
+		else if (AdminStage < 5 + 2 * 4 && Console.IsValid() && FApp::CanEverRender())
+		{
+			// -Render: each page in turn, a moment to lay out, then its picture (admin.png is the Travel page)
+			static const TCHAR* Pages[] = {TEXT("Travel"), TEXT("Players"), TEXT("Self"), TEXT("World")};
+			const int32 Page = (AdminStage - 5) / 2;
+			if ((AdminStage - 5) % 2 == 0)
+			{
+				Console->SetTab(Pages[Page]);
+				NextStage();
+			}
+			else if (StageAge > 0.8)
+			{
+				const FString Name = Page == 0 ? FString(TEXT("admin.png")) : FString::Printf(TEXT("admin_%s.png"), *FString(Pages[Page]).ToLower());
+				const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), Name);
+				FScreenshotRequest::RequestScreenshot(File, true, false);
+				UE_LOG(LogMeridian, Display, TEXT("MRNetTest: screenshot %s"), *File);
+				NextStage();
+			}
+		}
+		else if (StageAge > 1.5)
+		{
+			// (a moment for the last screenshot)
+			if (UI && UI->IsWindowOpen(EMRWindow::Admin))
+			{
+				UI->SetWindowOpen(EMRWindow::Admin, false);
+			}
+			Advance(EStep::Logoff);
+		}
+		break;
+	}
 
 	case EStep::Hold:
 	{

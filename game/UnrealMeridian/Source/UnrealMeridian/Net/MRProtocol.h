@@ -298,6 +298,11 @@ namespace MRMsg
 	constexpr uint8 SAY_DM = 9;
 	constexpr uint8 SAY_GUILD = 10;
 
+	// BP_REQ_DM's commands (blakserv game.h DM_CMD_*; game.c GameDMCommand)
+	constexpr uint8 DM_CMD_GO_ROOM = 1;
+	constexpr uint8 DM_CMD_GO_PLAYER = 2;
+	constexpr uint8 DM_CMD_GET_PLAYER = 3;
+
 	// object flags (proto.h OF_*)
 	constexpr uint32 OF_DISPLAY_NAME = 0x00000001;
 	constexpr uint32 OF_SIGN = 0x00000002;
