@@ -1,0 +1,54 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "spinwheel",
+  "kind": "props",
+  "class": "SpinningWheel",
+  "bgf": "spinwheel",
+  "frame": 0,
+  "describe": "an old wooden spinning wheel seen from the side: a large spoked wheel on a slanted wooden frame with three turned legs, a treadle bar at the bottom, a spindle and flyer at the left end, pale honey-coloured wood",
+  "mesh": "SM_AI_Spinwheel",
+  "size_by": "height",
+  "placed": 12,
+  "rooms": 12,
+  "batch": "marion",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "3537ab98-c8fd-4a57-91eb-44040d0e9f67",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "wooden spinning wheel 3d model",
+        "tris_raw": 3780
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/spinwheel/spinwheel_tripo.glb",
+      "tripo_task": "3537ab98-c8fd-4a57-91eb-44040d0e9f67",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "wooden spinning wheel 3d model",
+      "tris_raw": 3780
+    }
+  },
+  "polycount": 4000,
+  "height_m": 1.675,
+  "width_m": 1.6406,
+  "lift_m": 0.1469,
+  "sprite_px": [700, 700],
+  "angles": {"left": 2, "back": 4, "right": 6},
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
+      "file": "build/aigen/props/spinwheel/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Spinwheel.glb",
+    "tris": 3780,
+    "size_m": [1.676, 0.5852, 1.675],
+    "scale": 1.71482
+  }
+}

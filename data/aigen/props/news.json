@@ -1,0 +1,52 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "news",
+  "kind": "props",
+  "class": "NewsLink",
+  "bgf": "news",
+  "frame": 0,
+  "describe": "a news stand: a polished dark crystal orb, swirled black and blue, resting on top of a round fluted pillar of white and blue-grey veined marble with a square silver capital and a round base",
+  "mesh": "SM_AI_News",
+  "size_by": "height",
+  "placed": 27,
+  "rooms": 27,
+  "batch": "marion",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "83f8044d-bf09-4d71-acf6-f1aa8a6612c6",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "marble pedestal 3d model",
+        "tris_raw": 1601
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/news/news_tripo.glb",
+      "tripo_task": "83f8044d-bf09-4d71-acf6-f1aa8a6612c6",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "marble pedestal 3d model",
+      "tris_raw": 1601
+    }
+  },
+  "height_m": 1.3635,
+  "width_m": 0.699,
+  "lift_m": 0.0,
+  "sprite_px": [61, 119],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
+      "file": "build/aigen/props/news/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_News.glb",
+    "tris": 1601,
+    "size_m": [0.5737, 0.5713, 1.3635],
+    "scale": 1.39296
+  }
+}

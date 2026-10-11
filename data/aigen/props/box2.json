@@ -1,0 +1,80 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "box2",
+  "kind": "props",
+  "class": "Chest",
+  "bgf": "box2",
+  "frame": 0,
+  "describe": "a large closed storage chest seen from the front: dark charcoal-black wood or iron panels with mottled blue-grey patches, edged and crossed with riveted, studded silver-grey metal bands, a flat lid; iron carrying handles on both short ends",
+  "mesh": "SM_AI_Box2",
+  "size_by": "height",
+  "placed": 53,
+  "rooms": 20,
+  "batch": "marion",
+  "restyle": {"providers": ["openai"]},
+  "tripo": {
+    "variants": {
+      "C": {"front": "openai"},
+      "MV": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
+    },
+    "runs": {
+      "C": {
+        "tripo_task": "35ade3e4-18ac-4e2f-a53d-df464581bbcc",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "metal chest 3d model",
+        "tris_raw": 1695
+      },
+      "MV": {
+        "tripo_task": "abeaf081-0754-4d70-a3a7-7b6f07ec2083",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, multi-view: the original's own front, left, back and right drawings, each restyled (45 credits)",
+        "tripo_name": "metal chest 3d model",
+        "tris_raw": 1617
+      }
+    },
+    "chosen": {
+      "variant": "MV",
+      "file": "art_src/aigen/props/box2/box2_tripo.glb",
+      "tripo_task": "abeaf081-0754-4d70-a3a7-7b6f07ec2083",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, multi-view: the original's own front, left, back and right drawings, each restyled (45 credits)",
+      "tripo_name": "metal chest 3d model",
+      "tris_raw": 1617
+    }
+  },
+  "height_m": 0.8938,
+  "width_m": 1.4667,
+  "lift_m": 0.0,
+  "sprite_px": [128, 126],
+  "angles": {"left": 4, "back": 3, "right": 2},
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acadfb2fd78819085e68c744cd729f6",
+      "file": "build/aigen/props/box2/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acae47b63288190b16451e1a4d367ef",
+      "file": "build/aigen/props/box2/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acae47b63288190b16451e1a4d367ef",
+      "file": "build/aigen/props/box2/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acae47b63288190b16451e1a4d367ef",
+      "file": "build/aigen/props/box2/02_restyle/openai_right.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Box2.glb",
+    "tris": 1617,
+    "size_m": [1.4267, 0.8421, 0.8938],
+    "scale": 1.45415
+  }
+}

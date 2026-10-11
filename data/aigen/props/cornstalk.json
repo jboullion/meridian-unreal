@@ -1,0 +1,53 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "cornstalk",
+  "kind": "props",
+  "class": "FoodDispenser/EarCorn",
+  "bgf": "cornstalk",
+  "frame": 0,
+  "describe": "a single tall corn (maize) stalk: a straight green stem with long narrow drooping green leaves along its length and two yellow ears of corn in their husks",
+  "mesh": "SM_AI_Cornstalk",
+  "size_by": "height",
+  "placed": null,
+  "rooms": null,
+  "batch": "marion",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "a78e4c42-38eb-46e9-944b-235f6ffb98d2",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "corn plant 3d model",
+        "tris_raw": 3869
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/cornstalk/cornstalk_tripo.glb",
+      "tripo_task": "a78e4c42-38eb-46e9-944b-235f6ffb98d2",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "corn plant 3d model",
+      "tris_raw": 3869
+    }
+  },
+  "polycount": 4000,
+  "height_m": 1.9164,
+  "width_m": 0.4297,
+  "lift_m": 0.0,
+  "sprite_px": [102, 448],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
+      "file": "build/aigen/props/cornstalk/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Cornstalk.glb",
+    "tris": 3869,
+    "size_m": [0.521, 0.5295, 1.9164],
+    "scale": 1.95342
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "commonoats",
+  "kind": "props",
+  "class": "FoodDispenser/Oats",
+  "bgf": "commonoats",
+  "frame": 0,
+  "describe": "a tall upright clump of ripe oats: many thin pale straw-coloured stalks with loose, drooping, airy sprays of pale tan oat grains at the top",
+  "mesh": "SM_AI_Commonoats",
+  "size_by": "height",
+  "placed": null,
+  "rooms": null,
+  "batch": "marion",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "b485d9f9-b113-4c02-a7c0-caf0b43a5707",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "dried grass stalks 3d model",
+        "tris_raw": 3619
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/commonoats/commonoats_tripo.glb",
+      "tripo_task": "b485d9f9-b113-4c02-a7c0-caf0b43a5707",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "dried grass stalks 3d model",
+      "tris_raw": 3619
+    }
+  },
+  "polycount": 4000,
+  "height_m": 2.2115,
+  "width_m": 1.6156,
+  "lift_m": 0.0,
+  "sprite_px": [512, 626],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
+      "file": "build/aigen/props/commonoats/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Commonoats.glb",
+    "tris": 3619,
+    "size_m": [1.5994, 1.0688, 2.2115],
+    "scale": 2.26528
+  }
+}

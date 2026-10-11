@@ -14,17 +14,17 @@
   "min": [
    -8.0,
    0.0,
-   -125.72
+   -147.54
   ],
   "max": [
-   67.24,
+   68.3,
    10.0,
    14.0
   ]
  },
  "start": {
   "pos": [
-   29.62,
+   30.15,
    0.0,
    8.0
   ],
@@ -586,12 +586,30 @@
    }
   },
   {
+   "class": "FoodDispenser",
+   "params": {
+    "classtype": {
+     "class": "Carrot"
+    }
+   },
+   "pos": [
+    32.192,
+    0.0,
+    -7.077
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Carrotplant",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
    "class": "OrnamentalObject",
    "params": {
     "type": 135
    },
    "pos": [
-    31.505,
+    35.02,
     0.0,
     -7.077
    ],
@@ -607,7 +625,7 @@
     "type": 135
    },
    "pos": [
-    32.305,
+    35.82,
     0.0,
     -7.077
    ],
@@ -623,7 +641,7 @@
     "type": 121
    },
    "pos": [
-    34.914,
+    38.429,
     0.0,
     -7.077
    ],
@@ -639,7 +657,7 @@
     "type": 136
    },
    "pos": [
-    37.745,
+    41.26,
     0.0,
     -7.077
    ],
@@ -655,7 +673,7 @@
     "type": 58
    },
    "pos": [
-    40.54,
+    44.055,
     0.0,
     -7.077
    ],
@@ -671,7 +689,7 @@
     "type": 143
    },
    "pos": [
-    43.287,
+    46.802,
     0.0,
     -7.077
    ],
@@ -687,7 +705,7 @@
     "type": 16
    },
    "pos": [
-    46.123,
+    49.638,
     0.0,
     -7.077
    ],
@@ -703,7 +721,7 @@
     "type": 134
    },
    "pos": [
-    48.884,
+    52.399,
     0.0,
     -7.077
    ],
@@ -719,7 +737,7 @@
     "type": 164
    },
    "pos": [
-    54.29,
+    57.805,
     0.0,
     -7.077
    ],
@@ -735,12 +753,26 @@
     "type": 66
    },
    "pos": [
-    58.507,
+    1.29,
     0.0,
-    -7.077
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Lettuce",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "Pillow",
+   "params": {},
+   "pos": [
+    5.495,
+    0.0,
+    -13.265
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Roompilo",
     "random_yaw": false,
     "facing": "south"
    }
@@ -751,9 +783,9 @@
     "type": 102
    },
    "pos": [
-    1.06,
+    8.792,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Skulhorn_Custom",
@@ -767,9 +799,9 @@
     "type": 102
    },
    "pos": [
-    1.917,
+    9.649,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Skulhorn",
@@ -783,9 +815,9 @@
     "type": 149
    },
    "pos": [
-    4.965,
+    12.697,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Mushroom",
@@ -799,9 +831,9 @@
     "type": 110
    },
    "pos": [
-    7.575,
+    15.307,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Necbottl",
@@ -813,9 +845,9 @@
    "class": "QuillPen",
    "params": {},
    "pos": [
-    10.243,
+    17.975,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Quillpen",
@@ -827,9 +859,9 @@
    "class": "ModelNode",
    "params": {},
    "pos": [
-    13.269,
+    21.001,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Modnode_Custom",
@@ -841,9 +873,9 @@
    "class": "ModelNode",
    "params": {},
    "pos": [
-    14.22,
+    21.952,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Modnode",
@@ -857,9 +889,9 @@
     "type": 124
    },
    "pos": [
-    17.062,
+    24.794,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Modthron",
@@ -873,9 +905,9 @@
     "type": 129
    },
    "pos": [
-    20.188,
+    27.92,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Necvase2",
@@ -889,9 +921,9 @@
     "type": 142
    },
    "pos": [
-    23.858,
+    31.59,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Gauntlet",
@@ -905,9 +937,9 @@
     "type": 126
    },
    "pos": [
-    27.138,
+    34.871,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Chalice",
@@ -921,9 +953,9 @@
     "type": 128
    },
    "pos": [
-    30.525,
+    38.257,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Necslime_Custom",
@@ -937,9 +969,9 @@
     "type": 128
    },
    "pos": [
-    31.736,
+    39.468,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Necslime",
@@ -953,9 +985,9 @@
     "type": 120
    },
    "pos": [
-    34.726,
+    42.458,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Modlupog_Custom",
@@ -969,9 +1001,9 @@
     "type": 120
    },
    "pos": [
-    35.527,
+    43.26,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_Modlupog",
@@ -985,9 +1017,9 @@
     "type": 181
    },
    "pos": [
-    38.538,
+    46.27,
     0.0,
-    -13.25
+    -13.265
    ],
    "gallery": {
     "mesh": "SM_AI_HistLeathamr",
@@ -1003,7 +1035,7 @@
    "pos": [
     1.165,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Fixins4",
@@ -1019,7 +1051,7 @@
    "pos": [
     4.256,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Bucket2",
@@ -1035,7 +1067,7 @@
    "pos": [
     7.667,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Boxsnak4_Custom",
@@ -1051,7 +1083,7 @@
    "pos": [
     8.794,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Boxsnak4",
@@ -1067,7 +1099,7 @@
    "pos": [
     11.875,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Prism3",
@@ -1083,7 +1115,7 @@
    "pos": [
     14.769,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Gryjug4",
@@ -1099,7 +1131,7 @@
    "pos": [
     18.165,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Rockc_Custom",
@@ -1115,7 +1147,7 @@
    "pos": [
     19.302,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Rockc",
@@ -1131,7 +1163,7 @@
    "pos": [
     22.488,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Stochair",
@@ -1147,7 +1179,7 @@
    "pos": [
     25.124,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Lampjasp",
@@ -1164,7 +1196,7 @@
    "pos": [
     27.705,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Lampjas1",
@@ -1181,7 +1213,7 @@
    "pos": [
     30.328,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Modshrin",
@@ -1197,10 +1229,28 @@
    "pos": [
     33.206,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Urn4",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "FoodDispenser",
+   "params": {
+    "classtype": {
+     "class": "Watermelon"
+    }
+   },
+   "pos": [
+    36.965,
+    0.0,
+    -19.381
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Watermelonpatch",
     "random_yaw": false,
     "facing": "south"
    }
@@ -1211,9 +1261,9 @@
     "type": 118
    },
    "pos": [
-    36.777,
+    40.833,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Modant_Custom",
@@ -1227,9 +1277,9 @@
     "type": 118
    },
    "pos": [
-    38.047,
+    42.103,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Modant",
@@ -1243,9 +1293,9 @@
     "type": 117
    },
    "pos": [
-    41.04,
+    45.096,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Modaltar",
@@ -1259,9 +1309,9 @@
     "type": 3
    },
    "pos": [
-    44.012,
+    48.068,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Bagbean4",
@@ -1275,9 +1325,9 @@
     "type": 119
    },
    "pos": [
-    47.117,
+    51.172,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Modavar",
@@ -1291,9 +1341,9 @@
     "type": 130
    },
    "pos": [
-    49.982,
+    54.037,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Necvase3",
@@ -1307,9 +1357,9 @@
     "type": 29
    },
    "pos": [
-    52.846,
+    56.902,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Jug4",
@@ -1323,9 +1373,9 @@
     "type": 111
    },
    "pos": [
-    55.64,
+    59.695,
     0.0,
-    -19.352
+    -19.381
    ],
    "gallery": {
     "mesh": "SM_AI_Necvase",
@@ -1337,9 +1387,9 @@
    "class": "Candle",
    "params": {},
    "pos": [
-    58.212,
+    0.772,
     0.0,
-    -19.352
+    -25.698
    ],
    "gallery": {
     "mesh": "SM_AI_Candle",
@@ -1353,9 +1403,9 @@
     "type": 122
    },
    "pos": [
-    1.184,
+    3.756,
     0.0,
-    -25.668
+    -25.698
    ],
    "gallery": {
     "mesh": "SM_AI_Modorc",
@@ -1367,9 +1417,9 @@
    "class": "OrcTorch",
    "params": {},
    "pos": [
-    4.612,
+    7.184,
     0.0,
-    -25.668
+    -25.698
    ],
    "gallery": {
     "mesh": "SM_AI_Orcfire_Custom",
@@ -1381,9 +1431,9 @@
    "class": "OrcTorch",
    "params": {},
    "pos": [
-    5.793,
+    8.365,
     0.0,
-    -25.668
+    -25.698
    ],
    "gallery": {
     "mesh": "SM_AI_Orcfire",
@@ -1397,12 +1447,44 @@
     "type": 103
    },
    "pos": [
-    10.334,
+    12.906,
     0.0,
-    -25.668
+    -25.698
    ],
    "gallery": {
     "mesh": "SM_AI_Necrock",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "ShaveHorse",
+   "params": {},
+   "pos": [
+    18.079,
+    0.0,
+    -25.698
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Shavehorse",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "FoodDispenser",
+   "params": {
+    "classtype": {
+     "class": "Potatoes"
+    }
+   },
+   "pos": [
+    21.855,
+    0.0,
+    -25.698
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Potatoplant",
     "random_yaw": false,
     "facing": "south"
    }
@@ -1413,9 +1495,9 @@
     "type": 56
    },
    "pos": [
-    13.786,
+    24.934,
     0.0,
-    -25.668
+    -25.698
    ],
    "gallery": {
     "mesh": "SM_AI_Bluejug",
@@ -1424,12 +1506,26 @@
    }
   },
   {
+   "class": "Candelabra",
+   "params": {},
+   "pos": [
+    28.389,
+    0.0,
+    -25.698
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Candelab",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
    "class": "WoodenBox",
    "params": {},
    "pos": [
-    18.249,
+    33.009,
     0.0,
-    -25.668
+    -25.698
    ],
    "gallery": {
     "mesh": "SM_AI_Box1",
@@ -1441,9 +1537,9 @@
    "class": "Stool",
    "params": {},
    "pos": [
-    22.042,
+    36.802,
     0.0,
-    -25.668
+    -25.698
    ],
    "gallery": {
     "mesh": "SM_AI_Stool",
@@ -1457,9 +1553,9 @@
     "type": 165
    },
    "pos": [
-    25.241,
+    40.0,
     0.0,
-    -25.668
+    -25.698
    ],
    "gallery": {
     "mesh": "SM_AI_Modportal",
@@ -1471,9 +1567,9 @@
    "class": "BarStool",
    "params": {},
    "pos": [
-    28.551,
+    43.311,
     0.0,
-    -25.668
+    -25.698
    ],
    "gallery": {
     "mesh": "SM_AI_Barstool",
@@ -1487,9 +1583,9 @@
     "type": 49
    },
    "pos": [
-    31.892,
+    46.652,
     0.0,
-    -25.668
+    -25.698
    ],
    "gallery": {
     "mesh": "SM_AI_Rice",
@@ -1503,12 +1599,26 @@
     "type": 90
    },
    "pos": [
-    34.754,
+    49.514,
     0.0,
-    -25.668
+    -25.698
    ],
    "gallery": {
     "mesh": "SM_AI_Bigurn2",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "CraftingAnvil",
+   "params": {},
+   "pos": [
+    52.808,
+    0.0,
+    -25.698
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Craftanvil",
     "random_yaw": false,
     "facing": "south"
    }
@@ -1519,9 +1629,9 @@
     "type": 54
    },
    "pos": [
-    37.855,
+    56.087,
     0.0,
-    -25.668
+    -25.698
    ],
    "gallery": {
     "mesh": "SM_AI_Bigurn",
@@ -1535,9 +1645,9 @@
     "type": 57
    },
    "pos": [
-    41.771,
+    2.018,
     0.0,
-    -25.668
+    -32.459
    ],
    "gallery": {
     "mesh": "SM_AI_Tallurn",
@@ -1549,9 +1659,9 @@
    "class": "Brazier",
    "params": {},
    "pos": [
-    45.126,
+    5.373,
     0.0,
-    -25.668
+    -32.459
    ],
    "gallery": {
     "mesh": "SM_AI_Brazier",
@@ -1563,9 +1673,9 @@
    "class": "KocatanSplittingStump",
    "params": {},
    "pos": [
-    49.45,
+    9.697,
     0.0,
-    -25.668
+    -32.459
    ],
    "gallery": {
     "mesh": "SM_AI_Splitstump",
@@ -1579,9 +1689,9 @@
     "type": 50
    },
    "pos": [
-    53.24,
+    13.487,
     0.0,
-    -25.668
+    -32.459
    ],
    "gallery": {
     "mesh": "SM_AI_Barrel",
@@ -1595,9 +1705,9 @@
     "type": 51
    },
    "pos": [
-    56.753,
+    17.0,
     0.0,
-    -25.668
+    -32.459
    ],
    "gallery": {
     "mesh": "SM_AI_Barrel2",
@@ -1611,9 +1721,9 @@
     "type": 146
    },
    "pos": [
-    1.099,
+    20.095,
     0.0,
-    -32.43
+    -32.459
    ],
    "gallery": {
     "mesh": "SM_AI_Tcat",
@@ -1627,9 +1737,9 @@
     "type": 53
    },
    "pos": [
-    4.423,
+    23.419,
     0.0,
-    -32.43
+    -32.459
    ],
    "gallery": {
     "mesh": "SM_AI_Bigiron",
@@ -1643,9 +1753,9 @@
     "type": 154
    },
    "pos": [
-    8.213,
+    27.209,
     0.0,
-    -32.43
+    -32.459
    ],
    "gallery": {
     "mesh": "SM_AI_Roomtabl",
@@ -1657,9 +1767,9 @@
    "class": "Table",
    "params": {},
    "pos": [
-    13.811,
+    32.807,
     0.0,
-    -32.43
+    -32.459
    ],
    "gallery": {
     "mesh": "SM_AI_Table",
@@ -1671,9 +1781,9 @@
    "class": "Bell",
    "params": {},
    "pos": [
-    17.313,
+    36.309,
     0.0,
-    -32.43
+    -32.459
    ],
    "gallery": {
     "mesh": "SM_AI_Roombell",
@@ -1683,14 +1793,28 @@
    "ceiling_y": 3.2
   },
   {
+   "class": "BookPedestal",
+   "params": {},
+   "pos": [
+    39.682,
+    0.0,
+    -32.459
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Jbook",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
    "class": "OrnamentalObject",
    "params": {
     "type": 105
    },
    "pos": [
-    20.618,
+    43.218,
     0.0,
-    -32.43
+    -32.459
    ],
    "gallery": {
     "mesh": "SM_AI_Hay",
@@ -1704,12 +1828,30 @@
     "type": 95
    },
    "pos": [
-    24.59,
+    47.19,
     0.0,
-    -32.43
+    -32.459
    ],
    "gallery": {
     "mesh": "SM_AI_Necgrav1",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "FoodDispenser",
+   "params": {
+    "classtype": {
+     "class": "Tomato"
+    }
+   },
+   "pos": [
+    51.886,
+    0.0,
+    -32.459
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Tomatoplant",
     "random_yaw": false,
     "facing": "south"
    }
@@ -1720,9 +1862,9 @@
     "type": 141
    },
    "pos": [
-    28.76,
+    56.162,
     0.0,
-    -32.43
+    -32.459
    ],
    "gallery": {
     "mesh": "SM_AI_Plateamr",
@@ -1736,12 +1878,26 @@
     "type": 75
    },
    "pos": [
-    32.597,
+    1.68,
     0.0,
-    -32.43
+    -39.025
    ],
    "gallery": {
     "mesh": "SM_AI_Skull4",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "NewsLink",
+   "params": {},
+   "pos": [
+    5.07,
+    0.0,
+    -39.025
+   ],
+   "gallery": {
+    "mesh": "SM_AI_News",
     "random_yaw": false,
     "facing": "south"
    }
@@ -1752,9 +1908,9 @@
     "type": 77
    },
    "pos": [
-    35.926,
+    8.282,
     0.0,
-    -32.43
+    -39.025
    ],
    "gallery": {
     "mesh": "SM_AI_Skull6",
@@ -1768,9 +1924,9 @@
     "type": 1
    },
    "pos": [
-    38.915,
+    11.272,
     0.0,
-    -32.43
+    -39.025
    ],
    "gallery": {
     "mesh": "SM_AI_3bolts_Custom",
@@ -1784,12 +1940,40 @@
     "type": 1
    },
    "pos": [
-    39.796,
+    12.152,
     0.0,
-    -32.43
+    -39.025
    ],
    "gallery": {
     "mesh": "SM_AI_3bolts",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "Chest",
+   "params": {},
+   "pos": [
+    16.57,
+    0.0,
+    -39.025
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Box2Open",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "Chest",
+   "params": {},
+   "pos": [
+    18.39,
+    0.0,
+    -39.025
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Box2",
     "random_yaw": false,
     "facing": "south"
    }
@@ -1800,9 +1984,9 @@
     "type": 96
    },
    "pos": [
-    43.676,
+    22.74,
     0.0,
-    -32.43
+    -39.025
    ],
    "gallery": {
     "mesh": "SM_AI_Necgrav2",
@@ -1816,12 +2000,26 @@
     "type": 60
    },
    "pos": [
-    47.27,
+    26.335,
     0.0,
-    -32.43
+    -39.025
    ],
    "gallery": {
     "mesh": "SM_AI_Corn",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "TanningRack",
+   "params": {},
+   "pos": [
+    32.111,
+    0.0,
+    -39.025
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Tanrack",
     "random_yaw": false,
     "facing": "south"
    }
@@ -1834,7 +2032,7 @@
    "pos": [
     2.531,
     0.0,
-    -39.735
+    -45.821
    ],
    "gallery": {
     "mesh": "SM_AI_Roompla2",
@@ -1848,7 +2046,7 @@
    "pos": [
     8.161,
     0.0,
-    -39.735
+    -45.821
    ],
    "gallery": {
     "mesh": "SM_AI_Chandelr",
@@ -1865,7 +2063,7 @@
    "pos": [
     12.772,
     0.0,
-    -39.735
+    -45.821
    ],
    "gallery": {
     "mesh": "SM_AI_Necgrav3",
@@ -1881,7 +2079,7 @@
    "pos": [
     16.997,
     0.0,
-    -39.735
+    -45.821
    ],
    "gallery": {
     "mesh": "SM_AI_Goose",
@@ -1896,7 +2094,7 @@
    "pos": [
     21.002,
     0.0,
-    -39.735
+    -45.821
    ],
    "gallery": {
     "mesh": "SM_AI_Sign_SM4k",
@@ -1910,7 +2108,7 @@
    "pos": [
     22.27,
     0.0,
-    -39.735
+    -45.821
    ],
    "gallery": {
     "mesh": "SM_AI_Sign",
@@ -1919,15 +2117,61 @@
    }
   },
   {
+   "class": "Throne",
+   "params": {},
+   "pos": [
+    26.33,
+    0.0,
+    -45.821
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Throne",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "SpinningWheel",
+   "params": {},
+   "pos": [
+    31.334,
+    0.0,
+    -45.821
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Spinwheel",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
    "class": "AssassinSign",
    "params": {},
    "pos": [
-    25.837,
+    35.305,
     0.0,
-    -39.735
+    -45.821
    ],
    "gallery": {
     "mesh": "SM_AI_Newbsign",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "FoodDispenser",
+   "params": {
+    "classtype": {
+     "class": "Eggs"
+    }
+   },
+   "pos": [
+    39.349,
+    0.0,
+    -45.821
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Henhouse",
     "random_yaw": false,
     "facing": "south"
    }
@@ -1938,9 +2182,9 @@
     "type": 152
    },
    "pos": [
-    29.772,
+    43.479,
     0.0,
-    -39.735
+    -45.821
    ],
    "gallery": {
     "mesh": "SM_AI_Roompla1",
@@ -1954,9 +2198,9 @@
     "type": 167
    },
    "pos": [
-    33.845,
+    47.552,
     0.0,
-    -39.735
+    -45.821
    ],
    "gallery": {
     "mesh": "SM_AI_Potplant",
@@ -1968,9 +2212,9 @@
    "class": "Fountain",
    "params": {},
    "pos": [
-    40.264,
+    53.971,
     0.0,
-    -39.735
+    -45.821
    ],
    "gallery": {
     "mesh": "SM_AI_Fountain",
@@ -1982,12 +2226,26 @@
    "class": "Shrine",
    "params": {},
    "pos": [
-    44.521,
+    58.228,
     0.0,
-    -39.735
+    -45.821
    ],
    "gallery": {
     "mesh": "SM_AI_Shrine",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "Loom",
+   "params": {},
+   "pos": [
+    2.769,
+    0.0,
+    -53.367
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Loom",
     "random_yaw": false,
     "facing": "south"
    }
@@ -1998,9 +2256,9 @@
     "type": 155
    },
    "pos": [
-    48.012,
+    6.679,
     0.0,
-    -39.735
+    -53.367
    ],
    "gallery": {
     "mesh": "SM_AI_Roomwash",
@@ -2009,12 +2267,30 @@
    }
   },
   {
+   "class": "FoodDispenser",
+   "params": {
+    "classtype": {
+     "class": "EarCorn"
+    }
+   },
+   "pos": [
+    9.759,
+    0.0,
+    -53.367
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Cornstalk",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
    "class": "Lamp",
    "params": {},
    "pos": [
-    51.324,
+    12.942,
     0.0,
-    -39.735
+    -53.367
    ],
    "gallery": {
     "mesh": "SM_AI_Lamp",
@@ -2023,12 +2299,30 @@
    }
   },
   {
+   "class": "FoodDispenser",
+   "params": {
+    "classtype": {
+     "class": "Flour"
+    }
+   },
+   "pos": [
+    16.301,
+    0.0,
+    -53.367
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Wheatplant",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
    "class": "ArenaSign2",
    "params": {},
    "pos": [
-    55.182,
+    20.225,
     0.0,
-    -39.735
+    -53.367
    ],
    "gallery": {
     "mesh": "SM_AI_Artrop01",
@@ -2040,12 +2334,30 @@
    "class": "Pillar",
    "params": {},
    "pos": [
-    58.558,
+    23.601,
     0.0,
-    -39.735
+    -53.367
    ],
    "gallery": {
     "mesh": "SM_AI_Marblplr",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "FoodDispenser",
+   "params": {
+    "classtype": {
+     "class": "Oats"
+    }
+   },
+   "pos": [
+    28.297,
+    0.0,
+    -53.367
+   ],
+   "gallery": {
+    "mesh": "SM_AI_Commonoats",
     "random_yaw": false,
     "facing": "south"
    }
@@ -2056,9 +2368,9 @@
     "type": 34
    },
    "pos": [
-    4.555,
+    35.251,
     0.0,
-    -48.089
+    -53.367
    ],
    "gallery": {
     "mesh": "SM_AI_Rock_Custom",
@@ -2072,9 +2384,9 @@
     "type": 34
    },
    "pos": [
-    7.484,
+    38.18,
     0.0,
-    -48.089
+    -53.367
    ],
    "gallery": {
     "mesh": "SM_AI_Rock",
@@ -2086,9 +2398,9 @@
    "class": "KocatanBrazier",
    "params": {},
    "pos": [
-    11.709,
+    42.405,
     0.0,
-    -48.089
+    -53.367
    ],
    "gallery": {
     "mesh": "SM_AI_Koclamp",
@@ -2102,9 +2414,9 @@
     "type": 74
    },
    "pos": [
-    15.323,
+    46.02,
     0.0,
-    -48.089
+    -53.367
    ],
    "gallery": {
     "mesh": "SM_AI_Skull3",
@@ -2118,9 +2430,9 @@
     "type": 72
    },
    "pos": [
-    18.819,
+    49.515,
     0.0,
-    -48.089
+    -53.367
    ],
    "gallery": {
     "mesh": "SM_AI_Skull1",
@@ -2134,9 +2446,9 @@
     "type": 73
    },
    "pos": [
-    22.846,
+    53.542,
     0.0,
-    -48.089
+    -53.367
    ],
    "gallery": {
     "mesh": "SM_AI_Skull2",
@@ -2150,9 +2462,9 @@
     "type": 76
    },
    "pos": [
-    26.548,
+    57.244,
     0.0,
-    -48.089
+    -53.367
    ],
    "gallery": {
     "mesh": "SM_AI_Skull5",
@@ -2166,9 +2478,9 @@
     "type": 79
    },
    "pos": [
-    31.157,
+    2.644,
     0.0,
-    -48.089
+    -61.731
    ],
    "gallery": {
     "mesh": "SM_AI_Altar",
@@ -2182,9 +2494,9 @@
     "type": 92
    },
    "pos": [
-    37.719,
+    9.206,
     0.0,
-    -48.089
+    -61.731
    ],
    "gallery": {
     "mesh": "SM_AI_Nectree2",
@@ -2198,9 +2510,9 @@
     "type": 91
    },
    "pos": [
-    45.066,
+    16.552,
     0.0,
-    -48.089
+    -61.731
    ],
    "gallery": {
     "mesh": "SM_AI_Nectree1",
@@ -2214,9 +2526,9 @@
     "type": 91
    },
    "pos": [
-    49.016,
+    20.503,
     0.0,
-    -48.089
+    -61.731
    ],
    "gallery": {
     "mesh": "SM_Tree_Dead_A",
@@ -2230,9 +2542,9 @@
     "type": 91
    },
    "pos": [
-    53.988,
+    25.474,
     0.0,
-    -48.089
+    -61.731
    ],
    "gallery": {
     "mesh": "SM_Tree_Dead_B",
@@ -2246,9 +2558,9 @@
     "type": 94
    },
    "pos": [
-    4.453,
+    33.943,
     0.0,
-    -56.635
+    -61.731
    ],
    "gallery": {
     "mesh": "SM_AI_Nectree4",
@@ -2260,9 +2572,9 @@
    "class": "FeyTree",
    "params": {},
    "pos": [
-    11.054,
+    40.545,
     0.0,
-    -56.635
+    -61.731
    ],
    "gallery": {
     "mesh": "SM_AI_Feytree",
@@ -2274,9 +2586,9 @@
    "class": "GlowTree",
    "params": {},
    "pos": [
-    17.928,
+    47.419,
     0.0,
-    -56.635
+    -61.731
    ],
    "gallery": {
     "mesh": "SM_AI_Nectree3",
@@ -2288,9 +2600,9 @@
    "class": "Flagpole",
    "params": {},
    "pos": [
-    21.763,
+    51.254,
     0.0,
-    -56.635
+    -61.731
    ],
    "gallery": {
     "mesh": "SM_AI_Flagpole",
@@ -2302,9 +2614,9 @@
    "class": "SingleTree",
    "params": {},
    "pos": [
-    31.775,
+    8.212,
     0.0,
-    -56.635
+    -70.278
    ],
    "gallery": {
     "mesh": "SM_AI_Spdrtree",
@@ -2322,7 +2634,7 @@
    "pos": [
     5.172,
     0.0,
-    -65.013
+    -78.656
    ],
    "gallery": {
     "mesh": "SM_Tree_Apple_A",
@@ -2340,7 +2652,7 @@
    "pos": [
     9.226,
     0.0,
-    -65.013
+    -78.656
    ],
    "gallery": {
     "mesh": "SM_Tree_Apple_B",
@@ -2358,7 +2670,7 @@
    "pos": [
     18.13,
     0.0,
-    -65.013
+    -78.656
    ],
    "gallery": {
     "mesh": "SM_Tree_Orange_A",
@@ -2376,7 +2688,7 @@
    "pos": [
     22.272,
     0.0,
-    -65.013
+    -78.656
    ],
    "gallery": {
     "mesh": "SM_Tree_Orange_B",
@@ -2394,7 +2706,7 @@
    "pos": [
     30.612,
     0.0,
-    -65.013
+    -78.656
    ],
    "gallery": {
     "mesh": "SM_Tree_Pear_A",
@@ -2412,7 +2724,7 @@
    "pos": [
     34.509,
     0.0,
-    -65.013
+    -78.656
    ],
    "gallery": {
     "mesh": "SM_Tree_Pear_B",
@@ -2428,7 +2740,7 @@
    "pos": [
     41.718,
     0.0,
-    -65.013
+    -78.656
    ],
    "gallery": {
     "mesh": "SM_Tree_RazaShrub_A",
@@ -2444,7 +2756,7 @@
    "pos": [
     44.624,
     0.0,
-    -65.013
+    -78.656
    ],
    "gallery": {
     "mesh": "SM_Tree_RazaShrub_B",
@@ -2460,7 +2772,7 @@
    "pos": [
     47.655,
     0.0,
-    -65.013
+    -78.656
    ],
    "gallery": {
     "mesh": "SM_Tree_RazaShrub_C",
@@ -2476,7 +2788,7 @@
    "pos": [
     5.293,
     0.0,
-    -74.023
+    -87.666
    ],
    "gallery": {
     "mesh": "SM_Tree_Raza_A",
@@ -2492,7 +2804,7 @@
    "pos": [
     9.479,
     0.0,
-    -74.023
+    -87.666
    ],
    "gallery": {
     "mesh": "SM_Tree_Raza_B",
@@ -2508,7 +2820,7 @@
    "pos": [
     13.906,
     0.0,
-    -74.023
+    -87.666
    ],
    "gallery": {
     "mesh": "SM_Tree_Raza_C",
@@ -2524,7 +2836,7 @@
    "pos": [
     21.318,
     0.0,
-    -74.023
+    -87.666
    ],
    "gallery": {
     "mesh": "SM_Tree_Topiary_A",
@@ -2540,7 +2852,7 @@
    "pos": [
     24.227,
     0.0,
-    -74.023
+    -87.666
    ],
    "gallery": {
     "mesh": "SM_Tree_Topiary_B",
@@ -2556,7 +2868,7 @@
    "pos": [
     32.95,
     0.0,
-    -74.023
+    -87.666
    ],
    "gallery": {
     "mesh": "SM_Tree_Mid1_A",
@@ -2572,7 +2884,7 @@
    "pos": [
     37.395,
     0.0,
-    -74.023
+    -87.666
    ],
    "gallery": {
     "mesh": "SM_Tree_Mid1_B",
@@ -2588,7 +2900,7 @@
    "pos": [
     41.727,
     0.0,
-    -74.023
+    -87.666
    ],
    "gallery": {
     "mesh": "SM_Tree_Mid1_C",
@@ -2604,7 +2916,7 @@
    "pos": [
     5.844,
     0.0,
-    -83.21
+    -96.853
    ],
    "gallery": {
     "mesh": "SM_Tree_Mid_A",
@@ -2620,7 +2932,7 @@
    "pos": [
     10.184,
     0.0,
-    -83.21
+    -96.853
    ],
    "gallery": {
     "mesh": "SM_Tree_Mid_B",
@@ -2636,7 +2948,7 @@
    "pos": [
     14.497,
     0.0,
-    -83.21
+    -96.853
    ],
    "gallery": {
     "mesh": "SM_Tree_Mid_C",
@@ -2652,7 +2964,7 @@
    "pos": [
     18.522,
     0.0,
-    -83.21
+    -96.853
    ],
    "gallery": {
     "mesh": "SM_AI_Midtree2",
@@ -2668,7 +2980,7 @@
    "pos": [
     25.592,
     0.0,
-    -83.21
+    -96.853
    ],
    "gallery": {
     "mesh": "SM_Tree_Mid3_A",
@@ -2684,7 +2996,7 @@
    "pos": [
     28.44,
     0.0,
-    -83.21
+    -96.853
    ],
    "gallery": {
     "mesh": "SM_Tree_Mid3_B",
@@ -2700,7 +3012,7 @@
    "pos": [
     37.205,
     0.0,
-    -83.21
+    -96.853
    ],
    "gallery": {
     "mesh": "SM_Tree_Mid4_A",
@@ -2716,7 +3028,7 @@
    "pos": [
     41.486,
     0.0,
-    -83.21
+    -96.853
    ],
    "gallery": {
     "mesh": "SM_Tree_Mid4_B",
@@ -2732,7 +3044,7 @@
    "pos": [
     45.564,
     0.0,
-    -83.21
+    -96.853
    ],
    "gallery": {
     "mesh": "SM_Tree_Mid4_C",
@@ -2748,7 +3060,7 @@
    "pos": [
     6.79,
     0.0,
-    -92.493
+    -106.136
    ],
    "gallery": {
     "mesh": "SM_Tree_Tall1_A",
@@ -2764,7 +3076,7 @@
    "pos": [
     11.204,
     0.0,
-    -92.493
+    -106.136
    ],
    "gallery": {
     "mesh": "SM_Tree_Tall1_B",
@@ -2780,7 +3092,7 @@
    "pos": [
     15.688,
     0.0,
-    -92.493
+    -106.136
    ],
    "gallery": {
     "mesh": "SM_Tree_Tall1_C",
@@ -2796,7 +3108,7 @@
    "pos": [
     23.272,
     0.0,
-    -92.493
+    -106.136
    ],
    "gallery": {
     "mesh": "SM_Tree_Tall2_A",
@@ -2812,7 +3124,7 @@
    "pos": [
     26.359,
     0.0,
-    -92.493
+    -106.136
    ],
    "gallery": {
     "mesh": "SM_Tree_Tall2_B",
@@ -2828,7 +3140,7 @@
    "pos": [
     34.17,
     0.0,
-    -92.493
+    -106.136
    ],
    "gallery": {
     "mesh": "SM_Tree_Tall3_A",
@@ -2844,7 +3156,7 @@
    "pos": [
     37.604,
     0.0,
-    -92.493
+    -106.136
    ],
    "gallery": {
     "mesh": "SM_Tree_Tall3_B",
@@ -2860,7 +3172,7 @@
    "pos": [
     44.599,
     0.0,
-    -92.493
+    -106.136
    ],
    "gallery": {
     "mesh": "SM_Tree_Shrub_A",
@@ -2876,7 +3188,7 @@
    "pos": [
     47.591,
     0.0,
-    -92.493
+    -106.136
    ],
    "gallery": {
     "mesh": "SM_Tree_Shrub_B",
@@ -2892,7 +3204,7 @@
    "pos": [
     50.581,
     0.0,
-    -92.493
+    -106.136
    ],
    "gallery": {
     "mesh": "SM_Tree_Shrub_C",
@@ -2908,7 +3220,7 @@
    "pos": [
     53.344,
     0.0,
-    -92.493
+    -106.136
    ],
    "gallery": {
     "mesh": "SM_AI_Shrubee1",
@@ -2924,7 +3236,7 @@
    "pos": [
     1.954,
     0.0,
-    -102.482
+    -116.125
    ],
    "gallery": {
     "mesh": "SM_Tree_Fern_A",
@@ -2940,7 +3252,7 @@
    "pos": [
     3.548,
     0.0,
-    -102.482
+    -116.125
    ],
    "gallery": {
     "mesh": "SM_Tree_Fern_B",
@@ -2956,7 +3268,7 @@
    "pos": [
     12.785,
     0.0,
-    -102.482
+    -116.125
    ],
    "gallery": {
     "mesh": "SM_Tree_Jungle1_A",
@@ -2972,7 +3284,7 @@
    "pos": [
     18.183,
     0.0,
-    -102.482
+    -116.125
    ],
    "gallery": {
     "mesh": "SM_Tree_Jungle1_B",
@@ -2988,7 +3300,7 @@
    "pos": [
     29.455,
     0.0,
-    -102.482
+    -116.125
    ],
    "gallery": {
     "mesh": "SM_Tree_Jungle2_A",
@@ -3004,7 +3316,7 @@
    "pos": [
     34.957,
     0.0,
-    -102.482
+    -116.125
    ],
    "gallery": {
     "mesh": "SM_Tree_Jungle2_B",
@@ -3020,7 +3332,7 @@
    "pos": [
     46.639,
     0.0,
-    -102.482
+    -116.125
    ],
    "gallery": {
     "mesh": "SM_Tree_Jungle3_A",
@@ -3036,7 +3348,7 @@
    "pos": [
     52.454,
     0.0,
-    -102.482
+    -116.125
    ],
    "gallery": {
     "mesh": "SM_Tree_Jungle3_B",
@@ -3050,7 +3362,7 @@
    "pos": [
     3.948,
     0.0,
-    -111.75
+    -125.741
    ],
    "gallery": {
     "mesh": "SM_Tree_Bush_A",
@@ -3064,7 +3376,7 @@
    "pos": [
     6.994,
     0.0,
-    -111.75
+    -125.741
    ],
    "gallery": {
     "mesh": "SM_Tree_Bush_B",
@@ -3078,7 +3390,7 @@
    "pos": [
     9.91,
     0.0,
-    -111.75
+    -125.741
    ],
    "gallery": {
     "mesh": "SM_Tree_Bush_C",
@@ -3092,7 +3404,7 @@
    "pos": [
     16.937,
     0.0,
-    -111.75
+    -125.741
    ],
    "gallery": {
     "mesh": "SM_Tree_Cypress_A",
@@ -3106,7 +3418,7 @@
    "pos": [
     20.204,
     0.0,
-    -111.75
+    -125.741
    ],
    "gallery": {
     "mesh": "SM_Tree_Cypress_B",
@@ -3115,12 +3427,144 @@
    }
   },
   {
+   "class": "Tree",
+   "params": {},
+   "pos": [
+    28.531,
+    0.0,
+    -125.741
+   ],
+   "gallery": {
+    "mesh": "SM_Tree_Oak_A",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "Tree",
+   "params": {},
+   "pos": [
+    32.59,
+    0.0,
+    -125.741
+   ],
+   "gallery": {
+    "mesh": "SM_Tree_Oak_B",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "Tree",
+   "params": {},
+   "pos": [
+    36.536,
+    0.0,
+    -125.741
+   ],
+   "gallery": {
+    "mesh": "SM_Tree_Oak_C",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "Tree",
+   "params": {
+    "classtype": {
+     "class": "bottom=2"
+    }
+   },
+   "pos": [
+    45.047,
+    0.0,
+    -125.741
+   ],
+   "gallery": {
+    "mesh": "SM_Tree_Elm_A",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "Tree",
+   "params": {
+    "classtype": {
+     "class": "bottom=2"
+    }
+   },
+   "pos": [
+    48.827,
+    0.0,
+    -125.741
+   ],
+   "gallery": {
+    "mesh": "SM_Tree_Elm_B",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "Tree",
+   "params": {
+    "classtype": {
+     "class": "bottom=2"
+    }
+   },
+   "pos": [
+    52.637,
+    0.0,
+    -125.741
+   ],
+   "gallery": {
+    "mesh": "SM_Tree_Elm_C",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "Tree",
+   "params": {
+    "classtype": {
+     "class": "bottom=3"
+    }
+   },
+   "pos": [
+    4.669,
+    0.0,
+    -133.796
+   ],
+   "gallery": {
+    "mesh": "SM_Tree_Pine_A",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
+   "class": "Tree",
+   "params": {
+    "classtype": {
+     "class": "bottom=3"
+    }
+   },
+   "pos": [
+    7.475,
+    0.0,
+    -133.796
+   ],
+   "gallery": {
+    "mesh": "SM_Tree_Pine_B",
+    "random_yaw": false,
+    "facing": "south"
+   }
+  },
+  {
    "class": "YrxlTree",
    "params": {},
    "pos": [
-    26.517,
+    13.62,
     0.0,
-    -111.75
+    -133.796
    ],
    "gallery": {
     "mesh": "SM_Tree_Yrxl_A",
@@ -3132,9 +3576,9 @@
    "class": "YrxlTree",
    "params": {},
    "pos": [
-    29.027,
+    16.13,
     0.0,
-    -111.75
+    -133.796
    ],
    "gallery": {
     "mesh": "SM_Tree_Yrxl_B",
@@ -3425,1183 +3869,1403 @@
    ]
   },
   {
-   "label": "Gallery_Sprite_modfung_28",
+   "label": "Gallery_Sprite_carrotplant_28",
+   "mesh": "SM_GallerySprite_carrotplant",
+   "texture": "T_GallerySprite_carrotplant.png",
+   "pos": [
+    31.035,
+    0.0,
+    -7.077
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_modfung_29",
    "mesh": "SM_GallerySprite_modfung",
    "texture": "T_GallerySprite_modfung.png",
    "pos": [
-    30.765,
+    34.28,
     0.0,
     -7.077
    ]
   },
   {
-   "label": "Gallery_Sprite_modnewsb_29",
+   "label": "Gallery_Sprite_modnewsb_30",
    "mesh": "SM_GallerySprite_modnewsb",
    "texture": "T_GallerySprite_modnewsb.png",
    "pos": [
-    34.209,
+    37.724,
     0.0,
     -7.077
    ]
   },
   {
-   "label": "Gallery_Sprite_modfey_30",
+   "label": "Gallery_Sprite_modfey_31",
    "mesh": "SM_GallerySprite_modfey",
    "texture": "T_GallerySprite_modfey.png",
    "pos": [
-    36.925,
+    40.44,
     0.0,
     -7.077
    ]
   },
   {
-   "label": "Gallery_Sprite_bucket_31",
+   "label": "Gallery_Sprite_bucket_32",
    "mesh": "SM_GallerySprite_bucket",
    "texture": "T_GallerySprite_bucket.png",
    "pos": [
-    39.746,
+    43.261,
     0.0,
     -7.077
    ]
   },
   {
-   "label": "Gallery_Sprite_potion01_32",
+   "label": "Gallery_Sprite_potion01_33",
    "mesh": "SM_GallerySprite_potion01",
    "texture": "T_GallerySprite_potion01.png",
    "pos": [
-    42.513,
+    46.028,
     0.0,
     -7.077
    ]
   },
   {
-   "label": "Gallery_Sprite_decopot4_33",
+   "label": "Gallery_Sprite_decopot4_34",
    "mesh": "SM_GallerySprite_decopot4",
    "texture": "T_GallerySprite_decopot4.png",
    "pos": [
-    45.298,
+    48.813,
     0.0,
     -7.077
    ]
   },
   {
-   "label": "Gallery_Sprite_modcen_34",
+   "label": "Gallery_Sprite_modcen_35",
    "mesh": "SM_GallerySprite_modcen",
    "texture": "T_GallerySprite_modcen.png",
    "pos": [
-    48.111,
+    51.626,
     0.0,
     -7.077
    ]
   },
   {
-   "label": "Gallery_Sprite_mummyx_35",
+   "label": "Gallery_Sprite_mummyx_36",
    "mesh": "SM_GallerySprite_mummyx",
    "texture": "T_GallerySprite_mummyx.png",
    "pos": [
-    51.624,
+    55.139,
     0.0,
     -7.077
    ]
   },
   {
-   "label": "Gallery_Sprite_lettuce_36",
+   "label": "Gallery_Sprite_lettuce_37",
    "mesh": "SM_GallerySprite_lettuce",
    "texture": "T_GallerySprite_lettuce.png",
    "pos": [
-    57.513,
+    0.297,
     0.0,
-    -7.077
+    -13.265
    ]
   },
   {
-   "label": "Gallery_Sprite_skulhorn_37",
+   "label": "Gallery_Sprite_roompilo_38",
+   "mesh": "SM_GallerySprite_roompilo",
+   "texture": "T_GallerySprite_roompilo.png",
+   "pos": [
+    3.822,
+    0.0,
+    -13.265
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_skulhorn_39",
    "mesh": "SM_GallerySprite_skulhorn",
    "texture": "T_GallerySprite_skulhorn.png",
    "pos": [
-    0.229,
+    7.961,
     0.0,
-    -13.25
+    -13.265
    ]
   },
   {
-   "label": "Gallery_Sprite_mushroom_38",
+   "label": "Gallery_Sprite_mushroom_40",
    "mesh": "SM_GallerySprite_mushroom",
    "texture": "T_GallerySprite_mushroom.png",
    "pos": [
-    4.039,
+    11.771,
     0.0,
-    -13.25
+    -13.265
    ]
   },
   {
-   "label": "Gallery_Sprite_necbottl_39",
+   "label": "Gallery_Sprite_necbottl_41",
    "mesh": "SM_GallerySprite_necbottl",
    "texture": "T_GallerySprite_necbottl.png",
    "pos": [
-    6.9,
+    14.632,
     0.0,
-    -13.25
+    -13.265
    ]
   },
   {
-   "label": "Gallery_Sprite_quillpen_40",
+   "label": "Gallery_Sprite_quillpen_42",
    "mesh": "SM_GallerySprite_quillpen",
    "texture": "T_GallerySprite_quillpen.png",
    "pos": [
-    9.509,
+    17.241,
     0.0,
-    -13.25
+    -13.265
    ]
   },
   {
-   "label": "Gallery_Sprite_modnode_41",
+   "label": "Gallery_Sprite_modnode_43",
    "mesh": "SM_GallerySprite_modnode",
    "texture": "T_GallerySprite_modnode.png",
    "pos": [
-    12.318,
+    20.05,
     0.0,
-    -13.25
+    -13.265
    ]
   },
   {
-   "label": "Gallery_Sprite_modthron_42",
+   "label": "Gallery_Sprite_modthron_44",
    "mesh": "SM_GallerySprite_modthron",
    "texture": "T_GallerySprite_modthron.png",
    "pos": [
-    16.279,
+    24.011,
     0.0,
-    -13.25
+    -13.265
    ]
   },
   {
-   "label": "Gallery_Sprite_necvase2_43",
+   "label": "Gallery_Sprite_necvase2_45",
    "mesh": "SM_GallerySprite_necvase2",
    "texture": "T_GallerySprite_necvase2.png",
    "pos": [
-    19.172,
+    26.904,
     0.0,
-    -13.25
+    -13.265
    ]
   },
   {
-   "label": "Gallery_Sprite_gauntlet_44",
+   "label": "Gallery_Sprite_gauntlet_46",
    "mesh": "SM_GallerySprite_gauntlet",
    "texture": "T_GallerySprite_gauntlet.png",
    "pos": [
-    22.487,
+    30.219,
     0.0,
-    -13.25
+    -13.265
    ]
   },
   {
-   "label": "Gallery_Sprite_chalice_45",
+   "label": "Gallery_Sprite_chalice_47",
    "mesh": "SM_GallerySprite_chalice",
    "texture": "T_GallerySprite_chalice.png",
    "pos": [
-    26.261,
+    33.993,
     0.0,
-    -13.25
+    -13.265
    ]
   },
   {
-   "label": "Gallery_Sprite_necslime_46",
+   "label": "Gallery_Sprite_necslime_48",
    "mesh": "SM_GallerySprite_necslime",
    "texture": "T_GallerySprite_necslime.png",
    "pos": [
-    29.357,
+    37.089,
     0.0,
-    -13.25
+    -13.265
    ]
   },
   {
-   "label": "Gallery_Sprite_modlupog_47",
+   "label": "Gallery_Sprite_modlupog_49",
    "mesh": "SM_GallerySprite_modlupog",
    "texture": "T_GallerySprite_modlupog.png",
    "pos": [
-    33.934,
+    41.666,
     0.0,
-    -13.25
+    -13.265
    ]
   },
   {
-   "label": "Gallery_Sprite_hist_leathamr_48",
+   "label": "Gallery_Sprite_hist_leathamr_50",
    "mesh": "SM_GallerySprite_hist_leathamr",
    "texture": "T_GallerySprite_hist_leathamr.png",
    "pos": [
-    37.597,
+    45.329,
     0.0,
-    -13.25
+    -13.265
    ]
   },
   {
-   "label": "Gallery_Sprite_fixins4_49",
+   "label": "Gallery_Sprite_fixins4_51",
    "mesh": "SM_GallerySprite_fixins4",
    "texture": "T_GallerySprite_fixins4.png",
    "pos": [
     0.249,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_bucket2_50",
+   "label": "Gallery_Sprite_bucket2_52",
    "mesh": "SM_GallerySprite_bucket2",
    "texture": "T_GallerySprite_bucket2.png",
    "pos": [
     3.305,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_boxsnak4_51",
+   "label": "Gallery_Sprite_boxsnak4_53",
    "mesh": "SM_GallerySprite_boxsnak4",
    "texture": "T_GallerySprite_boxsnak4.png",
    "pos": [
     6.517,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_prism3_52",
+   "label": "Gallery_Sprite_prism3_54",
    "mesh": "SM_GallerySprite_prism3",
    "texture": "T_GallerySprite_prism3.png",
    "pos": [
     11.0,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_gryjug4_53",
+   "label": "Gallery_Sprite_gryjug4_55",
    "mesh": "SM_GallerySprite_gryjug4",
    "texture": "T_GallerySprite_gryjug4.png",
    "pos": [
     13.924,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_rockc_54",
+   "label": "Gallery_Sprite_rockc_56",
    "mesh": "SM_GallerySprite_rockc",
    "texture": "T_GallerySprite_rockc.png",
    "pos": [
     17.0,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_stochair_55",
+   "label": "Gallery_Sprite_stochair_57",
    "mesh": "SM_GallerySprite_stochair",
    "texture": "T_GallerySprite_stochair.png",
    "pos": [
     21.555,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_lampjasp_56",
+   "label": "Gallery_Sprite_lampjasp_58",
    "mesh": "SM_GallerySprite_lampjasp",
    "texture": "T_GallerySprite_lampjasp.png",
    "pos": [
     24.434,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_lampjas1_57",
+   "label": "Gallery_Sprite_lampjas1_59",
    "mesh": "SM_GallerySprite_lampjas1",
    "texture": "T_GallerySprite_lampjas1.png",
    "pos": [
     27.015,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_modshrin_58",
+   "label": "Gallery_Sprite_modshrin_60",
    "mesh": "SM_GallerySprite_modshrin",
    "texture": "T_GallerySprite_modshrin.png",
    "pos": [
     29.617,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_urn4_59",
+   "label": "Gallery_Sprite_urn4_61",
    "mesh": "SM_GallerySprite_urn4",
    "texture": "T_GallerySprite_urn4.png",
    "pos": [
     32.352,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_modant_60",
+   "label": "Gallery_Sprite_watermelonpatch_62",
+   "mesh": "SM_GallerySprite_watermelonpatch",
+   "texture": "T_GallerySprite_watermelonpatch.png",
+   "pos": [
+    35.537,
+    0.0,
+    -19.381
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_modant_63",
    "mesh": "SM_GallerySprite_modant",
    "texture": "T_GallerySprite_modant.png",
    "pos": [
-    35.483,
+    39.539,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_modaltar_61",
+   "label": "Gallery_Sprite_modaltar_64",
    "mesh": "SM_GallerySprite_modaltar",
    "texture": "T_GallerySprite_modaltar.png",
    "pos": [
-    40.255,
+    44.311,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_bagbean4_62",
+   "label": "Gallery_Sprite_bagbean4_65",
    "mesh": "SM_GallerySprite_bagbean4",
    "texture": "T_GallerySprite_bagbean4.png",
    "pos": [
-    43.098,
+    47.154,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_modavar_63",
+   "label": "Gallery_Sprite_modavar_66",
    "mesh": "SM_GallerySprite_modavar",
    "texture": "T_GallerySprite_modavar.png",
    "pos": [
-    46.146,
+    50.202,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_necvase3_64",
+   "label": "Gallery_Sprite_necvase3_67",
    "mesh": "SM_GallerySprite_necvase3",
    "texture": "T_GallerySprite_necvase3.png",
    "pos": [
-    49.193,
+    53.249,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_jug4_65",
+   "label": "Gallery_Sprite_jug4_68",
    "mesh": "SM_GallerySprite_jug4",
    "texture": "T_GallerySprite_jug4.png",
    "pos": [
-    52.002,
+    56.058,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_necvase_66",
+   "label": "Gallery_Sprite_necvase_69",
    "mesh": "SM_GallerySprite_necvase",
    "texture": "T_GallerySprite_necvase.png",
    "pos": [
-    54.857,
+    58.913,
     0.0,
-    -19.352
+    -19.381
    ]
   },
   {
-   "label": "Gallery_Sprite_candle_67",
+   "label": "Gallery_Sprite_candle_70",
    "mesh": "SM_GallerySprite_candle",
    "texture": "T_GallerySprite_candle.png",
    "pos": [
-    57.526,
+    0.086,
     0.0,
-    -19.352
+    -25.698
    ]
   },
   {
-   "label": "Gallery_Sprite_modorc_68",
+   "label": "Gallery_Sprite_modorc_71",
    "mesh": "SM_GallerySprite_modorc",
    "texture": "T_GallerySprite_modorc.png",
    "pos": [
-    0.256,
+    2.828,
     0.0,
-    -25.668
+    -25.698
    ]
   },
   {
-   "label": "Gallery_Sprite_orcfire_69",
+   "label": "Gallery_Sprite_orcfire_72",
    "mesh": "SM_GallerySprite_orcfire",
    "texture": "T_GallerySprite_orcfire.png",
    "pos": [
-    3.443,
+    6.015,
     0.0,
-    -25.668
+    -25.698
    ]
   },
   {
-   "label": "Gallery_Sprite_necrock_70",
+   "label": "Gallery_Sprite_necrock_73",
    "mesh": "SM_GallerySprite_necrock",
    "texture": "T_GallerySprite_necrock.png",
    "pos": [
-    8.513,
+    11.085,
     0.0,
-    -25.668
+    -25.698
    ]
   },
   {
-   "label": "Gallery_Sprite_bluejug_71",
+   "label": "Gallery_Sprite_shavehorse_74",
+   "mesh": "SM_GallerySprite_shavehorse",
+   "texture": "T_GallerySprite_shavehorse.png",
+   "pos": [
+    16.031,
+    0.0,
+    -25.698
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_potatoplant_75",
+   "mesh": "SM_GallerySprite_potatoplant",
+   "texture": "T_GallerySprite_potatoplant.png",
+   "pos": [
+    20.815,
+    0.0,
+    -25.698
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_bluejug_76",
    "mesh": "SM_GallerySprite_bluejug",
    "texture": "T_GallerySprite_bluejug.png",
    "pos": [
-    12.883,
+    24.031,
     0.0,
-    -25.668
+    -25.698
    ]
   },
   {
-   "label": "Gallery_Sprite_box1_72",
+   "label": "Gallery_Sprite_candelab_77",
+   "mesh": "SM_GallerySprite_candelab",
+   "texture": "T_GallerySprite_candelab.png",
+   "pos": [
+    27.183,
+    0.0,
+    -25.698
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_box1_78",
    "mesh": "SM_GallerySprite_box1",
    "texture": "T_GallerySprite_box1.png",
    "pos": [
-    16.373,
+    31.133,
     0.0,
-    -25.668
+    -25.698
    ]
   },
   {
-   "label": "Gallery_Sprite_stool_73",
+   "label": "Gallery_Sprite_stool_79",
    "mesh": "SM_GallerySprite_stool",
    "texture": "T_GallerySprite_stool.png",
    "pos": [
-    20.93,
+    35.69,
     0.0,
-    -25.668
+    -25.698
    ]
   },
   {
-   "label": "Gallery_Sprite_modportal_74",
+   "label": "Gallery_Sprite_modportal_80",
    "mesh": "SM_GallerySprite_modportal",
    "texture": "T_GallerySprite_modportal.png",
    "pos": [
-    24.292,
+    39.051,
     0.0,
-    -25.668
+    -25.698
    ]
   },
   {
-   "label": "Gallery_Sprite_barstool_75",
+   "label": "Gallery_Sprite_barstool_81",
    "mesh": "SM_GallerySprite_barstool",
    "texture": "T_GallerySprite_barstool.png",
    "pos": [
-    27.453,
+    42.212,
     0.0,
-    -25.668
+    -25.698
    ]
   },
   {
-   "label": "Gallery_Sprite_rice_76",
+   "label": "Gallery_Sprite_rice_82",
    "mesh": "SM_GallerySprite_rice",
    "texture": "T_GallerySprite_rice.png",
    "pos": [
-    30.842,
+    45.602,
     0.0,
-    -25.668
+    -25.698
    ]
   },
   {
-   "label": "Gallery_Sprite_bigurn2_77",
+   "label": "Gallery_Sprite_bigurn2_83",
    "mesh": "SM_GallerySprite_bigurn2",
    "texture": "T_GallerySprite_bigurn2.png",
    "pos": [
-    33.982,
+    48.742,
     0.0,
-    -25.668
+    -25.698
    ]
   },
   {
-   "label": "Gallery_Sprite_bigurn_78",
+   "label": "Gallery_Sprite_craftanvil_84",
+   "mesh": "SM_GallerySprite_craftanvil",
+   "texture": "T_GallerySprite_craftanvil.png",
+   "pos": [
+    51.672,
+    0.0,
+    -25.698
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_bigurn_85",
    "mesh": "SM_GallerySprite_bigurn",
    "texture": "T_GallerySprite_bigurn.png",
    "pos": [
-    36.855,
+    55.088,
     0.0,
-    -25.668
+    -25.698
    ]
   },
   {
-   "label": "Gallery_Sprite_tallurn_79",
+   "label": "Gallery_Sprite_tallurn_86",
    "mesh": "SM_GallerySprite_tallurn",
    "texture": "T_GallerySprite_tallurn.png",
    "pos": [
-    40.286,
+    0.533,
     0.0,
-    -25.668
+    -32.459
    ]
   },
   {
-   "label": "Gallery_Sprite_brazier_80",
+   "label": "Gallery_Sprite_brazier_87",
    "mesh": "SM_GallerySprite_brazier",
    "texture": "T_GallerySprite_brazier.png",
    "pos": [
-    44.181,
+    4.428,
     0.0,
-    -25.668
+    -32.459
    ]
   },
   {
-   "label": "Gallery_Sprite_splitstump_81",
+   "label": "Gallery_Sprite_splitstump_88",
    "mesh": "SM_GallerySprite_splitstump",
    "texture": "T_GallerySprite_splitstump.png",
    "pos": [
-    47.696,
+    7.943,
     0.0,
-    -25.668
+    -32.459
    ]
   },
   {
-   "label": "Gallery_Sprite_barrel_82",
+   "label": "Gallery_Sprite_barrel_89",
    "mesh": "SM_GallerySprite_barrel",
    "texture": "T_GallerySprite_barrel.png",
    "pos": [
-    52.079,
+    12.326,
     0.0,
-    -25.668
+    -32.459
    ]
   },
   {
-   "label": "Gallery_Sprite_barrel2_83",
+   "label": "Gallery_Sprite_barrel2_90",
    "mesh": "SM_GallerySprite_barrel2",
    "texture": "T_GallerySprite_barrel2.png",
    "pos": [
-    55.601,
+    15.848,
     0.0,
-    -25.668
+    -32.459
    ]
   },
   {
-   "label": "Gallery_Sprite_tcat_84",
+   "label": "Gallery_Sprite_tcat_91",
    "mesh": "SM_GallerySprite_tcat",
    "texture": "T_GallerySprite_tcat.png",
    "pos": [
-    0.238,
+    19.234,
     0.0,
-    -32.43
+    -32.459
    ]
   },
   {
-   "label": "Gallery_Sprite_bigiron_85",
+   "label": "Gallery_Sprite_bigiron_92",
    "mesh": "SM_GallerySprite_bigiron",
    "texture": "T_GallerySprite_bigiron.png",
    "pos": [
-    3.278,
+    22.274,
     0.0,
-    -32.43
+    -32.459
    ]
   },
   {
-   "label": "Gallery_Sprite_roomtabl_86",
+   "label": "Gallery_Sprite_roomtabl_93",
    "mesh": "SM_GallerySprite_roomtabl",
    "texture": "T_GallerySprite_roomtabl.png",
    "pos": [
-    6.869,
+    25.865,
     0.0,
-    -32.43
+    -32.459
    ]
   },
   {
-   "label": "Gallery_Sprite_table_87",
+   "label": "Gallery_Sprite_table_94",
    "mesh": "SM_GallerySprite_table",
    "texture": "T_GallerySprite_table.png",
    "pos": [
-    11.335,
+    30.331,
     0.0,
-    -32.43
+    -32.459
    ]
   },
   {
-   "label": "Gallery_Sprite_roombell_88",
+   "label": "Gallery_Sprite_roombell_95",
    "mesh": "SM_GallerySprite_roombell",
    "texture": "T_GallerySprite_roombell.png",
    "pos": [
-    16.581,
+    35.577,
     0.0,
-    -32.43
+    -32.459
    ]
   },
   {
-   "label": "Gallery_Sprite_hay_89",
+   "label": "Gallery_Sprite_jbook_96",
+   "mesh": "SM_GallerySprite_jbook",
+   "texture": "T_GallerySprite_jbook.png",
+   "pos": [
+    38.481,
+    0.0,
+    -32.459
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_hay_97",
    "mesh": "SM_GallerySprite_hay",
    "texture": "T_GallerySprite_hay.png",
    "pos": [
-    19.474,
+    42.074,
     0.0,
-    -32.43
+    -32.459
    ]
   },
   {
-   "label": "Gallery_Sprite_necgrav1_90",
+   "label": "Gallery_Sprite_necgrav1_98",
    "mesh": "SM_GallerySprite_necgrav1",
    "texture": "T_GallerySprite_necgrav1.png",
    "pos": [
-    23.133,
+    45.733,
     0.0,
-    -32.43
+    -32.459
    ]
   },
   {
-   "label": "Gallery_Sprite_plateamr_91",
+   "label": "Gallery_Sprite_tomatoplant_99",
+   "mesh": "SM_GallerySprite_tomatoplant",
+   "texture": "T_GallerySprite_tomatoplant.png",
+   "pos": [
+    50.084,
+    0.0,
+    -32.459
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_plateamr_100",
    "mesh": "SM_GallerySprite_plateamr",
    "texture": "T_GallerySprite_plateamr.png",
    "pos": [
-    27.259,
+    54.661,
     0.0,
-    -32.43
+    -32.459
    ]
   },
   {
-   "label": "Gallery_Sprite_skull4_92",
+   "label": "Gallery_Sprite_skull4_101",
    "mesh": "SM_GallerySprite_skull4",
    "texture": "T_GallerySprite_skull4.png",
    "pos": [
-    31.354,
+    0.438,
     0.0,
-    -32.43
+    -39.025
    ]
   },
   {
-   "label": "Gallery_Sprite_skull6_93",
+   "label": "Gallery_Sprite_news_102",
+   "mesh": "SM_GallerySprite_news",
+   "texture": "T_GallerySprite_news.png",
+   "pos": [
+    4.034,
+    0.0,
+    -39.025
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_skull6_103",
    "mesh": "SM_GallerySprite_skull6",
    "texture": "T_GallerySprite_skull6.png",
    "pos": [
-    34.914,
+    7.271,
     0.0,
-    -32.43
+    -39.025
    ]
   },
   {
-   "label": "Gallery_Sprite_3bolts_94",
+   "label": "Gallery_Sprite_3bolts_104",
    "mesh": "SM_GallerySprite_3bolts",
    "texture": "T_GallerySprite_3bolts.png",
    "pos": [
-    38.051,
+    10.408,
     0.0,
-    -32.43
+    -39.025
    ]
   },
   {
-   "label": "Gallery_Sprite_necgrav2_95",
+   "label": "Gallery_Sprite_box2_105",
+   "mesh": "SM_GallerySprite_box2",
+   "texture": "T_GallerySprite_box2.png",
+   "pos": [
+    14.729,
+    0.0,
+    -39.025
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_necgrav2_106",
    "mesh": "SM_GallerySprite_necgrav2",
    "texture": "T_GallerySprite_necgrav2.png",
    "pos": [
-    42.189,
+    21.254,
     0.0,
-    -32.43
+    -39.025
    ]
   },
   {
-   "label": "Gallery_Sprite_corn_96",
+   "label": "Gallery_Sprite_corn_107",
    "mesh": "SM_GallerySprite_corn",
    "texture": "T_GallerySprite_corn.png",
    "pos": [
-    46.169,
+    25.233,
     0.0,
-    -32.43
+    -39.025
    ]
   },
   {
-   "label": "Gallery_Sprite_roompla2_97",
+   "label": "Gallery_Sprite_tanrack_108",
+   "mesh": "SM_GallerySprite_tanrack",
+   "texture": "T_GallerySprite_tanrack.png",
+   "pos": [
+    29.452,
+    0.0,
+    -39.025
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_roompla2_109",
    "mesh": "SM_GallerySprite_roompla2",
    "texture": "T_GallerySprite_roompla2.png",
    "pos": [
     0.693,
     0.0,
-    -39.735
+    -45.821
    ]
   },
   {
-   "label": "Gallery_Sprite_chandelr_98",
+   "label": "Gallery_Sprite_chandelr_110",
    "mesh": "SM_GallerySprite_chandelr",
    "texture": "T_GallerySprite_chandelr.png",
    "pos": [
     5.808,
     0.0,
-    -39.735
+    -45.821
    ]
   },
   {
-   "label": "Gallery_Sprite_necgrav3_99",
+   "label": "Gallery_Sprite_necgrav3_111",
    "mesh": "SM_GallerySprite_necgrav3",
    "texture": "T_GallerySprite_necgrav3.png",
    "pos": [
     11.314,
     0.0,
-    -39.735
+    -45.821
    ]
   },
   {
-   "label": "Gallery_Sprite_goose_100",
+   "label": "Gallery_Sprite_goose_112",
    "mesh": "SM_GallerySprite_goose",
    "texture": "T_GallerySprite_goose.png",
    "pos": [
     15.408,
     0.0,
-    -39.735
+    -45.821
    ]
   },
   {
-   "label": "Gallery_Sprite_sign_101",
+   "label": "Gallery_Sprite_sign_113",
    "mesh": "SM_GallerySprite_sign",
    "texture": "T_GallerySprite_sign.png",
    "pos": [
     19.721,
     0.0,
-    -39.735
+    -45.821
    ]
   },
   {
-   "label": "Gallery_Sprite_newbsign_102",
+   "label": "Gallery_Sprite_throne_114",
+   "mesh": "SM_GallerySprite_throne",
+   "texture": "T_GallerySprite_throne.png",
+   "pos": [
+    24.854,
+    0.0,
+    -45.821
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_spinwheel_115",
+   "mesh": "SM_GallerySprite_spinwheel",
+   "texture": "T_GallerySprite_spinwheel.png",
+   "pos": [
+    29.275,
+    0.0,
+    -45.821
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_newbsign_116",
    "mesh": "SM_GallerySprite_newbsign",
    "texture": "T_GallerySprite_newbsign.png",
    "pos": [
-    24.683,
+    34.15,
     0.0,
-    -39.735
+    -45.821
    ]
   },
   {
-   "label": "Gallery_Sprite_roompla1_103",
+   "label": "Gallery_Sprite_henhouse_117",
+   "mesh": "SM_GallerySprite_henhouse",
+   "texture": "T_GallerySprite_henhouse.png",
+   "pos": [
+    37.828,
+    0.0,
+    -45.821
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_roompla1_118",
    "mesh": "SM_GallerySprite_roompla1",
    "texture": "T_GallerySprite_roompla1.png",
    "pos": [
-    28.336,
+    42.043,
     0.0,
-    -39.735
+    -45.821
    ]
   },
   {
-   "label": "Gallery_Sprite_potplant_104",
+   "label": "Gallery_Sprite_potplant_119",
    "mesh": "SM_GallerySprite_potplant",
    "texture": "T_GallerySprite_potplant.png",
    "pos": [
-    32.409,
+    46.116,
     0.0,
-    -39.735
+    -45.821
    ]
   },
   {
-   "label": "Gallery_Sprite_fountain_105",
+   "label": "Gallery_Sprite_fountain_120",
    "mesh": "SM_GallerySprite_fountain",
    "texture": "T_GallerySprite_fountain.png",
    "pos": [
-    37.275,
+    50.982,
     0.0,
-    -39.735
+    -45.821
    ]
   },
   {
-   "label": "Gallery_Sprite_shrine_106",
+   "label": "Gallery_Sprite_shrine_121",
    "mesh": "SM_GallerySprite_shrine",
    "texture": "T_GallerySprite_shrine.png",
    "pos": [
-    43.451,
+    57.158,
     0.0,
-    -39.735
+    -45.821
    ]
   },
   {
-   "label": "Gallery_Sprite_roomwash_107",
+   "label": "Gallery_Sprite_loom_122",
+   "mesh": "SM_GallerySprite_loom",
+   "texture": "T_GallerySprite_loom.png",
+   "pos": [
+    0.796,
+    0.0,
+    -53.367
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_roomwash_123",
    "mesh": "SM_GallerySprite_roomwash",
    "texture": "T_GallerySprite_roomwash.png",
    "pos": [
-    46.851,
+    5.518,
     0.0,
-    -39.735
+    -53.367
    ]
   },
   {
-   "label": "Gallery_Sprite_lamp_108",
+   "label": "Gallery_Sprite_cornstalk_124",
+   "mesh": "SM_GallerySprite_cornstalk",
+   "texture": "T_GallerySprite_cornstalk.png",
+   "pos": [
+    8.883,
+    0.0,
+    -53.367
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_lamp_125",
    "mesh": "SM_GallerySprite_lamp",
    "texture": "T_GallerySprite_lamp.png",
    "pos": [
-    50.305,
+    11.923,
     0.0,
-    -39.735
+    -53.367
    ]
   },
   {
-   "label": "Gallery_Sprite_artrop01_109",
+   "label": "Gallery_Sprite_wheatplant_126",
+   "mesh": "SM_GallerySprite_wheatplant",
+   "texture": "T_GallerySprite_wheatplant.png",
+   "pos": [
+    15.188,
+    0.0,
+    -53.367
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_artrop01_127",
    "mesh": "SM_GallerySprite_artrop01",
    "texture": "T_GallerySprite_artrop01.png",
    "pos": [
-    53.754,
+    18.798,
     0.0,
-    -39.735
+    -53.367
    ]
   },
   {
-   "label": "Gallery_Sprite_marblplr_110",
+   "label": "Gallery_Sprite_marblplr_128",
    "mesh": "SM_GallerySprite_marblplr",
    "texture": "T_GallerySprite_marblplr.png",
    "pos": [
-    57.586,
+    22.629,
     0.0,
-    -39.735
+    -53.367
    ]
   },
   {
-   "label": "Gallery_Sprite_rock_111",
+   "label": "Gallery_Sprite_commonoats_129",
+   "mesh": "SM_GallerySprite_commonoats",
+   "texture": "T_GallerySprite_commonoats.png",
+   "pos": [
+    26.289,
+    0.0,
+    -53.367
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_rock_130",
    "mesh": "SM_GallerySprite_rock",
    "texture": "T_GallerySprite_rock.png",
    "pos": [
-    1.439,
+    32.136,
     0.0,
-    -48.089
+    -53.367
    ]
   },
   {
-   "label": "Gallery_Sprite_koclamp_112",
+   "label": "Gallery_Sprite_koclamp_131",
    "mesh": "SM_GallerySprite_koclamp",
    "texture": "T_GallerySprite_koclamp.png",
    "pos": [
-    10.663,
+    41.36,
     0.0,
-    -48.089
+    -53.367
    ]
   },
   {
-   "label": "Gallery_Sprite_skull3_113",
+   "label": "Gallery_Sprite_skull3_132",
    "mesh": "SM_GallerySprite_skull3",
    "texture": "T_GallerySprite_skull3.png",
    "pos": [
-    14.058,
+    44.754,
     0.0,
-    -48.089
+    -53.367
    ]
   },
   {
-   "label": "Gallery_Sprite_skull1_114",
+   "label": "Gallery_Sprite_skull1_133",
    "mesh": "SM_GallerySprite_skull1",
    "texture": "T_GallerySprite_skull1.png",
    "pos": [
-    17.72,
+    48.416,
     0.0,
-    -48.089
+    -53.367
    ]
   },
   {
-   "label": "Gallery_Sprite_skull2_115",
+   "label": "Gallery_Sprite_skull2_134",
    "mesh": "SM_GallerySprite_skull2",
    "texture": "T_GallerySprite_skull2.png",
    "pos": [
-    21.299,
+    51.995,
     0.0,
-    -48.089
+    -53.367
    ]
   },
   {
-   "label": "Gallery_Sprite_skull5_116",
+   "label": "Gallery_Sprite_skull5_135",
    "mesh": "SM_GallerySprite_skull5",
    "texture": "T_GallerySprite_skull5.png",
    "pos": [
-    25.416,
+    56.113,
     0.0,
-    -48.089
+    -53.367
    ]
   },
   {
-   "label": "Gallery_Sprite_altar_117",
+   "label": "Gallery_Sprite_altar_136",
    "mesh": "SM_GallerySprite_altar",
    "texture": "T_GallerySprite_altar.png",
    "pos": [
-    29.253,
+    0.739,
     0.0,
-    -48.089
+    -61.731
    ]
   },
   {
-   "label": "Gallery_Sprite_nectree2_118",
+   "label": "Gallery_Sprite_nectree2_137",
    "mesh": "SM_GallerySprite_nectree2",
    "texture": "T_GallerySprite_nectree2.png",
    "pos": [
-    34.764,
+    6.251,
     0.0,
-    -48.089
+    -61.731
    ]
   },
   {
-   "label": "Gallery_Sprite_nectree1_119",
+   "label": "Gallery_Sprite_nectree1_138",
    "mesh": "SM_GallerySprite_nectree1",
    "texture": "T_GallerySprite_nectree1.png",
    "pos": [
-    41.952,
+    13.438,
     0.0,
-    -48.089
+    -61.731
    ]
   },
   {
-   "label": "Gallery_Sprite_nectree4_120",
+   "label": "Gallery_Sprite_nectree4_139",
    "mesh": "SM_GallerySprite_nectree4",
    "texture": "T_GallerySprite_nectree4.png",
    "pos": [
-    1.336,
+    30.827,
     0.0,
-    -56.635
+    -61.731
    ]
   },
   {
-   "label": "Gallery_Sprite_feytree_121",
+   "label": "Gallery_Sprite_feytree_140",
    "mesh": "SM_GallerySprite_feytree",
    "texture": "T_GallerySprite_feytree.png",
    "pos": [
-    8.516,
+    38.006,
     0.0,
-    -56.635
+    -61.731
    ]
   },
   {
-   "label": "Gallery_Sprite_nectree3_122",
+   "label": "Gallery_Sprite_nectree3_141",
    "mesh": "SM_GallerySprite_nectree3",
    "texture": "T_GallerySprite_nectree3.png",
    "pos": [
-    14.939,
+    44.43,
     0.0,
-    -56.635
+    -61.731
    ]
   },
   {
-   "label": "Gallery_Sprite_flagpole_123",
+   "label": "Gallery_Sprite_flagpole_142",
    "mesh": "SM_GallerySprite_flagpole",
    "texture": "T_GallerySprite_flagpole.png",
    "pos": [
-    21.026,
+    50.516,
     0.0,
-    -56.635
+    -61.731
    ]
   },
   {
-   "label": "Gallery_Sprite_spdrtree_124",
+   "label": "Gallery_Sprite_spdrtree_143",
    "mesh": "SM_GallerySprite_spdrtree",
    "texture": "T_GallerySprite_spdrtree.png",
    "pos": [
-    26.141,
+    2.578,
     0.0,
-    -56.635
+    -70.278
    ]
   },
   {
-   "label": "Gallery_Sprite_appletree_125",
+   "label": "Gallery_Sprite_appletree_144",
    "mesh": "SM_GallerySprite_appletree",
    "texture": "T_GallerySprite_appletree.png",
    "pos": [
     1.538,
     0.0,
-    -65.013
+    -78.656
    ]
   },
   {
-   "label": "Gallery_Sprite_orangetree_126",
+   "label": "Gallery_Sprite_orangetree_145",
    "mesh": "SM_GallerySprite_orangetree",
    "texture": "T_GallerySprite_orangetree.png",
    "pos": [
     14.321,
     0.0,
-    -65.013
+    -78.656
    ]
   },
   {
-   "label": "Gallery_Sprite_peartree_127",
+   "label": "Gallery_Sprite_peartree_146",
    "mesh": "SM_GallerySprite_peartree",
    "texture": "T_GallerySprite_peartree.png",
    "pos": [
     27.134,
     0.0,
-    -65.013
+    -78.656
    ]
   },
   {
-   "label": "Gallery_Sprite_razshrub_128",
+   "label": "Gallery_Sprite_razshrub_147",
    "mesh": "SM_GallerySprite_razshrub",
    "texture": "T_GallerySprite_razshrub.png",
    "pos": [
     39.01,
     0.0,
-    -65.013
+    -78.656
    ]
   },
   {
-   "label": "Gallery_Sprite_raztree1_129",
+   "label": "Gallery_Sprite_raztree1_148",
    "mesh": "SM_GallerySprite_raztree1",
    "texture": "T_GallerySprite_raztree1.png",
    "pos": [
     1.589,
     0.0,
-    -74.023
+    -87.666
    ]
   },
   {
-   "label": "Gallery_Sprite_roundshrub_130",
+   "label": "Gallery_Sprite_roundshrub_149",
    "mesh": "SM_GallerySprite_roundshrub",
    "texture": "T_GallerySprite_roundshrub.png",
    "pos": [
     18.578,
     0.0,
-    -74.023
+    -87.666
    ]
   },
   {
-   "label": "Gallery_Sprite_midtree1_131",
+   "label": "Gallery_Sprite_midtree1_150",
    "mesh": "SM_GallerySprite_midtree1",
    "texture": "T_GallerySprite_midtree1.png",
    "pos": [
     28.808,
     0.0,
-    -74.023
+    -87.666
    ]
   },
   {
-   "label": "Gallery_Sprite_midtree2_132",
+   "label": "Gallery_Sprite_midtree2_151",
    "mesh": "SM_GallerySprite_midtree2",
    "texture": "T_GallerySprite_midtree2.png",
    "pos": [
     1.739,
     0.0,
-    -83.21
+    -96.853
    ]
   },
   {
-   "label": "Gallery_Sprite_midtree3_133",
+   "label": "Gallery_Sprite_midtree3_152",
    "mesh": "SM_GallerySprite_midtree3",
    "texture": "T_GallerySprite_midtree3.png",
    "pos": [
     22.907,
     0.0,
-    -83.21
+    -96.853
    ]
   },
   {
-   "label": "Gallery_Sprite_midtree4_134",
+   "label": "Gallery_Sprite_midtree4_153",
    "mesh": "SM_GallerySprite_midtree4",
    "texture": "T_GallerySprite_midtree4.png",
    "pos": [
     33.055,
     0.0,
-    -83.21
+    -96.853
    ]
   },
   {
-   "label": "Gallery_Sprite_talltree1_135",
+   "label": "Gallery_Sprite_talltree1_154",
    "mesh": "SM_GallerySprite_talltree1",
    "texture": "T_GallerySprite_talltree1.png",
    "pos": [
     2.19,
     0.0,
-    -92.493
+    -106.136
    ]
   },
   {
-   "label": "Gallery_Sprite_talltree2_136",
+   "label": "Gallery_Sprite_talltree2_155",
    "mesh": "SM_GallerySprite_talltree2",
    "texture": "T_GallerySprite_talltree2.png",
    "pos": [
     20.467,
     0.0,
-    -92.493
+    -106.136
    ]
   },
   {
-   "label": "Gallery_Sprite_talltree3_137",
+   "label": "Gallery_Sprite_talltree3_156",
    "mesh": "SM_GallerySprite_talltree3",
    "texture": "T_GallerySprite_talltree3.png",
    "pos": [
     30.807,
     0.0,
-    -92.493
+    -106.136
    ]
   },
   {
-   "label": "Gallery_Sprite_shrubee1_138",
+   "label": "Gallery_Sprite_shrubee1_157",
    "mesh": "SM_GallerySprite_shrubee1",
    "texture": "T_GallerySprite_shrubee1.png",
    "pos": [
     41.836,
     0.0,
-    -92.493
+    -106.136
    ]
   },
   {
-   "label": "Gallery_Sprite_palm_139",
+   "label": "Gallery_Sprite_palm_158",
    "mesh": "SM_GallerySprite_palm",
    "texture": "T_GallerySprite_palm.png",
    "pos": [
     0.464,
     0.0,
-    -102.482
+    -116.125
    ]
   },
   {
-   "label": "Gallery_Sprite_tree1_140",
+   "label": "Gallery_Sprite_tree1_159",
    "mesh": "SM_GallerySprite_tree1",
    "texture": "T_GallerySprite_tree1.png",
    "pos": [
     7.803,
     0.0,
-    -102.482
+    -116.125
    ]
   },
   {
-   "label": "Gallery_Sprite_tree2_141",
+   "label": "Gallery_Sprite_tree2_160",
    "mesh": "SM_GallerySprite_tree2",
    "texture": "T_GallerySprite_tree2.png",
    "pos": [
     24.416,
     0.0,
-    -102.482
+    -116.125
    ]
   },
   {
-   "label": "Gallery_Sprite_tree3_142",
+   "label": "Gallery_Sprite_tree3_161",
    "mesh": "SM_GallerySprite_tree3",
    "texture": "T_GallerySprite_tree3.png",
    "pos": [
     41.34,
     0.0,
-    -102.482
+    -116.125
    ]
   },
   {
-   "label": "Gallery_Sprite_shrub_143",
+   "label": "Gallery_Sprite_shrub_162",
    "mesh": "SM_GallerySprite_shrub",
    "texture": "T_GallerySprite_shrub.png",
    "pos": [
     1.091,
     0.0,
-    -111.75
+    -125.741
    ]
   },
   {
-   "label": "Gallery_Sprite_tallbush_144",
+   "label": "Gallery_Sprite_tallbush_163",
    "mesh": "SM_GallerySprite_tallbush",
    "texture": "T_GallerySprite_tallbush.png",
    "pos": [
     13.9,
     0.0,
-    -111.75
+    -125.741
    ]
   },
   {
-   "label": "Gallery_Sprite_yrxltree_145",
+   "label": "Gallery_Sprite_treebot_164",
+   "mesh": "SM_GallerySprite_treebot",
+   "texture": "T_GallerySprite_treebot.png",
+   "pos": [
+    24.722,
+    0.0,
+    -125.741
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_treebot_165",
+   "mesh": "SM_GallerySprite_treebot",
+   "texture": "T_GallerySprite_treebot.png",
+   "pos": [
+    41.433,
+    0.0,
+    -125.741
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_treebot_166",
+   "mesh": "SM_GallerySprite_treebot",
+   "texture": "T_GallerySprite_treebot.png",
+   "pos": [
+    1.538,
+    0.0,
+    -133.796
+   ]
+  },
+  {
+   "label": "Gallery_Sprite_yrxltree_167",
    "mesh": "SM_GallerySprite_yrxltree",
    "texture": "T_GallerySprite_yrxltree.png",
    "pos": [
-    24.155,
+    11.258,
     0.0,
-    -111.75
+    -133.796
    ]
   }
  ],
@@ -5111,9 +5775,25 @@
    ]
   },
   {
+   "text": "sprite carrotplant",
+   "pos": [
+    31.035,
+    0.02,
+    -5.814
+   ]
+  },
+  {
+   "text": "Carrotplant\nFoodDispenser/Carrot",
+   "pos": [
+    32.192,
+    0.02,
+    -5.814
+   ]
+  },
+  {
    "text": "sprite modfung",
    "pos": [
-    30.765,
+    34.28,
     0.02,
     -5.814
    ]
@@ -5121,7 +5801,7 @@
   {
    "text": "Modfung_Custom\nOO 135",
    "pos": [
-    31.505,
+    35.02,
     0.02,
     -5.814
    ]
@@ -5129,7 +5809,7 @@
   {
    "text": "Modfung (alt)\nOO 135",
    "pos": [
-    32.305,
+    35.82,
     0.02,
     -5.814
    ]
@@ -5137,7 +5817,7 @@
   {
    "text": "sprite modnewsb",
    "pos": [
-    34.209,
+    37.724,
     0.02,
     -5.814
    ]
@@ -5145,7 +5825,7 @@
   {
    "text": "Modnewsb\nOO 121",
    "pos": [
-    34.914,
+    38.429,
     0.02,
     -5.814
    ]
@@ -5153,7 +5833,7 @@
   {
    "text": "sprite modfey",
    "pos": [
-    36.925,
+    40.44,
     0.02,
     -5.814
    ]
@@ -5161,7 +5841,7 @@
   {
    "text": "Modfey\nOO 136",
    "pos": [
-    37.745,
+    41.26,
     0.02,
     -5.814
    ]
@@ -5169,7 +5849,7 @@
   {
    "text": "sprite bucket",
    "pos": [
-    39.746,
+    43.261,
     0.02,
     -5.814
    ]
@@ -5177,7 +5857,7 @@
   {
    "text": "Bucket\nOO 58",
    "pos": [
-    40.54,
+    44.055,
     0.02,
     -5.814
    ]
@@ -5185,7 +5865,7 @@
   {
    "text": "sprite potion01",
    "pos": [
-    42.513,
+    46.028,
     0.02,
     -5.814
    ]
@@ -5193,7 +5873,7 @@
   {
    "text": "Potion01\nOO 143",
    "pos": [
-    43.287,
+    46.802,
     0.02,
     -5.814
    ]
@@ -5201,7 +5881,7 @@
   {
    "text": "sprite decopot4",
    "pos": [
-    45.298,
+    48.813,
     0.02,
     -5.814
    ]
@@ -5209,7 +5889,7 @@
   {
    "text": "Decopot4\nOO 16",
    "pos": [
-    46.123,
+    49.638,
     0.02,
     -5.814
    ]
@@ -5217,7 +5897,7 @@
   {
    "text": "sprite modcen",
    "pos": [
-    48.111,
+    51.626,
     0.02,
     -5.814
    ]
@@ -5225,7 +5905,7 @@
   {
    "text": "Modcen\nOO 134",
    "pos": [
-    48.884,
+    52.399,
     0.02,
     -5.814
    ]
@@ -5233,7 +5913,7 @@
   {
    "text": "sprite mummyx",
    "pos": [
-    51.624,
+    55.139,
     0.02,
     -5.814
    ]
@@ -5241,7 +5921,7 @@
   {
    "text": "Mummyx\nOO 164",
    "pos": [
-    54.29,
+    57.805,
     0.02,
     -5.814
    ]
@@ -5249,23 +5929,39 @@
   {
    "text": "sprite lettuce",
    "pos": [
-    57.513,
+    0.297,
     0.02,
-    -5.814
+    -12.141
    ]
   },
   {
    "text": "Lettuce\nOO 66",
    "pos": [
-    58.507,
+    1.29,
     0.02,
-    -5.814
+    -12.141
+   ]
+  },
+  {
+   "text": "sprite roompilo",
+   "pos": [
+    3.822,
+    0.02,
+    -12.141
+   ]
+  },
+  {
+   "text": "Roompilo\nPillow",
+   "pos": [
+    5.495,
+    0.02,
+    -12.141
    ]
   },
   {
    "text": "sprite skulhorn",
    "pos": [
-    0.229,
+    7.961,
     0.02,
     -12.141
    ]
@@ -5273,7 +5969,7 @@
   {
    "text": "Skulhorn_Custom\nOO 102",
    "pos": [
-    1.06,
+    8.792,
     0.02,
     -12.141
    ]
@@ -5281,7 +5977,7 @@
   {
    "text": "Skulhorn (alt)\nOO 102",
    "pos": [
-    1.917,
+    9.649,
     0.02,
     -12.141
    ]
@@ -5289,7 +5985,7 @@
   {
    "text": "sprite mushroom",
    "pos": [
-    4.039,
+    11.771,
     0.02,
     -12.141
    ]
@@ -5297,7 +5993,7 @@
   {
    "text": "Mushroom\nOO 149",
    "pos": [
-    4.965,
+    12.697,
     0.02,
     -12.141
    ]
@@ -5305,7 +6001,7 @@
   {
    "text": "sprite necbottl",
    "pos": [
-    6.9,
+    14.632,
     0.02,
     -12.141
    ]
@@ -5313,7 +6009,7 @@
   {
    "text": "Necbottl\nOO 110",
    "pos": [
-    7.575,
+    15.307,
     0.02,
     -12.141
    ]
@@ -5321,7 +6017,7 @@
   {
    "text": "sprite quillpen",
    "pos": [
-    9.509,
+    17.241,
     0.02,
     -12.141
    ]
@@ -5329,7 +6025,7 @@
   {
    "text": "Quillpen\nQuillPen",
    "pos": [
-    10.243,
+    17.975,
     0.02,
     -12.141
    ]
@@ -5337,7 +6033,7 @@
   {
    "text": "sprite modnode",
    "pos": [
-    12.318,
+    20.05,
     0.02,
     -12.141
    ]
@@ -5345,7 +6041,7 @@
   {
    "text": "Modnode_Custom\nModelNode",
    "pos": [
-    13.269,
+    21.001,
     0.02,
     -12.141
    ]
@@ -5353,7 +6049,7 @@
   {
    "text": "Modnode (alt)\nModelNode",
    "pos": [
-    14.22,
+    21.952,
     0.02,
     -12.141
    ]
@@ -5361,7 +6057,7 @@
   {
    "text": "sprite modthron",
    "pos": [
-    16.279,
+    24.011,
     0.02,
     -12.141
    ]
@@ -5369,7 +6065,7 @@
   {
    "text": "Modthron\nOO 124",
    "pos": [
-    17.062,
+    24.794,
     0.02,
     -12.141
    ]
@@ -5377,7 +6073,7 @@
   {
    "text": "sprite necvase2",
    "pos": [
-    19.172,
+    26.904,
     0.02,
     -12.141
    ]
@@ -5385,7 +6081,7 @@
   {
    "text": "Necvase2\nOO 129",
    "pos": [
-    20.188,
+    27.92,
     0.02,
     -12.141
    ]
@@ -5393,7 +6089,7 @@
   {
    "text": "sprite gauntlet",
    "pos": [
-    22.487,
+    30.219,
     0.02,
     -12.141
    ]
@@ -5401,7 +6097,7 @@
   {
    "text": "Gauntlet\nOO 142",
    "pos": [
-    23.858,
+    31.59,
     0.02,
     -12.141
    ]
@@ -5409,7 +6105,7 @@
   {
    "text": "sprite chalice",
    "pos": [
-    26.261,
+    33.993,
     0.02,
     -12.141
    ]
@@ -5417,7 +6113,7 @@
   {
    "text": "Chalice\nOO 126",
    "pos": [
-    27.138,
+    34.871,
     0.02,
     -12.141
    ]
@@ -5425,7 +6121,7 @@
   {
    "text": "sprite necslime",
    "pos": [
-    29.357,
+    37.089,
     0.02,
     -12.141
    ]
@@ -5433,7 +6129,7 @@
   {
    "text": "Necslime_Custom\nOO 128",
    "pos": [
-    30.525,
+    38.257,
     0.02,
     -12.141
    ]
@@ -5441,7 +6137,7 @@
   {
    "text": "Necslime (alt)\nOO 128",
    "pos": [
-    31.736,
+    39.468,
     0.02,
     -12.141
    ]
@@ -5449,7 +6145,7 @@
   {
    "text": "sprite modlupog",
    "pos": [
-    33.934,
+    41.666,
     0.02,
     -12.141
    ]
@@ -5457,7 +6153,7 @@
   {
    "text": "Modlupog_Custom\nOO 120",
    "pos": [
-    34.726,
+    42.458,
     0.02,
     -12.141
    ]
@@ -5465,7 +6161,7 @@
   {
    "text": "Modlupog (alt)\nOO 120",
    "pos": [
-    35.527,
+    43.26,
     0.02,
     -12.141
    ]
@@ -5473,7 +6169,7 @@
   {
    "text": "sprite hist_leathamr",
    "pos": [
-    37.597,
+    45.329,
     0.02,
     -12.141
    ]
@@ -5481,7 +6177,7 @@
   {
    "text": "HistLeathamr\nOO 181",
    "pos": [
-    38.538,
+    46.27,
     0.02,
     -12.141
    ]
@@ -5491,7 +6187,7 @@
    "pos": [
     0.249,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5499,7 +6195,7 @@
    "pos": [
     1.165,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5507,7 +6203,7 @@
    "pos": [
     3.305,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5515,7 +6211,7 @@
    "pos": [
     4.256,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5523,7 +6219,7 @@
    "pos": [
     6.517,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5531,7 +6227,7 @@
    "pos": [
     7.667,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5539,7 +6235,7 @@
    "pos": [
     8.794,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5547,7 +6243,7 @@
    "pos": [
     11.0,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5555,7 +6251,7 @@
    "pos": [
     11.875,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5563,7 +6259,7 @@
    "pos": [
     13.924,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5571,7 +6267,7 @@
    "pos": [
     14.769,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5579,7 +6275,7 @@
    "pos": [
     17.0,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5587,7 +6283,7 @@
    "pos": [
     18.165,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5595,7 +6291,7 @@
    "pos": [
     19.302,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5603,7 +6299,7 @@
    "pos": [
     21.555,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5611,7 +6307,7 @@
    "pos": [
     22.488,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5619,7 +6315,7 @@
    "pos": [
     24.434,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5627,7 +6323,7 @@
    "pos": [
     25.124,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5635,7 +6331,7 @@
    "pos": [
     27.015,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5643,7 +6339,7 @@
    "pos": [
     27.705,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5651,7 +6347,7 @@
    "pos": [
     29.617,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5659,7 +6355,7 @@
    "pos": [
     30.328,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5667,7 +6363,7 @@
    "pos": [
     32.352,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
@@ -5675,623 +6371,791 @@
    "pos": [
     33.206,
     0.02,
-    -18.159
+    -18.189
+   ]
+  },
+  {
+   "text": "sprite watermelonpatch",
+   "pos": [
+    35.537,
+    0.02,
+    -18.189
+   ]
+  },
+  {
+   "text": "Watermelonpatch\nFoodDispenser/Watermelon",
+   "pos": [
+    36.965,
+    0.02,
+    -18.189
    ]
   },
   {
    "text": "sprite modant",
    "pos": [
-    35.483,
+    39.539,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "Modant_Custom\nOO 118",
    "pos": [
-    36.777,
+    40.833,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "Modant (alt)\nOO 118",
    "pos": [
-    38.047,
+    42.103,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "sprite modaltar",
    "pos": [
-    40.255,
+    44.311,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "Modaltar\nOO 117",
    "pos": [
-    41.04,
+    45.096,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "sprite bagbean4",
    "pos": [
-    43.098,
+    47.154,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "Bagbean4\nOO 3",
    "pos": [
-    44.012,
+    48.068,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "sprite modavar",
    "pos": [
-    46.146,
+    50.202,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "Modavar\nOO 119",
    "pos": [
-    47.117,
+    51.172,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "sprite necvase3",
    "pos": [
-    49.193,
+    53.249,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "Necvase3\nOO 130",
    "pos": [
-    49.982,
+    54.037,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "sprite jug4",
    "pos": [
-    52.002,
+    56.058,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "Jug4\nOO 29",
    "pos": [
-    52.846,
+    56.902,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "sprite necvase",
    "pos": [
-    54.857,
+    58.913,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "Necvase\nOO 111",
    "pos": [
-    55.64,
+    59.695,
     0.02,
-    -18.159
+    -18.189
    ]
   },
   {
    "text": "sprite candle",
    "pos": [
-    57.526,
+    0.086,
     0.02,
-    -18.159
+    -24.374
    ]
   },
   {
    "text": "Candle\nCandle",
    "pos": [
-    58.212,
+    0.772,
     0.02,
-    -18.159
+    -24.374
    ]
   },
   {
    "text": "sprite modorc",
    "pos": [
-    0.256,
+    2.828,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "Modorc\nOO 122",
    "pos": [
-    1.184,
+    3.756,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "sprite orcfire",
    "pos": [
-    3.443,
+    6.015,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "Orcfire_Custom\nOrcTorch",
    "pos": [
-    4.612,
+    7.184,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "Orcfire (alt)\nOrcTorch",
    "pos": [
-    5.793,
+    8.365,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "sprite necrock",
    "pos": [
-    8.513,
+    11.085,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "Necrock\nOO 103",
    "pos": [
-    10.334,
+    12.906,
     0.02,
-    -24.345
+    -24.374
+   ]
+  },
+  {
+   "text": "sprite shavehorse",
+   "pos": [
+    16.031,
+    0.02,
+    -24.374
+   ]
+  },
+  {
+   "text": "Shavehorse\nShaveHorse",
+   "pos": [
+    18.079,
+    0.02,
+    -24.374
+   ]
+  },
+  {
+   "text": "sprite potatoplant",
+   "pos": [
+    20.815,
+    0.02,
+    -24.374
+   ]
+  },
+  {
+   "text": "Potatoplant\nFoodDispenser/Potatoes",
+   "pos": [
+    21.855,
+    0.02,
+    -24.374
    ]
   },
   {
    "text": "sprite bluejug",
    "pos": [
-    12.883,
+    24.031,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "Bluejug\nOO 56",
    "pos": [
-    13.786,
+    24.934,
     0.02,
-    -24.345
+    -24.374
+   ]
+  },
+  {
+   "text": "sprite candelab",
+   "pos": [
+    27.183,
+    0.02,
+    -24.374
+   ]
+  },
+  {
+   "text": "Candelab\nCandelabra",
+   "pos": [
+    28.389,
+    0.02,
+    -24.374
    ]
   },
   {
    "text": "sprite box1",
    "pos": [
-    16.373,
+    31.133,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "Box1\nWoodenBox",
    "pos": [
-    18.249,
+    33.009,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "sprite stool",
    "pos": [
-    20.93,
+    35.69,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "Stool\nStool",
    "pos": [
-    22.042,
+    36.802,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "sprite modportal",
    "pos": [
-    24.292,
+    39.051,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "Modportal\nOO 165",
    "pos": [
-    25.241,
+    40.0,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "sprite barstool",
    "pos": [
-    27.453,
+    42.212,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "Barstool\nBarStool",
    "pos": [
-    28.551,
+    43.311,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "sprite rice",
    "pos": [
-    30.842,
+    45.602,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "Rice\nOO 49",
    "pos": [
-    31.892,
+    46.652,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "sprite bigurn2",
    "pos": [
-    33.982,
+    48.742,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "Bigurn2\nOO 90",
    "pos": [
-    34.754,
+    49.514,
     0.02,
-    -24.345
+    -24.374
+   ]
+  },
+  {
+   "text": "sprite craftanvil",
+   "pos": [
+    51.672,
+    0.02,
+    -24.374
+   ]
+  },
+  {
+   "text": "Craftanvil\nCraftingAnvil",
+   "pos": [
+    52.808,
+    0.02,
+    -24.374
    ]
   },
   {
    "text": "sprite bigurn",
    "pos": [
-    36.855,
+    55.088,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "Bigurn\nOO 54",
    "pos": [
-    37.855,
+    56.087,
     0.02,
-    -24.345
+    -24.374
    ]
   },
   {
    "text": "sprite tallurn",
    "pos": [
-    40.286,
+    0.533,
     0.02,
-    -24.345
+    -30.821
    ]
   },
   {
    "text": "Tallurn\nOO 57",
    "pos": [
-    41.771,
+    2.018,
     0.02,
-    -24.345
+    -30.821
    ]
   },
   {
    "text": "sprite brazier",
    "pos": [
-    44.181,
+    4.428,
     0.02,
-    -24.345
+    -30.821
    ]
   },
   {
    "text": "Brazier\nBrazier",
    "pos": [
-    45.126,
+    5.373,
     0.02,
-    -24.345
+    -30.821
    ]
   },
   {
    "text": "sprite splitstump",
    "pos": [
-    47.696,
+    7.943,
     0.02,
-    -24.345
+    -30.821
    ]
   },
   {
    "text": "Splitstump\nKocatanSplittingStump",
    "pos": [
-    49.45,
+    9.697,
     0.02,
-    -24.345
+    -30.821
    ]
   },
   {
    "text": "sprite barrel",
    "pos": [
-    52.079,
+    12.326,
     0.02,
-    -24.345
+    -30.821
    ]
   },
   {
    "text": "Barrel\nOO 50",
    "pos": [
-    53.24,
+    13.487,
     0.02,
-    -24.345
+    -30.821
    ]
   },
   {
    "text": "sprite barrel2",
    "pos": [
-    55.601,
+    15.848,
     0.02,
-    -24.345
+    -30.821
    ]
   },
   {
    "text": "Barrel2\nOO 51",
    "pos": [
-    56.753,
+    17.0,
     0.02,
-    -24.345
+    -30.821
    ]
   },
   {
    "text": "sprite tcat",
    "pos": [
-    0.238,
+    19.234,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "Tcat\nOO 146",
    "pos": [
-    1.099,
+    20.095,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "sprite bigiron",
    "pos": [
-    3.278,
+    22.274,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "Bigiron\nOO 53",
    "pos": [
-    4.423,
+    23.419,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "sprite roomtabl",
    "pos": [
-    6.869,
+    25.865,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "Roomtabl\nOO 154",
    "pos": [
-    8.213,
+    27.209,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "sprite table",
    "pos": [
-    11.335,
+    30.331,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "Table\nTable",
    "pos": [
-    13.811,
+    32.807,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "sprite roombell",
    "pos": [
-    16.581,
+    35.577,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "Roombell\nBell",
    "pos": [
-    17.313,
+    36.309,
     0.02,
-    -30.792
+    -30.821
+   ]
+  },
+  {
+   "text": "sprite jbook",
+   "pos": [
+    38.481,
+    0.02,
+    -30.821
+   ]
+  },
+  {
+   "text": "Jbook\nBookPedestal",
+   "pos": [
+    39.682,
+    0.02,
+    -30.821
    ]
   },
   {
    "text": "sprite hay",
    "pos": [
-    19.474,
+    42.074,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "Hay\nOO 105",
    "pos": [
-    20.618,
+    43.218,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "sprite necgrav1",
    "pos": [
-    23.133,
+    45.733,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "Necgrav1\nOO 95",
    "pos": [
-    24.59,
+    47.19,
     0.02,
-    -30.792
+    -30.821
+   ]
+  },
+  {
+   "text": "sprite tomatoplant",
+   "pos": [
+    50.084,
+    0.02,
+    -30.821
+   ]
+  },
+  {
+   "text": "Tomatoplant\nFoodDispenser/Tomato",
+   "pos": [
+    51.886,
+    0.02,
+    -30.821
    ]
   },
   {
    "text": "sprite plateamr",
    "pos": [
-    27.259,
+    54.661,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "Plateamr\nOO 141",
    "pos": [
-    28.76,
+    56.162,
     0.02,
-    -30.792
+    -30.821
    ]
   },
   {
    "text": "sprite skull4",
    "pos": [
-    31.354,
+    0.438,
     0.02,
-    -30.792
+    -37.897
    ]
   },
   {
    "text": "Skull4\nOO 75",
    "pos": [
-    32.597,
+    1.68,
     0.02,
-    -30.792
+    -37.897
+   ]
+  },
+  {
+   "text": "sprite news",
+   "pos": [
+    4.034,
+    0.02,
+    -37.897
+   ]
+  },
+  {
+   "text": "News\nNewsLink",
+   "pos": [
+    5.07,
+    0.02,
+    -37.897
    ]
   },
   {
    "text": "sprite skull6",
    "pos": [
-    34.914,
+    7.271,
     0.02,
-    -30.792
+    -37.897
    ]
   },
   {
    "text": "Skull6\nOO 77",
    "pos": [
-    35.926,
+    8.282,
     0.02,
-    -30.792
+    -37.897
    ]
   },
   {
    "text": "sprite 3bolts",
    "pos": [
-    38.051,
+    10.408,
     0.02,
-    -30.792
+    -37.897
    ]
   },
   {
    "text": "3bolts_Custom\nOO 1",
    "pos": [
-    38.915,
+    11.272,
     0.02,
-    -30.792
+    -37.897
    ]
   },
   {
    "text": "3bolts (alt)\nOO 1",
    "pos": [
-    39.796,
+    12.152,
     0.02,
-    -30.792
+    -37.897
+   ]
+  },
+  {
+   "text": "sprite box2",
+   "pos": [
+    14.729,
+    0.02,
+    -37.897
+   ]
+  },
+  {
+   "text": "Box2Open\nChest",
+   "pos": [
+    16.57,
+    0.02,
+    -37.897
+   ]
+  },
+  {
+   "text": "Box2 (alt)\nChest",
+   "pos": [
+    18.39,
+    0.02,
+    -37.897
    ]
   },
   {
    "text": "sprite necgrav2",
    "pos": [
-    42.189,
+    21.254,
     0.02,
-    -30.792
+    -37.897
    ]
   },
   {
    "text": "Necgrav2\nOO 96",
    "pos": [
-    43.676,
+    22.74,
     0.02,
-    -30.792
+    -37.897
    ]
   },
   {
    "text": "sprite corn",
    "pos": [
-    46.169,
+    25.233,
     0.02,
-    -30.792
+    -37.897
    ]
   },
   {
    "text": "Corn\nOO 60",
    "pos": [
-    47.27,
+    26.335,
     0.02,
-    -30.792
+    -37.897
+   ]
+  },
+  {
+   "text": "sprite tanrack",
+   "pos": [
+    29.452,
+    0.02,
+    -37.897
+   ]
+  },
+  {
+   "text": "Tanrack\nTanningRack",
+   "pos": [
+    32.111,
+    0.02,
+    -37.897
    ]
   },
   {
@@ -6299,7 +7163,7 @@
    "pos": [
     0.693,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
@@ -6307,7 +7171,7 @@
    "pos": [
     2.531,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
@@ -6315,7 +7179,7 @@
    "pos": [
     5.808,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
@@ -6323,7 +7187,7 @@
    "pos": [
     8.161,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
@@ -6331,7 +7195,7 @@
    "pos": [
     11.314,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
@@ -6339,7 +7203,7 @@
    "pos": [
     12.772,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
@@ -6347,7 +7211,7 @@
    "pos": [
     15.408,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
@@ -6355,7 +7219,7 @@
    "pos": [
     16.997,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
@@ -6363,7 +7227,7 @@
    "pos": [
     19.721,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
@@ -6371,7 +7235,7 @@
    "pos": [
     21.002,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
@@ -6379,399 +7243,511 @@
    "pos": [
     22.27,
     0.02,
-    -37.868
+    -43.953
+   ]
+  },
+  {
+   "text": "sprite throne",
+   "pos": [
+    24.854,
+    0.02,
+    -43.953
+   ]
+  },
+  {
+   "text": "Throne\nThrone",
+   "pos": [
+    26.33,
+    0.02,
+    -43.953
+   ]
+  },
+  {
+   "text": "sprite spinwheel",
+   "pos": [
+    29.275,
+    0.02,
+    -43.953
+   ]
+  },
+  {
+   "text": "Spinwheel\nSpinningWheel",
+   "pos": [
+    31.334,
+    0.02,
+    -43.953
    ]
   },
   {
    "text": "sprite newbsign",
    "pos": [
-    24.683,
+    34.15,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
    "text": "Newbsign\nAssassinSign",
    "pos": [
-    25.837,
+    35.305,
     0.02,
-    -37.868
+    -43.953
+   ]
+  },
+  {
+   "text": "sprite henhouse",
+   "pos": [
+    37.828,
+    0.02,
+    -43.953
+   ]
+  },
+  {
+   "text": "Henhouse\nFoodDispenser/Eggs",
+   "pos": [
+    39.349,
+    0.02,
+    -43.953
    ]
   },
   {
    "text": "sprite roompla1",
    "pos": [
-    28.336,
+    42.043,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
    "text": "Roompla1\nOO 152",
    "pos": [
-    29.772,
+    43.479,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
    "text": "sprite potplant",
    "pos": [
-    32.409,
+    46.116,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
    "text": "Potplant\nOO 167",
    "pos": [
-    33.845,
+    47.552,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
    "text": "sprite fountain",
    "pos": [
-    37.275,
+    50.982,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
    "text": "Fountain\nFountain",
    "pos": [
-    40.264,
+    53.971,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
    "text": "sprite shrine",
    "pos": [
-    43.451,
+    57.158,
     0.02,
-    -37.868
+    -43.953
    ]
   },
   {
    "text": "Shrine\nShrine",
    "pos": [
-    44.521,
+    58.228,
     0.02,
-    -37.868
+    -43.953
+   ]
+  },
+  {
+   "text": "sprite loom",
+   "pos": [
+    0.796,
+    0.02,
+    -51.488
+   ]
+  },
+  {
+   "text": "Loom\nLoom",
+   "pos": [
+    2.769,
+    0.02,
+    -51.488
    ]
   },
   {
    "text": "sprite roomwash",
    "pos": [
-    46.851,
+    5.518,
     0.02,
-    -37.868
+    -51.488
    ]
   },
   {
    "text": "Roomwash\nOO 155",
    "pos": [
-    48.012,
+    6.679,
     0.02,
-    -37.868
+    -51.488
+   ]
+  },
+  {
+   "text": "sprite cornstalk",
+   "pos": [
+    8.883,
+    0.02,
+    -51.488
+   ]
+  },
+  {
+   "text": "Cornstalk\nFoodDispenser/EarCorn",
+   "pos": [
+    9.759,
+    0.02,
+    -51.488
    ]
   },
   {
    "text": "sprite lamp",
    "pos": [
-    50.305,
+    11.923,
     0.02,
-    -37.868
+    -51.488
    ]
   },
   {
    "text": "Lamp\nLamp",
    "pos": [
-    51.324,
+    12.942,
     0.02,
-    -37.868
+    -51.488
+   ]
+  },
+  {
+   "text": "sprite wheatplant",
+   "pos": [
+    15.188,
+    0.02,
+    -51.488
+   ]
+  },
+  {
+   "text": "Wheatplant\nFoodDispenser/Flour",
+   "pos": [
+    16.301,
+    0.02,
+    -51.488
    ]
   },
   {
    "text": "sprite artrop01",
    "pos": [
-    53.754,
+    18.798,
     0.02,
-    -37.868
+    -51.488
    ]
   },
   {
    "text": "Artrop01\nArenaSign2",
    "pos": [
-    55.182,
+    20.225,
     0.02,
-    -37.868
+    -51.488
    ]
   },
   {
    "text": "sprite marblplr",
    "pos": [
-    57.586,
+    22.629,
     0.02,
-    -37.868
+    -51.488
    ]
   },
   {
    "text": "Marblplr\nPillar",
    "pos": [
-    58.558,
+    23.601,
     0.02,
-    -37.868
+    -51.488
+   ]
+  },
+  {
+   "text": "sprite commonoats",
+   "pos": [
+    26.289,
+    0.02,
+    -51.488
+   ]
+  },
+  {
+   "text": "Commonoats\nFoodDispenser/Oats",
+   "pos": [
+    28.297,
+    0.02,
+    -51.488
    ]
   },
   {
    "text": "sprite rock",
    "pos": [
-    1.439,
+    32.136,
     0.02,
-    -45.403
+    -51.488
    ]
   },
   {
    "text": "Rock_Custom\nOO 34",
    "pos": [
-    4.555,
+    35.251,
     0.02,
-    -45.403
+    -51.488
    ]
   },
   {
    "text": "Rock (alt)\nOO 34",
    "pos": [
-    7.484,
+    38.18,
     0.02,
-    -45.403
+    -51.488
    ]
   },
   {
    "text": "sprite koclamp",
    "pos": [
-    10.663,
+    41.36,
     0.02,
-    -45.403
+    -51.488
    ]
   },
   {
    "text": "Koclamp\nKocatanBrazier",
    "pos": [
-    11.709,
+    42.405,
     0.02,
-    -45.403
+    -51.488
    ]
   },
   {
    "text": "sprite skull3",
    "pos": [
-    14.058,
+    44.754,
     0.02,
-    -45.403
+    -51.488
    ]
   },
   {
    "text": "Skull3\nOO 74",
    "pos": [
-    15.323,
+    46.02,
     0.02,
-    -45.403
+    -51.488
    ]
   },
   {
    "text": "sprite skull1",
    "pos": [
-    17.72,
+    48.416,
     0.02,
-    -45.403
+    -51.488
    ]
   },
   {
    "text": "Skull1\nOO 72",
    "pos": [
-    18.819,
+    49.515,
     0.02,
-    -45.403
+    -51.488
    ]
   },
   {
    "text": "sprite skull2",
    "pos": [
-    21.299,
+    51.995,
     0.02,
-    -45.403
+    -51.488
    ]
   },
   {
    "text": "Skull2\nOO 73",
    "pos": [
-    22.846,
+    53.542,
     0.02,
-    -45.403
+    -51.488
    ]
   },
   {
    "text": "sprite skull5",
    "pos": [
-    25.416,
+    56.113,
     0.02,
-    -45.403
+    -51.488
    ]
   },
   {
    "text": "Skull5\nOO 76",
    "pos": [
-    26.548,
+    57.244,
     0.02,
-    -45.403
+    -51.488
    ]
   },
   {
    "text": "sprite altar",
    "pos": [
-    29.253,
+    0.739,
     0.02,
-    -45.403
+    -59.046
    ]
   },
   {
    "text": "Altar\nOO 79",
    "pos": [
-    31.157,
+    2.644,
     0.02,
-    -45.403
+    -59.046
    ]
   },
   {
    "text": "sprite nectree2",
    "pos": [
-    34.764,
+    6.251,
     0.02,
-    -45.403
+    -59.046
    ]
   },
   {
    "text": "Nectree2\nOO 92",
    "pos": [
-    37.719,
+    9.206,
     0.02,
-    -45.403
+    -59.046
    ]
   },
   {
    "text": "sprite nectree1",
    "pos": [
-    41.952,
+    13.438,
     0.02,
-    -45.403
+    -59.046
    ]
   },
   {
    "text": "Nectree1\nOO 91",
    "pos": [
-    45.066,
+    16.552,
     0.02,
-    -45.403
+    -59.046
    ]
   },
   {
    "text": "Tree Dead_A (alt)\nOO 91",
    "pos": [
-    49.016,
+    20.503,
     0.02,
-    -45.403
+    -59.046
    ]
   },
   {
    "text": "Tree Dead_B (alt)\nOO 91",
    "pos": [
-    53.988,
+    25.474,
     0.02,
-    -45.403
+    -59.046
    ]
   },
   {
    "text": "sprite nectree4",
    "pos": [
-    1.336,
+    30.827,
     0.02,
-    -54.574
+    -59.046
    ]
   },
   {
    "text": "Nectree4\nOO 94",
    "pos": [
-    4.453,
+    33.943,
     0.02,
-    -54.574
+    -59.046
    ]
   },
   {
    "text": "sprite feytree",
    "pos": [
-    8.516,
+    38.006,
     0.02,
-    -54.574
+    -59.046
    ]
   },
   {
    "text": "Feytree\nFeyTree",
    "pos": [
-    11.054,
+    40.545,
     0.02,
-    -54.574
+    -59.046
    ]
   },
   {
    "text": "sprite nectree3",
    "pos": [
-    14.939,
+    44.43,
     0.02,
-    -54.574
+    -59.046
    ]
   },
   {
    "text": "Nectree3\nGlowTree",
    "pos": [
-    17.928,
+    47.419,
     0.02,
-    -54.574
+    -59.046
    ]
   },
   {
    "text": "sprite flagpole",
    "pos": [
-    21.026,
+    50.516,
     0.02,
-    -54.574
+    -59.046
    ]
   },
   {
    "text": "Flagpole\nFlagpole",
    "pos": [
-    21.763,
+    51.254,
     0.02,
-    -54.574
+    -59.046
    ]
   },
   {
    "text": "sprite spdrtree",
    "pos": [
-    26.141,
+    2.578,
     0.02,
-    -54.574
+    -68.217
    ]
   },
   {
    "text": "Spdrtree\nSingleTree",
    "pos": [
-    31.775,
+    8.212,
     0.02,
-    -54.574
+    -68.217
    ]
   },
   {
@@ -6779,7 +7755,7 @@
    "pos": [
     1.538,
     0.02,
-    -62.497
+    -76.139
    ]
   },
   {
@@ -6787,7 +7763,7 @@
    "pos": [
     5.172,
     0.02,
-    -62.497
+    -76.139
    ]
   },
   {
@@ -6795,7 +7771,7 @@
    "pos": [
     9.226,
     0.02,
-    -62.497
+    -76.139
    ]
   },
   {
@@ -6803,7 +7779,7 @@
    "pos": [
     14.321,
     0.02,
-    -62.497
+    -76.139
    ]
   },
   {
@@ -6811,7 +7787,7 @@
    "pos": [
     18.13,
     0.02,
-    -62.497
+    -76.139
    ]
   },
   {
@@ -6819,7 +7795,7 @@
    "pos": [
     22.272,
     0.02,
-    -62.497
+    -76.139
    ]
   },
   {
@@ -6827,7 +7803,7 @@
    "pos": [
     27.134,
     0.02,
-    -62.497
+    -76.139
    ]
   },
   {
@@ -6835,7 +7811,7 @@
    "pos": [
     30.612,
     0.02,
-    -62.497
+    -76.139
    ]
   },
   {
@@ -6843,7 +7819,7 @@
    "pos": [
     34.509,
     0.02,
-    -62.497
+    -76.139
    ]
   },
   {
@@ -6851,7 +7827,7 @@
    "pos": [
     39.01,
     0.02,
-    -62.497
+    -76.139
    ]
   },
   {
@@ -6859,7 +7835,7 @@
    "pos": [
     41.718,
     0.02,
-    -62.497
+    -76.139
    ]
   },
   {
@@ -6867,7 +7843,7 @@
    "pos": [
     44.624,
     0.02,
-    -62.497
+    -76.139
    ]
   },
   {
@@ -6875,7 +7851,7 @@
    "pos": [
     47.655,
     0.02,
-    -62.497
+    -76.139
    ]
   },
   {
@@ -6883,7 +7859,7 @@
    "pos": [
     1.589,
     0.02,
-    -71.33
+    -84.973
    ]
   },
   {
@@ -6891,7 +7867,7 @@
    "pos": [
     5.293,
     0.02,
-    -71.33
+    -84.973
    ]
   },
   {
@@ -6899,7 +7875,7 @@
    "pos": [
     9.479,
     0.02,
-    -71.33
+    -84.973
    ]
   },
   {
@@ -6907,7 +7883,7 @@
    "pos": [
     13.906,
     0.02,
-    -71.33
+    -84.973
    ]
   },
   {
@@ -6915,7 +7891,7 @@
    "pos": [
     18.578,
     0.02,
-    -71.33
+    -84.973
    ]
   },
   {
@@ -6923,7 +7899,7 @@
    "pos": [
     21.318,
     0.02,
-    -71.33
+    -84.973
    ]
   },
   {
@@ -6931,7 +7907,7 @@
    "pos": [
     24.227,
     0.02,
-    -71.33
+    -84.973
    ]
   },
   {
@@ -6939,7 +7915,7 @@
    "pos": [
     28.808,
     0.02,
-    -71.33
+    -84.973
    ]
   },
   {
@@ -6947,7 +7923,7 @@
    "pos": [
     32.95,
     0.02,
-    -71.33
+    -84.973
    ]
   },
   {
@@ -6955,7 +7931,7 @@
    "pos": [
     37.395,
     0.02,
-    -71.33
+    -84.973
    ]
   },
   {
@@ -6963,7 +7939,7 @@
    "pos": [
     41.727,
     0.02,
-    -71.33
+    -84.973
    ]
   },
   {
@@ -6971,7 +7947,7 @@
    "pos": [
     1.739,
     0.02,
-    -80.516
+    -94.159
    ]
   },
   {
@@ -6979,7 +7955,7 @@
    "pos": [
     5.844,
     0.02,
-    -80.516
+    -94.159
    ]
   },
   {
@@ -6987,7 +7963,7 @@
    "pos": [
     10.184,
     0.02,
-    -80.516
+    -94.159
    ]
   },
   {
@@ -6995,7 +7971,7 @@
    "pos": [
     14.497,
     0.02,
-    -80.516
+    -94.159
    ]
   },
   {
@@ -7003,7 +7979,7 @@
    "pos": [
     18.522,
     0.02,
-    -80.516
+    -94.159
    ]
   },
   {
@@ -7011,7 +7987,7 @@
    "pos": [
     22.907,
     0.02,
-    -80.516
+    -94.159
    ]
   },
   {
@@ -7019,7 +7995,7 @@
    "pos": [
     25.592,
     0.02,
-    -80.516
+    -94.159
    ]
   },
   {
@@ -7027,7 +8003,7 @@
    "pos": [
     28.44,
     0.02,
-    -80.516
+    -94.159
    ]
   },
   {
@@ -7035,7 +8011,7 @@
    "pos": [
     33.055,
     0.02,
-    -80.516
+    -94.159
    ]
   },
   {
@@ -7043,7 +8019,7 @@
    "pos": [
     37.205,
     0.02,
-    -80.516
+    -94.159
    ]
   },
   {
@@ -7051,7 +8027,7 @@
    "pos": [
     41.486,
     0.02,
-    -80.516
+    -94.159
    ]
   },
   {
@@ -7059,7 +8035,7 @@
    "pos": [
     45.564,
     0.02,
-    -80.516
+    -94.159
    ]
   },
   {
@@ -7067,7 +8043,7 @@
    "pos": [
     2.19,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7075,7 +8051,7 @@
    "pos": [
     6.79,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7083,7 +8059,7 @@
    "pos": [
     11.204,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7091,7 +8067,7 @@
    "pos": [
     15.688,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7099,7 +8075,7 @@
    "pos": [
     20.467,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7107,7 +8083,7 @@
    "pos": [
     23.272,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7115,7 +8091,7 @@
    "pos": [
     26.359,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7123,7 +8099,7 @@
    "pos": [
     30.807,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7131,7 +8107,7 @@
    "pos": [
     34.17,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7139,7 +8115,7 @@
    "pos": [
     37.604,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7147,7 +8123,7 @@
    "pos": [
     41.836,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7155,7 +8131,7 @@
    "pos": [
     44.599,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7163,7 +8139,7 @@
    "pos": [
     47.591,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7171,7 +8147,7 @@
    "pos": [
     50.581,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7179,7 +8155,7 @@
    "pos": [
     53.344,
     0.02,
-    -89.704
+    -103.347
    ]
   },
   {
@@ -7187,7 +8163,7 @@
    "pos": [
     0.464,
     0.02,
-    -99.082
+    -112.724
    ]
   },
   {
@@ -7195,7 +8171,7 @@
    "pos": [
     1.954,
     0.02,
-    -99.082
+    -112.724
    ]
   },
   {
@@ -7203,7 +8179,7 @@
    "pos": [
     3.548,
     0.02,
-    -99.082
+    -112.724
    ]
   },
   {
@@ -7211,7 +8187,7 @@
    "pos": [
     7.803,
     0.02,
-    -99.082
+    -112.724
    ]
   },
   {
@@ -7219,7 +8195,7 @@
    "pos": [
     12.785,
     0.02,
-    -99.082
+    -112.724
    ]
   },
   {
@@ -7227,7 +8203,7 @@
    "pos": [
     18.183,
     0.02,
-    -99.082
+    -112.724
    ]
   },
   {
@@ -7235,7 +8211,7 @@
    "pos": [
     24.416,
     0.02,
-    -99.082
+    -112.724
    ]
   },
   {
@@ -7243,7 +8219,7 @@
    "pos": [
     29.455,
     0.02,
-    -99.082
+    -112.724
    ]
   },
   {
@@ -7251,7 +8227,7 @@
    "pos": [
     34.957,
     0.02,
-    -99.082
+    -112.724
    ]
   },
   {
@@ -7259,7 +8235,7 @@
    "pos": [
     41.34,
     0.02,
-    -99.082
+    -112.724
    ]
   },
   {
@@ -7267,7 +8243,7 @@
    "pos": [
     46.639,
     0.02,
-    -99.082
+    -112.724
    ]
   },
   {
@@ -7275,7 +8251,7 @@
    "pos": [
     52.454,
     0.02,
-    -99.082
+    -112.724
    ]
   },
   {
@@ -7283,7 +8259,7 @@
    "pos": [
     1.091,
     0.02,
-    -109.682
+    -123.325
    ]
   },
   {
@@ -7291,7 +8267,7 @@
    "pos": [
     3.948,
     0.02,
-    -109.682
+    -123.325
    ]
   },
   {
@@ -7299,7 +8275,7 @@
    "pos": [
     6.994,
     0.02,
-    -109.682
+    -123.325
    ]
   },
   {
@@ -7307,7 +8283,7 @@
    "pos": [
     9.91,
     0.02,
-    -109.682
+    -123.325
    ]
   },
   {
@@ -7315,7 +8291,7 @@
    "pos": [
     13.9,
     0.02,
-    -109.682
+    -123.325
    ]
   },
   {
@@ -7323,7 +8299,7 @@
    "pos": [
     16.937,
     0.02,
-    -109.682
+    -123.325
    ]
   },
   {
@@ -7331,31 +8307,119 @@
    "pos": [
     20.204,
     0.02,
-    -109.682
+    -123.325
+   ]
+  },
+  {
+   "text": "sprite treebot",
+   "pos": [
+    24.722,
+    0.02,
+    -123.325
+   ]
+  },
+  {
+   "text": "Tree Oak_A\nTree",
+   "pos": [
+    28.531,
+    0.02,
+    -123.325
+   ]
+  },
+  {
+   "text": "Tree Oak_B\nTree",
+   "pos": [
+    32.59,
+    0.02,
+    -123.325
+   ]
+  },
+  {
+   "text": "Tree Oak_C\nTree",
+   "pos": [
+    36.536,
+    0.02,
+    -123.325
+   ]
+  },
+  {
+   "text": "sprite treebot",
+   "pos": [
+    41.433,
+    0.02,
+    -123.325
+   ]
+  },
+  {
+   "text": "Tree Elm_A\nTree/bottom=2",
+   "pos": [
+    45.047,
+    0.02,
+    -123.325
+   ]
+  },
+  {
+   "text": "Tree Elm_B\nTree/bottom=2",
+   "pos": [
+    48.827,
+    0.02,
+    -123.325
+   ]
+  },
+  {
+   "text": "Tree Elm_C\nTree/bottom=2",
+   "pos": [
+    52.637,
+    0.02,
+    -123.325
+   ]
+  },
+  {
+   "text": "sprite treebot",
+   "pos": [
+    1.538,
+    0.02,
+    -131.957
+   ]
+  },
+  {
+   "text": "Tree Pine_A\nTree/bottom=3",
+   "pos": [
+    4.669,
+    0.02,
+    -131.957
+   ]
+  },
+  {
+   "text": "Tree Pine_B\nTree/bottom=3",
+   "pos": [
+    7.475,
+    0.02,
+    -131.957
    ]
   },
   {
    "text": "sprite yrxltree",
    "pos": [
-    24.155,
+    11.258,
     0.02,
-    -109.682
+    -131.957
    ]
   },
   {
    "text": "Tree Yrxl_A\nYrxlTree",
    "pos": [
-    26.517,
+    13.62,
     0.02,
-    -109.682
+    -131.957
    ]
   },
   {
    "text": "Tree Yrxl_B\nYrxlTree",
    "pos": [
-    29.027,
+    16.13,
     0.02,
-    -109.682
+    -131.957
    ]
   }
  ]

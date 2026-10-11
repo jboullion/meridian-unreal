@@ -898,6 +898,877 @@
     97.35,
     90.2
    ]
+  },
+  "350": {
+   "class": "Jasper",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_ROAD",
+    "TERRAIN_MOUNTAIN"
+   ],
+   "music": "city03.ogg",
+   "loops": [
+    {
+     "sound": "icecave.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 24.062
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "ice04.ogg",
+     "ice03.ogg",
+     "sws_wind.ogg",
+     "rs_wind.ogg",
+     "eagle.ogg"
+    ],
+    "interval_ms": 10000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    162.8,
+    166.1
+   ]
+  },
+  "351": {
+   "class": "JasperAB1",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    37.4,
+    31.9
+   ]
+  },
+  "352": {
+   "class": "JasperAB2",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    22.0,
+    24.2
+   ]
+  },
+  "353": {
+   "class": "JasperAB3",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    50.6,
+    39.6
+   ]
+  },
+  "354": {
+   "class": "JasperAB4",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    37.4,
+    44.0
+   ]
+  },
+  "355": {
+   "class": "JasperAB5",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    37.4,
+    31.9
+   ]
+  },
+  "356": {
+   "class": "JasperAB6",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    35.2,
+    46.2
+   ]
+  },
+  "357": {
+   "class": "JasperAB7",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    35.2,
+    46.2
+   ]
+  },
+  "358": {
+   "class": "JasperAB8",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    28.6,
+    24.2
+   ]
+  },
+  "359": {
+   "class": "JasperAB9",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    23.822,
+    32.072
+   ]
+  },
+  "360": {
+   "class": "JasperAB10",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    24.2,
+    24.2
+   ]
+  },
+  "361": {
+   "class": "JasperAB11",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    24.2,
+    24.2
+   ]
+  },
+  "362": {
+   "class": "JasperAB12",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    21.931,
+    23.994
+   ]
+  },
+  "363": {
+   "class": "JasperAB13",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    35.2,
+    46.2
+   ]
+  },
+  "364": {
+   "class": "JasperAB14",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    46.2,
+    33.0
+   ]
+  },
+  "370": {
+   "class": "JasperInn",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
+   ],
+   "music": "bar2.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    30.8,
+    22.0
+   ]
+  },
+  "371": {
+   "class": "JasperTavern",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
+   ],
+   "music": "bar.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    24.2,
+    39.6
+   ]
+  },
+  "372": {
+   "class": "JasperHall",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
+   ],
+   "music": "main.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    28.6,
+    33.0
+   ]
+  },
+  "373": {
+   "class": "JasperStore",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
+   ],
+   "music": "bank.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    39.6,
+    55.0
+   ]
+  },
+  "374": {
+   "class": "JasperSmithy",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
+   ],
+   "music": "smithy.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    39.6,
+    39.6
+   ]
+  },
+  "375": {
+   "class": "JasperElderHut",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
+   ],
+   "music": "bar2.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    37.4,
+    31.9
+   ]
+  },
+  "376": {
+   "class": "JasBank",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
+   ],
+   "music": "bank.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    19.8,
+    24.2
+   ]
+  },
+  "377": {
+   "class": "JasSewer1",
+   "terrain": [
+    "TERRAIN_WATERFALL",
+    "TERRAIN_SEWERS"
+   ],
+   "music": "cave.ogg",
+   "loops": [
+    {
+     "sound": "wfall2.ogg",
+     "row": 19,
+     "col": 19,
+     "volume": 1.0,
+     "source": "room",
+     "pos_m": [
+      40.7,
+      40.7
+     ],
+     "floor_m": 4.262
+    },
+    {
+     "sound": "seweramb.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 4.262
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "sewer03.ogg",
+     "sewer04.ogg",
+     "drips.ogg",
+     "sngldrip.ogg"
+    ],
+    "interval_ms": 10000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    107.8,
+    107.8
+   ]
+  },
+  "378": {
+   "class": "JasSewer2",
+   "terrain": [
+    "TERRAIN_WATERFALL",
+    "TERRAIN_SEWERS"
+   ],
+   "music": "cave.ogg",
+   "loops": [
+    {
+     "sound": "wfall2.ogg",
+     "row": 3,
+     "col": 14,
+     "volume": 1.0,
+     "source": "room",
+     "pos_m": [
+      29.7,
+      5.5
+     ],
+     "floor_m": 38.362
+    },
+    {
+     "sound": "wfall2.ogg",
+     "row": 5,
+     "col": 21,
+     "volume": 1.0,
+     "source": "room",
+     "pos_m": [
+      45.1,
+      9.9
+     ],
+     "floor_m": 41.25
+    },
+    {
+     "sound": "wfall2.ogg",
+     "row": 10,
+     "col": 27,
+     "volume": 1.0,
+     "source": "room",
+     "pos_m": [
+      58.3,
+      20.9
+     ],
+     "floor_m": 30.8
+    },
+    {
+     "sound": "wfall2.ogg",
+     "row": 25,
+     "col": 44,
+     "volume": 1.0,
+     "source": "room",
+     "pos_m": [
+      95.7,
+      53.9
+     ],
+     "floor_m": 30.525
+    },
+    {
+     "sound": "wfall2.ogg",
+     "row": 43,
+     "col": 36,
+     "volume": 1.0,
+     "source": "room",
+     "pos_m": [
+      78.1,
+      93.5
+     ],
+     "floor_m": 31.35
+    },
+    {
+     "sound": "wfall2.ogg",
+     "row": 18,
+     "col": 10,
+     "volume": 1.0,
+     "source": "room",
+     "pos_m": [
+      20.9,
+      38.5
+     ],
+     "floor_m": 34.1
+    },
+    {
+     "sound": "wfall2.ogg",
+     "row": 18,
+     "col": 24,
+     "volume": 1.0,
+     "source": "room",
+     "pos_m": [
+      51.7,
+      38.5
+     ],
+     "floor_m": 33.0
+    },
+    {
+     "sound": "seweramb.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 34.375
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "sewer03.ogg",
+     "sewer04.ogg",
+     "drips.ogg",
+     "sngldrip.ogg"
+    ],
+    "interval_ms": 10000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    112.2,
+    110.0
+   ]
+  },
+  "379": {
+   "class": "JasSewer3",
+   "terrain": [
+    "TERRAIN_WATERFALL",
+    "TERRAIN_SEWERS"
+   ],
+   "music": "cave.ogg",
+   "loops": [
+    {
+     "sound": "wfall2.ogg",
+     "row": 22,
+     "col": 11,
+     "volume": 1.0,
+     "source": "room",
+     "pos_m": [
+      23.1,
+      47.3
+     ],
+     "floor_m": 28.325
+    },
+    {
+     "sound": "seweramb.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 28.325
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "sewer03.ogg",
+     "sewer04.ogg",
+     "drips.ogg",
+     "sngldrip.ogg"
+    ],
+    "interval_ms": 10000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    107.8,
+    140.8
+   ]
+  },
+  "380": {
+   "class": "SewerKingLair",
+   "terrain": [
+    "TERRAIN_SEWERS",
+    "TERRAIN_LAIR"
+   ],
+   "music": null,
+   "loops": [
+    {
+     "sound": "wfall2.ogg",
+     "row": 36,
+     "col": 33,
+     "volume": 1.2,
+     "source": "room",
+     "pos_m": [
+      71.5,
+      78.1
+     ],
+     "floor_m": 3.438
+    },
+    {
+     "sound": "seweramb.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 32.312
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "sewer03.ogg",
+     "sewer04.ogg",
+     "drips.ogg",
+     "sngldrip.ogg"
+    ],
+    "interval_ms": 10000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    129.8,
+    110.0
+   ]
+  },
+  "382": {
+   "class": "JasperWest",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_ROAD",
+    "TERRAIN_MOUNTAIN"
+   ],
+   "music": "city03.ogg",
+   "loops": [
+    {
+     "sound": "icecave.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 0.0
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "ice04.ogg",
+     "ice03.ogg",
+     "sws_wind.ogg",
+     "rs_wind.ogg",
+     "eagle.ogg"
+    ],
+    "interval_ms": 10000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    147.4,
+    167.2
+   ]
+  },
+  "384": {
+   "class": "JasperVault",
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
+   ],
+   "music": "city03.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    24.2,
+    24.2
+   ]
+  },
+  "557": {
+   "class": "OutdoorsE7",
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_FIELDS"
+   ],
+   "music": "walk5.ogg",
+   "loops": [
+    {
+     "sound": "ambcntry.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 0.0
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "rs_for01.ogg",
+     "rs_for02.ogg",
+     "rs_for03.ogg",
+     "rs_for05.ogg",
+     "rs_for14.ogg",
+     "rs_for18.ogg",
+     "rs_for20.ogg"
+    ],
+    "interval_ms": 10000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    110.0,
+    107.8
+   ]
+  },
+  "568": {
+   "class": "OutdoorsF8",
+   "terrain": [
+    "TERRAIN_LAKE",
+    "TERRAIN_WATERFALL",
+    "TERRAIN_FOREST"
+   ],
+   "music": "walk7.ogg",
+   "loops": [
+    {
+     "sound": "ambcntry.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 1.0,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 10.863
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "sws_wind.ogg",
+     "beach.ogg",
+     "gulls.ogg",
+     "wave1.ogg",
+     "wave2.ogg",
+     "wave3.ogg",
+     "wave4.ogg",
+     "rs_for01.ogg",
+     "rs_for02.ogg",
+     "rs_for03.ogg",
+     "rs_for05.ogg",
+     "rs_for14.ogg",
+     "rs_for18.ogg",
+     "rs_for20.ogg"
+    ],
+    "interval_ms": 5000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    110.0,
+    107.8
+   ]
+  },
+  "703": {
+   "class": "GuildHall3",
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_RIVER",
+    "TERRAIN_CAVES"
+   ],
+   "music": "ltlgirl.ogg",
+   "loops": [
+    {
+     "sound": "ambcave.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 0.7,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 17.188
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "drop.ogg"
+    ],
+    "interval_ms": 20000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    46.2,
+    64.9
+   ]
+  },
+  "704": {
+   "class": "GuildHall4",
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_CITY",
+    "TERRAIN_CAVES"
+   ],
+   "music": "ltlgirl.ogg",
+   "loops": [
+    {
+     "sound": "ambcave.ogg",
+     "row": 1,
+     "col": 1,
+     "volume": 0.7,
+     "source": "terrain",
+     "pos_m": [
+      1.1,
+      1.1
+     ],
+     "floor_m": 11.275
+    }
+   ],
+   "periodic": {
+    "sounds": [
+     "drop.ogg"
+    ],
+    "interval_ms": 20000
+   },
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    107.8,
+    112.2
+   ]
+  },
+  "710": {
+   "class": "GuildHall10",
+   "terrain": [
+    "TERRAIN_GUILDHALL"
+   ],
+   "music": "ltlgirl.ogg",
+   "loops": [],
+   "periodic": null,
+   "wading": "splash.ogg",
+   "door": "doropen1.ogg",
+   "grid_size_m": [
+    44.0,
+    44.0
+   ]
   }
  }
 }

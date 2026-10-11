@@ -117,6 +117,23 @@
   "grd02304": {
    "tile_m": 2.2
   },
+  "grd10200": {
+   "tile_m": 2.2
+  },
+  "grd02122": {
+   "tile_m": 2.2
+  },
+  "grd01602": {
+   "tile_m": 2.2
+  },
+  "grd03801": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd03802": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
   "grd09603": {
       "tile_m": 2.2,
       "normal_strength": 1.0

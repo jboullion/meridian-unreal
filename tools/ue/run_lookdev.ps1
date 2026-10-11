@@ -55,6 +55,8 @@ param(
     [string]$Burst = "",
     # the prop gallery (-MRGallery) and its cameras instead of the world's
     [switch]$Gallery,
+    # another camera set in data/environment (e.g. prop_cameras.json: the props placed in the zones)
+    [string]$Cameras = "",
     [string]$Engine = "G:\Unreal Engine\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe",
     [int]$TimeoutSeconds = 900
 )
@@ -69,6 +71,7 @@ if (Test-Path $saved) { Remove-Item -Recurse -Force $saved }
 # -unattended: a GPU crash exits instead of waiting on an error dialog (then we try once more)
 $gameArgs = "`"$proj`" /Game/Generated/Maps/L_World -game -windowed -resx=$ResX -resy=$ResY$(if ($Audio -gt 0) { '' } else { ' -nosound' }) -unattended -MRStartZone=$StartZone -MRLookDev -MRLookDevLabel=$Label -abslog=`"$log`""
 if ($Gallery) { $gameArgs = $gameArgs.Replace("-MRStartZone=$StartZone", "-MRGallery -MRLookDevCameras=gallery_cameras.json") }
+if ($Cameras -and -not $Gallery) { $gameArgs += " -MRLookDevCameras=$Cameras" }
 if ($Only) { $gameArgs += " -MRLookDevOnly=" + ($Only -join ",") }
 if ($Profile) { $gameArgs += " -MRLookDevProfile" }
 if ($Audio -gt 0) { $gameArgs += " -MRLookDevAudio=$Audio" }

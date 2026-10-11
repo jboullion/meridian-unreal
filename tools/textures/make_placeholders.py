@@ -958,8 +958,9 @@ def main():
     # anything else in the folder is from a texture no longer in the catalog
     keep = {f for entry in new_cache.values() for f in entry.get("files", [])} | {"placeholders.json", "cache.json", "relief.json"}
     for f in OUT.iterdir():
-        # (the prop gallery's sprite pictures live here too: tools/environment/prop_gallery.py writes them)
-        if f.is_file() and f.name not in keep and not f.name.startswith("T_GallerySprite_"):
+        # (the prop gallery's sprite pictures and the procedural trees' leaves and bark live here too:
+        # tools/environment/prop_gallery.py and tools/textures/make_tree_textures.py write them)
+        if f.is_file() and f.name not in keep and not f.name.startswith(("T_GallerySprite_", "T_TreeLeaves_", "T_TreeBark_")):
             f.unlink()
 
     manifest = dict(sorted(manifest.items()))

@@ -61,6 +61,10 @@ private:
 	};
 
 	bool LoadShots();
+	/** Before the first camera: wait (up to CompileWaitSeconds) until no shaders or assets are left to
+	 *  compile. The test modes skip the warm-up screen, and a material still compiling draws as the
+	 *  engine's grey checkerboard (2026-10-10: a gallery capture after a world build). */
+	void WaitForCompiles();
 	void Next();
 	void Sample();
 	void OnFrame(int32 Width, int32 Height, const TArray<FColor>& Pixels);
@@ -79,6 +83,7 @@ private:
 
 	float FixedSettle = 0.f;      // > 0: -MRLookDevSettle
 	double ShotStart = 0.0;       // real time of the camera cut
+	double CompileWaitStart = 0.0;
 	TArray<TArray<float>> Grids;  // recent brightness grids of this shot, oldest first
 	int32 StableCount = 0;
 	bool bExposureCut = false;    // the second cut of this shot is done

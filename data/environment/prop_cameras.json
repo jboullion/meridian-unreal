@@ -1,0 +1,27 @@
+{
+  "_doc": "Look-dev cameras aimed at placed props (tools/lookdev/prop_cameras.py; docs/adr/0007). Same format as lookdev_cameras.json. Render: tools/ue/run_lookdev.ps1 -Cameras prop_cameras.json -StartZone <rid>.",
+  "cameras": [
+    {"name": "prop_206_fooddispenser_carrot", "location_cm": [217830, 1407095, 511], "rotation": [-15.7, 0.0], "fov": 70},
+    {"name": "prop_206_fooddispenser_earcorn", "location_cm": [211890, 1409625, 511], "rotation": [-15.7, 0.0], "fov": 70},
+    {"name": "prop_206_fooddispenser_flour", "location_cm": [217610, 1403905, 511], "rotation": [-15.7, 0.0], "fov": 70},
+    {"name": "prop_206_fooddispenser_oats", "location_cm": [214310, 1401595, 511], "rotation": [-15.7, 0.0], "fov": 70},
+    {"name": "prop_206_fooddispenser_potatoes", "location_cm": [216950, 1405775, 511], "rotation": [-15.7, 0.0], "fov": 70},
+    {"name": "prop_206_fooddispenser_tomato", "location_cm": [203860, 1417765, 511], "rotation": [-15.7, 0.0], "fov": 70},
+    {"name": "prop_206_fooddispenser_watermelon", "location_cm": [215410, 1404455, 511], "rotation": [-15.7, 0.0], "fov": 70},
+    {"name": "prop_206_fooddispenser_eggs", "location_cm": [200654, 1416286, 497], "rotation": [-15.7, -45.0], "fov": 70},
+    {"name": "prop_204_bookpedestal", "location_cm": [203844, 1000776, 607], "rotation": [-15.7, -45.0], "fov": 70},
+    {"name": "prop_717_craftinganvil", "location_cm": [407710, 1605720, 428], "rotation": [-15.7, 0.0], "fov": 70},
+    {"name": "prop_717_loom", "location_cm": [409580, 1605170, 428], "rotation": [-15.7, 0.0], "fov": 70},
+    {"name": "prop_717_spinningwheel", "location_cm": [407150, 1606040, 428], "rotation": [-15.7, -90.0], "fov": 70},
+    {"name": "prop_717_shavehorse", "location_cm": [409580, 1607150, 428], "rotation": [-15.7, 0.0], "fov": 70},
+    {"name": "prop_717_tanningrack", "location_cm": [408134, 1607254, 428], "rotation": [-15.7, 45.0], "fov": 70},
+    {"name": "prop_717_throne", "location_cm": [402438, 1609130, 909], "rotation": [-15.7, 180.0], "fov": 70},
+    {"name": "prop_717_tree", "location_cm": [410890, 1601530, 930], "rotation": [-15.7, -90.0], "fov": 70},
+    {"name": "prop_717_pillow", "location_cm": [406555, 1604565, 990], "rotation": [-15.7, 0.0], "fov": 70},
+    {"name": "prop_200_tree", "location_cm": [203856, 801216, 504], "rotation": [-15.7, -135.0], "fov": 70},
+    {"name": "prop_200_ornamentalobject", "location_cm": [201750, 809790, 490], "rotation": [-15.7, 180.0], "fov": 70},
+    {"name": "prop_205_candelabra", "location_cm": [401949, 1000471, 951], "rotation": [-24.2, -45.0], "fov": 70},
+    {"name": "prop_2603_bookpedestal", "location_cm": [602458, 1603386, 607], "rotation": [-24.2, -135.0], "fov": 70},
+    {"name": "prop_717_chest", "location_cm": [404675, 1605700, 971], "rotation": [-24.2, -90.0], "fov": 70}
+  ]
+}

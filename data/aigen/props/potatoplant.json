@@ -1,0 +1,53 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "potatoplant",
+  "kind": "props",
+  "class": "FoodDispenser/Potatoes",
+  "bgf": "potatoplant",
+  "frame": 0,
+  "describe": "a leafy potato plant: a bushy clump of bright green oval leaves on thin branching green-brown stems rising from the ground",
+  "mesh": "SM_AI_Potatoplant",
+  "size_by": "height",
+  "placed": null,
+  "rooms": null,
+  "batch": "marion",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "2a2d7ad8-5310-4147-ae3d-7c85bb976683",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "green leafy shrub 3d model",
+        "tris_raw": 3643
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/potatoplant/potatoplant_tripo.glb",
+      "tripo_task": "2a2d7ad8-5310-4147-ae3d-7c85bb976683",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "green leafy shrub 3d model",
+      "tris_raw": 3643
+    }
+  },
+  "polycount": 4000,
+  "height_m": 0.8433,
+  "width_m": 0.6268,
+  "lift_m": 0.0,
+  "sprite_px": [576, 736],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
+      "file": "build/aigen/props/potatoplant/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Potatoplant.glb",
+    "tris": 3643,
+    "size_m": [0.6534, 0.4913, 0.8433],
+    "scale": 0.86233
+  }
+}

@@ -22,8 +22,8 @@ M_PER_TEXEL = 0.034358  # metres per sprite texel at shrink 1 (midtree2: 4.92 m 
 BG = (64, 72, 82)
 
 
-def sprite(bgf):
-    im = Image.open(os.path.join(REPO, "build", "bgf", bgf, "frame_00.png")).convert("RGBA")
+def sprite(bgf, frame=0):
+    im = Image.open(os.path.join(REPO, "build", "bgf", bgf, "frame_%02d.png" % frame)).convert("RGBA")
     im = im.crop(im.getchannel("A").getbbox())
     shrink = json.load(open(os.path.join(REPO, "build", "bgf", bgf, "meta.json")))["shrink"]
     k = M_PER_TEXEL / shrink * PX_PER_M
@@ -43,7 +43,7 @@ def main():
         renders = [Image.open(p) for p in sorted(glob.glob(os.path.join(REVIEW, "SM_Tree_%s_*.png" % name)))
                    if re.fullmatch(r"SM_Tree_%s_[A-Z]\.png" % name, os.path.basename(p))]
         if renders:
-            rows.append((name, cfg["bgf"], [sprite(cfg["bgf"])] + renders))
+            rows.append((name, cfg["bgf"], [sprite(cfg["bgf"], cfg.get("frame", 0))] + renders))
     # pack rows of tiles left to right, wrapping at a fixed width
     width, pad, label = 3600, 16, 30
     placed, x, y, row_h = [], pad, pad, 0

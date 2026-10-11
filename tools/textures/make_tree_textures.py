@@ -4,7 +4,7 @@ Leaf-cluster atlas and bark for the procedural trees (tools/blender/build_tree_k
 
     python tools/textures/make_tree_textures.py [--force]
 
-For each tree in TREES, reads the original sprite (build/bgf/<bgf>/frame_00.png, from
+For each tree in TREES, reads the original sprite (build/bgf/<bgf>/frame_00.png, or `frame`, from
 python tools/bgf2png/bgf2png.py <bgf>) and writes into build/textures_placeholder/:
 
 - T_TreeLeaves_<Name>.png: a 2x2 atlas of leaf clusters (RGBA, hard-ish alpha). Every leaf is a
@@ -81,6 +81,12 @@ TREES = {
                 "leaves": 230, "leaf_len": (24, 38)},
     "Fern": {"bgf": "palm", "canopy": (18, 14, 91, 49), "trunk_bgf": "midtree2", "trunk": (246, 520, 268, 715),
              "seed": 113, "leaves": 160, "leaf_len": (40, 64)},
+    # The Tree class (tree.kod: treebot.bgf, its group the tree's `bottom`: 1 oak, 2 elm, 3 pine),
+    # 273 placed in the world; pass 3 (Marion) first. `frame` picks the bitmap.
+    "Oak": {"bgf": "treebot", "frame": 0, "canopy": (20, 30, 165, 160), "trunk": (88, 180, 104, 250), "seed": 421},
+    "Elm": {"bgf": "treebot", "frame": 1, "canopy": (20, 25, 145, 170), "trunk": (75, 186, 87, 250), "seed": 431},
+    "Pine": {"bgf": "treebot", "frame": 2, "canopy": (25, 60, 95, 230), "trunk": (56, 246, 66, 255), "seed": 433,
+             "leaves": 230, "leaf_len": (24, 38)},
 }
 
 CELL = 512          # atlas cell, px (the atlas is 2x2 cells)
@@ -292,11 +298,12 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     me = os.path.getmtime(__file__)
     for name, cfg in TREES.items():
-        src = os.path.join(REPO, "build", "bgf", cfg.get("canopy_bgf", cfg["bgf"]), "frame_00.png")
+        frame = "frame_%02d.png" % cfg.get("frame", 0)
+        src = os.path.join(REPO, "build", "bgf", cfg.get("canopy_bgf", cfg["bgf"]), frame)
         if not os.path.exists(src):
             print("[make_tree_textures] missing %s (run python tools/bgf2png/bgf2png.py %s)" % (src, cfg["bgf"]))
             sys.exit(1)
-        trunk_src = os.path.join(REPO, "build", "bgf", cfg.get("trunk_bgf", cfg["bgf"]), "frame_00.png")
+        trunk_src = os.path.join(REPO, "build", "bgf", cfg["trunk_bgf"], "frame_00.png") if "trunk_bgf" in cfg             else os.path.join(REPO, "build", "bgf", cfg["bgf"], frame)
         newest = max(me, os.path.getmtime(src), os.path.getmtime(trunk_src))
         sprite = Image.open(src).convert("RGBA")
         jobs = [("Bark", bark, Image.open(trunk_src).convert("RGBA"))]

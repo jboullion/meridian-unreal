@@ -1,0 +1,21 @@
+{
+  "_doc": "Zone art for West Jasper (rid 382), pass 3 of the world remaster (Jasper; docs/adr/0003, 2026-10-10): the town's recipe outdoors, no buildings rebuilt yet. Gates and signs become solids; grime at the walls' feet.",
+  "rid": 382,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -20.8,
+        -12.0,
+        141.8,
+        166.0
+      ],
+      "displacement": "none",
+      "_doc": "every non-foliage cut-out, rebuilt as a solid"
+    }
+  ]
+}

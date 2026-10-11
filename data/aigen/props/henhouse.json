@@ -1,0 +1,53 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "henhouse",
+  "kind": "props",
+  "class": "FoodDispenser/Eggs",
+  "bgf": "henhouse",
+  "frame": 0,
+  "describe": "a small wooden henhouse on short wooden stilts: weathered dark brown plank walls, a steep pitched shingled roof, a small square opening in the front wall and a wooden ramp below it",
+  "mesh": "SM_AI_Henhouse",
+  "size_by": "height",
+  "placed": null,
+  "rooms": null,
+  "batch": "marion",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "68fc397b-3029-43e7-ab55-57e0ca9080a7",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "wooden hut 3d model",
+        "tris_raw": 1633
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/henhouse/henhouse_tripo.glb",
+      "tripo_task": "68fc397b-3029-43e7-ab55-57e0ca9080a7",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "wooden hut 3d model",
+      "tris_raw": 1633
+    }
+  },
+  "height_m": 1.7531,
+  "width_m": 1.0943,
+  "lift_m": 0.0,
+  "sprite_px": [192, 306],
+  "angles": {"left": 2, "back": 4, "right": 6},
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
+      "file": "build/aigen/props/henhouse/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Henhouse.glb",
+    "tris": 1633,
+    "size_m": [1.1458, 1.3452, 1.7531],
+    "scale": 1.794
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "watermelonpatch",
+  "kind": "props",
+  "class": "FoodDispenser/Watermelon",
+  "bgf": "watermelonpatch",
+  "frame": 0,
+  "describe": "a watermelon patch: four large round striped dark-and-light green watermelons lying on the ground in a cluster, with a few green leafy vines and leaves behind them",
+  "mesh": "SM_AI_Watermelonpatch",
+  "size_by": "height",
+  "placed": null,
+  "rooms": null,
+  "batch": "marion",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "77573dd9-ade9-43fc-843f-eb0fe1c03e14",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "watermelon 3d model",
+        "tris_raw": 1869
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/watermelonpatch/watermelonpatch_tripo.glb",
+      "tripo_task": "77573dd9-ade9-43fc-843f-eb0fe1c03e14",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "watermelon 3d model",
+      "tris_raw": 1869
+    }
+  },
+  "height_m": 0.6634,
+  "width_m": 1.0003,
+  "lift_m": 0.0447,
+  "sprite_px": [302, 206],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
+      "file": "build/aigen/props/watermelonpatch/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Watermelonpatch.glb",
+    "tris": 1869,
+    "size_m": [1.0555, 0.6868, 0.6634],
+    "scale": 1.07882
+  }
+}

@@ -387,6 +387,805 @@
   "is_npc": false
  },
  {
+  "class": "GroundWormLarva",
+  "parents": [
+   "GroundWorm",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/grdworm/larva.kod",
+  "vrName": "groundworm larva",
+  "vrDesc": "A younger form of its mature relatives, the larva is a bit weaker than other groundworms. It is known for its habit of lurking underground out of sight then suddenly springing forth to attack its victim.",
+  "vrIcon": "worms.bgf",
+  "vrDead_icon": "wormsX.bgf",
+  "viLevel": 35,
+  "viDifficulty": 3,
+  "viKarma": -10,
+  "viSpeed": 8,
+  "viAttack_type": 8,
+  "viDefault_behavior": 32768,
+  "viTreasure_type": 48,
+  "viCashmin": 75,
+  "viCashmax": 220,
+  "viVisionDistance": 8,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 0,
+  "viAttributes": 0,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": null,
+  "vrSound_miss": "gwrmatk.ogg",
+  "vrSound_aware": "gwrm3awr.ogg",
+  "vrSound_death": "gwrmdie.ogg",
+  "vars": {
+   "vrKocName": "imixslithic",
+   "vrDead_name": "slain groundworm larva",
+   "viAttack_spell": 64,
+   "viTrailLength": 2,
+   "vbTrailLarge": 0,
+   "piAnimation": 0,
+   "plTrail": null,
+   "piLastRow": 0,
+   "piLastCol": 0,
+   "pbSurfaced": 0,
+   "ptPostPop": null
+  },
+  "behavior_flags": [
+   "AI_FIGHT_KARMA_AGGRESSIVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": false
+ },
+ {
+  "class": "JasperBanker",
+  "parents": [
+   "JasperTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/jasprtwn/jsbanker.kod",
+  "vrName": "Yevitan",
+  "vrDesc": "Yevitan studies you with thoughtful, intelligent eyes.  He is surprisingly spry for his age.",
+  "vrIcon": "jsbanker.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 4,
+  "viAttributes": 1339,
+  "viGender": 1,
+  "viMerchant_markup": 3,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viBank": 1,
+   "vrUnwanted_give": "~k%s%s tells you, \"~IGuh~I I don't have any place to put that.  Now if it were shillings...~n~k\"",
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "spells": [
+    {
+     "id": 46,
+     "const": "SID_BLIND"
+    }
+   ]
+  }
+ },
+ {
+  "class": "JasperBartender",
+  "parents": [
+   "JasperTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/jasprtwn/jsbart.kod",
+  "vrName": "Pietro",
+  "vrDesc": "A peevish and sullen man tends this bar.  This is Pietro, the impetuous sot.",
+  "vrIcon": "jsbart.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 1,
+  "viAttributes": 187,
+  "viGender": 1,
+  "viMerchant_markup": 3,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "vrUnwanted_keep": "~k%s%s tosses the item into the garbage and sneers, \"Get lost.~n~k\"",
+   "vrUnwanted_pay": "~k%s%s tells you, \"I'll give you a couple schillings for that, my mother's birthday is coming up.~n~k\"",
+   "vrUnwanted_give": "~k%s%s tells you, \"What do I look like, a freggin' junk buyer?  There's no soliciting here so get out of my bar with your flim-flam, stranger.~n~k\"",
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "items": [
+    {
+     "class": "Chess"
+    },
+    {
+     "class": "Meatpie",
+     "params": {
+      "number": 4
+     }
+    },
+    {
+     "class": "Bread",
+     "params": {
+      "number": 4
+     }
+    },
+    {
+     "class": "StoutGoblet"
+    },
+    {
+     "class": "BeerMug"
+    }
+   ]
+  }
+ },
+ {
+  "class": "JasperBlacksmith",
+  "parents": [
+   "JasperTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/jasprtwn/jssmith.kod",
+  "vrName": "Quintor",
+  "vrDesc": "Quintor is widely recognized as the finest weaponsmith in the land.  He is also recognized as a quiet, brooding man who keeps to himself.  Take that as you will.",
+  "vrIcon": "jssmith.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 5,
+  "viAttributes": 1243,
+  "viGender": 1,
+  "viMerchant_markup": 1,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viQuestID": 5,
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "items": [
+    {
+     "class": "ScaleArmor"
+    },
+    {
+     "class": "LeatherArmor"
+    },
+    {
+     "class": "GoldShield"
+    },
+    {
+     "class": "ShortSword"
+    },
+    {
+     "class": "Hammer"
+    },
+    {
+     "class": "Mace"
+    },
+    {
+     "class": "PickAxe"
+    },
+    {
+     "class": "BlacksmithsHammer"
+    },
+    {
+     "class": "MinersBag"
+    },
+    {
+     "class": "Scimitar"
+    },
+    {
+     "class": "Gauntlet"
+    }
+   ],
+   "skills": [
+    {
+     "id": 453,
+     "const": "SKID_PROFICIENCY_SCIMITAR"
+    },
+    {
+     "id": 407,
+     "const": "SKID_MINING"
+    }
+   ],
+   "spells": [
+    {
+     "id": 223,
+     "const": "SID_CRAFTHELMET"
+    },
+    {
+     "id": 250,
+     "const": "SID_CRAFTKNIGHTSHELMET"
+    },
+    {
+     "id": 225,
+     "const": "SID_CRAFTSCALEARMOR"
+    },
+    {
+     "id": 228,
+     "const": "SID_CRAFTKNIGHTSHIELD"
+    },
+    {
+     "id": 229,
+     "const": "SID_CRAFTMYSTICSWORD"
+    },
+    {
+     "id": 233,
+     "const": "SID_CRAFTSCIMITAR"
+    },
+    {
+     "id": 222,
+     "const": "SID_CRAFTGAUNTLETS"
+    },
+    {
+     "id": 243,
+     "const": "SID_CRAFTPICKAXE"
+    },
+    {
+     "id": 246,
+     "const": "SID_CRAFTSKINKNIFE"
+    }
+   ]
+  }
+ },
+ {
+  "class": "JasperElder",
+  "parents": [
+   "JasperTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/jasprtwn/jselder.kod",
+  "vrName": "Afiera D'xor",
+  "vrDesc": "Afiera D'xor spent many, many years of solitude in these mountains, and now devotes his life to his art.  His stone carvings are intricate designs of mathematical perfection.  He will make time, however, to entertain travellers who hope to share some of the wisdom he has gained from a life of secluded meditation.",
+  "vrIcon": "jselder.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 9,
+  "viAttributes": 1083,
+  "viGender": 1,
+  "viMerchant_markup": 3,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viQuestID": 6,
+   "vrUnwanted_keep": "~k%s%s tells you, \"Perhaps I may find some use for that.~n~k\"",
+   "vrUnwanted_pay": "~k%s%s tells you, \"How convenient.~n~k\"",
+   "vrUnwanted_give": "~k%s%s tells you, \"Most material goods are of little consequence to an old man like me.~n~k\"",
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "spells": [
+    {
+     "id": 1,
+     "const": "SID_LIGHTNING_BOLT"
+    },
+    {
+     "id": 64,
+     "const": "SID_DEMENT"
+    }
+   ]
+  }
+ },
+ {
+  "class": "JasperInnKeeper",
+  "parents": [
+   "JasperTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/jasprtwn/jsinnk.kod",
+  "vrName": "Widow Qesino",
+  "vrDesc": "The Widow Qesino has run the Yonder Inn since her late husbands' disappearance.  She seems to be a very straightforward if rather plain woman.",
+  "vrIcon": "jsinnk.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 3,
+  "viAttributes": 1211,
+  "viGender": 2,
+  "viMerchant_markup": 3,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "items": [
+    {
+     "class": "VaultContract"
+    },
+    {
+     "class": "VaultResign"
+    },
+    {
+     "class": "Stew",
+     "params": {
+      "number": 4
+     }
+    },
+    {
+     "class": "Gingermen"
+    }
+   ],
+   "spells": [
+    {
+     "id": 156,
+     "const": "SID_SWEEP"
+    },
+    {
+     "id": 176,
+     "const": "SID_RESTORATE"
+    }
+   ]
+  }
+ },
+ {
+  "class": "JasperMerchant",
+  "parents": [
+   "JasperTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/jasprtwn/jsmerch.kod",
+  "vrName": "Zhieu B'hob",
+  "vrDesc": "Zhieu B'hob works very hard to make his business thrive in this depressed community.  He is eager, and busy with the appearances.",
+  "vrIcon": "jsmerch.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 7,
+  "viAttributes": 65755,
+  "viGender": 1,
+  "viMerchant_markup": 1,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true,
+  "for_sale": {
+   "items": [
+    {
+     "class": "PantsC",
+     "params": {
+      "translation": 18
+     }
+    },
+    {
+     "class": "PantsC",
+     "params": {
+      "translation": 19
+     }
+    },
+    {
+     "class": "PantsC",
+     "params": {
+      "translation": 20
+     }
+    },
+    {
+     "class": "PantsC",
+     "params": {
+      "translation": 21
+     }
+    },
+    {
+     "class": "PantsC",
+     "params": {
+      "translation": 22
+     }
+    },
+    {
+     "class": "PantsC",
+     "params": {
+      "translation": 23
+     }
+    },
+    {
+     "class": "PantsC",
+     "params": {
+      "translation": 24
+     }
+    },
+    {
+     "class": "Shirt",
+     "params": {
+      "color": 0
+     }
+    },
+    {
+     "class": "Shirt",
+     "params": {
+      "color": 4
+     }
+    },
+    {
+     "class": "Shirt",
+     "params": {
+      "color": 5
+     }
+    },
+    {
+     "class": "Shirt",
+     "params": {
+      "color": 10
+     }
+    },
+    {
+     "class": "Shirt",
+     "params": {
+      "color": 7
+     }
+    },
+    {
+     "class": "Torch"
+    },
+    {
+     "class": "Waterskin"
+    },
+    {
+     "class": "Sapphire",
+     "params": {
+      "number": 1
+     }
+    },
+    {
+     "class": "Emerald",
+     "params": {
+      "number": 2
+     }
+    },
+    {
+     "class": "PurpleMushroom",
+     "params": {
+      "number": 2
+     }
+    },
+    {
+     "class": "BlueMushroom",
+     "params": {
+      "number": 4
+     }
+    },
+    {
+     "class": "Mushroom",
+     "params": {
+      "number": 4
+     }
+    },
+    {
+     "class": "ElderBerry",
+     "params": {
+      "number": 4
+     }
+    },
+    {
+     "class": "Herbs",
+     "params": {
+      "number": 4
+     }
+    }
+   ]
+  }
+ },
+ {
+  "class": "JasperVaultman",
+  "parents": [
+   "JasperTown",
+   "Towns",
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/towns/jasprtwn/jasvaultm.kod",
+  "vrName": "Rolan De'nair",
+  "vrDesc": "The cousin of Obert Cair'bre, Rolan has taken the family business south.  Though as he diligently serves the people of Jasper, his big city demeanor is often at odds with the townsfolk's more rebellious attitude.",
+  "vrIcon": "cngrocer.bgf",
+  "vrDead_icon": null,
+  "viLevel": 25,
+  "viDifficulty": 0,
+  "viKarma": 0,
+  "viSpeed": 12,
+  "viAttack_type": 8,
+  "viDefault_behavior": 3,
+  "viTreasure_type": 1,
+  "viCashmin": 1,
+  "viCashmax": 10,
+  "viVisionDistance": 10,
+  "viAttackRange": 128,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 21,
+  "viAttributes": 1573051,
+  "viGender": 1,
+  "viMerchant_markup": 4,
+  "vrSound_hit": null,
+  "vrSound_miss": null,
+  "vrSound_aware": null,
+  "vrSound_death": null,
+  "vars": {
+   "viVault": 1,
+   "vrvaultman_nogold": "Thou may not use my services to store %s%s.",
+   "vrvaultman_nocursed": "I cannot take %s%s from thee.",
+   "vrvaultman_fullvault": "Thy vault cannot hold all that!  Mayhaps thou should try offering items in smaller quantities.",
+   "vrvaultman_thanks_amount": "That will cost %i shillings.  I thank thee for trusting me to quartermaster thy gear.",
+   "vrvaultman_dont_have": "Hmmm, I can't seem to find %s%s in thy vault.",
+   "vrvaultman_no_room": "Thou can not carry all of that!  Mayhaps thou should try withdrawing the items one at a time.",
+   "vrvaultman_deposit_thanks": "I thank thee for trusting me to quartermaster thy gear.",
+   "vrvaultman_thanks": "Have is thy gear.  I thank thee for thy patronage.",
+   "vrvaultman_nowithdraw_cash": "Thou currently cannot pay the exit fee to get thy items out.",
+   "vrvaultman_nodeposit_cash": "Storing these items would cost %i shillings - which I see thou doth not possess.",
+   "vrvaultman_cant_part": "Zounds... I wish to not feel responsible if thy %s were to disappear - I cannot store it.",
+   "vrvaultman_noaccount": "I do not seem to be storing any of thy gear.",
+   "vrvaultman_not_enough": "Thou have not that many %s stored in thy name!",
+   "viDefinite": 0,
+   "viIndefinite": 0,
+   "viObject_flags": 8201,
+   "piFace_translation": 26,
+   "piHair_translation": 30,
+   "piNameColor": 13158600
+  },
+  "behavior_flags": [
+   "AI_NPC",
+   "AI_NOMOVE"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_HIT",
+   "ATCK_SPELL_COLD"
+  ],
+  "is_npc": true
+ },
+ {
+  "class": "Lupogg",
+  "parents": [
+   "Monster",
+   "Battler",
+   "NoMoveOn",
+   "Holder",
+   "ActiveObject"
+  ],
+  "file": "Server-104/kod/object/active/holder/nomoveon/battler/monster/lupogg.kod",
+  "vrName": "lupogg",
+  "vrDesc": "This underwater denizen, although hideous and brutish, is rumored to be peaceful in nature, but there is no evidence of that now.  The lupoggs seem upset that their territory has been trespassed upon, and seem eager to challenge any they can find.",
+  "vrIcon": "lupogg.bgf",
+  "vrDead_icon": "lupoggX.bgf",
+  "viLevel": 125,
+  "viDifficulty": 9,
+  "viKarma": 100,
+  "viSpeed": 4,
+  "viAttack_type": 1024,
+  "viDefault_behavior": 2113536,
+  "viTreasure_type": 74,
+  "viCashmin": 500,
+  "viCashmax": 1200,
+  "viVisionDistance": 18,
+  "viAttackRange": 192,
+  "viSpellChance": 10,
+  "vbIsUndead": 0,
+  "viOccupation": 0,
+  "viAttributes": 0,
+  "viGender": 0,
+  "viMerchant_markup": 3,
+  "vrSound_hit": "lup_atkh.ogg",
+  "vrSound_miss": "lup_atkm.ogg",
+  "vrSound_aware": "lup_awr.ogg",
+  "vrSound_death": "lup_dth.ogg",
+  "vars": {
+   "vrKocName": "tez",
+   "vrDead_name": "dead lupogg",
+   "piAnimation": 0
+  },
+  "behavior_flags": [
+   "AI_FIGHT_AGGRESSIVE",
+   "AI_FIGHT_WIZARD_KILLER"
+  ],
+  "attack_flags": [
+   "ATCK_WEAP_BITE"
+  ],
+  "is_npc": false
+ },
+ {
   "class": "MarionBartender",
   "parents": [
    "MarionTown",

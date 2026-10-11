@@ -1,0 +1,53 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "candelab",
+  "kind": "props",
+  "class": "Candelabra",
+  "bgf": "candelab",
+  "frame": 0,
+  "describe": "a tall standing brass candelabra: a round brass foot, a slender turned brass stem, two pairs of curving brass arms holding five tall red wax candles in little cups, the candles unlit",
+  "mesh": "SM_AI_Candelab",
+  "size_by": "height",
+  "placed": 22,
+  "rooms": 13,
+  "batch": "marion",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "0a243742-8d5a-4581-b333-8b412f149abc",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "antique candelabrum 3d model",
+        "tris_raw": 3739
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/candelab/candelab_tripo.glb",
+      "tripo_task": "0a243742-8d5a-4581-b333-8b412f149abc",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "antique candelabrum 3d model",
+      "tris_raw": 3739
+    }
+  },
+  "polycount": 4000,
+  "height_m": 0.8551,
+  "width_m": 0.7906,
+  "lift_m": 0.0,
+  "sprite_px": [184, 199],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
+      "file": "build/aigen/props/candelab/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Candelab.glb",
+    "tris": 3739,
+    "size_m": [0.821, 0.2562, 0.8551],
+    "scale": 0.8733
+  }
+}

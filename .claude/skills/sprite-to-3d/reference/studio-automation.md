@@ -83,6 +83,8 @@ This is how Claude runs the Tripo step without the user: Studio in the user's Ch
 6. The bridge sends FBX, which Blender imports and the collector re-exports as GLB, with textures embedded.
 
 ## Pitfalls
+- **One bridge client at a time:** turning Blender on in a new tab's DCC Bridge closes the connection of any other Studio tab ("Closing 1 existing client(s)" in the bridge log). Send from the tab that connected last.
+- **Claude in Chrome's own window counts as hidden** while it sits behind other windows: ask the user to bring it to the front before sending (2026-10-10). In a 1410x840 frame the HD model page's positions were Export (938,805), Send To (845,737), Send To Blender (823,410); 19 models went through at 8 s each without a miss.
 - **Nothing arrives:** the bridge disconnected (a page reload), the window was hidden, or the click landed before the model loaded. Check the tail of `%TEMP%\tripo3d_blender_bridge.log`.
 - **The wrong model arrives:** never rely on arrival order. The collector matches by task id, and finds the import by the exact name the bridge log says it got. Tripo reuses names, and Blender adds `.001` to the second copy.
 - **A big model (20k) is missed:** give it about 10 s to load before Export.

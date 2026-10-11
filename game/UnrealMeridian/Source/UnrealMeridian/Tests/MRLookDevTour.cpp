@@ -27,6 +27,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "UnrealClient.h"
 #include "Zones/MRZoneSubsystem.h"
+#if WITH_EDITOR
+#include "AssetCompilingManager.h"
+#include "ShaderCompiler.h"
+#endif
 
 namespace
 {
@@ -210,8 +214,32 @@ void UMRLookDevTour::Start(APlayerController* InController)
 		};
 	}
 	Index = -1;
-	// give zone streaming a moment; the first camera's settle check covers the rest
-	After(FixedSettle > 0.f ? 6.f : 2.f, &UMRLookDevTour::Next);
+	CompileWaitStart = FPlatformTime::Seconds();
+	// give zone streaming a moment and let the shaders compile; the first camera's settle check covers the rest
+	After(FixedSettle > 0.f ? 6.f : 2.f, &UMRLookDevTour::WaitForCompiles);
+}
+
+void UMRLookDevTour::WaitForCompiles()
+{
+	constexpr double CompileWaitSeconds = 600.0;
+	int32 Left = 0;
+#if WITH_EDITOR
+	// an uncooked game builds what the DDC doesn't have (UMRWarmup::Poll counts the same)
+	Left = FAssetCompilingManager::Get().GetNumRemainingAssets();
+	if (GShaderCompilingManager)
+	{
+		Left = FMath::Max(Left, GShaderCompilingManager->GetNumRemainingJobs());
+	}
+#endif
+	const double Waited = FPlatformTime::Seconds() - CompileWaitStart;
+	if (Left > 0 && Waited < CompileWaitSeconds)
+	{
+		UE_CLOG(FMath::Fmod(Waited, 10.0) < 0.5, LogMeridian, Display, TEXT("MRLookDev: waiting for %d compile jobs (%.0f s)"), Left, Waited);
+		After(0.5f, &UMRLookDevTour::WaitForCompiles);
+		return;
+	}
+	UE_LOG(LogMeridian, Display, TEXT("MRLookDev: compiles done after %.0f s%s"), Waited, Left > 0 ? TEXT(" (gave up)") : TEXT(""));
+	Next();
 }
 
 void UMRLookDevTour::After(float Seconds, void (UMRLookDevTour::*Step)())

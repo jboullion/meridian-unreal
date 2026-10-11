@@ -1,0 +1,53 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "tanrack",
+  "kind": "props",
+  "class": "TanningRack",
+  "bgf": "tanrack",
+  "frame": 0,
+  "describe": "a tanning rack: a rectangular frame of rough wooden poles lashed together, standing on splayed A-shaped legs at each end, a brown furry animal hide stretched in the middle on cords",
+  "mesh": "SM_AI_Tanrack",
+  "size_by": "height",
+  "placed": 24,
+  "rooms": 13,
+  "batch": "marion",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "f1f07540-e62a-400e-8ad8-d847503e93c2",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "fur hide 3d model",
+        "tris_raw": 1860
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/tanrack/tanrack_tripo.glb",
+      "tripo_task": "f1f07540-e62a-400e-8ad8-d847503e93c2",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "fur hide 3d model",
+      "tris_raw": 1860
+    }
+  },
+  "height_m": 1.4781,
+  "width_m": 2.3444,
+  "lift_m": 0.2956,
+  "sprite_px": [700, 700],
+  "angles": {"left": 2, "back": 4, "right": 6},
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
+      "file": "build/aigen/props/tanrack/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Tanrack.glb",
+    "tris": 1860,
+    "size_m": [2.1734, 1.0559, 1.4781],
+    "scale": 2.22217
+  }
+}

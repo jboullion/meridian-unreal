@@ -1,0 +1,53 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "craftanvil",
+  "kind": "props",
+  "class": "CraftingAnvil",
+  "bgf": "craftanvil",
+  "frame": 0,
+  "describe": "a blacksmith's crafting anvil: a dark iron anvil with a long horn sitting on a thick round wooden stump bound with dark iron straps, an iron hardy tool leaning against the stump",
+  "mesh": "SM_AI_Craftanvil",
+  "size_by": "height",
+  "placed": 36,
+  "rooms": 14,
+  "batch": "marion",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "2298c1b5-3ebb-46a3-926f-3a613d8fda9a",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "blacksmith anvil 3d model",
+        "tris_raw": 1888
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/craftanvil/craftanvil_tripo.glb",
+      "tripo_task": "2298c1b5-3ebb-46a3-926f-3a613d8fda9a",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "blacksmith anvil 3d model",
+      "tris_raw": 1888
+    }
+  },
+  "height_m": 0.9659,
+  "width_m": 0.715,
+  "lift_m": 0.0447,
+  "sprite_px": [512, 512],
+  "angles": {"left": 2, "back": 4, "right": 6},
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
+      "file": "build/aigen/props/craftanvil/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Craftanvil.glb",
+    "tris": 1888,
+    "size_m": [0.7582, 0.73, 0.9659],
+    "scale": 0.98631
+  }
+}

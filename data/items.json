@@ -967,6 +967,40 @@
   "kind": "DefenseModifier"
  },
  {
+  "class": "Chess",
+  "parents": [
+   "MiniGame",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/minigame/chess.kod",
+  "vrName": "chess board",
+  "vrDesc": "Two players can use this board to play a game of chess.  Anyone else can use the board to observe.  The board must be on the ground for people to be able to play each other.  If you pick up a board in the middle of a match, the board will save the status of the game so that it may be concluded later.  It is wise to find a safe area to play.",
+  "vrIcon": "chesclos.bgf",
+  "viValue_average": 10,
+  "viWeight": 10,
+  "viBulk": 30,
+  "viItem_type": 1024,
+  "viUse_type": 2,
+  "viHits_init_min": 1,
+  "viHits_init_max": 1,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrModule": "chess.dll",
+   "viMaxPlayers": 2,
+   "piNumPlayers": 0,
+   "plPlayers": null,
+   "plObservers": null,
+   "psState": null,
+   "viObject_flags": 2064
+  },
+  "kind": "Item"
+ },
+ {
   "class": "CircleMask",
   "parents": [
    "FaceMask",
@@ -2422,6 +2456,48 @@
    "vrCondition_broken": " is useless, having been cleft in two by a forceful blow."
   },
   "kind": "DefenseModifier"
+ },
+ {
+  "class": "Gauntlet",
+  "parents": [
+   "AttackModifier",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/attmod/gauntlet.kod",
+  "vrName": "gauntlets",
+  "vrDesc": "These polished steel gauntlets offer protection for hands and forearms allowing you to strike with greater confidence and force.",
+  "vrIcon": "gauntlet.bgf",
+  "viValue_average": 400,
+  "viWeight": 50,
+  "viBulk": 50,
+  "viItem_type": 2,
+  "viUse_type": 256,
+  "viHits_init_min": 300,
+  "viHits_init_max": 450,
+  "viDefense_base": 15,
+  "viDamage_base": 1,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 2,
+  "viBroken_group": 3,
+  "vars": {
+   "vrPoss_article": "object_article_cap_these_rsc",
+   "vrItem_broken": "Your %s are a tangled mess of metal.",
+   "viUse_amount": 1,
+   "vbShow_condition": 1,
+   "vrCondition_exc": " shine with the glint of perfection.",
+   "vrCondition_exc_mended": " are in excellent condition, but have been patched before.",
+   "vrCondition_good": " are tarnished and scarred but still usable.",
+   "vrCondition_med": " have been harshly dented in several places.",
+   "vrCondition_poor": " are in danger of falling apart.  Large plates of metal have been torn away during battle.",
+   "vrCondition_broken": " are ruined and offer no benefit.",
+   "viAttack_base": 20,
+   "piDefense_bonus": 15,
+   "piAttack_bonus": 20,
+   "piDamage_bonus": 1
+  },
+  "kind": "Item"
  },
  {
   "class": "Gingermen",
@@ -3929,6 +4005,40 @@
    "piBlockBonus": 0
   },
   "kind": "DefenseModifier"
+ },
+ {
+  "class": "MinersBag",
+  "parents": [
+   "Bag",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/bag/minersbag.kod",
+  "vrName": "miners bag",
+  "vrDesc": "A hefty bag for carring various ores. This box will reduce the weight and bulk of ore by 75%. ",
+  "vrIcon": "minersbag.bgf",
+  "viValue_average": 500,
+  "viWeight": 10,
+  "viBulk": 10,
+  "viItem_type": 0,
+  "viUse_type": 1,
+  "viHits_init_min": 1,
+  "viHits_init_max": 1,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "viBulk_hold_max": 12000,
+   "viWeight_hold_max": null,
+   "plWhiteList": null,
+   "plBlackList": null,
+   "plContents": null,
+   "viObject_flags": 48,
+   "piWeightReduction": 4
+  },
+  "kind": "Item"
  },
  {
   "class": "Mug",
@@ -7346,6 +7456,44 @@
   "kind": "DefenseModifier"
  },
  {
+  "class": "Stew",
+  "parents": [
+   "Food",
+   "NumberItem",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/numbitem/food/stew.kod",
+  "vrName": "bowl of stew",
+  "vrDesc": "Widow Qesino's faroni stew has been heralded by some as a vegetarian classic. Full of healthy bits of deceased fungus beasts and living tree bark, you can only assume that this is an acquired taste.",
+  "vrIcon": "soupbowl.bgf",
+  "viValue_average": 40,
+  "viWeight": 15,
+  "viBulk": 20,
+  "viItem_type": 260,
+  "viUse_type": 2,
+  "viHits_init_min": 1,
+  "viHits_init_max": 1,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrName_plural": "bowls of stew",
+   "vrEat_wav": "drink.ogg",
+   "viFilling": 25,
+   "viNutrition": 15,
+   "piNumber": 1,
+   "viObject_flags": 16,
+   "vrDisp_name": "magic item creator",
+   "vrDisp_desc": "This is a magic item creator.  It creates thingies.",
+   "vrDisp_icon": "lever.bgf",
+   "viIndefinite_plural": 6
+  },
+  "kind": "Item"
+ },
+ {
   "class": "StoneTrollMask",
   "parents": [
    "FaceMask",
@@ -7388,6 +7536,44 @@
    "vrCondition_broken": " is useless, having been cleft in two by a forceful blow."
   },
   "kind": "DefenseModifier"
+ },
+ {
+  "class": "StoutGoblet",
+  "parents": [
+   "Food",
+   "NumberItem",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/numbitem/food/gobletst.kod",
+  "vrName": "mug of brew",
+  "vrDesc": "The pewter and wood mug is roughly formed.  A logo stamped onto its silver lip reads \"Pietro's Wicked Brew.\"",
+  "vrIcon": "mug.bgf",
+  "viValue_average": 25,
+  "viWeight": 10,
+  "viBulk": 15,
+  "viItem_type": 260,
+  "viUse_type": 2,
+  "viHits_init_min": 1,
+  "viHits_init_max": 1,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrName_plural": "mugs of brew",
+   "vrEat_wav": "drink.ogg",
+   "viFilling": 10,
+   "viNutrition": 3,
+   "piNumber": 1,
+   "viObject_flags": 16,
+   "vrDisp_name": "magic item creator",
+   "vrDisp_desc": "This is a magic item creator.  It creates thingies.",
+   "vrDisp_icon": "lever.bgf",
+   "viIndefinite_plural": 6
+  },
+  "kind": "Item"
  },
  {
   "class": "SuperStoneTrollMask",
@@ -8196,6 +8382,44 @@
    "piNumber": 1,
    "vrEat_wav": "eat.ogg",
    "viObject_flags": 16,
+   "viIndefinite_plural": 6
+  },
+  "kind": "Item"
+ },
+ {
+  "class": "Waterskin",
+  "parents": [
+   "Food",
+   "NumberItem",
+   "PassiveItem",
+   "Item"
+  ],
+  "file": "Server-104/kod/object/item/passitem/numbitem/food/watrskin.kod",
+  "vrName": "water skin",
+  "vrDesc": "This leather skin contains cool, refreshing water drawn from the headwaters of the River Ille.",
+  "vrIcon": "watrskin.bgf",
+  "viValue_average": 10,
+  "viWeight": 30,
+  "viBulk": 15,
+  "viItem_type": 260,
+  "viUse_type": 2,
+  "viHits_init_min": 1,
+  "viHits_init_max": 1,
+  "viDefense_base": 0,
+  "viSpell_modifier": 0,
+  "viGround_group": 1,
+  "viInventory_group": 1,
+  "viBroken_group": null,
+  "vars": {
+   "vrEat_wav": "drink.ogg",
+   "viFilling": 6,
+   "viNutrition": 3,
+   "piNumber": 20,
+   "viObject_flags": 16,
+   "vrDisp_name": "magic item creator",
+   "vrDisp_desc": "This is a magic item creator.  It creates thingies.",
+   "vrDisp_icon": "lever.bgf",
+   "vrName_plural": null,
    "viIndefinite_plural": 6
   },
   "kind": "Item"

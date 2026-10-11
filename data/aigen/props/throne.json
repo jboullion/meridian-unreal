@@ -1,0 +1,53 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "throne",
+  "kind": "props",
+  "class": "Throne",
+  "bgf": "throne",
+  "frame": 0,
+  "describe": "a throne of white marble with pale blue veins: a tall flat back with a rounded scroll at each top corner, big spiral scrolls at the sides of the seat, and a curved X-shaped base",
+  "mesh": "SM_AI_Throne",
+  "size_by": "height",
+  "placed": 9,
+  "rooms": 8,
+  "batch": "marion",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "e28b2aca-41fb-473e-a20c-17d1f241a54a",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "marble sculpture 3d model",
+        "tris_raw": 1758
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/throne/throne_tripo.glb",
+      "tripo_task": "e28b2aca-41fb-473e-a20c-17d1f241a54a",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "marble sculpture 3d model",
+      "tris_raw": 1758
+    }
+  },
+  "height_m": 1.6672,
+  "width_m": 1.1,
+  "lift_m": 0.0,
+  "sprite_px": [128, 194],
+  "angles": {"left": 5, "back": 4, "right": 2},
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
+      "file": "build/aigen/props/throne/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Throne.glb",
+    "tris": 1758,
+    "size_m": [1.0505, 0.5152, 1.6672],
+    "scale": 1.70068
+  }
+}

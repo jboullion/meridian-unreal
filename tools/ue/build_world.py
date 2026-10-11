@@ -457,10 +457,14 @@ KOD_ANGLE_FRONT = 1024
 
 def prop_config(props, obj):
     """The props.json entry for a Kod object: OrnamentalObjects by their type ("types", keyed by the
-    OO number as a string), every other class by "classes": "<Class>/<classtype>" first for an
-    object made with a classtype (a FoodDispenser of Apple: the apple tree), then "<Class>"."""
+    OO number as a string), or one made with only its own icon by "icons" (the bgf, lower case: the
+    memorial trees); every other class by "classes": "<Class>/<classtype>" first for an object made
+    with a classtype (a FoodDispenser of Apple: the apple tree), then "<Class>/<param>=<value>" for
+    a constructor argument (a Tree's bottom: 1 oak, 2 elm, 3 pine), then "<Class>"."""
     params = obj.get("params") or {}
     if obj["class"] == "OrnamentalObject":
+        if params.get("type") is None and isinstance(params.get("rIcon"), str):
+            return props.get("icons", {}).get(params["rIcon"].lower())
         return props.get("types", {}).get(str(params.get("type")))
     classes = props.get("classes", {})
     classtype = params.get("classtype")
@@ -468,6 +472,11 @@ def prop_config(props, obj):
         cfg = classes.get("%s/%s" % (obj["class"], classtype["class"]))
         if cfg:
             return cfg
+    for key, value in sorted(params.items()):
+        if isinstance(value, (int, str)) and not isinstance(value, bool):
+            cfg = classes.get("%s/%s=%s" % (obj["class"], key, value))
+            if cfg:
+                return cfg
     return classes.get(obj["class"])
 
 
@@ -608,6 +617,11 @@ def zone_props(zone, materials, prop_materials):
             preset = cfg["fire"]["preset"]
             entry = materials.fires.get(preset, (None, {}))[1]
             fire = fire_spec(materials, preset, (cfg["fire"].get("base_m", 0.0) + entry.get("flame_m", [0, 0])[1] / 2) * 100.0)
+            if fire and cfg["fire"].get("at_m"):
+                # several flames (the candelabra's candles): [right, front, up] in metres on the mesh
+                # (glTF +X, +Z, +Y), the first one carrying the light; turned with the prop (fire_points)
+                half = entry.get("flame_m", [0, 0])[1] / 2
+                fire["points"] = [(r * 100.0, f * 100.0, (u + half) * 100.0) for r, f, u in cfg["fire"]["at_m"]]
         if not (mesh or light or fire):
             continue
         if not mesh:
@@ -783,6 +797,13 @@ def _srgb_to_linear(c):
     return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
 
 
+def fire_points(points, yaw, scale):
+    """A prop's flames ([(right, front, up)] cm on its mesh) -> [(dx, dy, up)] cm in the world: the
+    mesh's right (glTF +X) is UE +X and its front (glTF +Z) UE +Y before the prop's yaw turns it."""
+    c, s = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
+    return [((r * c - f * s) * scale, (r * s + f * c) * scale, u * scale) for r, f, u in points]
+
+
 def spawn_fire(label, loc, light, fire, zone_rid):
     """An AMRFireActor at the flame's centre (or the light, without a flame)."""
     centre = fire["centre_cm"] if fire else light["offset_m"] * 100.0
@@ -920,7 +941,12 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
     for label, mesh, (x, y, z), light, fire, yaw, *rest in props:
         loc = origin + unreal.Vector(x, y, z)
         if (fire or (light and light.get("flicker"))) and has_fire_actor:
-            spawn_fire(label, loc, light, fire, zone["rid"])
+            if fire and fire.get("points"):
+                for i, (dx, dy, centre) in enumerate(fire_points(fire["points"], yaw, rest[0] if rest else 1.0)):
+                    spawn_fire(label if i == 0 else "%s_%d" % (label, i), loc + unreal.Vector(dx, dy, 0),
+                               light if i == 0 else None, dict(fire, centre_cm=centre), zone["rid"])
+            else:
+                spawn_fire(label, loc, light, fire, zone["rid"])
             light = None  # the fire actor has it
         if mesh:
             a = actors.spawn_actor_from_object(eal.load_asset(mesh), loc, unreal.Rotator(0, 0, 0))

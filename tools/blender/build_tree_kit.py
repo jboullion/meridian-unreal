@@ -154,6 +154,24 @@ TREES = {
         "limbs": (5, 7), "twigs": (1, 2), "cards": 60, "card_m": (0.3, 0.45), "min_card_z_m": 0.02,
         "variants": {"A": 409, "B": 419},
     },
+    # The Tree class (treebot.bgf, shrink 2): the oak and the elm share the fruit trees' drawing, the
+    # pine is a cone of needles nearly to the ground
+    "Oak": {  # frame 0: a broad round crown
+        "height_m": 4.37, "crown_base_m": 1.41, "crown_r_m": (1.5, 1.47), "trunk_d_m": 0.32,
+        "limbs": (5, 7), "twigs": (3, 5), "cards": 440, "card_m": (0.66, 0.96),
+        "variants": {"A": 421, "B": 431, "C": 433},
+    },
+    "Elm": {  # frame 1: a taller, narrower crown
+        "height_m": 4.4, "crown_base_m": 1.31, "crown_r_m": (1.39, 1.55), "trunk_d_m": 0.26,
+        "limbs": (4, 6), "twigs": (3, 5), "cards": 400, "card_m": (0.6, 0.88),
+        "variants": {"A": 439, "B": 443, "C": 449},
+    },
+    "Pine": {  # frame 2: a cone from a short trunk. Like the shrubs, the crown's ellipsoid dips below
+        # the ground, so its widest part is at the foot, cut off 0.25 m up
+        "height_m": 4.4, "crown_base_m": -1.6, "crown_r_m": (0.85, 3.0), "trunk_d_m": 0.27, "taper": 0.85,
+        "limbs": (8, 10), "twigs": (2, 3), "cards": 520, "card_m": (0.5, 0.75), "min_card_z_m": 0.25,
+        "variants": {"A": 457, "B": 461},
+    },
 }
 
 TRUNK_SIDES = 9

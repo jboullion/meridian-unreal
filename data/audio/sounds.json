@@ -10,7 +10,9 @@
     "room 2600",
     "room 2601",
     "room 2602",
-    "room 2603"
+    "room 2603",
+    "room 703",
+    "room 704"
    ]
   },
   "ambcntry.ogg": {
@@ -25,7 +27,9 @@
     "room 537",
     "room 200",
     "room 206",
-    "room 535"
+    "room 535",
+    "room 557",
+    "room 568"
    ]
   },
   "arr_metl.ogg": {
@@ -41,7 +45,9 @@
    "category": "music",
    "loop": true,
    "used_by": [
-    "room 333"
+    "room 333",
+    "room 373",
+    "room 376"
    ]
   },
   "bar.ogg": {
@@ -49,7 +55,17 @@
    "category": "music",
    "loop": true,
    "used_by": [
-    "room 202"
+    "room 202",
+    "room 371"
+   ]
+  },
+  "bar2.ogg": {
+   "file": "bar2.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 370",
+    "room 375"
    ]
   },
   "beach.ogg": {
@@ -58,7 +74,8 @@
    "loop": false,
    "used_by": [
     "room 300",
-    "room 535"
+    "room 535",
+    "room 568"
    ]
   },
   "bsp_atkh.ogg": {
@@ -134,6 +151,16 @@
     "room 2603"
    ]
   },
+  "cave.ogg": {
+   "file": "cave.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 377",
+    "room 378",
+    "room 379"
+   ]
+  },
   "city02.ogg": {
    "file": "city02.ogg",
    "category": "music",
@@ -141,6 +168,30 @@
    "used_by": [
     "room 200",
     "room 206"
+   ]
+  },
+  "city03.ogg": {
+   "file": "city03.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 350",
+    "room 351",
+    "room 352",
+    "room 353",
+    "room 354",
+    "room 355",
+    "room 356",
+    "room 357",
+    "room 358",
+    "room 359",
+    "room 360",
+    "room 361",
+    "room 362",
+    "room 363",
+    "room 364",
+    "room 382",
+    "room 384"
    ]
   },
   "cnt_atkh.ogg": {
@@ -219,7 +270,40 @@
     "room 2600 door",
     "room 2601 door",
     "room 2602 door",
-    "room 2603 door"
+    "room 2603 door",
+    "room 350 door",
+    "room 351 door",
+    "room 352 door",
+    "room 353 door",
+    "room 354 door",
+    "room 355 door",
+    "room 356 door",
+    "room 357 door",
+    "room 358 door",
+    "room 359 door",
+    "room 360 door",
+    "room 361 door",
+    "room 362 door",
+    "room 363 door",
+    "room 364 door",
+    "room 370 door",
+    "room 371 door",
+    "room 372 door",
+    "room 373 door",
+    "room 374 door",
+    "room 375 door",
+    "room 376 door",
+    "room 377 door",
+    "room 378 door",
+    "room 379 door",
+    "room 380 door",
+    "room 382 door",
+    "room 384 door",
+    "room 557 door",
+    "room 568 door",
+    "room 703 door",
+    "room 704 door",
+    "room 710 door"
    ]
   },
   "down2.ogg": {
@@ -228,7 +312,20 @@
    "loop": false,
    "used_by": [
     "room 306",
-    "room 2600"
+    "room 2600",
+    "room 704",
+    "room 710"
+   ]
+  },
+  "drips.ogg": {
+   "file": "drips.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 377",
+    "room 378",
+    "room 379",
+    "room 380"
    ]
   },
   "drop.ogg": {
@@ -240,7 +337,9 @@
     "room 2600",
     "room 2601",
     "room 2602",
-    "room 2603"
+    "room 2603",
+    "room 703",
+    "room 704"
    ]
   },
   "eagle.ogg": {
@@ -248,7 +347,9 @@
    "category": "periodic",
    "loop": false,
    "used_by": [
-    "room 526"
+    "room 526",
+    "room 350",
+    "room 382"
    ]
   },
   "faren.ogg": {
@@ -439,7 +540,32 @@
    "loop": false,
    "used_by": [
     "room 300",
-    "room 535"
+    "room 535",
+    "room 568"
+   ]
+  },
+  "gwrm3awr.ogg": {
+   "file": "gwrm3awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "GroundWormLarva aware"
+   ]
+  },
+  "gwrmatk.ogg": {
+   "file": "gwrmatk.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "GroundWormLarva miss"
+   ]
+  },
+  "gwrmdie.ogg": {
+   "file": "gwrmdie.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "GroundWormLarva death"
    ]
   },
   "hit.ogg": {
@@ -455,7 +581,9 @@
    "category": "periodic",
    "loop": false,
    "used_by": [
-    "room 526"
+    "room 526",
+    "room 350",
+    "room 382"
    ]
   },
   "ice04.ogg": {
@@ -463,7 +591,9 @@
    "category": "periodic",
    "loop": false,
    "used_by": [
-    "room 526"
+    "room 526",
+    "room 350",
+    "room 382"
    ]
   },
   "icecave.ogg": {
@@ -471,7 +601,9 @@
    "category": "loop",
    "loop": true,
    "used_by": [
-    "room 526"
+    "room 526",
+    "room 350",
+    "room 382"
    ]
   },
   "imp.ogg": {
@@ -718,7 +850,42 @@
    "category": "music",
    "loop": true,
    "used_by": [
-    "room 706"
+    "room 706",
+    "room 703",
+    "room 704",
+    "room 710"
+   ]
+  },
+  "lup_atkh.ogg": {
+   "file": "lup_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Lupogg hit"
+   ]
+  },
+  "lup_atkm.ogg": {
+   "file": "lup_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Lupogg miss"
+   ]
+  },
+  "lup_awr.ogg": {
+   "file": "lup_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Lupogg aware"
+   ]
+  },
+  "lup_dth.ogg": {
+   "file": "lup_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Lupogg death"
    ]
   },
   "lute_equip.ogg": {
@@ -750,7 +917,8 @@
    "used_by": [
     "room 204",
     "room 205",
-    "room 207"
+    "room 207",
+    "room 372"
    ]
   },
   "mhit1b.ogg": {
@@ -951,9 +1119,10 @@
   },
   "ouchf2.ogg": {
    "file": "ouchf2.ogg",
-   "category": "combat",
+   "category": "world",
    "loop": false,
    "used_by": [
+    "room 380",
     "Player player_sound_female_ouch2"
    ]
   },
@@ -1404,7 +1573,9 @@
     "room 537",
     "room 200",
     "room 206",
-    "room 535"
+    "room 535",
+    "room 557",
+    "room 568"
    ]
   },
   "rs_for02.ogg": {
@@ -1419,7 +1590,9 @@
     "room 537",
     "room 200",
     "room 206",
-    "room 535"
+    "room 535",
+    "room 557",
+    "room 568"
    ]
   },
   "rs_for03.ogg": {
@@ -1434,7 +1607,9 @@
     "room 537",
     "room 200",
     "room 206",
-    "room 535"
+    "room 535",
+    "room 557",
+    "room 568"
    ]
   },
   "rs_for05.ogg": {
@@ -1449,7 +1624,9 @@
     "room 537",
     "room 200",
     "room 206",
-    "room 535"
+    "room 535",
+    "room 557",
+    "room 568"
    ]
   },
   "rs_for14.ogg": {
@@ -1464,7 +1641,9 @@
     "room 537",
     "room 200",
     "room 206",
-    "room 535"
+    "room 535",
+    "room 557",
+    "room 568"
    ]
   },
   "rs_for18.ogg": {
@@ -1479,7 +1658,9 @@
     "room 537",
     "room 200",
     "room 206",
-    "room 535"
+    "room 535",
+    "room 557",
+    "room 568"
    ]
   },
   "rs_for20.ogg": {
@@ -1494,7 +1675,9 @@
     "room 537",
     "room 200",
     "room 206",
-    "room 535"
+    "room 535",
+    "room 557",
+    "room 568"
    ]
   },
   "rs_wind.ogg": {
@@ -1503,6 +1686,8 @@
    "loop": true,
    "used_by": [
     "room 526",
+    "room 350",
+    "room 382",
     "weather wind"
    ]
   },
@@ -1594,6 +1779,39 @@
     "spell DetectEvil"
    ]
   },
+  "sewer03.ogg": {
+   "file": "sewer03.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 377",
+    "room 378",
+    "room 379",
+    "room 380"
+   ]
+  },
+  "sewer04.ogg": {
+   "file": "sewer04.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 377",
+    "room 378",
+    "room 379",
+    "room 380"
+   ]
+  },
+  "seweramb.ogg": {
+   "file": "seweramb.ogg",
+   "category": "loop",
+   "loop": true,
+   "used_by": [
+    "room 377",
+    "room 378",
+    "room 379",
+    "room 380"
+   ]
+  },
   "sforcelt.ogg": {
    "file": "sforcelt.ogg",
    "category": "spell",
@@ -1633,7 +1851,10 @@
    "loop": false,
    "used_by": [
     "room 706",
-    "room 717"
+    "room 717",
+    "room 703",
+    "room 704",
+    "room 710"
    ]
   },
   "sholysym.ogg": {
@@ -1740,7 +1961,19 @@
    "used_by": [
     "room 303",
     "room 332",
-    "room 201"
+    "room 201",
+    "room 374"
+   ]
+  },
+  "sngldrip.ogg": {
+   "file": "sngldrip.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 377",
+    "room 378",
+    "room 379",
+    "room 380"
    ]
   },
   "song.ogg": {
@@ -1826,7 +2059,40 @@
     "room 2600 wading",
     "room 2601 wading",
     "room 2602 wading",
-    "room 2603 wading"
+    "room 2603 wading",
+    "room 350 wading",
+    "room 351 wading",
+    "room 352 wading",
+    "room 353 wading",
+    "room 354 wading",
+    "room 355 wading",
+    "room 356 wading",
+    "room 357 wading",
+    "room 358 wading",
+    "room 359 wading",
+    "room 360 wading",
+    "room 361 wading",
+    "room 362 wading",
+    "room 363 wading",
+    "room 364 wading",
+    "room 370 wading",
+    "room 371 wading",
+    "room 372 wading",
+    "room 373 wading",
+    "room 374 wading",
+    "room 375 wading",
+    "room 376 wading",
+    "room 377 wading",
+    "room 378 wading",
+    "room 379 wading",
+    "room 380 wading",
+    "room 382 wading",
+    "room 384 wading",
+    "room 557 wading",
+    "room 568 wading",
+    "room 703 wading",
+    "room 704 wading",
+    "room 710 wading"
    ]
   },
   "splearn.ogg": {
@@ -1957,7 +2223,10 @@
    "used_by": [
     "room 300",
     "room 526",
-    "room 535"
+    "room 535",
+    "room 350",
+    "room 382",
+    "room 568"
    ]
   },
   "system_save.ogg": {
@@ -2048,7 +2317,8 @@
     "room 330",
     "room 331",
     "room 536",
-    "room 537"
+    "room 537",
+    "room 557"
    ]
   },
   "walk7.ogg": {
@@ -2056,7 +2326,8 @@
    "category": "music",
    "loop": true,
    "used_by": [
-    "room 717"
+    "room 717",
+    "room 568"
    ]
   },
   "wave1.ogg": {
@@ -2065,7 +2336,8 @@
    "loop": false,
    "used_by": [
     "room 300",
-    "room 535"
+    "room 535",
+    "room 568"
    ]
   },
   "wave2.ogg": {
@@ -2074,7 +2346,8 @@
    "loop": false,
    "used_by": [
     "room 300",
-    "room 535"
+    "room 535",
+    "room 568"
    ]
   },
   "wave3.ogg": {
@@ -2083,7 +2356,8 @@
    "loop": false,
    "used_by": [
     "room 300",
-    "room 535"
+    "room 535",
+    "room 568"
    ]
   },
   "wave4.ogg": {
@@ -2092,7 +2366,8 @@
    "loop": false,
    "used_by": [
     "room 300",
-    "room 535"
+    "room 535",
+    "room 568"
    ]
   },
   "weatstp1.ogg": {
@@ -2117,7 +2392,11 @@
    "category": "loop",
    "loop": true,
    "used_by": [
-    "room 535"
+    "room 535",
+    "room 377",
+    "room 378",
+    "room 379",
+    "room 380"
    ]
   },
   "wfront03.ogg": {

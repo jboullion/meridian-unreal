@@ -479,10 +479,40 @@ The original's wall torches are wall textures, not objects: a side view with the
 - **Found on the way:** `make_placeholders.py` deleted every file in `build/textures_placeholder/` it hadn't written, which included the prop gallery's sprite pictures (`T_GallerySprite_*`, from `prop_gallery.py`). The next world build then failed at the gallery. It now leaves them alone.
 - The iron collar renders lighter than the original's grey-blue; the maintainer likes it that way (no `"albedo"`).
 
+## Marion batch (2026-10-10)
+Pass 3 of the world remaster (docs/world-maps.md) built Marion's 15 maps. Its objects without a mesh, found from `data/zone_layout.json` against `props.json` (`build_world.prop_config`):
+
+**Shared, not remade.** `props.json` maps by Kod class, OO type or icon, so a mesh serves every room in the world that places it. Marion's tables, stools, braziers, candles, skulls, the sign, fountains, firepits, splitting stumps, dice, cloth bolts and mummies already came from Raza and the world batch. Nothing in the list below exists elsewhere under another name (`box1`, the Raza crate, is a different sprite from the chest `box2`).
+
+**Trees: the Blender kit** (the user's rule: leafy trees to the kit, leafless ones to Tripo). Marion's trees are the `Tree` class (tree.kod: `treebot.bgf`, its group the constructor's `bottom`: 1 oak, 2 elm, 3 pine; 273 placed in the world) and one memorial OrnamentalObject made with only its icon (`rIcon` `treebot.bgf`, "the mimosa tree"). All three are leafy:
+- `Oak`, `Elm` and `Pine` in `build_tree_kit.py` and `make_tree_textures.py`, measured off `treebot`'s frames at shrink 2. Oak and elm share the fruit trees' sizes. The pine is a cone: its crown ellipsoid dips 1.6 m below the ground, as the shrubs' do, so it is widest at the foot. Review: `build/environment/tree_review/sheet.png`.
+- `make_tree_textures.py` takes a `frame` (the three trees share one bgf).
+- `build_world.prop_config` now also tries `"<Class>/<param>=<value>"` for a constructor argument (`"Tree/bottom=2"`: the elm) and `props.json` `"icons"` for an OrnamentalObject made with only its icon. A `NewsLink` made with `icon` `jbook.bgf` (Jasper's tavern) takes the lectern this way.
+- No leafless tree in Marion; the world's (`feytree`, `nectree1-4`, `spdrtree`) were already Tripo models.
+
+**Tripo: 19 props**, front image only, as the world batch:
+- Multi-frame "state" props from their resting frame: the chest `box2` (closed), the candelabra `candelab` (frame 0: its candles unlit; the flames are drawn by the game), the crafting anvil, the lectern `jbook` (`BookPedestal`, `NewsAdventure`, `NewsJusticar`, `GuildWarNews`, OO 28 `OO_JALA_BOOK`), loom, shaving horse, spinning wheel, tanning rack (and their Kocatan and Goad's spellings), throne, the pillow, and the news stand `news` (`NewsLink`, `News`, `Newslink`, `NewsGuildCharter`, `NewsAnnouncement`).
+- The plantation's crops, `FoodDispenser/<food>` by their `*_disp_icon`: the henhouse (eggs), carrots, corn (`cornstalk`), wheat (flour), oats, potatoes, tomatoes and the watermelon patch. They grow in rows of 24 at the plantation; `random_yaw`.
+- Polycount 4000 for the thin ones (candelabra, loom, spinning wheel, corn, wheat, oats, potato plant), 1000 for the pillow, 2000 for the rest. Manifests carry `"batch": "marion"`.
+- Left as they are: the forge's flame (`forge.bgf`, an effect; the forge is part of the room) and the Death Realm portal (`teleport.bgf`, animated).
+
+**Run.** Restyles in one OpenAI batch (`batch_6acad1de…`, about 25 minutes, no misses: `build/aigen/marion/restyles.jpg`). Tripo Studio: the pillow alone at 1000, then Batch Images to 3D at 4000 (7) and at 2000 (11): 855 credits (14,450 → 13,595). Jobs were matched by Tripo's captions and face limits; all 19 were unambiguous. All 19 arrived over the bridge at 8 s a model, none lost, once the Chrome window was in front (the first send, with the window behind others, did nothing).
+
+**Results** (`build/aigen/overview_05_review_normalized_front.png`): every model reads as its sprite. The thin crops came out better than feared: wheat and oats as tufts of stalks (the oats a little darker than the sprite), the corn a single stalk. The loom's warp threads are a tangle at 1724 triangles; the chest's back and sides are invented panels. Meshes come in under the asked polycount (the loom and the boxy props at 1600–1900).
+
+**The chests from their own four views.** At the user's request the chest was redone from the original's own side and back drawings. `box2` has two 8-direction groups: closed `[0, 5, 4, 3, 3, 3, 2, 1]` and open `[6, 11, 10, 9, 9, 9, 8, 7]`, each with its own left, back and right (handles on the ends, a plain back, the lid hinged at the back).
+- The original draws a chest **open** unless it's locked (`storebox.kod` SendAnimation: group 2 unless `pbLocked`), and every one of the 53 placed is made unlocked, so the open chest is what players saw. `props.json` `Chest` shows `SM_AI_Box2Open` (`mesh_use` "open"), with `SM_AI_Box2` (closed) as the option "closed". Showing the closed one when a guild locks a chest is a runtime job (Open).
+- Two manifests (`box2` closed, `box2open`), each restyled front first, then its three sides from their own drawings (two OpenAI batch rounds, no misses), then Tripo multi-view (variant `MV`, 2 × 45 credits; 13,595 → 13,505). Both came back whole at about 1,600 triangles: `build/aigen/marion/chests_models.jpg`. The open chest's inside is plain grey (the lid keeps its lining).
+
+**Review in place.** `tools/lookdev/prop_cameras.py` puts a camera a few metres from a placed prop, on open floor, looking at it (`data/environment/prop_cameras.json`; `run_lookdev.ps1 -Cameras prop_cameras.json`): `build/lookdev/marion_props_placed/sheet.jpg`. The gallery captures are `build/lookdev/marion_props/gallery_sheet.jpg`. The first gallery capture came out as grey checkerboards: materials still compiling. `MRLookDevTour` now waits for the compile queues first.
+
+**Several flames on one prop.** The candelabra (lit by default in Kod: frames 2–4 animate its flames) has five candles: `props.json` `"fire"` `"at_m"` lists flame points on the mesh ([right, front, up] in metres, read off the GLB's candle tips), turned with the prop (`build_world.fire_points`); the first carries the Kod light (30, fire colour).
+
 ## Open
 - `necglobe` (TargetGlobe, ViewpointGlobe): a sphere with our own swirling glass material instead of the Tripo model.
 - World batch: the user's picks of reruns (the plant, the orb, maybe `necvase` at 2000, multi-view where a back was invented), then a world build and look-dev for the props that authored zones place.
 - World batch: multi-frame "state" props (42; `inventory_world.json` kind prop, not static), from their resting frames.
+- Chests: show the closed model (`SM_AI_Box2`) when the server draws a chest locked (group 1), at runtime.
 - Runtime props: online rooms built at runtime draw the bitmap. Map icon → `SM_AI_*` / `SM_Tree_*`, spawn the mesh instead and import kit meshes that no authored zone places.
 - Trees: `nectree3`'s glowing moss, `spdrtree`'s webs (now in their Tripo `describe`); the `Tree` class (273 placed, its icon chosen per object) isn't mapped yet.
 - Trees: the Outskirts tree lines (ADR 0003 2g).

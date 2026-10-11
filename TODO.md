@@ -3,7 +3,7 @@
 ## Current TODOs
 
 
-- Probably also look at texture smoothing and some of the other things Shards implemented from the original to match the look
+
 
 
 ## Loading Screens
@@ -41,6 +41,5 @@
 
 ## Admins and Guides
 
-- admin console?
-  - How does it work?
+
 

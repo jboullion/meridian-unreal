@@ -9375,5 +9375,3468 @@
    }
   ],
   "file": "Server-104/kod/object/active/holder/room/monsroom/marcryp4.kod"
+ },
+ {
+  "rid": 350,
+  "class": "Jasper",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "East Jasper",
+  "roo": "jaseast.roo",
+  "music": "city03.ogg",
+  "flags": [
+   "ROOM_GUILD_PK_ONLY"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_ROAD",
+   "TERRAIN_MOUNTAIN"
+  ],
+  "teleport": {
+   "row": 40,
+   "col": 54,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 8,
+  "info": null,
+  "exits": [
+   {
+    "row": 36,
+    "col": 34,
+    "dest_rid": 382,
+    "dest_row": 43,
+    "dest_col": 37,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 37,
+    "col": 34,
+    "dest_rid": 382,
+    "dest_row": 44,
+    "dest_col": 37,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 38,
+    "col": 34,
+    "dest_rid": 382,
+    "dest_row": 45,
+    "dest_col": 37,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 44,
+    "col": 32,
+    "dest_rid": 382,
+    "dest_row": 51,
+    "dest_col": 35,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 45,
+    "col": 32,
+    "dest_rid": 382,
+    "dest_row": 52,
+    "dest_col": 35,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 52,
+    "col": 26,
+    "dest_rid": 382,
+    "dest_row": 60,
+    "dest_col": 32,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 52,
+    "col": 27,
+    "dest_rid": 382,
+    "dest_row": 60,
+    "dest_col": 32,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 41,
+    "col": 57,
+    "dest_rid": 374,
+    "dest_row": 6,
+    "dest_col": 6,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 42,
+    "col": 58,
+    "dest_rid": 374,
+    "dest_row": 6,
+    "dest_col": 6,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 49,
+    "col": 39,
+    "dest_rid": 373,
+    "dest_row": 19,
+    "dest_col": 3,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 59,
+    "col": 31,
+    "dest_rid": 372,
+    "dest_row": 13,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 59,
+    "col": 32,
+    "dest_rid": 372,
+    "dest_row": 13,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 59,
+    "col": 33,
+    "dest_rid": 372,
+    "dest_row": 13,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 29,
+    "col": 61,
+    "dest_rid": 710,
+    "dest_row": 19,
+    "dest_col": 11,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 29,
+    "col": 62,
+    "dest_rid": 710,
+    "dest_row": 19,
+    "dest_col": 11,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 73,
+    "col": 36,
+    "dest_rid": 704,
+    "dest_row": 50,
+    "dest_col": 27,
+    "rotate": "ROTATE_180"
+   },
+   {
+    "row": 73,
+    "col": 37,
+    "dest_rid": 704,
+    "dest_row": 50,
+    "dest_col": 27,
+    "rotate": "ROTATE_180"
+   },
+   {
+    "row": 75,
+    "col": 33,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 74,
+    "col": 32,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 39,
+    "col": 49,
+    "locked": true,
+    "message": "This old prospector's shack is probably unsafe to enter."
+   },
+   {
+    "row": 48,
+    "col": 34,
+    "locked": true,
+    "message": "Tightly locked, the City Arsenal defies intruders."
+   },
+   {
+    "row": 54,
+    "col": 39,
+    "locked": true,
+    "message": "You don't have access to the granary."
+   }
+  ],
+  "edge_exits": [
+   {
+    "side": "LEAVE_EAST",
+    "dest_rid": 568,
+    "dest_row": 14,
+    "dest_col": 7,
+    "rotate": "ROTATE_315"
+   }
+  ],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 51
+    },
+    "row": 47,
+    "col": 39,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 50
+    },
+    "row": 46,
+    "col": 39,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 3
+    },
+    "row": 45,
+    "col": 39,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "SmokeColumn",
+    "row": 45,
+    "col": 44,
+    "fine_row": 48,
+    "fine_col": 32,
+    "angle": 0
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 151
+    },
+    "row": 40,
+    "col": 58,
+    "fine_row": 24,
+    "fine_col": 24,
+    "angle": 0
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasper.kod"
+ },
+ {
+  "rid": 351,
+  "class": "JasperAB1",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Old Granary ",
+  "roo": "jasab1.roo",
+  "music": "city03.ogg",
+  "flags": [
+   "ROOM_GUILD_PK_ONLY"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 11,
+   "col": 13,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 12,
+    "col": 13,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab1.kod"
+ },
+ {
+  "rid": 352,
+  "class": "JasperAB2",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Icehouse",
+  "roo": "jasab2.roo",
+  "music": "city03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 7,
+   "col": 7,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 8,
+    "col": 1,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab2.kod"
+ },
+ {
+  "rid": 353,
+  "class": "JasperAB3",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Old Schoolhouse",
+  "roo": "jasab3.roo",
+  "music": "city03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 15,
+   "col": 5,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 7,
+    "col": 2,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 17,
+    "col": 15,
+    "dest_rid": 382,
+    "dest_row": 44,
+    "dest_col": 38,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "BookPedestal",
+    "params": {
+     "Name": "The Journal of Seargant Doran",
+     "Text": "\n\n\n\n\n\n\n\n\n\nThe Journal of Seargant Doran,\nreconnaissance specialist for the army of Tos\n\n\n\n\n\n\n\n\n\n\n¶The army of Brax is indeed swelling for an offensive as we had feared.  Every week their dark Queen recruits hundreds of unsmiling youths into her horde of necromancers, each of whom must undergo some sort of dark transformation which I have yet to infiltrate deeply enough to witness directly.  I am convinced, however, that whatever dark rituals they perform pale in comparison to the sacrifices Queen Venya'cyr herself has made for her powers;  she keeps her face shrouded at all times to conceal the fact that she long ago ceased to be anything close to human.\n\nThose personal sacrifices must be the key to their destruction, so it is vital that we learn more about their ways.  I am not the first to attempt to infiltrate into the inner circles of the Order of Necromancers, and I doubt that I will return alive.  My only hope is that I, too, do not succumb to the darkness and become one of them.¶Lieutenant Kyrg is dead.  He was suspected of being a spy, so he was put down in the Arena for public sacrifice.  I was forced to watch along with the other necromancers, crowded together on the huge stone platform in the middle of the Arena.  As the cloaked figures around me jostled towards the edge for the best view of the naked victims huddled below, I retreated to the center of the platform to rest my back against the cool stone pillar, gazing up at the dark roiling clouds above and praying for rain.  The Evil Queen emerged onto a ledge high above us, and as the crowd began to roar with approval I shut my eyes tight against the swell of emotion.\nMoments later when I opened my eyes I was already in motion, pitched forward violently as I dully registered the bolt of lightning slamming into the pillar and through my body.  I was barely aware of more lightning strikes around me, one, two, how many more I cannot say, my ears ringing from the blast and from the shrieks of pain all around me.  Then the platform began to move.¶Through the chaos of stone grinding on stone, flailing charred bodies and screaming voices, one thought rang clear:  I had to save Kyrg.  But as I dragged my broken and bleeding body to the edge of the platform and gazed far below through the clouds of smoke, I realized there was nothing I could do for him now.  The platform was already a hundred feet above the Arena floor and steadily rising, and the enraged necromancers were summoning a horde of deformed skeletal warriors.  As I watched with horror, the undead fell upon their unarmed, helpless victims and rent them limb from limb.\n\nI shuddered and withdrew from the spectacle below, praying to my Lord Faren as I slipped into unconsciousness for the strength to see this abomination destroyed.  In the last moments before sleep, I saw Venya'cyr's radiantly beautiful face materialize above me.\n\"You are badly hurt, my pet.  There is only one thing for you now.\"\nShe smiled, her hands gently caressed my face, and I felt a cold steel chain against the skin of my neck."
+    },
+    "row": 2,
+    "col": 2,
+    "fine_row": 32,
+    "fine_col": 32,
+    "angle": 512
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab3.kod"
+ },
+ {
+  "rid": 354,
+  "class": "JasperAB4",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Deserted Eating House",
+  "roo": "jasab4.roo",
+  "music": "city03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 8,
+   "col": 4,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 9,
+    "col": 13,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 14,
+    "col": 7,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab4.kod"
+ },
+ {
+  "rid": 355,
+  "class": "JasperAB5",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Abandoned Building",
+  "roo": "jasab5.roo",
+  "music": "city03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 10,
+   "col": 9,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 13,
+    "col": 6,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab5.kod"
+ },
+ {
+  "rid": 356,
+  "class": "JasperAB6",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Abandoned Building",
+  "roo": "jasab6.roo",
+  "music": "city03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 6,
+   "col": 12,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 5,
+    "col": 8,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab6.kod"
+ },
+ {
+  "rid": 357,
+  "class": "JasperAB7",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Abandoned Building",
+  "roo": "jasab7.roo",
+  "music": "city03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 9,
+   "col": 7,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 8,
+    "col": 10,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab7.kod"
+ },
+ {
+  "rid": 358,
+  "class": "JasperAB8",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Abandoned Building",
+  "roo": "jasab8.roo",
+  "music": "city03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 6,
+   "col": 7,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 8,
+    "col": 10,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab8.kod"
+ },
+ {
+  "rid": 359,
+  "class": "JasperAB9",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Abandoned Building",
+  "roo": "jasab9.roo",
+  "music": "city03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 7,
+   "col": 6,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 5,
+    "col": 9,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab9.kod"
+ },
+ {
+  "rid": 360,
+  "class": "JasperAB10",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Disused Shop",
+  "roo": "jasab10.roo",
+  "music": "city03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 8,
+   "col": 5,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 6,
+    "col": 2,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab10.kod"
+ },
+ {
+  "rid": 361,
+  "class": "JasperAB11",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Abandoned Counting Room",
+  "roo": "jasab11.roo",
+  "music": "city03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 5,
+   "col": 4,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 6,
+    "col": 2,
+    "dest_rid": 382,
+    "dest_row": 58,
+    "dest_col": 21,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab11.kod"
+ },
+ {
+  "rid": 362,
+  "class": "JasperAB12",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Old Barracks",
+  "roo": "jasab12.roo",
+  "music": "city03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 3,
+   "col": 5,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 1,
+    "col": 5,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab12.kod"
+ },
+ {
+  "rid": 363,
+  "class": "JasperAB13",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Dusty Chamber",
+  "roo": "jasab13.roo",
+  "music": "city03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 12,
+   "col": 10,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 5,
+    "col": 8,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab13.kod"
+ },
+ {
+  "rid": 364,
+  "class": "JasperAB14",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Warm Haven ",
+  "roo": "jasab14.roo",
+  "music": "city03.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 9,
+   "col": 13,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 8,
+    "col": 20,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasab14.kod"
+ },
+ {
+  "rid": 370,
+  "class": "JasperInn",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Yonder Inn of Jasper",
+  "roo": "jasinn.roo",
+  "music": "bar2.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2",
+   "ROOM_HOMETOWN",
+   "ROOM_SANCTUARY",
+   "ROOM_SAFELOGOFF",
+   "ROOM_TRIPLE_HEAL"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 4,
+   "col": 10,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 2,
+    "col": 8,
+    "dest_rid": 382,
+    "dest_row": 42,
+    "dest_col": 25,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "NewsLink",
+    "params": {
+     "nid": 9,
+     "name": "Designers' News",
+     "desc": "Check here for information from the game administrators."
+    },
+    "row": 3,
+    "col": 12,
+    "fine_row": 56,
+    "fine_col": 48
+   },
+   {
+    "class": "JasperInnKeeper",
+    "row": 6,
+    "col": 6,
+    "angle": 3584
+   },
+   {
+    "class": "Table",
+    "row": 5,
+    "col": 11,
+    "fine_row": 32,
+    "fine_col": 0
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasinn.kod"
+ },
+ {
+  "rid": 371,
+  "class": "JasperTavern",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Pietro's Wicked Brews",
+  "roo": "jastavrn.roo",
+  "music": "bar.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2",
+   "ROOM_SANCTUARY",
+   "ROOM_SAFELOGOFF"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 8,
+   "col": 6,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 2,
+    "col": 6,
+    "dest_rid": 382,
+    "dest_row": 63,
+    "dest_col": 20,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "JasperBartender",
+    "row": 15,
+    "col": 6,
+    "angle": 3072
+   },
+   {
+    "class": "NewsLink",
+    "params": {
+     "nid": 5,
+     "name": "Tales of Adventure",
+     "icon": "jbook.bgf",
+     "desc": "Stories from the people of Meridian, collected by Bards"
+    },
+    "row": 16,
+    "col": 2,
+    "fine_row": 8,
+    "fine_col": 32,
+    "angle": 3584
+   },
+   {
+    "class": "BarStool",
+    "row": 13,
+    "col": 4,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "BarStool",
+    "row": 13,
+    "col": 5,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "BarStool",
+    "row": 13,
+    "col": 6,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "BarStool",
+    "row": 13,
+    "col": 7,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "BarStool",
+    "row": 13,
+    "col": 8,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "BarStool",
+    "row": 14,
+    "col": 3,
+    "fine_row": 32,
+    "fine_col": 48
+   },
+   {
+    "class": "BarStool",
+    "row": 15,
+    "col": 3,
+    "fine_row": 32,
+    "fine_col": 48
+   },
+   {
+    "class": "BarStool",
+    "row": 16,
+    "col": 3,
+    "fine_row": 32,
+    "fine_col": 48
+   },
+   {
+    "class": "BarStool",
+    "row": 14,
+    "col": 9,
+    "fine_row": 32,
+    "fine_col": 16
+   },
+   {
+    "class": "BarStool",
+    "row": 15,
+    "col": 9,
+    "fine_row": 32,
+    "fine_col": 16
+   },
+   {
+    "class": "BarStool",
+    "row": 16,
+    "col": 9,
+    "fine_row": 32,
+    "fine_col": 16
+   },
+   {
+    "class": "Table",
+    "row": 5,
+    "col": 4,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Table",
+    "row": 7,
+    "col": 4,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Table",
+    "row": 9,
+    "col": 4,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Table",
+    "row": 11,
+    "col": 4,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Table",
+    "row": 5,
+    "col": 9,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Table",
+    "row": 7,
+    "col": 9,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Table",
+    "row": 9,
+    "col": 9,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Table",
+    "row": 11,
+    "col": 9,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 6,
+    "col": 5,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 10,
+    "col": 5,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 6,
+    "col": 8,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 10,
+    "col": 8,
+    "fine_row": 0,
+    "fine_col": 0
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jastavrn.kod"
+ },
+ {
+  "rid": 372,
+  "class": "JasperHall",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Adventurer's Hall of Jasper",
+  "roo": "jashall.roo",
+  "music": "main.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2",
+   "ROOM_SAFELOGOFF"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 13,
+   "col": 7,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 14,
+    "col": 7,
+    "dest_rid": 350,
+    "dest_row": 60,
+    "dest_col": 32,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "NewsLink",
+    "params": {
+     "nid": 20,
+     "name": "General News",
+     "desc": "Find out what's going on around Meridian."
+    },
+    "row": 7,
+    "col": 7
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jashall.kod"
+ },
+ {
+  "rid": 373,
+  "class": "JasperStore",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "General Store of Jasper",
+  "roo": "jasstore.roo",
+  "music": "bank.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 19,
+   "col": 5,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 19,
+    "col": 1,
+    "dest_rid": 350,
+    "dest_row": 49,
+    "dest_col": 38,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 19,
+    "col": 2,
+    "dest_rid": 350,
+    "dest_row": 49,
+    "dest_col": 38,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "JasperMerchant",
+    "row": 18,
+    "col": 8,
+    "angle": 2048
+   },
+   {
+    "class": "Brazier",
+    "row": 3,
+    "col": 3
+   },
+   {
+    "class": "Brazier",
+    "row": 3,
+    "col": 9
+   },
+   {
+    "class": "Brazier",
+    "row": 9,
+    "col": 3
+   },
+   {
+    "class": "Brazier",
+    "row": 9,
+    "col": 9
+   },
+   {
+    "class": "Brazier",
+    "row": 3,
+    "col": 12
+   },
+   {
+    "class": "Brazier",
+    "row": 3,
+    "col": 16
+   },
+   {
+    "class": "Brazier",
+    "row": 11,
+    "col": 12
+   },
+   {
+    "class": "Brazier",
+    "row": 11,
+    "col": 16
+   },
+   {
+    "class": "Brazier",
+    "row": 12,
+    "col": 3
+   },
+   {
+    "class": "Brazier",
+    "row": 12,
+    "col": 9
+   },
+   {
+    "class": "Brazier",
+    "row": 23,
+    "col": 3
+   },
+   {
+    "class": "Brazier",
+    "row": 23,
+    "col": 9
+   },
+   {
+    "class": "Table",
+    "row": 5,
+    "col": 4
+   },
+   {
+    "class": "Table",
+    "row": 5,
+    "col": 7
+   },
+   {
+    "class": "Table",
+    "row": 5,
+    "col": 15
+   },
+   {
+    "class": "Table",
+    "row": 9,
+    "col": 15
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasstore.kod"
+ },
+ {
+  "rid": 374,
+  "class": "JasperSmithy",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Quintor's Smithy",
+  "roo": "jassmith.roo",
+  "music": "smithy.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 9,
+   "col": 9,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 5,
+    "col": 5,
+    "dest_rid": 350,
+    "dest_row": 40,
+    "dest_col": 56,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "JasperBlacksmith",
+    "row": 13,
+    "col": 13,
+    "angle": 2560
+   },
+   {
+    "class": "Brazier",
+    "row": 14,
+    "col": 6,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 6,
+    "col": 14,
+    "fine_row": 0,
+    "fine_col": 0
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jassmith.kod"
+ },
+ {
+  "rid": 375,
+  "class": "JasperElderHut",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Home of the Wise Man",
+  "roo": "jaselder.roo",
+  "music": "bar2.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_RESIDENCE"
+  ],
+  "teleport": {
+   "row": 9,
+   "col": 7,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 11,
+    "col": 5,
+    "dest_rid": 382,
+    "dest_row": 32,
+    "dest_col": 26,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 12,
+    "col": 6,
+    "dest_rid": 382,
+    "dest_row": 32,
+    "dest_col": 26,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "JasperElder",
+    "row": 8,
+    "col": 13,
+    "angle": 1536
+   },
+   {
+    "class": "Brazier",
+    "row": 10,
+    "col": 10
+   },
+   {
+    "class": "Brazier",
+    "row": 12,
+    "col": 6,
+    "fine_row": 16,
+    "fine_col": 48
+   },
+   {
+    "class": "Table",
+    "row": 6,
+    "col": 10
+   },
+   {
+    "class": "Table",
+    "row": 8,
+    "col": 3
+   },
+   {
+    "class": "Stool",
+    "row": 8,
+    "col": 3,
+    "fine_row": 0
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jaselder.kod"
+ },
+ {
+  "rid": 376,
+  "class": "JasBank",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Royal Bank of Jasper",
+  "roo": "jasbank.roo",
+  "music": "bank.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 7,
+   "col": 7,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 6,
+    "col": 9,
+    "dest_rid": 382,
+    "dest_row": 53,
+    "dest_col": 21,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 7,
+    "col": 9,
+    "dest_rid": 382,
+    "dest_row": 53,
+    "dest_col": 21,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "JasperBanker",
+    "params": {
+     "bid": 1
+    },
+    "row": 8,
+    "col": 5,
+    "fine_row": 44,
+    "fine_col": 36,
+    "angle": 512
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "name": "Welcome to the Bank of Jasper",
+     "desc": "Use the commands \"deposit amount\", \"withdraw amount\", and \"balance\" to access your bank account.\n\nDeposits made here can also be accessed from the First Royal Bank of Tos in East Tos."
+    },
+    "row": 5,
+    "col": 8,
+    "fine_row": 24,
+    "fine_col": 16
+   },
+   {
+    "class": "Firepit",
+    "row": 9,
+    "col": 4,
+    "fine_row": 44,
+    "fine_col": 20
+   },
+   {
+    "class": "Brazier",
+    "row": 5,
+    "col": 2,
+    "fine_row": 40,
+    "fine_col": 20
+   },
+   {
+    "class": "Brazier",
+    "row": 5,
+    "col": 9,
+    "fine_row": 56,
+    "fine_col": 24
+   },
+   {
+    "class": "Brazier",
+    "row": 7,
+    "col": 9,
+    "fine_row": 40,
+    "fine_col": 24
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasbank.kod"
+ },
+ {
+  "rid": 377,
+  "class": "JasSewer1",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Sewers of Jasper",
+  "roo": "jassew1.roo",
+  "music": "cave.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_WATERFALL",
+   "TERRAIN_SEWERS"
+  ],
+  "teleport": {
+   "row": 21,
+   "col": 31,
+   "angle": null
+  },
+  "base_light": 0,
+  "outside_factor": 0,
+  "info": null,
+  "exits": [
+   {
+    "row": 30,
+    "col": 5,
+    "dest_rid": 382,
+    "dest_row": 35,
+    "dest_col": 28,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [
+   {
+    "side": "LEAVE_EAST",
+    "dest_rid": 378,
+    "dest_row": 7,
+    "dest_col": 1,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "GiantRat",
+     "weight": 95
+    },
+    {
+     "class": "Lupogg",
+     "weight": 5
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 30000,
+   "gen_percent": 80,
+   "init_count_min": 6,
+   "init_count_max": 7,
+   "monster_count_max": 25
+  },
+  "objects": [
+   {
+    "class": "BookPedestal",
+    "params": {
+     "Name": "The Smuggler's Crossing",
+     "Text": "    In the early part of the 5th century, an oppressive tax was laid upon the land to make reparations after the wars between Barloque and Tos and to line the pockets of the Empire Investors.  Troupes of men would patrol the countryside, ensuring that all merchandise was properly accounted for and taxed.  This lead the age of smugglers.\n    In the name of clean sanitation, the city workers of Barloque and Jasper began working on an intricate sewer system.  Secretly funded by illicit factions, they connected the subterranean tunnel system all the way from one city to the other.  The smell alone kept the local constabulary from investigating the extended work schedule.  Once complete, gems were taken from the mines of Jasper to the ports of Barloque and stashed away for their journey to the black markets of the Old Empire.  In return, certain goods would avoid the taxation of the land by travelling back through the sewer systems to the miners' town.  To avoid being double-crossed by the criminal faction of the other city, a system was built to make equitable trades.\n    The Smuggler's Crossing existed somewhere deep underground between the two cities.  Gates were established in such a way that neither side could cross without aid from the other.  Goods would be exchanged for gems here.\n    Later, during the first Jasper rebellion, loyalists used the intricate sewer system to smuggle armaments.  The government never was to become aware of this method.\n¶    None know what exactly ended this practice.  Some say a heated argument got out of control as wizards from the two factions violently battled at the Crossing.  Others say that when the great Nexus buckled in 450 Meridian Era, a tremendous earthquake ripped through the tunnels.  Whatever the cause, a huge crack opened up at the crossing.  A bridge was to be built, but the gaping chasm harbored more than met the eye.\n    Strange croaking and groaning filled the cave.  Stories surfaced about dead men being found in the sewer cut in half by mighty jaws of some unknown creature.  As fear in the land rose, a threat of a Royal Investigation became imminent.  Both factions decided it would be best to quit activities before the public focus lead to them.  Some time around the middle of the 5th century, the crossing was sealed up and forgotten from history.\n   Recently, brave adventures have stumble upon the old Smuggler's Crossing.  Stopped at the rusted gates, they claim to hear monstrous sounds echoing through the caverns.  All who return say the same thing, \"There is Something down there, something big!  Avoid the area at all costs or bring many, many companions if you are foolish enough to investigate. \""
+    },
+    "row": 30,
+    "col": 8,
+    "fine_row": 0,
+    "fine_col": 32,
+    "angle": 1536
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 60
+    },
+    "row": 30,
+    "col": 9,
+    "fine_row": 16,
+    "fine_col": 0
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 60
+    },
+    "row": 25,
+    "col": 6,
+    "fine_row": 44,
+    "fine_col": 32
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 60
+    },
+    "row": 25,
+    "col": 8,
+    "fine_row": 44,
+    "fine_col": 0
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 60
+    },
+    "row": 31,
+    "col": 11,
+    "fine_row": 24,
+    "fine_col": 12
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 60
+    },
+    "row": 31,
+    "col": 13,
+    "fine_row": 4,
+    "fine_col": 24
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 60
+    },
+    "row": 35,
+    "col": 17,
+    "fine_row": 4,
+    "fine_col": 56
+   },
+   {
+    "class": "DynamicLight",
+    "params": {
+     "iColor": 32518,
+     "iIntensity": 60
+    },
+    "row": 28,
+    "col": 21,
+    "fine_row": 44,
+    "fine_col": 40
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/jassew1.kod"
+ },
+ {
+  "rid": 378,
+  "class": "JasSewer2",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Sewers of Jasper",
+  "roo": "jassew2.roo",
+  "music": "cave.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_WATERFALL",
+   "TERRAIN_SEWERS"
+  ],
+  "teleport": {
+   "row": 18,
+   "col": 25,
+   "angle": null
+  },
+  "base_light": 0,
+  "outside_factor": 0,
+  "info": null,
+  "exits": [],
+  "edge_exits": [
+   {
+    "side": "LEAVE_WEST",
+    "dest_rid": 377,
+    "dest_row": 40,
+    "dest_col": 49,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_EAST",
+    "dest_rid": 379,
+    "dest_row": 43,
+    "dest_col": 1,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_EAST",
+    "dest_rid": 379,
+    "dest_row": 54,
+    "dest_col": 1,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Lupogg",
+     "weight": 100
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 30000,
+   "gen_percent": 80,
+   "init_count_min": 5,
+   "init_count_max": 7,
+   "monster_count_max": 25
+  },
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/jassew2.kod"
+ },
+ {
+  "rid": 379,
+  "class": "JasSewer3",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Sewers of Jasper",
+  "roo": "jassew3.roo",
+  "music": "cave.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_WATERFALL",
+   "TERRAIN_SEWERS"
+  ],
+  "teleport": {
+   "row": 58,
+   "col": 11,
+   "angle": null
+  },
+  "base_light": 0,
+  "outside_factor": 0,
+  "info": null,
+  "exits": [],
+  "edge_exits": [
+   {
+    "side": "LEAVE_WEST",
+    "dest_rid": 378,
+    "dest_row": 28,
+    "dest_col": 51,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_WEST",
+    "dest_rid": 378,
+    "dest_row": 38,
+    "dest_col": 51,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_NORTH",
+    "dest_rid": 380,
+    "dest_row": 50,
+    "dest_col": 3,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Lupogg",
+     "weight": 100
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 30000,
+   "gen_percent": 80,
+   "init_count_min": 5,
+   "init_count_max": 7,
+   "monster_count_max": 25
+  },
+  "objects": [],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/jassew3.kod"
+ },
+ {
+  "rid": 380,
+  "class": "SewerKingLair",
+  "parents": [
+   "BossRoom",
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Ancient Smuggler's Crossing",
+  "roo": "sewking.roo",
+  "music": null,
+  "flags": [],
+  "terrain": [
+   "TERRAIN_SEWERS",
+   "TERRAIN_LAIR"
+  ],
+  "teleport": {
+   "row": 38,
+   "col": 33,
+   "angle": null
+  },
+  "base_light": "(LIGHT_VERY_DARK + LIGHT_MIN)/2",
+  "outside_factor": 0,
+  "info": null,
+  "exits": [],
+  "edge_exits": [
+   {
+    "side": "LEAVE_EAST",
+    "dest_rid": 112,
+    "dest_row": 35,
+    "dest_col": 1,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_SOUTH",
+    "dest_rid": 379,
+    "dest_row": 2,
+    "dest_col": 19,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Lupogg",
+     "weight": 100
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 25000,
+   "gen_percent": 80,
+   "init_count_min": 7,
+   "init_count_max": 9,
+   "monster_count_max": 15
+  },
+  "objects": [
+   {
+    "class": "Lever",
+    "params": {
+     "description": "This lever is caked with years' worth of accumulated rust and slime."
+    },
+    "row": 39,
+    "col": 13,
+    "fine_row": 0,
+    "fine_col": 32
+   },
+   {
+    "class": "Lever",
+    "params": {
+     "description": "This lever is caked with years' worth of accumulated rust and slime."
+    },
+    "row": 33,
+    "col": 51,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "expr": "create(&Skull)",
+    "row": 20,
+    "col": 36,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "expr": "create(&OrnamentalObject,#type=OO_BONES)",
+    "row": 21,
+    "col": 26,
+    "fine_row": 32,
+    "fine_col": 55
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/bossroom/sewking.kod"
+ },
+ {
+  "rid": 382,
+  "class": "JasperWest",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "West Jasper",
+  "roo": "jaswest.roo",
+  "music": "city03.ogg",
+  "flags": [
+   "ROOM_GUILD_PK_ONLY"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_ROAD",
+   "TERRAIN_MOUNTAIN"
+  ],
+  "teleport": {
+   "row": 37,
+   "col": 25,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 8,
+  "info": null,
+  "exits": [
+   {
+    "row": 43,
+    "col": 39,
+    "dest_rid": 350,
+    "dest_row": 36,
+    "dest_col": 34,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 44,
+    "col": 39,
+    "dest_rid": 350,
+    "dest_row": 37,
+    "dest_col": 34,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 45,
+    "col": 39,
+    "dest_rid": 350,
+    "dest_row": 38,
+    "dest_col": 34,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 51,
+    "col": 37,
+    "dest_rid": 350,
+    "dest_row": 44,
+    "dest_col": 33,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 52,
+    "col": 37,
+    "dest_rid": 350,
+    "dest_row": 44,
+    "dest_col": 33,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 59,
+    "col": 32,
+    "dest_rid": 350,
+    "dest_row": 51,
+    "dest_col": 28,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 59,
+    "col": 33,
+    "dest_rid": 350,
+    "dest_row": 51,
+    "dest_col": 28,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 44,
+    "col": 25,
+    "dest_rid": 370,
+    "dest_row": 3,
+    "dest_col": 8,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 44,
+    "col": 26,
+    "dest_rid": 370,
+    "dest_row": 3,
+    "dest_col": 8,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 64,
+    "col": 20,
+    "dest_rid": 371,
+    "dest_row": 3,
+    "dest_col": 6,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 64,
+    "col": 21,
+    "dest_rid": 371,
+    "dest_row": 3,
+    "dest_col": 6,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 31,
+    "col": 27,
+    "dest_rid": 375,
+    "dest_row": 10,
+    "dest_col": 6,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 32,
+    "col": 28,
+    "dest_rid": 375,
+    "dest_row": 10,
+    "dest_col": 6,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 52,
+    "col": 20,
+    "dest_rid": 376,
+    "dest_row": 7,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 53,
+    "col": 20,
+    "dest_rid": 376,
+    "dest_row": 7,
+    "dest_col": 7,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 58,
+    "col": 21,
+    "dest_rid": 384,
+    "dest_row": 6,
+    "dest_col": 2,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 35,
+    "col": 29,
+    "dest_rid": 377,
+    "dest_row": 30,
+    "dest_col": 5,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 43,
+    "col": 37,
+    "dest_rid": 353,
+    "dest_row": 16,
+    "dest_col": 15,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 43,
+    "col": 38,
+    "dest_rid": 353,
+    "dest_row": 16,
+    "dest_col": 15,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 49,
+    "col": 36,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 51,
+    "col": 33,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 43,
+    "col": 32,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 30,
+    "col": 22,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 34,
+    "col": 21,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 43,
+    "col": 19,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 42,
+    "col": 15,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 38,
+    "col": 15,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 40,
+    "col": 19,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 63,
+    "col": 18,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 45,
+    "col": 34,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 39,
+    "col": 19,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 42,
+    "col": 19,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 64,
+    "col": 22,
+    "locked": true,
+    "message": null
+   },
+   {
+    "row": 63,
+    "col": 30,
+    "locked": true,
+    "message": null
+   }
+  ],
+  "edge_exits": [
+   {
+    "side": "LEAVE_WEST",
+    "dest_rid": 547,
+    "dest_row": 40,
+    "dest_col": 48,
+    "rotate": "ANGLE_WEST"
+   },
+   {
+    "side": "LEAVE_NORTH",
+    "dest_rid": 557,
+    "dest_row": 48,
+    "dest_col": 32,
+    "rotate": "ANGLE_NORTH"
+   }
+  ],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 160
+    },
+    "row": 44,
+    "col": 26,
+    "fine_row": 41,
+    "fine_col": 16,
+    "angle": 0
+   },
+   {
+    "class": "Flagpole",
+    "row": 35,
+    "col": 25,
+    "angle": 0,
+    "by": "territry.kod CreateOneFlagpole"
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jaswest.kod"
+ },
+ {
+  "rid": 384,
+  "class": "JasperVault",
+  "parents": [
+   "JasperRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Vault of Jasper",
+  "roo": "jasvault.roo",
+  "music": "city03.ogg",
+  "flags": [
+   "ROOM_NO_COMBAT",
+   "ROOM_OVERRIDE_DEPTH2"
+  ],
+  "terrain": [
+   "TERRAIN_CITY",
+   "TERRAIN_SHOP"
+  ],
+  "teleport": {
+   "row": 5,
+   "col": 4,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 3,
+  "info": null,
+  "exits": [
+   {
+    "row": 6,
+    "col": 2,
+    "dest_rid": 382,
+    "dest_row": 58,
+    "dest_col": 21,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "JasperVaultman",
+    "row": 8,
+    "col": 9,
+    "fine_row": 42,
+    "fine_col": 5
+   },
+   {
+    "class": "Quillpen",
+    "row": 10,
+    "col": 8,
+    "fine_row": 17,
+    "fine_col": 10
+   },
+   {
+    "class": "Brazier",
+    "row": 7,
+    "col": 5,
+    "fine_row": 32,
+    "fine_col": 31
+   },
+   {
+    "class": "Brazier",
+    "row": 5,
+    "col": 7,
+    "fine_row": 33,
+    "fine_col": 26
+   },
+   {
+    "class": "Brazier",
+    "row": 7,
+    "col": 7,
+    "fine_row": 32,
+    "fine_col": 36
+   },
+   {
+    "class": "Brazier",
+    "row": 5,
+    "col": 5,
+    "fine_row": 30,
+    "fine_col": 30
+   },
+   {
+    "class": "OrnamentalObject",
+    "params": {
+     "type": 162
+    },
+    "row": 10,
+    "col": 7,
+    "fine_row": 10,
+    "fine_col": 51
+   },
+   {
+    "class": "Sign",
+    "params": {
+     "desc": "To use my fair services, simply type DEPOSIT with no further argument.  A list of your inventory will appear, and you can choose the items you wish to deposit.  To retrieve these items, simply use the WITHDRAW command.  Note that this service is not free (the cost will be automatically removed from your purse), and that I will not store shillings.\n\nUsing the Conveyance spell on a stackable item (food, reagents) in your inventory will also send your item to the vaults, provided you carry enough shillings to cover the fee.\n\nAny items you deposit here can also be accessed from the Barloque Vaults in the Ports of Barloque.",
+     "name": "Welcome to the Jasper Vaults"
+    },
+    "row": 9,
+    "col": 4,
+    "fine_row": 62,
+    "fine_col": 32
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/jasperrm/jasvault.kod"
+ },
+ {
+  "rid": 557,
+  "class": "OutdoorsE7",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Sweet Grass Prairies",
+  "roo": "e7.roo",
+  "music": "walk5.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_FOREST",
+   "TERRAIN_FIELDS"
+  ],
+  "teleport": {
+   "row": 22,
+   "col": 21,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 8,
+  "info": null,
+  "exits": [],
+  "edge_exits": [
+   {
+    "side": "LEAVE_WEST",
+    "dest_rid": 547,
+    "dest_row": 6,
+    "dest_col": 50,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_NORTH",
+    "dest_rid": 550,
+    "dest_row": 43,
+    "dest_col": 62,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_SOUTH",
+    "dest_rid": 382,
+    "dest_row": 5,
+    "dest_col": 61,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "Centipede",
+     "weight": 25
+    },
+    {
+     "class": "GroundWormLarva",
+     "weight": 75
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 15000,
+   "gen_percent": 80,
+   "init_count_min": 3,
+   "init_count_max": 6,
+   "monster_count_max": 8
+  },
+  "objects": [
+   {
+    "class": "Flagpole",
+    "row": 27,
+    "col": 43,
+    "angle": 0,
+    "by": "territry.kod CreateOneFlagpole"
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/e7.kod"
+ },
+ {
+  "rid": 568,
+  "class": "OutdoorsF8",
+  "parents": [
+   "MonsterRoom",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Lake of Jala's Song",
+  "roo": "f8.roo",
+  "music": "walk7.ogg",
+  "flags": [],
+  "terrain": [
+   "TERRAIN_LAKE",
+   "TERRAIN_WATERFALL",
+   "TERRAIN_FOREST"
+  ],
+  "teleport": {
+   "row": 18,
+   "col": 21,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 8,
+  "info": null,
+  "exits": [
+   {
+    "row": 6,
+    "col": 50,
+    "dest_rid": 703,
+    "dest_row": 5,
+    "dest_col": 2,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 26,
+    "col": 50,
+    "locked": true,
+    "message": "The door back into the guild hall is locked from the other side.  The guild password is needed to enter."
+   }
+  ],
+  "edge_exits": [
+   {
+    "side": "LEAVE_EAST",
+    "dest_rid": 578,
+    "dest_row": 36,
+    "dest_col": 3,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "side": "LEAVE_WEST",
+    "dest_rid": 350,
+    "dest_row": 18,
+    "dest_col": 75,
+    "rotate": "ANGLE_SOUTH_WEST"
+   },
+   {
+    "side": "LEAVE_NORTH",
+    "dest_rid": 567,
+    "dest_row": 49,
+    "dest_col": 15,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "spawning": {
+   "monsters": [
+    {
+     "class": "SpiderBaby",
+     "weight": 50
+    },
+    {
+     "class": "Centipede",
+     "weight": 50
+    }
+   ],
+   "generators": [],
+   "gen_time_ms": 20000,
+   "gen_percent": 60,
+   "init_count_min": 1,
+   "init_count_max": 3,
+   "monster_count_max": 10
+  },
+  "objects": [
+   {
+    "class": "Brazier",
+    "row": 23,
+    "col": 48,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "Brazier",
+    "row": 26,
+    "col": 48,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "Flagpole",
+    "row": 12,
+    "col": 10,
+    "angle": 0,
+    "by": "territry.kod CreateOneFlagpole"
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/monsroom/f8.kod"
+ },
+ {
+  "rid": 703,
+  "class": "GuildHall3",
+  "parents": [
+   "GuildHall",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Den of Shadows",
+  "roo": "guildh3.roo",
+  "music": "ltlgirl.ogg",
+  "flags": [
+   "ROOM_SANCTUARY"
+  ],
+  "terrain": [
+   "TERRAIN_GUILDHALL",
+   "TERRAIN_RIVER",
+   "TERRAIN_CAVES"
+  ],
+  "teleport": {
+   "row": 5,
+   "col": 4,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 0,
+  "info": null,
+  "exits": [
+   {
+    "row": 5,
+    "col": 1,
+    "dest_rid": 568,
+    "dest_row": 6,
+    "dest_col": 47,
+    "rotate": "ROTATE_NONE"
+   },
+   {
+    "row": 25,
+    "col": 1,
+    "dest_rid": 568,
+    "dest_row": 26,
+    "dest_col": 49,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "Table",
+    "row": 13,
+    "col": 14,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Table",
+    "row": 14,
+    "col": 14,
+    "fine_row": 32,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 7,
+    "col": 4,
+    "fine_row": 32,
+    "fine_col": 24
+   },
+   {
+    "class": "Brazier",
+    "row": 3,
+    "col": 4,
+    "fine_row": 32,
+    "fine_col": 24
+   },
+   {
+    "class": "Brazier",
+    "row": 4,
+    "col": 7,
+    "fine_row": 16,
+    "fine_col": 56
+   },
+   {
+    "class": "Brazier",
+    "row": 6,
+    "col": 7,
+    "fine_row": 48,
+    "fine_col": 56
+   },
+   {
+    "class": "Brazier",
+    "row": 3,
+    "col": 12,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "Brazier",
+    "row": 9,
+    "col": 9,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "Brazier",
+    "row": 9,
+    "col": 12,
+    "fine_row": 32,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 15,
+    "col": 19,
+    "fine_row": 32,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 22,
+    "col": 8,
+    "fine_row": 0,
+    "fine_col": 32
+   },
+   {
+    "class": "Brazier",
+    "row": 23,
+    "col": 18,
+    "fine_row": 0,
+    "fine_col": 32
+   },
+   {
+    "class": "Brazier",
+    "row": 17,
+    "col": 6,
+    "fine_row": 40,
+    "fine_col": 8
+   },
+   {
+    "class": "Brazier",
+    "row": 14,
+    "col": 6,
+    "fine_row": 24,
+    "fine_col": 8
+   },
+   {
+    "class": "Brazier",
+    "row": 29,
+    "col": 17,
+    "fine_row": 32,
+    "fine_col": 0
+   },
+   {
+    "class": "Chest",
+    "row": 29,
+    "col": 9,
+    "fine_row": 32,
+    "fine_col": 0,
+    "angle": 3584
+   },
+   {
+    "class": "Chest",
+    "row": 26,
+    "col": 9,
+    "fine_row": 32,
+    "fine_col": 0,
+    "angle": 512
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/ghall/guildh3.kod"
+ },
+ {
+  "rid": 704,
+  "class": "GuildHall4",
+  "parents": [
+   "GuildHall",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "The Wryn's Keep",
+  "roo": "guildh4.roo",
+  "music": "ltlgirl.ogg",
+  "flags": [
+   "ROOM_SANCTUARY"
+  ],
+  "terrain": [
+   "TERRAIN_GUILDHALL",
+   "TERRAIN_CITY",
+   "TERRAIN_CAVES"
+  ],
+  "teleport": {
+   "row": 50,
+   "col": 27,
+   "angle": null
+  },
+  "base_light": 124,
+  "outside_factor": 0,
+  "info": null,
+  "exits": [],
+  "edge_exits": [
+   {
+    "side": "LEAVE_SOUTH",
+    "dest_rid": 350,
+    "dest_row": 73,
+    "dest_col": 36,
+    "rotate": "ROTATE_180"
+   }
+  ],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "Table",
+    "row": 31,
+    "col": 10
+   },
+   {
+    "class": "Table",
+    "row": 31,
+    "col": 12
+   },
+   {
+    "class": "Table",
+    "row": 33,
+    "col": 18
+   },
+   {
+    "class": "Table",
+    "row": 36,
+    "col": 18
+   },
+   {
+    "class": "Table",
+    "row": 36,
+    "col": 14
+   },
+   {
+    "class": "Table",
+    "row": 34,
+    "col": 16
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iLightIntensity": 10
+    },
+    "row": 40,
+    "col": 21,
+    "fine_row": 16,
+    "fine_col": 0
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iLightIntensity": 10
+    },
+    "row": 40,
+    "col": 29,
+    "fine_row": 16,
+    "fine_col": 0
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 10
+    },
+    "row": 43,
+    "col": 23,
+    "fine_row": 0
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 10
+    },
+    "row": 43,
+    "col": 26,
+    "fine_row": 0
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 10
+    },
+    "row": 34,
+    "col": 21,
+    "fine_row": 16,
+    "fine_col": 0
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 10
+    },
+    "row": 34,
+    "col": 29,
+    "fine_row": 16,
+    "fine_col": 0
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 10
+    },
+    "row": 30,
+    "col": 21
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 10
+    },
+    "row": 30,
+    "col": 28
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 10
+    },
+    "row": 28,
+    "col": 21
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 10
+    },
+    "row": 28,
+    "col": 28
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 10
+    },
+    "row": 28,
+    "col": 19
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iLightIntensity": 10
+    },
+    "row": 30,
+    "col": 19
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 10
+    },
+    "row": 28,
+    "col": 30
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iLightIntensity": 10
+    },
+    "row": 30,
+    "col": 30
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iLightIntensity": 10
+    },
+    "row": 23,
+    "col": 21,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iLightIntensity": 10
+    },
+    "row": 23,
+    "col": 29,
+    "fine_row": 48,
+    "fine_col": 0
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 50
+    },
+    "row": 6,
+    "col": 9,
+    "fine_row": 48,
+    "fine_col": 16
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 20,
+     "iLightIntensity": 50
+    },
+    "row": 10,
+    "col": 5,
+    "fine_row": 32,
+    "fine_col": 0
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 50
+    },
+    "row": 14,
+    "col": 9,
+    "fine_row": 16,
+    "fine_col": 16
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 50
+    },
+    "row": 14,
+    "col": 40,
+    "fine_row": 16,
+    "fine_col": 48
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 20,
+     "iLightIntensity": 50
+    },
+    "row": 10,
+    "col": 45,
+    "fine_row": 32,
+    "fine_col": 0
+   },
+   {
+    "class": "Firepit",
+    "params": {
+     "iSoundRadius": 0,
+     "iLightIntensity": 50
+    },
+    "row": 6,
+    "col": 40,
+    "fine_row": 48,
+    "fine_col": 48
+   },
+   {
+    "class": "Brazier",
+    "row": 6,
+    "col": 24,
+    "fine_row": 56,
+    "fine_col": 8
+   },
+   {
+    "class": "Brazier",
+    "row": 6,
+    "col": 25,
+    "fine_row": 56,
+    "fine_col": 56
+   },
+   {
+    "class": "Brazier",
+    "row": 6,
+    "col": 23,
+    "fine_row": 56,
+    "fine_col": 16
+   },
+   {
+    "class": "Brazier",
+    "row": 6,
+    "col": 21,
+    "fine_row": 56,
+    "fine_col": 48
+   },
+   {
+    "class": "Brazier",
+    "row": 6,
+    "col": 26,
+    "fine_row": 56,
+    "fine_col": 48
+   },
+   {
+    "class": "Brazier",
+    "row": 6,
+    "col": 28,
+    "fine_row": 56,
+    "fine_col": 16
+   },
+   {
+    "class": "Brazier",
+    "row": 35,
+    "col": 36,
+    "fine_col": 48
+   },
+   {
+    "class": "Brazier",
+    "row": 35,
+    "col": 40
+   },
+   {
+    "class": "Brazier",
+    "row": 40,
+    "col": 30
+   },
+   {
+    "class": "Brazier",
+    "row": 40,
+    "col": 36
+   },
+   {
+    "class": "Brazier",
+    "row": 44,
+    "col": 36,
+    "fine_row": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 44,
+    "col": 30,
+    "fine_row": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 31,
+    "col": 8,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 25,
+    "col": 10,
+    "fine_row": 48,
+    "fine_col": 32
+   },
+   {
+    "class": "Brazier",
+    "row": 23,
+    "col": 12,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 24,
+    "col": 14
+   },
+   {
+    "class": "Brazier",
+    "row": 23,
+    "col": 38,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 23,
+    "col": 33,
+    "fine_col": 0
+   },
+   {
+    "class": "Brazier",
+    "row": 45,
+    "col": 27,
+    "fine_row": 24,
+    "fine_col": 8
+   },
+   {
+    "class": "Brazier",
+    "row": 35,
+    "col": 35,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "Chest",
+    "row": 44,
+    "col": 11,
+    "fine_row": 48,
+    "fine_col": 48,
+    "angle": 0
+   },
+   {
+    "class": "Chest",
+    "row": 46,
+    "col": 11,
+    "fine_row": 48,
+    "fine_col": 48,
+    "angle": 0
+   },
+   {
+    "class": "Chest",
+    "row": 48,
+    "col": 14,
+    "fine_row": 0,
+    "fine_col": 42,
+    "angle": 3072
+   },
+   {
+    "class": "Chest",
+    "row": 48,
+    "col": 17,
+    "fine_row": 0,
+    "fine_col": 42,
+    "angle": 3072
+   },
+   {
+    "class": "Chest",
+    "row": 47,
+    "col": 19,
+    "fine_row": 0,
+    "fine_col": 16,
+    "angle": 2048
+   },
+   {
+    "class": "Chest",
+    "row": 44,
+    "col": 19,
+    "fine_row": 16,
+    "fine_col": 0,
+    "angle": 2048
+   },
+   {
+    "class": "SpinningWheel",
+    "row": 6,
+    "col": 6,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Loom",
+    "row": 7,
+    "col": 5,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Forge",
+    "row": 9,
+    "col": 4,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "KocatanForge",
+    "row": 12,
+    "col": 4,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "CraftingAnvil",
+    "row": 14,
+    "col": 5,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "ShaveHorse",
+    "row": 15,
+    "col": 6,
+    "fine_row": 32,
+    "fine_col": 32
+   },
+   {
+    "class": "TanningRack",
+    "row": 6,
+    "col": 44,
+    "fine_row": 0,
+    "fine_col": 0,
+    "angle": 1536
+   },
+   {
+    "class": "KocatanTanningRack",
+    "row": 7,
+    "col": 45,
+    "fine_row": 0,
+    "fine_col": 0,
+    "angle": 1536
+   },
+   {
+    "class": "SplittingStump",
+    "row": 9,
+    "col": 46,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "KocatanSplittingStump",
+    "row": 12,
+    "col": 46,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "GoadsAnvil",
+    "row": 14,
+    "col": 45,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "KocatanAnvil",
+    "row": 15,
+    "col": 43,
+    "fine_row": 32,
+    "fine_col": 32
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/ghall/guildh4.kod"
+ },
+ {
+  "rid": 710,
+  "class": "GuildHall10",
+  "parents": [
+   "GuildHall",
+   "Room",
+   "Holder",
+   "ActiveObject"
+  ],
+  "name": "Jaarba's Abode",
+  "roo": "guildh10.roo",
+  "music": "ltlgirl.ogg",
+  "flags": [
+   "ROOM_SANCTUARY"
+  ],
+  "terrain": [
+   "TERRAIN_GUILDHALL"
+  ],
+  "teleport": {
+   "row": 19,
+   "col": 11,
+   "angle": null
+  },
+  "base_light": 164,
+  "outside_factor": 0,
+  "info": null,
+  "exits": [
+   {
+    "row": 20,
+    "col": 11,
+    "dest_rid": 350,
+    "dest_row": 30,
+    "dest_col": 61,
+    "rotate": "ROTATE_NONE"
+   }
+  ],
+  "edge_exits": [],
+  "spawning": null,
+  "objects": [
+   {
+    "class": "Chest",
+    "row": 15,
+    "col": 4,
+    "fine_row": 32,
+    "fine_col": 0,
+    "angle": 0
+   },
+   {
+    "class": "Table",
+    "row": 12,
+    "col": 15,
+    "fine_row": 0,
+    "fine_col": 32
+   },
+   {
+    "class": "Table",
+    "row": 12,
+    "col": 17,
+    "fine_row": 0,
+    "fine_col": 0
+   },
+   {
+    "class": "Table",
+    "row": 13,
+    "col": 17,
+    "fine_row": 32,
+    "fine_col": 0
+   },
+   {
+    "class": "SpinningWheel",
+    "row": 10,
+    "col": 8,
+    "fine_row": 31,
+    "fine_col": 55
+   },
+   {
+    "class": "Loom",
+    "row": 13,
+    "col": 13,
+    "fine_row": 38,
+    "fine_col": 42
+   },
+   {
+    "class": "Forge",
+    "row": 16,
+    "col": 13,
+    "fine_row": 22,
+    "fine_col": 42
+   },
+   {
+    "class": "KocatanForge",
+    "row": 16,
+    "col": 9,
+    "fine_row": 42,
+    "fine_col": 41
+   },
+   {
+    "class": "CraftingAnvil",
+    "row": 10,
+    "col": 13,
+    "fine_row": 32,
+    "fine_col": 55
+   },
+   {
+    "class": "ShaveHorse",
+    "row": 14,
+    "col": 9,
+    "fine_row": 31,
+    "fine_col": 8
+   },
+   {
+    "class": "TanningRack",
+    "row": 11,
+    "col": 10,
+    "fine_row": 15,
+    "fine_col": 16,
+    "angle": 0
+   },
+   {
+    "class": "KocatanTanningRack",
+    "row": 11,
+    "col": 12,
+    "fine_row": 9,
+    "fine_col": 37,
+    "angle": 2048
+   },
+   {
+    "class": "SplittingStump",
+    "row": 11,
+    "col": 5,
+    "fine_row": 48,
+    "fine_col": 28
+   },
+   {
+    "class": "KocatanSplittingStump",
+    "row": 11,
+    "col": 7,
+    "fine_row": 54,
+    "fine_col": 24
+   },
+   {
+    "class": "GoadsAnvil",
+    "row": 8,
+    "col": 8,
+    "fine_row": 32,
+    "fine_col": 56
+   },
+   {
+    "class": "KocatanAnvil",
+    "row": 8,
+    "col": 13,
+    "fine_row": 31,
+    "fine_col": 54
+   }
+  ],
+  "file": "Server-104/kod/object/active/holder/room/ghall/guildh10.kod"
  }
 ]

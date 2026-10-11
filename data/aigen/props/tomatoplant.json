@@ -1,0 +1,52 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "tomatoplant",
+  "kind": "props",
+  "class": "FoodDispenser/Tomato",
+  "bgf": "tomatoplant",
+  "frame": 0,
+  "describe": "a tomato plant: a cluster of long pointed dark green leaves spreading from the top of a short green stem, with clusters of small round ripe red-orange tomatoes hanging below the leaves",
+  "mesh": "SM_AI_Tomatoplant",
+  "size_by": "height",
+  "placed": null,
+  "rooms": null,
+  "batch": "marion",
+  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "tripo": {
+    "variants": {"C": {"front": "openai"}},
+    "runs": {
+      "C": {
+        "tripo_task": "6abde25b-7605-48e5-8a00-aa3ca7c6f3f5",
+        "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+        "tripo_name": "tomato plant 3d model",
+        "tris_raw": 1835
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "art_src/aigen/props/tomatoplant/tomatoplant_tripo.glb",
+      "tripo_task": "6abde25b-7605-48e5-8a00-aa3ca7c6f3f5",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
+      "tripo_name": "tomato plant 3d model",
+      "tris_raw": 1835
+    }
+  },
+  "height_m": 1.2444,
+  "width_m": 1.54,
+  "lift_m": 0.0138,
+  "sprite_px": [600, 600],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
+      "file": "build/aigen/props/tomatoplant/02_restyle/openai_front.png"
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Tomatoplant.glb",
+    "tris": 1835,
+    "size_m": [1.262, 0.9918, 1.2444],
+    "scale": 1.29589
+  }
+}
