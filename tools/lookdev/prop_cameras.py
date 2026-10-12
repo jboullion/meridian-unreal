@@ -88,7 +88,7 @@ def main():
         d = [aim[i] - loc[i] for i in range(3)]
         yaw = math.degrees(math.atan2(d[1], d[0]))
         pitch = math.degrees(math.atan2(d[2], math.hypot(d[0], d[1])))
-        name = "prop_%s_%s" % (rid, rest.replace("/", "_").replace("#", "_").lower())
+        name = "prop_%s_%s%s" % (rid, rest.replace("/", "_").lower(), "_%s" % nth if nth else "")
         cams = [c for c in cams if c["name"] != name]
         cams.append({"name": name, "location_cm": [round(v) for v in loc], "rotation": [round(pitch, 1), round(yaw, 1)], "fov": 70})
         print(name, cams[-1]["location_cm"])

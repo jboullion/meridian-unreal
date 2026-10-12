@@ -11,15 +11,32 @@
   "placed": 12,
   "rooms": 12,
   "batch": "marion",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
-    "variants": {"C": {"front": "openai"}},
+    "variants": {
+      "C": {"front": "openai"},
+      "MV": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
+    },
     "runs": {
       "C": {
         "tripo_task": "79951061-3452-4811-8c89-6ebfb3701cb7",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
         "tripo_name": "wooden bench 3d model",
-        "tris_raw": 1803
+        "tris_raw": 1803,
+        "file": "build/aigen/props/shavehorse/04_tripo_out/C.glb",
+        "digest": "82850ab83e78ddbe",
+        "tris": 1803,
+        "size_m": [0.9786, 0.217, 0.4966]
+      },
+      "MV": {
+        "tripo_task": "480207b7-0e38-4159-ac2a-ba58d2cfb587",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 2000 faces, multi-view (4 views)",
+        "credits": 60.0,
+        "file": "build/aigen/props/shavehorse/04_tripo_out/MV.glb",
+        "digest": "01204591c2a6ba27",
+        "tris": 1831,
+        "size_m": [0.9765, 0.5769, 0.4996]
       }
     },
     "chosen": {
@@ -42,6 +59,24 @@
       "seconds": null,
       "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
       "file": "build/aigen/props/shavehorse/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/shavehorse/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/shavehorse/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/shavehorse/02_restyle/openai_right.png"
     }
   },
   "normalized": {
@@ -49,5 +84,6 @@
     "tris": 1803,
     "size_m": [1.6461, 0.3651, 0.8353],
     "scale": 1.682
-  }
+  },
+  "upgrade": "overnight"
 }

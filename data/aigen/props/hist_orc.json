@@ -1,0 +1,80 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "hist_orc",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 184,
+  "oo_const": "OO_HIST_ORC",
+  "bgf": "hist_orc",
+  "frame": 0,
+  "describe": "a painted figure of a hulking green-skinned orc standing: bald head, a ragged brown cloth tunic, heavy arms hanging at its sides",
+  "mesh": "SM_AI_HistOrc",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"]},
+  "polycount": 4000,
+  "height_m": 1.3063,
+  "width_m": 0.5557,
+  "lift_m": 0.0,
+  "sprite_px": [97, 228],
+  "angles": {"left": 3, "back": 2, "right": 1},
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/hist_orc/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_orc/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_orc/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_orc/02_restyle/openai_right.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "MV": {
+        "tripo_task": "b9fe8905-9f2a-4842-bea0-ed572ea1a4b6",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+        "credits": 60.0,
+        "file": "build/aigen/props/hist_orc/04_tripo_out/MV.glb",
+        "digest": "9a50c9ef39354125",
+        "tris": 3855,
+        "size_m": [0.4284, 0.2702, 0.9811]
+      }
+    },
+    "chosen": {
+      "variant": "MV",
+      "file": "build/aigen/props/hist_orc/04_tripo_out/MV.glb",
+      "tripo_task": "b9fe8905-9f2a-4842-bea0-ed572ea1a4b6",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+      "credits": 60.0,
+      "digest": "9a50c9ef39354125",
+      "tris": 3855,
+      "size_m": [0.4284, 0.2702, 0.9811]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_HistOrc.glb",
+    "tris": 3855,
+    "size_m": [0.5704, 0.3598, 1.3063],
+    "scale": 1.33153
+  }
+}

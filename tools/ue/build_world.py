@@ -60,6 +60,7 @@ for _m in ("build_cache", "blockout", "scatter", "fires", "chimneys", "zone_mood
     if _m in sys.modules:
         importlib.reload(sys.modules[_m])
 import blockout  # noqa: E402
+import props_lookup  # noqa: E402
 import build_audio  # noqa: E402
 import build_cache  # noqa: E402
 import chimneys  # noqa: E402
@@ -456,28 +457,9 @@ KOD_ANGLE_FRONT = 1024
 
 
 def prop_config(props, obj):
-    """The props.json entry for a Kod object: OrnamentalObjects by their type ("types", keyed by the
-    OO number as a string), or one made with only its own icon by "icons" (the bgf, lower case: the
-    memorial trees); every other class by "classes": "<Class>/<classtype>" first for an object made
-    with a classtype (a FoodDispenser of Apple: the apple tree), then "<Class>/<param>=<value>" for
-    a constructor argument (a Tree's bottom: 1 oak, 2 elm, 3 pine), then "<Class>"."""
-    params = obj.get("params") or {}
-    if obj["class"] == "OrnamentalObject":
-        if params.get("type") is None and isinstance(params.get("rIcon"), str):
-            return props.get("icons", {}).get(params["rIcon"].lower())
-        return props.get("types", {}).get(str(params.get("type")))
-    classes = props.get("classes", {})
-    classtype = params.get("classtype")
-    if isinstance(classtype, dict) and classtype.get("class"):
-        cfg = classes.get("%s/%s" % (obj["class"], classtype["class"]))
-        if cfg:
-            return cfg
-    for key, value in sorted(params.items()):
-        if isinstance(value, (int, str)) and not isinstance(value, bool):
-            cfg = classes.get("%s/%s=%s" % (obj["class"], key, value))
-            if cfg:
-                return cfg
-    return classes.get(obj["class"])
+    """The props.json entry for a Kod object (tools/environment/props_lookup.py, shared with the prop
+    survey in tools/aigen/inventory.py so both agree on what has a mesh)."""
+    return props_lookup.prop_config(props, obj)
 
 
 # props.json "facing": where a model's front looks, as a UE yaw (its front, glTF +Z, is UE +Y: south)

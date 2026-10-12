@@ -1,0 +1,80 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "hist_priestess",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 186,
+  "oo_const": "OO_HIST_PRIESTESS",
+  "bgf": "hist_priestess",
+  "frame": 0,
+  "describe": "a painted figure of a priestess standing straight: long blonde hair, a long flowing white robe with pale blue folds, sandals",
+  "mesh": "SM_AI_HistPriestess",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"]},
+  "polycount": 4000,
+  "height_m": 1.1745,
+  "width_m": 0.3609,
+  "lift_m": 0.0,
+  "sprite_px": [63, 205],
+  "angles": {"left": 4, "back": 3, "right": 2},
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/hist_priestess/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_priestess/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_priestess/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_priestess/02_restyle/openai_right.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "MV": {
+        "tripo_task": "2b1de634-9de7-4852-a09b-d7b238c32cbf",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+        "credits": 60.0,
+        "file": "build/aigen/props/hist_priestess/04_tripo_out/MV.glb",
+        "digest": "5dd7588345e904f4",
+        "tris": 3948,
+        "size_m": [0.3022, 0.207, 0.9782]
+      }
+    },
+    "chosen": {
+      "variant": "MV",
+      "file": "build/aigen/props/hist_priestess/04_tripo_out/MV.glb",
+      "tripo_task": "2b1de634-9de7-4852-a09b-d7b238c32cbf",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+      "credits": 60.0,
+      "digest": "5dd7588345e904f4",
+      "tris": 3948,
+      "size_m": [0.3022, 0.207, 0.9782]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_HistPriestess.glb",
+    "tris": 3948,
+    "size_m": [0.3629, 0.2485, 1.1745],
+    "scale": 1.20067
+  }
+}

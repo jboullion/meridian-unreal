@@ -49,12 +49,15 @@
       }
     },
     "chosen": {
-      "variant": "C",
-      "file": "art_src/aigen/props/modlupog/modlupog_tripo.glb",
-      "tripo_task": "7963ced5-0336-4b2a-ab9f-5c91812d6186",
-      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
-      "tripo_name": "monster 3d model",
-      "tris_raw": 7862
+      "variant": "MV4k",
+      "file": "build/aigen/props/modlupog/04_tripo_out/MV4k.glb",
+      "tripo_task": "e6a79ac8-8937-4e1a-bd9c-a7f8a1a99431",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view front/left/back/right restyled from the original's own angle frames (45 credits; 2026-10-09)",
+      "tripo_name": "stylized crocodile 3d model",
+      "tris_raw": 3814,
+      "digest": "b4480a7b603289bb",
+      "tris": 3814,
+      "size_m": [0.6885, 0.8567, 0.9792]
     }
   },
   "status": "done",
@@ -90,9 +93,9 @@
   },
   "normalized": {
     "file": "build/environment/kit/SM_AI_Modlupog.glb",
-    "tris": 7862,
-    "size_m": [0.3918, 0.2631, 0.5729],
-    "scale": 0.58324
+    "tris": 3814,
+    "size_m": [0.4028, 0.5013, 0.5729],
+    "scale": 0.5851
   },
   "angles": {"left": 2, "back": 3, "right": 4},
   "normalized_variants": {

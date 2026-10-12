@@ -1,0 +1,58 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "pig",
+  "kind": "props",
+  "class": "FoodDispenser/Pork",
+  "bgf": "pig",
+  "frame": 0,
+  "describe": "a whole roast pig lying on a silver platter: golden-brown crisp skin, a red apple in its mouth, small curled ears",
+  "mesh": "SM_AI_Pig",
+  "size_by": "height",
+  "placed": 3,
+  "rooms": 2,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"]},
+  "height_m": 0.4941,
+  "width_m": 0.8594,
+  "lift_m": 0.0,
+  "sprite_px": [200, 115],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/pig/02_restyle/openai_front.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "C": {
+        "tripo_task": "a294e46b-dcc6-467f-a217-28d686fb9ea2",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 2000 faces, single image",
+        "credits": 60.0,
+        "file": "build/aigen/props/pig/04_tripo_out/C.glb",
+        "digest": "7859caadec743102",
+        "tris": 1985,
+        "size_m": [0.9837, 0.824, 0.4551]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/pig/04_tripo_out/C.glb",
+      "tripo_task": "a294e46b-dcc6-467f-a217-28d686fb9ea2",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 2000 faces, single image",
+      "credits": 60.0,
+      "digest": "7859caadec743102",
+      "tris": 1985,
+      "size_m": [0.9837, 0.824, 0.4551]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Pig.glb",
+    "tris": 1985,
+    "size_m": [1.0681, 0.8946, 0.4941],
+    "scale": 1.08572
+  }
+}

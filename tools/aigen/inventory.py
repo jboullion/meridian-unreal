@@ -8,8 +8,12 @@ the object" step of the sprite-to-3d pipeline (docs/adr/0007).
 
 --world reads the rooms' Kod (`Create(&Class ...)` in object/active/holder/room/) instead of the demo
 zones' layout, counts each sprite's frames, and sorts by the full inheritance chain: "prop", "tree"
-(the Blender tree kit), "npc", "monster", "item" (pick-ups), "effect", "logic". A prop is "static"
-when its sprite has one bitmap, or one per direction (8 groups); "done" when a manifest has its bgf.
+(the Blender tree kit), "npc", "monster", "statue" (players turned to stone: player sprites), "item"
+(pick-ups), "effect", "logic". A FoodDispenser is the prop its classtype's `*_disp_icon` draws (the
+plantation's crops, the pig, the soup cauldron), keyed "FoodDispenser/<Food>". A prop is "static"
+when its sprite has one bitmap, or one per direction (8 groups); "done" when a manifest has its bgf, or
+when data/environment/props.json already draws every class that places it (the tree kit's meshes),
+by the world build's own rule (tools/environment/props_lookup.py).
 
 Reads data/zone_layout.json (placements) and the Kod sources in Server-104/kod (reference only):
 - OrnamentalObject: params.type -> OO_* (include/blakston.khd) -> the `case OO_*:` block in
@@ -110,6 +114,8 @@ EFFECT_CLASSES = {"Forge", "KocatanForge", "MovingSector", "SmokeColumn", "Fount
                   "DeathRealmEntrance", "DeathRealmExit", "CorpseNode"}
 EFFECT_OO = {"OO_MUSEUM_TELEPORT"}
 NPC_BASES = {"Towns", "Temples", "Watcher", "Wanderer", "Pirates", "Shopkeeper", "Human"}
+# the Hall of Heroes' statues copy a player's look in stone: drawn with the player sprites, not a mesh
+STATUE_CLASSES = {"Statue", "StatueTreasure", "Farnohl"}
 # simple shapes that hold up at 1000 triangles (docs/adr/0007 "World batch")
 SIMPLE = re.compile(r"jug|vase|bot|urn|pot|bowl|bucket|bag|skul(?!l[12356])|dice|quill|bell|barrel|globe|necrock")
 
@@ -135,6 +141,8 @@ def world_kind(cls: str, const: str | None) -> str:
         return "logic"
     if cls in TREE_CLASSES:
         return "tree"
+    if cls in STATUE_CLASSES or "Statue" in chain:
+        return "statue"
     if cls in EFFECT_CLASSES or "Portal" in chain:
         return "effect"
     if "Item" in chain:
@@ -157,9 +165,38 @@ def sprite_frames(bgf: str):
     return len(b.bitmaps), len(b.groups)
 
 
+def disp_icon(food: str):
+    """The bgf a FoodDispenser of `food` shows (the food's `*_disp_icon`), or None."""
+    p, src = kod_class(food)
+    m = re.search(r"^\s*\w*disp_icon\s*=\s*(\S+\.bgf)", src, re.M | re.I) if p else None
+    return m.group(1) if m else None
+
+
+def create_params(args: str, oo_numbers: dict) -> dict:
+    """A Create call's #name=value arguments as zone_layout.json params: #classtype=&X -> {"class": X},
+    an OO_* constant -> its number, numbers -> int."""
+    out = {}
+    for k, v in re.findall(r"#(\w+)\s*=\s*([^,#)]+)", args):
+        v = v.strip()
+        if v.startswith("&"):
+            out[k] = {"class": v[1:]}
+        elif v in oo_numbers:
+            out[k] = oo_numbers[v]
+        elif re.fullmatch(r"-?\d+", v):
+            out[k] = int(v)
+        else:
+            out[k] = v
+    return out
+
+
 def world():
     """Every room's placed objects, keyed by sprite (several classes can share one)."""
-    oo = {v["const"]: v for v in oo_table().values() if v["const"]}
+    sys.path.insert(0, str(ROOT / "tools" / "environment"))
+    import props_lookup
+    props = props_lookup.load()
+    table = oo_table()
+    oo = {v["const"]: v for v in table.values() if v["const"]}
+    oo_numbers = {v["const"]: n for n, v in table.items() if v["const"]}
     done = {}
     for p in PROPS.glob("*.json"):
         m = json.loads(p.read_text(encoding="utf-8"))
@@ -172,27 +209,37 @@ def world():
         room = room.group(1) if room else path.stem
         for m in re.finditer(r"Create\(\s*&(\w+)([^)]*)", src):
             cls, args = m.group(1), m.group(2)
+            params = create_params(args, oo_numbers)
             t = re.search(r"#type\s*=\s*(OO_\w+)", args)
+            food = params.get("classtype", {}).get("class") if cls.lower() == "fooddispenser" and isinstance(params.get("classtype"), dict) else None
             if cls.lower() == "ornamentalobject" and t:
                 info = oo.get(t.group(1), {})
                 icon, name, const = info.get("icon"), info.get("name"), t.group(1)
+                kind = world_kind(cls, const)
+            elif food:
+                icon, name, const = disp_icon(food), food, None
+                cls, kind = "FoodDispenser/%s" % food, "prop"
+                params = {"classtype": {"class": food}}
             else:
                 icon, name, _ = class_icon(cls)
                 const = None
+                kind = world_kind(cls, const)
             if not icon:
                 continue
             bgf = icon.lower().removesuffix(".bgf")
-            e = sprites.setdefault(bgf, {"bgf": bgf, "name": name, "kind": world_kind(cls, const), "classes": {},
-                                         "rooms": {}})
+            e = sprites.setdefault(bgf, {"bgf": bgf, "name": name, "kind": kind, "classes": {}, "rooms": {},
+                                         "mapped": {}})
             key = const or cls
             e["classes"][key] = e["classes"].get(key, 0) + 1
             e["rooms"][room] = e["rooms"].get(room, 0) + 1
+            obj = {"class": "FoodDispenser" if food else ("OrnamentalObject" if const else cls), "params": params}
+            e["mapped"][key] = e["mapped"].get(key, True) and bool(props_lookup.prop_config(props, obj))
     for bgf, e in sprites.items():
         e["count"] = sum(e["rooms"].values())
         fr = sprite_frames(bgf)
         e["bitmaps"], e["groups"] = fr if fr else (0, 0)
         e["static"] = bool(fr) and (fr[0] == 1 or (fr[1] >= 8 and fr[0] <= 16))
-        e["done"] = done.get(bgf)
+        e["done"] = done.get(bgf) or ("props.json" if e["mapped"] and all(e["mapped"].values()) else None)
     return dict(sorted(sprites.items(), key=lambda kv: (kv[1]["kind"], -kv[1]["count"], kv[0])))
 
 

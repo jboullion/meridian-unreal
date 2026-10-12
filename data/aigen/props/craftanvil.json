@@ -11,15 +11,32 @@
   "placed": 36,
   "rooms": 14,
   "batch": "marion",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
-    "variants": {"C": {"front": "openai"}},
+    "variants": {
+      "C": {"front": "openai"},
+      "MV": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
+    },
     "runs": {
       "C": {
         "tripo_task": "2298c1b5-3ebb-46a3-926f-3a613d8fda9a",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
         "tripo_name": "blacksmith anvil 3d model",
-        "tris_raw": 1888
+        "tris_raw": 1888,
+        "file": "build/aigen/props/craftanvil/04_tripo_out/C.glb",
+        "digest": "dd6c493421c23541",
+        "tris": 1888,
+        "size_m": [0.7688, 0.7401, 0.9793]
+      },
+      "MV": {
+        "tripo_task": "d5be82b2-fd77-4456-8cef-9924a78b6d79",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 2000 faces, multi-view (4 views)",
+        "credits": 60.0,
+        "file": "build/aigen/props/craftanvil/04_tripo_out/MV.glb",
+        "digest": "34a6ad8f3dd28a64",
+        "tris": 1967,
+        "size_m": [0.754, 0.7474, 0.9786]
       }
     },
     "chosen": {
@@ -42,6 +59,24 @@
       "seconds": null,
       "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
       "file": "build/aigen/props/craftanvil/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/craftanvil/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/craftanvil/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/craftanvil/02_restyle/openai_right.png"
     }
   },
   "normalized": {
@@ -49,5 +84,6 @@
     "tris": 1888,
     "size_m": [0.7582, 0.73, 0.9659],
     "scale": 0.98631
-  }
+  },
+  "upgrade": "overnight"
 }

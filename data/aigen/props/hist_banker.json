@@ -1,0 +1,80 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "hist_banker",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 171,
+  "oo_const": "OO_HIST_BANKER",
+  "bgf": "hist_banker",
+  "frame": 0,
+  "describe": "a painted figure of a stocky bald banker standing with hands on hips: a red tunic with puffed sleeves, a brown belt with a gold key hanging from it, brown boots",
+  "mesh": "SM_AI_HistBanker",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"]},
+  "polycount": 4000,
+  "height_m": 1.1481,
+  "width_m": 0.66,
+  "lift_m": 0.0,
+  "sprite_px": [96, 167],
+  "angles": {"left": 4, "back": 3, "right": 2},
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/hist_banker/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_banker/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_banker/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_banker/02_restyle/openai_right.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "MV": {
+        "tripo_task": "8b0cdbf9-c153-4f91-bbba-adbd86af0137",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+        "credits": 60.0,
+        "file": "build/aigen/props/hist_banker/04_tripo_out/MV.glb",
+        "digest": "006170d3ceadee07",
+        "tris": 3944,
+        "size_m": [0.5821, 0.246, 0.9814]
+      }
+    },
+    "chosen": {
+      "variant": "MV",
+      "file": "build/aigen/props/hist_banker/04_tripo_out/MV.glb",
+      "tripo_task": "8b0cdbf9-c153-4f91-bbba-adbd86af0137",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+      "credits": 60.0,
+      "digest": "006170d3ceadee07",
+      "tris": 3944,
+      "size_m": [0.5821, 0.246, 0.9814]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_HistBanker.glb",
+    "tris": 3944,
+    "size_m": [0.681, 0.2878, 1.1481],
+    "scale": 1.1699
+  }
+}

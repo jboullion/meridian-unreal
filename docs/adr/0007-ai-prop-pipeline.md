@@ -508,6 +508,32 @@ Pass 3 of the world remaster (docs/world-maps.md) built Marion's 15 maps. Its ob
 
 **Several flames on one prop.** The candelabra (lit by default in Kod: frames 2–4 animate its flames) has five candles: `props.json` `"fire"` `"at_m"` lists flame points on the mesh ([right, front, up] in metres, read off the GLB's candle tips), turned with the prop (`build_world.fire_points`); the first carries the Kod light (30, fire colour).
 
+## Overnight batch: every missing prop through the Tripo API (2026-10-10/11)
+The user wanted every prop without a model made overnight, so the level passes only place assets, while another session built map textures. Studio needs a visible Chrome window all night, so this ran on the **Tripo developer API (V3)** with a prepaid wallet (5,000 credits bought for it).
+
+**The gap.** `inventory.py --world` now follows `#classtype` (a `FoodDispenser` is the prop its food's `*_disp_icon` draws, "FoodDispenser/<Food>"), sorts the Hall of Heroes' statues as "statue" (player figures in stone: player sprites, a later task), and counts a sprite done when `props.json` already draws every class that places it, by the world build's own rule (`tools/environment/props_lookup.py`, shared with `build_world.prop_config`). That fixed the stale "done" of the kit trees and found 46 sprites: 31 multi-frame props (levers, tombstones, the Kocatan, skull and table lamps, the arena banner, goat head, journal, boulder, dragonfly cage, small box, 17 `hist_*` museum pieces) and 15 food dispensers (pig, turkey, ham, pies, the soup cauldron, pitcher, platters of drumsticks, grapes and eyes, baskets of corn and fortune cookies, stuffing, rouladen, mashed potatoes).
+
+**Setup** (with the user, the evening before):
+- 47 manifests (`"batch": "overnight"`; the small box twice, closed and open like the chest). Frames from each class's default animation: lamps drawn without their painted flame (`restyle.extra`, and `size_skip_top` sizes them below it; the game adds a fire preset), the arena banner's group 1, the shields' front frames, the swords lying flat. A manifest `"shrink"` overrides a wrong one in the bgf (the pumpkin pie: shrink 1, a 10 m pie).
+- `sprite.angle_frames` also reads 4-direction groups (tombstone, boulder, the museum orc): 18 of the 47 have their own side and back drawings and went multi-view.
+- 10 upgrades: a 4-view `MV` variant for finished props whose sprites draw their sides (anvil, henhouse, lectern, loom, shaving horse, spinning wheel, tanning rack, throne, the avar and fey figures).
+- `props.json` entries for every class spelling, OO type and dispenser, with lights from Kod (the skull brazier: 130, orange), flames from the brazier and torch presets, the cage hanging, `SmallBox` open by default like `Chest`.
+
+**The API backend** (`tools/aigen/tripo_api.py`, `aigen.py <assets> tripo-api [variant]`, `aigen.py tripo-balance`):
+- The host is `openapi.tripo3d.ai`; the docs' `openapi.tripo3d.com` is the Chinese platform and refuses these keys (401).
+- Models come back facing glTF +X; `face_front` turns them to +Z like Studio's.
+- A task id goes into the manifest the moment it's sent, so an interrupted run resumes rather than pays again.
+- Settings test (stump and chest beside their Studio models, `build/aigen/api_test_*.jpg`): `texture_quality` "standard" (50 credits) came out visibly softer than Studio; "detailed" with `texture_version` "v3.5-20260815" (60) matched or beat it. That's the default.
+
+**The run** (`tools/aigen/overnight.py`, detached, keeping Windows awake): restyle fronts and the upgrades' sides (one OpenAI batch, 71 images), then the new assets' sides (53), `tripo-prepare`, 57 Tripo jobs at 8 at a time (22 minutes), review renders, choose and normalise, sheets and `report.md`. 1.8 hours, 56 models, 3,360 credits; the fey figure's 4-view input was refused by Tripo's content filter (code 2008). No Unreal, no texture files, no commits.
+
+**Results** (`build/aigen/overview_05_review_normalized_front.png`, `build/aigen/overnight/2026-10-10/upgrades.png`):
+- Most read well. Misses: the corn basket (shards) and the grapes (a lump). Tripo's `face_limit` shatters clusters of many small round things. Rerun at 4000 was no better; a rerun **without a face limit** (polycount 0: Tripo's adaptive mesh, 1.9 million triangles) reduced to 6,000 by `normalize` (`max_tris`) came out right. The kept source in `art_src/` was reduced to 100,000 triangles (65 MB → 16 MB).
+- The gauntlets look darker than their sprite and the scimitar is a line from the front (it lies flat); both fine from above.
+- Upgrades adopted (the user's go-ahead on the recommendation): henhouse, spinning wheel, throne, avar (`MV`). Kept: the loom (its 4-view model collapsed), the fey (refused); anvil, lectern, tanning rack and shaving horse about equal, kept on `C`.
+- The 10 earlier 4-view tests of Raza props (`build/aigen/overnight/2026-10-10/museum_upgrades.png`): better for the ant, fungus beast, lupogg, spider and museum throne; the helmet's broke.
+- Spent: 3,360 overnight, 340 on the settings tests, 240 on reruns; 1,060 credits left.
+
 ## Open
 - `necglobe` (TargetGlobe, ViewpointGlobe): a sphere with our own swirling glass material instead of the Tripo model.
 - World batch: the user's picks of reruns (the plant, the orb, maybe `necvase` at 2000, multi-view where a back was invented), then a world build and look-dev for the props that authored zones place.

@@ -20,9 +20,31 @@
         "tripo_name": "wood logs 3d model",
         "tris_raw": 1829,
         "file": "build/aigen/props/splitstump/04_tripo_out/C.glb",
-        "digest": "2531e45e0f8653cc",
+        "digest": "90611859dc3ada5c",
         "tris": 1829,
         "size_m": [0.959, 0.9667, 0.7212]
+      },
+      "APIC": {
+        "tripo_task": "b7d4d5cf-7d81-4580-8aed-56daacdf11f4",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture standard, PBR, delight, autofix, 2000 faces, single image",
+        "credits": 50.0,
+        "file": "build/aigen/props/splitstump/04_tripo_out/APIC.glb",
+        "digest": "4aea00160bf4dbeb",
+        "tris": 1848,
+        "size_m": [0.9776, 0.9789, 0.7341]
+      },
+      "APICT1": {
+        "file": "build/aigen/props/splitstump/04_tripo_out/APICT1.glb",
+        "digest": "3ad1a75ba0f180cc",
+        "tris": 1810,
+        "size_m": [0.9738, 0.9808, 0.7238]
+      },
+      "APICT2": {
+        "file": "build/aigen/props/splitstump/04_tripo_out/APICT2.glb",
+        "digest": "84daa67480ec2746",
+        "tris": 1756,
+        "size_m": [0.9768, 0.98, 0.7352]
       }
     },
     "chosen": {

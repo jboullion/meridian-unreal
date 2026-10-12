@@ -27,6 +27,9 @@
     "DValley5": 3,
     "OutdoorsKA3": 1
    },
+   "mapped": {
+    "SmokeColumn": false
+   },
    "count": 31,
    "bitmaps": 5,
    "groups": 5,
@@ -57,6 +60,10 @@
     "KocatanSmithy": 2,
     "TosSmithy": 1
    },
+   "mapped": {
+    "Forge": false,
+    "KocatanForge": false
+   },
    "count": 26,
    "bitmaps": 5,
    "groups": 8,
@@ -80,6 +87,9 @@
     "Orccave1": 2,
     "Underworld": 6
    },
+   "mapped": {
+    "Portal": false
+   },
    "count": 20,
    "bitmaps": 18,
    "groups": 4,
@@ -97,6 +107,9 @@
     "SewerKingLair": 2,
     "OutdoorsG9": 9,
     "LichMaze": 2
+   },
+   "mapped": {
+    "MovingSector": false
    },
    "count": 13,
    "bitmaps": 1,
@@ -121,6 +134,12 @@
     "Underworld": 3,
     "University": 2
    },
+   "mapped": {
+    "HellPortal": false,
+    "DeathRealmExit": false,
+    "DeathRealmEntrance": false,
+    "CorpseNode": false
+   },
    "count": 9,
    "bitmaps": 3,
    "groups": 3,
@@ -138,6 +157,9 @@
     "Gallery": 1,
     "Duke4": 1
    },
+   "mapped": {
+    "FountainJet": false
+   },
    "count": 2,
    "bitmaps": 3,
    "groups": 3,
@@ -153,6 +175,9 @@
    },
    "rooms": {
     "RazaMuseum": 1
+   },
+   "mapped": {
+    "OO_MUSEUM_TELEPORT": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -173,6 +198,10 @@
     "RazaCrypt": 1,
     "RazaMuseum": 1
    },
+   "mapped": {
+    "Mushroom": false,
+    "OO_MUSEUM_INKYCAP": true
+   },
    "count": 6,
    "bitmaps": 1,
    "groups": 1,
@@ -190,6 +219,9 @@
     "ObjectRoom": 1,
     "MonsterRoom": 1
    },
+   "mapped": {
+    "Apple": false
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -205,6 +237,9 @@
    },
    "rooms": {
     "RazaCrypt": 1
+   },
+   "mapped": {
+    "Shillings": false
    },
    "count": 1,
    "bitmaps": 2,
@@ -222,6 +257,9 @@
    "rooms": {
     "Cave3": 1
    },
+   "mapped": {
+    "JewelOfFroz": false
+   },
    "count": 1,
    "bitmaps": 3,
    "groups": 3,
@@ -237,6 +275,9 @@
    },
    "rooms": {
     "RazaCrypt": 1
+   },
+   "mapped": {
+    "Herbs": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -254,6 +295,9 @@
    "rooms": {
     "Temple": 1
    },
+   "mapped": {
+    "Scepter": false
+   },
    "count": 1,
    "bitmaps": 2,
    "groups": 2,
@@ -269,6 +313,9 @@
    },
    "rooms": {
     "RazaCrypt": 1
+   },
+   "mapped": {
+    "Elderberry": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -343,6 +390,10 @@
     "TosSmithy": 5,
     "TradingPost": 8
    },
+   "mapped": {
+    "DynamicLight": true,
+    "LivingStatue": false
+   },
    "count": 190,
    "bitmaps": 1,
    "groups": 1,
@@ -389,11 +440,18 @@
     "TosGrey": 1,
     "TosHall": 1
    },
+   "mapped": {
+    "Newslink": true,
+    "NewsLink": true,
+    "NewsGuildCharter": true,
+    "News": true,
+    "NewsAnnouncement": true
+   },
    "count": 27,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "news"
   },
   "res0001a": {
    "bgf": "res0001a",
@@ -404,6 +462,9 @@
    },
    "rooms": {
     "MarionCrypt3a": 12
+   },
+   "mapped": {
+    "Thrasher": false
    },
    "count": 12,
    "bitmaps": 72,
@@ -425,6 +486,12 @@
     "MarionCrypt1": 1,
     "RazaCrypt": 6
    },
+   "mapped": {
+    "SpectralMummy": false,
+    "MummyNoTreasure": false,
+    "Mummy": false,
+    "BlackMummy": false
+   },
    "count": 7,
    "bitmaps": 54,
    "groups": 9,
@@ -440,6 +507,9 @@
    },
    "rooms": {
     "RatCave2": 6
+   },
+   "mapped": {
+    "DuskRat": false
    },
    "count": 6,
    "bitmaps": 66,
@@ -457,6 +527,9 @@
    "rooms": {
     "Necropolis6": 6
    },
+   "mapped": {
+    "GiantDaemonSkeleton": false
+   },
    "count": 6,
    "bitmaps": 78,
    "groups": 13,
@@ -472,6 +545,9 @@
    },
    "rooms": {
     "Raza": 3
+   },
+   "mapped": {
+    "Cow": false
    },
    "count": 3,
    "bitmaps": 30,
@@ -491,6 +567,9 @@
     "GolemDungeon": 1,
     "RatCave2": 1
    },
+   "mapped": {
+    "GiantRatKing": false
+   },
    "count": 3,
    "bitmaps": 66,
    "groups": 11,
@@ -507,6 +586,9 @@
    "rooms": {
     "OutdoorsI9": 3
    },
+   "mapped": {
+    "StoneTroll": false
+   },
    "count": 3,
    "bitmaps": 36,
    "groups": 7,
@@ -522,6 +604,9 @@
    },
    "rooms": {
     "Necropolis6": 2
+   },
+   "mapped": {
+    "Mimic": false
    },
    "count": 2,
    "bitmaps": 18,
@@ -541,6 +626,10 @@
     "FeyForest": 1,
     "RentableRoom": 1
    },
+   "mapped": {
+    "Fairy": false,
+    "Decorator": false
+   },
    "count": 2,
    "bitmaps": 48,
    "groups": 8,
@@ -558,6 +647,10 @@
    "rooms": {
     "OutdoorsG9": 2
    },
+   "mapped": {
+    "Skeleton": false,
+    "BatteredSkeleton": false
+   },
    "count": 2,
    "bitmaps": 78,
    "groups": 13,
@@ -573,6 +666,9 @@
    },
    "rooms": {
     "GolemDungeon": 1
+   },
+   "mapped": {
+    "EarthElementalChampion": false
    },
    "count": 1,
    "bitmaps": 36,
@@ -590,6 +686,9 @@
    "rooms": {
     "FeyForest": 1
    },
+   "mapped": {
+    "EvilFairy": false
+   },
    "count": 1,
    "bitmaps": 48,
    "groups": 8,
@@ -605,6 +704,9 @@
    },
    "rooms": {
     "GolemDungeon": 1
+   },
+   "mapped": {
+    "FireElemental": false
    },
    "count": 1,
    "bitmaps": 36,
@@ -622,6 +724,9 @@
    "rooms": {
     "Throne2": 1
    },
+   "mapped": {
+    "Ghost": false
+   },
    "count": 1,
    "bitmaps": 12,
    "groups": 2,
@@ -637,6 +742,9 @@
    },
    "rooms": {
     "InnerSanctum": 1
+   },
+   "mapped": {
+    "DeadLich": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -654,6 +762,9 @@
    "rooms": {
     "Necropolis6": 1
    },
+   "mapped": {
+    "Minotaur": false
+   },
    "count": 1,
    "bitmaps": 64,
    "groups": 8,
@@ -669,6 +780,9 @@
    },
    "rooms": {
     "SpiderNest1": 1
+   },
+   "mapped": {
+    "SpiderQueen": false
    },
    "count": 1,
    "bitmaps": 18,
@@ -686,6 +800,9 @@
    "rooms": {
     "OutdoorsK5": 1
    },
+   "mapped": {
+    "Brambles": false
+   },
    "count": 1,
    "bitmaps": 5,
    "groups": 5,
@@ -702,6 +819,9 @@
    "rooms": {
     "DValley5": 1
    },
+   "mapped": {
+    "XeoNeru": false
+   },
    "count": 1,
    "bitmaps": 60,
    "groups": 10,
@@ -717,6 +837,9 @@
    },
    "rooms": {
     "IceCave1": 1
+   },
+   "mapped": {
+    "yeti": false
    },
    "count": 1,
    "bitmaps": 36,
@@ -738,6 +861,9 @@
     "Castle2c": 4,
     "OutdoorsJ3": 1,
     "OutdoorsJ3_1": 2
+   },
+   "mapped": {
+    "PrincessGuard": false
    },
    "count": 29,
    "bitmaps": 1,
@@ -762,6 +888,10 @@
     "Duke4": 4,
     "Duke5": 4
    },
+   "mapped": {
+    "DukeGuard": false,
+    "Dukeguard": false
+   },
    "count": 19,
    "bitmaps": 1,
    "groups": 1,
@@ -779,6 +909,9 @@
     "KocatanBank": 1,
     "KocatanGuardtowerEast": 4,
     "OrcCave6": 1
+   },
+   "mapped": {
+    "KocatanSentry": false
    },
    "count": 6,
    "bitmaps": 1,
@@ -799,6 +932,9 @@
     "DesertShore4": 1,
     "MarionPlantation": 1
    },
+   "mapped": {
+    "BoatCaptain": false
+   },
    "count": 4,
    "bitmaps": 1,
    "groups": 1,
@@ -815,6 +951,9 @@
    "rooms": {
     "BarHall": 1,
     "BarMerchant": 1
+   },
+   "mapped": {
+    "BarloqueMerchant": false
    },
    "count": 2,
    "bitmaps": 1,
@@ -834,6 +973,10 @@
     "BarloqueSmithy": 1,
     "RazaSmith": 1
    },
+   "mapped": {
+    "BarloqueBlacksmith": false,
+    "RazaBlacksmith": false
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -851,6 +994,10 @@
    "rooms": {
     "CorGrocer": 1,
     "JasperVault": 1
+   },
+   "mapped": {
+    "CornothGrocer": false,
+    "JasperVaultMan": false
    },
    "count": 2,
    "bitmaps": 1,
@@ -870,6 +1017,10 @@
     "JasperStore": 1,
     "RazaInn": 1
    },
+   "mapped": {
+    "JasperMerchant": false,
+    "RazaInnkeeper": false
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -887,6 +1038,10 @@
    "rooms": {
     "KocatanStore": 1,
     "RazaApoth": 1
+   },
+   "mapped": {
+    "kocatanShopkeeper": false,
+    "RazaApothecary": false
    },
    "count": 2,
    "bitmaps": 1,
@@ -906,6 +1061,10 @@
     "Marion": 1,
     "RazaHut": 1
    },
+   "mapped": {
+    "MarionElder": false,
+    "RazaElder": false
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -922,6 +1081,9 @@
    "rooms": {
     "MarionHealerShop": 1,
     "PlantationHouse": 1
+   },
+   "mapped": {
+    "MarionHealer": false
    },
    "count": 2,
    "bitmaps": 1,
@@ -941,6 +1103,10 @@
     "DeathRealmMarion": 1,
     "DValleyTemple": 1
    },
+   "mapped": {
+    "Amerantha": false,
+    "DesertInnKeeper": false
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -959,6 +1125,10 @@
     "TosInn": 1,
     "RazaBar": 1
    },
+   "mapped": {
+    "TosInnKeeper": false,
+    "RazaBartender": false
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -974,6 +1144,9 @@
    },
    "rooms": {
     "AssassinHeadQuarters": 1
+   },
+   "mapped": {
+    "Assassin": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -991,6 +1164,9 @@
    "rooms": {
     "Duke5": 1
    },
+   "mapped": {
+    "Basicinnkeeper": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1006,6 +1182,9 @@
    },
    "rooms": {
     "RazaVault": 1
+   },
+   "mapped": {
+    "RazaVaultman": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1023,6 +1202,9 @@
    "rooms": {
     "BergBank": 1
    },
+   "mapped": {
+    "BergBanker": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1038,6 +1220,9 @@
    },
    "rooms": {
     "BergVault": 1
+   },
+   "mapped": {
+    "BergVaultman": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1055,6 +1240,9 @@
    "rooms": {
     "BergInn": 1
    },
+   "mapped": {
+    "BergInnkeeper": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1070,6 +1258,9 @@
    },
    "rooms": {
     "BergLeaderHall": 1
+   },
+   "mapped": {
+    "BergLeaderM": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1087,6 +1278,9 @@
    "rooms": {
     "BergStore": 1
    },
+   "mapped": {
+    "BergMerchant": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1102,6 +1296,9 @@
    },
    "rooms": {
     "BergSmith": 1
+   },
+   "mapped": {
+    "BergBlacksmith": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1119,6 +1316,9 @@
    "rooms": {
     "BarApoth": 1
    },
+   "mapped": {
+    "BarloqueApothecary": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1134,6 +1334,9 @@
    },
    "rooms": {
     "BarlBar1": 1
+   },
+   "mapped": {
+    "BarloqueBartender": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1151,6 +1354,9 @@
    "rooms": {
     "BarloqueCourt": 1
    },
+   "mapped": {
+    "BarloqueClerk": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1166,6 +1372,9 @@
    },
    "rooms": {
     "BarInn": 1
+   },
+   "mapped": {
+    "BarloqueInnkeeper": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1183,6 +1392,9 @@
    "rooms": {
     "Castle2E": 1
    },
+   "mapped": {
+    "BarloqueTailor": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1198,6 +1410,9 @@
    },
    "rooms": {
     "BarVault": 1
+   },
+   "mapped": {
+    "Barloquevaultman": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1215,6 +1430,9 @@
    "rooms": {
     "DeathRealmCastle2": 1
    },
+   "mapped": {
+    "Celegorm": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1230,6 +1448,9 @@
    },
    "rooms": {
     "CorInn": 1
+   },
+   "mapped": {
+    "CorNothInnKeeper": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1247,6 +1468,9 @@
    "rooms": {
     "CorNothMuseum": 1
    },
+   "mapped": {
+    "CorNothMuseumGuard": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1262,6 +1486,9 @@
    },
    "rooms": {
     "CorWeaponsMaster": 1
+   },
+   "mapped": {
+    "CorNothSergeant": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1279,6 +1506,9 @@
    "rooms": {
     "CorTailor": 1
    },
+   "mapped": {
+    "CorNothTailor": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1294,6 +1524,9 @@
    },
    "rooms": {
     "DeathRealmTos": 1
+   },
+   "mapped": {
+    "Kailor": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1311,6 +1544,9 @@
    "rooms": {
     "Badland1": 1
    },
+   "mapped": {
+    "FarenPriestess": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1326,6 +1562,9 @@
    },
    "rooms": {
     "BarloquePort": 1
+   },
+   "mapped": {
+    "Fortuna": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1343,6 +1582,9 @@
    "rooms": {
     "RazaBank": 1
    },
+   "mapped": {
+    "RazaBanker": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1358,6 +1600,9 @@
    },
    "rooms": {
     "GMHall": 1
+   },
+   "mapped": {
+    "GuildCreator": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1375,6 +1620,9 @@
    "rooms": {
     "NecArena": 1
    },
+   "mapped": {
+    "Goad": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1390,6 +1638,9 @@
    },
    "rooms": {
     "BergJala": 1
+   },
+   "mapped": {
+    "JalaPriestess": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1407,6 +1658,9 @@
    "rooms": {
     "JixaDye": 1
    },
+   "mapped": {
+    "JixaDyeM": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1422,6 +1676,9 @@
    },
    "rooms": {
     "JixaInn": 1
+   },
+   "mapped": {
+    "JixaInnkeeper": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1439,6 +1696,9 @@
    "rooms": {
     "JixaSmith": 1
    },
+   "mapped": {
+    "JixaBlacksmith": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1454,6 +1714,9 @@
    },
    "rooms": {
     "JasBank": 1
+   },
+   "mapped": {
+    "JasperBanker": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1471,6 +1734,9 @@
    "rooms": {
     "JasperTavern": 1
    },
+   "mapped": {
+    "JasperBartender": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1486,6 +1752,9 @@
    },
    "rooms": {
     "JasperElderHut": 1
+   },
+   "mapped": {
+    "JasperElder": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1503,6 +1772,9 @@
    "rooms": {
     "JasperInn": 1
    },
+   "mapped": {
+    "JasperInnkeeper": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1518,6 +1790,9 @@
    },
    "rooms": {
     "JasperSmithy": 1
+   },
+   "mapped": {
+    "JasperBlackSmith": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1535,6 +1810,9 @@
    "rooms": {
     "KocatanApoth": 1
    },
+   "mapped": {
+    "KocatanApothecary": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1550,6 +1828,9 @@
    },
    "rooms": {
     "KocatanBank": 1
+   },
+   "mapped": {
+    "KocatanBanker": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1567,6 +1848,9 @@
    "rooms": {
     "KocatanTavern": 1
    },
+   "mapped": {
+    "KocatanBartender": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1582,6 +1866,9 @@
    },
    "rooms": {
     "OutdoorsKD1": 1
+   },
+   "mapped": {
+    "KocatanBonePriestess": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1599,6 +1886,9 @@
    "rooms": {
     "BowmakerHut": 1
    },
+   "mapped": {
+    "KocatanBowmaker": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1614,6 +1904,9 @@
    },
    "rooms": {
     "KocatanGuardtowerEast": 1
+   },
+   "mapped": {
+    "KocatanCaptainEvil": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1631,6 +1924,9 @@
    "rooms": {
     "KocatanGuardtowerEast": 1
    },
+   "mapped": {
+    "KocatanCaptainGood": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1646,6 +1942,9 @@
    },
    "rooms": {
     "KocatanInn": 1
+   },
+   "mapped": {
+    "KocatanInnkeeper": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1663,6 +1962,9 @@
    "rooms": {
     "KocatanHallB": 1
    },
+   "mapped": {
+    "KocatanLanguageMaster": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1678,6 +1980,9 @@
    },
    "rooms": {
     "MadScientistHut": 1
+   },
+   "mapped": {
+    "KocatanMadScientist": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1695,6 +2000,9 @@
    "rooms": {
     "TradingPost": 1
    },
+   "mapped": {
+    "KocatanTradeMaster": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1710,6 +2018,9 @@
    },
    "rooms": {
     "TempleRiija": 1
+   },
+   "mapped": {
+    "RiijaMonk": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1727,6 +2038,9 @@
    "rooms": {
     "KocatanSmithy": 1
    },
+   "mapped": {
+    "KocatanBlacksmith": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1742,6 +2056,9 @@
    },
    "rooms": {
     "KocatanTailorShop": 1
+   },
+   "mapped": {
+    "KocatanTailor": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1759,6 +2076,9 @@
    "rooms": {
     "KocatanBank": 1
    },
+   "mapped": {
+    "KocatanVaultman": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1774,6 +2094,9 @@
    },
    "rooms": {
     "KocatanHallA": 1
+   },
+   "mapped": {
+    "KocatanWeaponsMaster": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1791,6 +2114,9 @@
    "rooms": {
     "TempleKraanan": 1
    },
+   "mapped": {
+    "KraananPriestess": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1806,6 +2132,9 @@
    },
    "rooms": {
     "KocatanSouth": 1
+   },
+   "mapped": {
+    "QuarterMaster": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1823,6 +2152,9 @@
    "rooms": {
     "MarionInn": 1
    },
+   "mapped": {
+    "MarionBartender": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1838,6 +2170,9 @@
    },
    "rooms": {
     "MarionInn": 1
+   },
+   "mapped": {
+    "MarionInnKeeper": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1855,6 +2190,9 @@
    "rooms": {
     "MarionSmithy": 1
    },
+   "mapped": {
+    "MarionBlacksmith": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1870,6 +2208,9 @@
    },
    "rooms": {
     "GodRoom": 1
+   },
+   "mapped": {
+    "HunterGhost": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1887,6 +2228,9 @@
    "rooms": {
     "TempleQor": 1
    },
+   "mapped": {
+    "QorPriestess": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1902,6 +2246,9 @@
    },
    "rooms": {
     "DeathRealmJasperWest": 1
+   },
+   "mapped": {
+    "CeresofQor": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1919,6 +2266,9 @@
    "rooms": {
     "DeathRealmCorNoth": 1
    },
+   "mapped": {
+    "Joline": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1934,6 +2284,9 @@
    },
    "rooms": {
     "DeathRealmBarloqueNorth": 1
+   },
+   "mapped": {
+    "Beelzebub": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1951,6 +2304,9 @@
    "rooms": {
     "GodRoom": 1
    },
+   "mapped": {
+    "DeathBanker": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -1966,6 +2322,9 @@
    },
    "rooms": {
     "Temple": 1
+   },
+   "mapped": {
+    "ShalillePriestess": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -1983,6 +2342,9 @@
    "rooms": {
     "Swamp2": 1
    },
+   "mapped": {
+    "SwampTree": false
+   },
    "count": 1,
    "bitmaps": 18,
    "groups": 3,
@@ -1998,6 +2360,9 @@
    },
    "rooms": {
     "TosApoth": 1
+   },
+   "mapped": {
+    "TosApothecary": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -2015,6 +2380,9 @@
    "rooms": {
     "TosBank": 1
    },
+   "mapped": {
+    "TosBanker": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -2030,6 +2398,9 @@
    },
    "rooms": {
     "TosDeathArena": 1
+   },
+   "mapped": {
+    "DeathArenaWatcher": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -2047,6 +2418,9 @@
    "rooms": {
     "TosArena": 1
    },
+   "mapped": {
+    "TosWatcher": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -2062,6 +2436,9 @@
    },
    "rooms": {
     "BarloqueMarket": 1
+   },
+   "mapped": {
+    "Veydran": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -2079,6 +2456,9 @@
    "rooms": {
     "SurvivalArena": 1
    },
+   "mapped": {
+    "SurvivalWatcher": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -2094,6 +2474,9 @@
    },
    "rooms": {
     "GodRoom": 1
+   },
+   "mapped": {
+    "DarkWizard": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -2111,6 +2494,9 @@
    "rooms": {
     "GodRoom": 1
    },
+   "mapped": {
+    "Heretic": false
+   },
    "count": 1,
    "bitmaps": 4,
    "groups": 8,
@@ -2126,6 +2512,9 @@
    },
    "rooms": {
     "GodRoom": 1
+   },
+   "mapped": {
+    "Izzio": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -2143,6 +2532,9 @@
    "rooms": {
     "GodRoom": 1
    },
+   "mapped": {
+    "Minstrel": false
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -2158,6 +2550,9 @@
    },
    "rooms": {
     "DesertShore4": 1
+   },
+   "mapped": {
+    "Zimmucas": false
    },
    "count": 1,
    "bitmaps": 1,
@@ -2245,6 +2640,11 @@
     "TosHall": 4,
     "TosSecretPassage": 2
    },
+   "mapped": {
+    "Brazier": true,
+    "brazier": false,
+    "BrazierSwitch": false
+   },
    "count": 334,
    "bitmaps": 7,
    "groups": 7,
@@ -2274,6 +2674,9 @@
     "EastTos": 36,
     "Tos": 7
    },
+   "mapped": {
+    "Lamp": true
+   },
    "count": 149,
    "bitmaps": 7,
    "groups": 7,
@@ -2298,6 +2701,9 @@
     "Throne2": 12,
     "RentableRoom": 1,
     "TempleKraanan": 29
+   },
+   "mapped": {
+    "Pillar": true
    },
    "count": 109,
    "bitmaps": 1,
@@ -2347,6 +2753,9 @@
     "RazaInn": 3,
     "TosBank": 1
    },
+   "mapped": {
+    "Table": true
+   },
    "count": 100,
    "bitmaps": 1,
    "groups": 1,
@@ -2377,6 +2786,9 @@
     "RazaHall": 6,
     "RentableRoom": 1
    },
+   "mapped": {
+    "Stool": true
+   },
    "count": 80,
    "bitmaps": 1,
    "groups": 1,
@@ -2401,11 +2813,14 @@
     "OutdoorsD1": 9,
     "OutdoorsD2": 7
    },
+   "mapped": {
+    "FeyTree": true
+   },
    "count": 78,
    "bitmaps": 9,
    "groups": 9,
    "static": true,
-   "done": null
+   "done": "feytree"
   },
   "firepit": {
    "bgf": "firepit",
@@ -2446,31 +2861,15 @@
     "MarionSmithy": 1,
     "RatCave1": 1
    },
+   "mapped": {
+    "Firepit": true,
+    "FirePit": true
+   },
    "count": 73,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "firepit"
-  },
-  "bta": {
-   "bgf": "bta",
-   "name": "statue",
-   "kind": "prop",
-   "classes": {
-    "Statue": 66,
-    "Farnohl": 1
-   },
-   "rooms": {
-    "ForgottenToo": 9,
-    "KocatanHall": 15,
-    "DeathRealmThrone2": 1,
-    "TosForgotten": 42
-   },
-   "count": 67,
-   "bitmaps": 24,
-   "groups": 22,
-   "static": false,
-   "done": null
   },
   "barstool": {
    "bgf": "barstool",
@@ -2493,6 +2892,10 @@
     "TosInn": 6,
     "RazaInn": 3,
     "TosDeathArena": 7
+   },
+   "mapped": {
+    "BarStool": true,
+    "Barstool": false
    },
    "count": 63,
    "bitmaps": 1,
@@ -2528,6 +2931,9 @@
     "Swamp2": 1,
     "Underworld": 1,
     "OutOfGrace": 1
+   },
+   "mapped": {
+    "Skull": true
    },
    "count": 54,
    "bitmaps": 1,
@@ -2565,11 +2971,15 @@
     "TosHall": 1,
     "TosTavern": 1
    },
+   "mapped": {
+    "Chest": true,
+    "chest": true
+   },
    "count": 53,
    "bitmaps": 12,
    "groups": 2,
    "static": false,
-   "done": null
+   "done": "box2open"
   },
   "halfskul": {
    "bgf": "halfskul",
@@ -2589,6 +2999,9 @@
     "Necropolis2": 11,
     "Necropolis3": 1,
     "Necropolis6": 8
+   },
+   "mapped": {
+    "OO_HALFSKULL": true
    },
    "count": 48,
    "bitmaps": 1,
@@ -2632,6 +3045,10 @@
     "Temple": 1,
     "TosBank": 1,
     "TosDeathArena": 1
+   },
+   "mapped": {
+    "Sign": true,
+    "sign": false
    },
    "count": 45,
    "bitmaps": 1,
@@ -2677,11 +3094,18 @@
     "TosApoth": 1,
     "TosForgotten": 1
    },
+   "mapped": {
+    "NewsJusticar": true,
+    "GuildWarNews": true,
+    "BookPedestal": true,
+    "NewsAdventure": true,
+    "OO_JALA_BOOK": true
+   },
    "count": 39,
    "bitmaps": 9,
    "groups": 2,
    "static": false,
-   "done": null
+   "done": "jbook"
   },
   "bonepile": {
    "bgf": "bonepile",
@@ -2694,6 +3118,10 @@
    "rooms": {
     "OrcCave5": 20,
     "RazaCrypt": 17
+   },
+   "mapped": {
+    "OO_BONES": false,
+    "OO_BONES_RAZA": true
    },
    "count": 37,
    "bitmaps": 1,
@@ -2726,11 +3154,16 @@
     "Necropolis6": 1,
     "TosSmithy": 1
    },
+   "mapped": {
+    "CraftingAnvil": true,
+    "GoadsAnvil": true,
+    "KocatanAnvil": true
+   },
    "count": 36,
    "bitmaps": 8,
    "groups": 1,
    "static": false,
-   "done": null
+   "done": "craftanvil"
   },
   "lever": {
    "bgf": "lever",
@@ -2752,6 +3185,10 @@
     "OrcPitB": 1,
     "RazaCrypt": 2
    },
+   "mapped": {
+    "Lever": false,
+    "GuestLever": false
+   },
    "count": 36,
    "bitmaps": 2,
    "groups": 2,
@@ -2768,6 +3205,9 @@
    "rooms": {
     "RazaForest": 17,
     "Raza": 17
+   },
+   "mapped": {
+    "OO_CORN": true
    },
    "count": 34,
    "bitmaps": 1,
@@ -2787,6 +3227,9 @@
     "DeathRealmTosGraveyard": 11,
     "TosGraveyard": 11,
     "TosDeathArena": 2
+   },
+   "mapped": {
+    "Tombstone": false
    },
    "count": 26,
    "bitmaps": 4,
@@ -2814,11 +3257,52 @@
     "RatCave3": 1,
     "EastTos": 3
    },
+   "mapped": {
+    "OO_BARREL2": true
+   },
    "count": 25,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "barrel2"
+  },
+  "carrotplant": {
+   "bgf": "carrotplant",
+   "name": "Carrot",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Carrot": 24
+   },
+   "rooms": {
+    "MarionPlantation": 24
+   },
+   "mapped": {
+    "FoodDispenser/Carrot": true
+   },
+   "count": 24,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "carrotplant"
+  },
+  "cornstalk": {
+   "bgf": "cornstalk",
+   "name": "EarCorn",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/EarCorn": 24
+   },
+   "rooms": {
+    "MarionPlantation": 24
+   },
+   "mapped": {
+    "FoodDispenser/EarCorn": true
+   },
+   "count": 24,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "cornstalk"
   },
   "necslime": {
    "bgf": "necslime",
@@ -2834,11 +3318,33 @@
     "Necropolis5": 4,
     "Necropolis6": 7
    },
+   "mapped": {
+    "OO_NECSLIME": true
+   },
    "count": 24,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "necslime"
+  },
+  "potatoplant": {
+   "bgf": "potatoplant",
+   "name": "Potatoes",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Potatoes": 24
+   },
+   "rooms": {
+    "MarionPlantation": 24
+   },
+   "mapped": {
+    "FoodDispenser/Potatoes": true
+   },
+   "count": 24,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "potatoplant"
   },
   "splitstump": {
    "bgf": "splitstump",
@@ -2862,6 +3368,10 @@
     "GuildHall9": 2,
     "Marion": 1,
     "OutdoorsKD4": 1
+   },
+   "mapped": {
+    "SplittingStump": true,
+    "KocatanSplittingStump": true
    },
    "count": 24,
    "bitmaps": 1,
@@ -2892,11 +3402,72 @@
     "GuildHall9": 2,
     "KocatanTailorShop": 1
    },
+   "mapped": {
+    "TanningRack": true,
+    "KocatanTanningRack": true
+   },
    "count": 24,
    "bitmaps": 8,
    "groups": 1,
    "static": false,
-   "done": null
+   "done": "tanrack"
+  },
+  "tomatoplant": {
+   "bgf": "tomatoplant",
+   "name": "Tomato",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Tomato": 24
+   },
+   "rooms": {
+    "MarionPlantation": 24
+   },
+   "mapped": {
+    "FoodDispenser/Tomato": true
+   },
+   "count": 24,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "tomatoplant"
+  },
+  "watermelonpatch": {
+   "bgf": "watermelonpatch",
+   "name": "Watermelon",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Watermelon": 24
+   },
+   "rooms": {
+    "MarionPlantation": 24
+   },
+   "mapped": {
+    "FoodDispenser/Watermelon": true
+   },
+   "count": 24,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "watermelonpatch"
+  },
+  "wheatplant": {
+   "bgf": "wheatplant",
+   "name": "Flour",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Flour": 24
+   },
+   "rooms": {
+    "MarionPlantation": 24
+   },
+   "mapped": {
+    "FoodDispenser/Flour": true
+   },
+   "count": 24,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "wheatplant"
   },
   "candelab": {
    "bgf": "candelab",
@@ -2920,11 +3491,33 @@
     "TosForgottenLovers": 1,
     "University": 2
    },
+   "mapped": {
+    "Candelabra": true
+   },
    "count": 22,
    "bitmaps": 5,
    "groups": 5,
    "static": false,
-   "done": null
+   "done": "candelab"
+  },
+  "commonoats": {
+   "bgf": "commonoats",
+   "name": "Oats",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Oats": 20
+   },
+   "rooms": {
+    "MarionPlantation": 20
+   },
+   "mapped": {
+    "FoodDispenser/Oats": true
+   },
+   "count": 20,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "commonoats"
   },
   "hay": {
    "bgf": "hay",
@@ -2936,6 +3529,9 @@
    "rooms": {
     "RazaForest": 10,
     "Raza": 10
+   },
+   "mapped": {
+    "OO_HAY": true
    },
    "count": 20,
    "bitmaps": 1,
@@ -2964,6 +3560,10 @@
     "RatCave2": 1,
     "Raza": 1
    },
+   "mapped": {
+    "Box": false,
+    "WoodenBox": true
+   },
    "count": 19,
    "bitmaps": 12,
    "groups": 2,
@@ -2987,6 +3587,9 @@
     "RazaBar": 1,
     "RentableRoom": 1,
     "TradingPost": 2
+   },
+   "mapped": {
+    "Candle": true
    },
    "count": 15,
    "bitmaps": 3,
@@ -3019,6 +3622,10 @@
     "RatCave2": 1,
     "TosDeathArena": 1
    },
+   "mapped": {
+    "QuillPen": true,
+    "Quillpen": true
+   },
    "count": 15,
    "bitmaps": 1,
    "groups": 1,
@@ -3041,6 +3648,9 @@
     "Jasper": 1,
     "TosInn": 1,
     "Swamp1": 1
+   },
+   "mapped": {
+    "OO_BARREL": true
    },
    "count": 14,
    "bitmaps": 1,
@@ -3073,6 +3683,11 @@
     "IceCave1": 1,
     "RazaCrypt": 1
    },
+   "mapped": {
+    "ManaNode": false,
+    "FeyNode": false,
+    "AvarNode": false
+   },
    "count": 14,
    "bitmaps": 8,
    "groups": 8,
@@ -3088,6 +3703,9 @@
    },
    "rooms": {
     "MarionCrypt1": 13
+   },
+   "mapped": {
+    "OO_MUMMY": true
    },
    "count": 13,
    "bitmaps": 1,
@@ -3105,6 +3723,9 @@
    "rooms": {
     "RazaForest": 6,
     "Raza": 6
+   },
+   "mapped": {
+    "OO_DUNG": true
    },
    "count": 12,
    "bitmaps": 1,
@@ -3133,11 +3754,14 @@
     "GuildHall8": 1,
     "GuildHall9": 1
    },
+   "mapped": {
+    "Loom": true
+   },
    "count": 12,
    "bitmaps": 8,
    "groups": 1,
    "static": false,
-   "done": null
+   "done": "loom"
   },
   "nectree2": {
    "bgf": "nectree2",
@@ -3152,11 +3776,14 @@
     "Swamp1": 2,
     "Swamp2": 3
    },
+   "mapped": {
+    "OO_NECTREE2": true
+   },
    "count": 12,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "nectree2"
   },
   "shavehorse": {
    "bgf": "shavehorse",
@@ -3179,11 +3806,14 @@
     "GuildHall8": 1,
     "GuildHall9": 1
    },
+   "mapped": {
+    "ShaveHorse": true
+   },
    "count": 12,
    "bitmaps": 8,
    "groups": 1,
    "static": false,
-   "done": null
+   "done": "shavehorse"
   },
   "spinwheel": {
    "bgf": "spinwheel",
@@ -3206,11 +3836,37 @@
     "GuildHall8": 1,
     "GuildHall9": 1
    },
+   "mapped": {
+    "SpinningWheel": true
+   },
    "count": 12,
    "bitmaps": 8,
    "groups": 1,
    "static": false,
-   "done": null
+   "done": "spinwheel"
+  },
+  "appletree": {
+   "bgf": "appletree",
+   "name": "Apple",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Apple": 11
+   },
+   "rooms": {
+    "Duke1": 1,
+    "JixaCity": 1,
+    "MarionPlantation": 5,
+    "RazaForest": 2,
+    "Raza": 2
+   },
+   "mapped": {
+    "FoodDispenser/Apple": true
+   },
+   "count": 11,
+   "bitmaps": 2,
+   "groups": 2,
+   "static": false,
+   "done": "props.json"
   },
   "lamp1": {
    "bgf": "lamp1",
@@ -3224,6 +3880,9 @@
     "KocatanTavern": 7,
     "KocatanGuardtowerEast": 2,
     "TosDeathArena": 1
+   },
+   "mapped": {
+    "KocatanLamp": false
    },
    "count": 11,
    "bitmaps": 3,
@@ -3243,6 +3902,9 @@
     "RentableRoom": 1,
     "TosDeathArena": 8
    },
+   "mapped": {
+    "SkullBrazier": false
+   },
    "count": 10,
    "bitmaps": 3,
    "groups": 3,
@@ -3261,11 +3923,36 @@
     "JixaCity": 2,
     "LichMaze": 8
    },
+   "mapped": {
+    "TargetGlobe": false,
+    "ViewpointGlobe": false
+   },
    "count": 10,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "necglobe"
+  },
+  "orangetree": {
+   "bgf": "orangetree",
+   "name": "Orange",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Orange": 9
+   },
+   "rooms": {
+    "JixaCity": 1,
+    "Marion": 2,
+    "MarionPlantation": 6
+   },
+   "mapped": {
+    "FoodDispenser/Orange": true
+   },
+   "count": 9,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "props.json"
   },
   "throne": {
    "bgf": "throne",
@@ -3284,11 +3971,14 @@
     "DeathRealmThrone2": 1,
     "Throne2": 1
    },
+   "mapped": {
+    "Throne": true
+   },
    "count": 9,
    "bitmaps": 7,
    "groups": 1,
    "static": false,
-   "done": null
+   "done": "throne"
   },
   "artrop01": {
    "bgf": "artrop01",
@@ -3300,6 +3990,9 @@
    "rooms": {
     "TosArena2": 4,
     "TosDeathArena": 4
+   },
+   "mapped": {
+    "ArenaSign2": true
    },
    "count": 8,
    "bitmaps": 1,
@@ -3319,11 +4012,34 @@
     "RazaApoth": 1,
     "TosApoth": 3
    },
+   "mapped": {
+    "OO_FLASK_GREEN": true
+   },
    "count": 8,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "flaskgrn"
+  },
+  "peartree": {
+   "bgf": "peartree",
+   "name": "Pear",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Pear": 8
+   },
+   "rooms": {
+    "Marion": 2,
+    "MarionPlantation": 6
+   },
+   "mapped": {
+    "FoodDispenser/Pear": true
+   },
+   "count": 8,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": "props.json"
   },
   "fountain": {
    "bgf": "fountain",
@@ -3340,6 +4056,9 @@
     "MarionPlantation": 1,
     "MarionPlantationWorker1": 1,
     "Tos": 1
+   },
+   "mapped": {
+    "Fountain": true
    },
    "count": 7,
    "bitmaps": 1,
@@ -3363,6 +4082,9 @@
     "TosApoth": 1,
     "TosForgottenLovers": 1
    },
+   "mapped": {
+    "OO_JUG": true
+   },
    "count": 7,
    "bitmaps": 1,
    "groups": 1,
@@ -3378,6 +4100,9 @@
    },
    "rooms": {
     "Necropolis2": 7
+   },
+   "mapped": {
+    "OO_SKULL8": true
    },
    "count": 7,
    "bitmaps": 1,
@@ -3396,6 +4121,9 @@
     "GuildHall14": 2,
     "GuildHall17": 4
    },
+   "mapped": {
+    "Dice": true
+   },
    "count": 6,
    "bitmaps": 1,
    "groups": 1,
@@ -3411,6 +4139,9 @@
    },
    "rooms": {
     "Necropolis2": 6
+   },
+   "mapped": {
+    "OO_NECGRAVE2": true
    },
    "count": 6,
    "bitmaps": 1,
@@ -3432,6 +4163,9 @@
     "RazaForest": 1,
     "Raza": 1
    },
+   "mapped": {
+    "OO_NECTREE1": true
+   },
    "count": 6,
    "bitmaps": 1,
    "groups": 1,
@@ -3450,11 +4184,14 @@
     "Necropolis3": 1,
     "Necropolis6": 1
    },
+   "mapped": {
+    "GlowTree": true
+   },
    "count": 6,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "nectree3"
   },
   "nectree4": {
    "bgf": "nectree4",
@@ -3469,11 +4206,14 @@
     "Necropolis5": 1,
     "Necropolis6": 1
    },
+   "mapped": {
+    "OO_NECTREE4": true
+   },
    "count": 6,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "nectree4"
   },
   "nestobj2": {
    "bgf": "nestobj2",
@@ -3485,6 +4225,9 @@
    "rooms": {
     "RazaForest": 3,
     "Raza": 3
+   },
+   "mapped": {
+    "OO_NESTOBJ2": true
    },
    "count": 6,
    "bitmaps": 1,
@@ -3503,6 +4246,9 @@
     "RazaForest": 3,
     "Raza": 3
    },
+   "mapped": {
+    "OO_ROCKB": true
+   },
    "count": 6,
    "bitmaps": 1,
    "groups": 1,
@@ -3518,6 +4264,9 @@
    },
    "rooms": {
     "TosArena": 5
+   },
+   "mapped": {
+    "ArenaSign1": false
    },
    "count": 5,
    "bitmaps": 2,
@@ -3538,11 +4287,33 @@
     "RazaHut": 1,
     "TosApoth": 2
    },
+   "mapped": {
+    "OO_FIXINS": true
+   },
    "count": 5,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "fixins4"
+  },
+  "henhouse": {
+   "bgf": "henhouse",
+   "name": "Eggs",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Eggs": 5
+   },
+   "rooms": {
+    "MarionPlantation": 5
+   },
+   "mapped": {
+    "FoodDispenser/Eggs": true
+   },
+   "count": 5,
+   "bitmaps": 8,
+   "groups": 1,
+   "static": false,
+   "done": "henhouse"
   },
   "necgrav3": {
    "bgf": "necgrav3",
@@ -3553,6 +4324,9 @@
    },
    "rooms": {
     "Necropolis2": 5
+   },
+   "mapped": {
+    "OO_NECGRAVE3": true
    },
    "count": 5,
    "bitmaps": 1,
@@ -3572,6 +4346,9 @@
     "RazaForest": 2,
     "Raza": 2
    },
+   "mapped": {
+    "OO_NESTOBJ1": true
+   },
    "count": 5,
    "bitmaps": 1,
    "groups": 1,
@@ -3589,6 +4366,9 @@
     "BergJala": 2,
     "CorNoth": 2,
     "GuildHall19": 1
+   },
+   "mapped": {
+    "OO_POTPLANT": true
    },
    "count": 5,
    "bitmaps": 1,
@@ -3611,6 +4391,10 @@
     "OrcCave5": 1,
     "NecArena": 1
    },
+   "mapped": {
+    "Shrine": true,
+    "shrine": true
+   },
    "count": 5,
    "bitmaps": 1,
    "groups": 1,
@@ -3628,6 +4412,9 @@
     "Gallery": 1,
     "GuildHall13": 3,
     "RentableRoom": 1
+   },
+   "mapped": {
+    "TableLamp": false
    },
    "count": 5,
    "bitmaps": 3,
@@ -3647,6 +4434,9 @@
     "RazaBar": 1,
     "RazaApoth": 2
    },
+   "mapped": {
+    "OO_TALLURN": true
+   },
    "count": 5,
    "bitmaps": 1,
    "groups": 1,
@@ -3664,6 +4454,9 @@
     "RazaForest": 2,
     "Raza": 2
    },
+   "mapped": {
+    "OO_LETTUCE": true
+   },
    "count": 4,
    "bitmaps": 1,
    "groups": 1,
@@ -3679,6 +4472,9 @@
    },
    "rooms": {
     "Necropolis2": 4
+   },
+   "mapped": {
+    "OO_NECGRAVE1": true
    },
    "count": 4,
    "bitmaps": 1,
@@ -3697,6 +4493,9 @@
     "Gallery": 1,
     "RentableRoom": 1,
     "TosDeathArena": 2
+   },
+   "mapped": {
+    "OrcTorch": true
    },
    "count": 4,
    "bitmaps": 5,
@@ -3717,6 +4516,10 @@
     "Marion": 1,
     "RentableRoom": 1
    },
+   "mapped": {
+    "OrnamentalObject": false,
+    "OO_3_CLOTH_BOLTS": true
+   },
    "count": 3,
    "bitmaps": 1,
    "groups": 1,
@@ -3733,11 +4536,54 @@
    "rooms": {
     "RazaBar": 3
    },
+   "mapped": {
+    "OO_BUCKET": true
+   },
    "count": 3,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "bucket"
+  },
+  "drumspla": {
+   "bgf": "drumspla",
+   "name": "Drumstick",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Drumstick": 3
+   },
+   "rooms": {
+    "Gallery": 1,
+    "Duke4": 2
+   },
+   "mapped": {
+    "FoodDispenser/Drumstick": false
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "eyeplate": {
+   "bgf": "eyeplate",
+   "name": "Spideye",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Spideye": 3
+   },
+   "rooms": {
+    "Gallery": 1,
+    "Duke4": 2
+   },
+   "mapped": {
+    "FoodDispenser/Spideye": false
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
   },
   "flaskw": {
    "bgf": "flaskw",
@@ -3751,11 +4597,34 @@
     "RazaApoth": 1,
     "TosApoth": 1
    },
+   "mapped": {
+    "OO_FLASK_STAND": true
+   },
    "count": 3,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "flaskw"
+  },
+  "ftnbaskt": {
+   "bgf": "ftnbaskt",
+   "name": "FortuneCookie",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/FortuneCookie": 3
+   },
+   "rooms": {
+    "Gallery": 1,
+    "Duke4": 2
+   },
+   "mapped": {
+    "FoodDispenser/FortuneCookie": false
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
   },
   "goathead": {
    "bgf": "goathead",
@@ -3766,6 +4635,9 @@
    },
    "rooms": {
     "InnerSanctum": 3
+   },
+   "mapped": {
+    "OO_GOATHEAD": false
    },
    "count": 3,
    "bitmaps": 5,
@@ -3784,11 +4656,34 @@
     "BergStore": 2,
     "TosApoth": 1
    },
+   "mapped": {
+    "OO_GOLD_BOTTLE": true
+   },
    "count": 3,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "goldbot4"
+  },
+  "grapepla": {
+   "bgf": "grapepla",
+   "name": "Grapes",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Grapes": 3
+   },
+   "rooms": {
+    "Gallery": 1,
+    "Duke4": 2
+   },
+   "mapped": {
+    "FoodDispenser/Grapes": false
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
   },
   "koclamp": {
    "bgf": "koclamp",
@@ -3800,6 +4695,9 @@
    "rooms": {
     "Gallery": 1,
     "OrcCave6": 2
+   },
+   "mapped": {
+    "KocatanBrazier": true
    },
    "count": 3,
    "bitmaps": 1,
@@ -3820,11 +4718,55 @@
     "OutdoorsKA0": 1,
     "RazaMuseum": 1
    },
+   "mapped": {
+    "GhostItem": false,
+    "OO_MUSEUM_LUTE": true
+   },
    "count": 3,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "music"
+  },
+  "pig": {
+   "bgf": "pig",
+   "name": "Pork",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Pork": 3
+   },
+   "rooms": {
+    "Gallery": 1,
+    "Duke4": 2
+   },
+   "mapped": {
+    "FoodDispenser/Pork": false
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
+  },
+  "pitcher": {
+   "bgf": "pitcher",
+   "name": "Goblet",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Goblet": 3
+   },
+   "rooms": {
+    "Gallery": 1,
+    "Duke4": 2
+   },
+   "mapped": {
+    "FoodDispenser/Goblet": false
+   },
+   "count": 3,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
   },
   "rice": {
    "bgf": "rice",
@@ -3835,6 +4777,9 @@
    },
    "rooms": {
     "BergCity": 3
+   },
+   "mapped": {
+    "OO_RICE": true
    },
    "count": 3,
    "bitmaps": 1,
@@ -3854,6 +4799,9 @@
     "RazaForest": 1,
     "Raza": 1
    },
+   "mapped": {
+    "OO_ROCK1": true
+   },
    "count": 3,
    "bitmaps": 1,
    "groups": 1,
@@ -3872,6 +4820,9 @@
     "RazaForest": 1,
     "Raza": 1
    },
+   "mapped": {
+    "OO_ROCKC": true
+   },
    "count": 3,
    "bitmaps": 1,
    "groups": 1,
@@ -3889,6 +4840,9 @@
     "BarloqueRentableRoom": 1,
     "KocatanRentableRoom": 1,
     "MarionRentableRoom": 1
+   },
+   "mapped": {
+    "Bell": true
    },
    "count": 3,
    "bitmaps": 1,
@@ -3909,11 +4863,15 @@
     "Forest2": 1,
     "OutdoorsH7": 1
    },
+   "mapped": {
+    "SpiderTree": true,
+    "SingleTree": true
+   },
    "count": 3,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "spdrtree"
   },
   "bigiron": {
    "bgf": "bigiron",
@@ -3925,6 +4883,9 @@
    "rooms": {
     "RentableRoom": 1,
     "TosSmithy": 1
+   },
+   "mapped": {
+    "OO_BIGIRON": true
    },
    "count": 2,
    "bitmaps": 1,
@@ -3943,6 +4904,9 @@
     "BergCity": 1,
     "RentableRoom": 1
    },
+   "mapped": {
+    "OO_BIGURN": true
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -3959,6 +4923,9 @@
    "rooms": {
     "RentableRoom": 1,
     "TosForgottenLovers": 1
+   },
+   "mapped": {
+    "OO_BIGURN2": true
    },
    "count": 2,
    "bitmaps": 1,
@@ -3977,11 +4944,33 @@
     "BergSmith": 1,
     "CorNoth": 1
    },
+   "mapped": {
+    "OO_BUCKET2": true
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "bucket2"
+  },
+  "cauldron": {
+   "bgf": "cauldron",
+   "name": "Soup",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Soup": 2
+   },
+   "rooms": {
+    "Duke4": 2
+   },
+   "mapped": {
+    "FoodDispenser/Soup": false
+   },
+   "count": 2,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
   },
   "chalice": {
    "bgf": "chalice",
@@ -3993,6 +4982,9 @@
    "rooms": {
     "CorNothMuseum": 1,
     "RazaMuseum": 1
+   },
+   "mapped": {
+    "OO_MUSEUM_CHALICE": true
    },
    "count": 2,
    "bitmaps": 1,
@@ -4011,6 +5003,9 @@
     "Gallery": 1,
     "RazaHall": 1
    },
+   "mapped": {
+    "Chandelier": true
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -4028,6 +5023,9 @@
     "BergCity": 1,
     "TosInn": 1
    },
+   "mapped": {
+    "OO_DECORATIVE_POT": true
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -4043,6 +5041,9 @@
    },
    "rooms": {
     "TosApoth": 2
+   },
+   "mapped": {
+    "OO_GOOSE": true
    },
    "count": 2,
    "bitmaps": 1,
@@ -4061,6 +5062,9 @@
     "BanditCave": 1,
     "RentableRoom": 1
    },
+   "mapped": {
+    "OO_GREY_JUG": true
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -4077,6 +5081,10 @@
    },
    "rooms": {
     "GuildHall": 2
+   },
+   "mapped": {
+    "GuildLever": false,
+    "guildLever": false
    },
    "count": 2,
    "bitmaps": 4,
@@ -4095,6 +5103,9 @@
     "CorNoth": 1,
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_HAMMER": true
+   },
    "count": 2,
    "bitmaps": 3,
    "groups": 3,
@@ -4111,6 +5122,9 @@
    "rooms": {
     "CorNoth": 1,
     "RazaMuseum": 1
+   },
+   "mapped": {
+    "OO_MUSEUM_HELM": true
    },
    "count": 2,
    "bitmaps": 9,
@@ -4129,6 +5143,9 @@
     "BergStore": 1,
     "TosApoth": 1
    },
+   "mapped": {
+    "OO_MORTARANDPESTLE": true
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -4145,6 +5162,9 @@
    "rooms": {
     "BergStore": 1,
     "TosApoth": 1
+   },
+   "mapped": {
+    "OO_NECBOTTLE": true
    },
    "count": 2,
    "bitmaps": 1,
@@ -4163,6 +5183,9 @@
     "Necropolis3a": 1,
     "Necropolis5": 1
    },
+   "mapped": {
+    "OO_NECVASE": true
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -4179,6 +5202,9 @@
    "rooms": {
     "Necropolis3a": 1,
     "Necropolis5": 1
+   },
+   "mapped": {
+    "OO_NECVASE2": true
    },
    "count": 2,
    "bitmaps": 1,
@@ -4197,6 +5223,9 @@
     "AssassinHeadQuarters": 1,
     "Gallery": 1
    },
+   "mapped": {
+    "AssassinSign": true
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -4214,6 +5243,9 @@
     "CorNoth": 1,
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_PLATEARMOR": true
+   },
    "count": 2,
    "bitmaps": 3,
    "groups": 3,
@@ -4229,6 +5261,9 @@
    },
    "rooms": {
     "InnerSanctum": 2
+   },
+   "mapped": {
+    "OO_SACRIFICIALBOWL": true
    },
    "count": 2,
    "bitmaps": 1,
@@ -4247,6 +5282,9 @@
     "CorNoth": 1,
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_SHORTSWORD": true
+   },
    "count": 2,
    "bitmaps": 3,
    "groups": 3,
@@ -4263,6 +5301,9 @@
    "rooms": {
     "BarloqueMarket": 1,
     "InnerSanctum": 1
+   },
+   "mapped": {
+    "OO_SKULL10": true
    },
    "count": 2,
    "bitmaps": 1,
@@ -4281,6 +5322,9 @@
     "OutdoorsKD1": 1,
     "RentableRoom": 1
    },
+   "mapped": {
+    "OO_SKULL4": true
+   },
    "count": 2,
    "bitmaps": 1,
    "groups": 1,
@@ -4296,6 +5340,9 @@
    },
    "rooms": {
     "OutdoorsKD1": 1
+   },
+   "mapped": {
+    "OO_ALTAR": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -4313,6 +5360,9 @@
    "rooms": {
     "Jasper": 1
    },
+   "mapped": {
+    "OO_BAG_OF_BEANS": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -4328,6 +5378,9 @@
    },
    "rooms": {
     "RentableRoom": 1
+   },
+   "mapped": {
+    "OO_BLUEJUG": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -4345,6 +5398,9 @@
    "rooms": {
     "JasperVault": 1
    },
+   "mapped": {
+    "OO_VJOURNAL": false
+   },
    "count": 1,
    "bitmaps": 4,
    "groups": 4,
@@ -4360,6 +5416,9 @@
    },
    "rooms": {
     "Gallery": 1
+   },
+   "mapped": {
+    "Boulder": false
    },
    "count": 1,
    "bitmaps": 4,
@@ -4377,11 +5436,33 @@
    "rooms": {
     "RentableRoom": 1
    },
+   "mapped": {
+    "OO_BOX_WITH_SNAKE": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "boxsnak4"
+  },
+  "cornbasket": {
+   "bgf": "cornbasket",
+   "name": "Corn",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Corn": 1
+   },
+   "rooms": {
+    "Duke4": 1
+   },
+   "mapped": {
+    "FoodDispenser/Corn": false
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
   },
   "gauntlet": {
    "bgf": "gauntlet",
@@ -4393,11 +5474,33 @@
    "rooms": {
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_GAUNTLETS": true
+   },
    "count": 1,
    "bitmaps": 3,
    "groups": 3,
    "static": false,
    "done": "gauntlet"
+  },
+  "ham": {
+   "bgf": "ham",
+   "name": "Ham",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Ham": 1
+   },
+   "rooms": {
+    "Duke4": 1
+   },
+   "mapped": {
+    "FoodDispenser/Ham": false
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
   },
   "hist_banker": {
    "bgf": "hist_banker",
@@ -4408,6 +5511,9 @@
    },
    "rooms": {
     "CorNothMuseum": 1
+   },
+   "mapped": {
+    "OO_HIST_BANKER": false
    },
    "count": 1,
    "bitmaps": 6,
@@ -4425,6 +5531,9 @@
    "rooms": {
     "CorNothMuseum": 1
    },
+   "mapped": {
+    "OO_HIST_BSMITH": false
+   },
    "count": 1,
    "bitmaps": 6,
    "groups": 1,
@@ -4440,6 +5549,9 @@
    },
    "rooms": {
     "CorNothMuseum": 1
+   },
+   "mapped": {
+    "OO_HIST_CENTIPEDE": false
    },
    "count": 1,
    "bitmaps": 6,
@@ -4457,6 +5569,9 @@
    "rooms": {
     "CorNothMuseum": 1
    },
+   "mapped": {
+    "OO_HIST_DUKE": false
+   },
    "count": 1,
    "bitmaps": 7,
    "groups": 7,
@@ -4472,6 +5587,9 @@
    },
    "rooms": {
     "CorNothMuseum": 1
+   },
+   "mapped": {
+    "OO_HIST_EVPRSTT": false
    },
    "count": 1,
    "bitmaps": 6,
@@ -4489,6 +5607,9 @@
    "rooms": {
     "CorNothMuseum": 1
    },
+   "mapped": {
+    "OO_HIST_FUNGBST": false
+   },
    "count": 1,
    "bitmaps": 6,
    "groups": 1,
@@ -4504,6 +5625,9 @@
    },
    "rooms": {
     "CorNothMuseum": 1
+   },
+   "mapped": {
+    "OO_HIST_GAUNTLET": false
    },
    "count": 1,
    "bitmaps": 7,
@@ -4521,6 +5645,9 @@
    "rooms": {
     "CorNothMuseum": 1
    },
+   "mapped": {
+    "OO_HIST_GOLDSHIELD": false
+   },
    "count": 1,
    "bitmaps": 8,
    "groups": 3,
@@ -4536,6 +5663,9 @@
    },
    "rooms": {
     "CorNothMuseum": 1
+   },
+   "mapped": {
+    "OO_HIST_GSWORD": false
    },
    "count": 1,
    "bitmaps": 3,
@@ -4553,6 +5683,9 @@
    "rooms": {
     "CorNothMuseum": 1
    },
+   "mapped": {
+    "OO_HIST_HERMIT": false
+   },
    "count": 1,
    "bitmaps": 6,
    "groups": 1,
@@ -4568,6 +5701,9 @@
    },
    "rooms": {
     "CorNothMuseum": 1
+   },
+   "mapped": {
+    "OO_HIST_KING1": false
    },
    "count": 1,
    "bitmaps": 3,
@@ -4585,6 +5721,9 @@
    "rooms": {
     "CorNothMuseum": 1
    },
+   "mapped": {
+    "OO_HIST_KSHIELD": false
+   },
    "count": 1,
    "bitmaps": 8,
    "groups": 3,
@@ -4600,6 +5739,9 @@
    },
    "rooms": {
     "CorNothMuseum": 1
+   },
+   "mapped": {
+    "OO_HIST_LEATHAMR": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -4617,6 +5759,9 @@
    "rooms": {
     "CorNothMuseum": 1
    },
+   "mapped": {
+    "OO_HIST_ORC": false
+   },
    "count": 1,
    "bitmaps": 4,
    "groups": 1,
@@ -4632,6 +5777,9 @@
    },
    "rooms": {
     "CorNothMuseum": 1
+   },
+   "mapped": {
+    "OO_HIST_ORNHELMA": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -4649,6 +5797,9 @@
    "rooms": {
     "CorNothMuseum": 1
    },
+   "mapped": {
+    "OO_HIST_PLATE": false
+   },
    "count": 1,
    "bitmaps": 2,
    "groups": 2,
@@ -4664,6 +5815,9 @@
    },
    "rooms": {
     "CorNothMuseum": 1
+   },
+   "mapped": {
+    "OO_HIST_PRIESTESS": false
    },
    "count": 1,
    "bitmaps": 6,
@@ -4681,6 +5835,9 @@
    "rooms": {
     "CorNothMuseum": 1
    },
+   "mapped": {
+    "OO_HIST_PRINCESS": false
+   },
    "count": 1,
    "bitmaps": 7,
    "groups": 7,
@@ -4696,6 +5853,9 @@
    },
    "rooms": {
     "CorNothMuseum": 1
+   },
+   "mapped": {
+    "OO_HIST_RAT": false
    },
    "count": 1,
    "bitmaps": 6,
@@ -4713,6 +5873,9 @@
    "rooms": {
     "CorNothMuseum": 1
    },
+   "mapped": {
+    "OO_HIST_ROUNDSHLD": false
+   },
    "count": 1,
    "bitmaps": 8,
    "groups": 3,
@@ -4728,6 +5891,9 @@
    },
    "rooms": {
     "CorNothMuseum": 1
+   },
+   "mapped": {
+    "OO_HIST_SCIMITAR": false
    },
    "count": 1,
    "bitmaps": 3,
@@ -4745,6 +5911,9 @@
    "rooms": {
     "JasperWest": 1
    },
+   "mapped": {
+    "OO_JASPERLAMP1": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -4761,11 +5930,33 @@
    "rooms": {
     "Jasper": 1
    },
+   "mapped": {
+    "OO_JASPERLAMP": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "lampjasp"
+  },
+  "mashtaters": {
+   "bgf": "mashtaters",
+   "name": "MashedPatatoes",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/MashedPatatoes": 1
+   },
+   "rooms": {
+    "Duke4": 1
+   },
+   "mapped": {
+    "FoodDispenser/MashedPatatoes": false
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
   },
   "modaltar": {
    "bgf": "modaltar",
@@ -4776,6 +5967,9 @@
    },
    "rooms": {
     "RazaMuseum": 1
+   },
+   "mapped": {
+    "OO_MUSEUM_ALTAR": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -4793,6 +5987,9 @@
    "rooms": {
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_ANT": true
+   },
    "count": 1,
    "bitmaps": 6,
    "groups": 1,
@@ -4808,6 +6005,9 @@
    },
    "rooms": {
     "RazaMuseum": 1
+   },
+   "mapped": {
+    "OO_MUSEUM_AVAR": true
    },
    "count": 1,
    "bitmaps": 6,
@@ -4825,6 +6025,9 @@
    "rooms": {
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_CENTIPEDE": true
+   },
    "count": 1,
    "bitmaps": 6,
    "groups": 1,
@@ -4840,6 +6043,9 @@
    },
    "rooms": {
     "RazaMuseum": 1
+   },
+   "mapped": {
+    "OO_MUSEUM_FEY": true
    },
    "count": 1,
    "bitmaps": 6,
@@ -4857,6 +6063,9 @@
    "rooms": {
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_FUNGUSBEAST": true
+   },
    "count": 1,
    "bitmaps": 6,
    "groups": 1,
@@ -4872,6 +6081,9 @@
    },
    "rooms": {
     "RazaMuseum": 1
+   },
+   "mapped": {
+    "OO_MUSEUM_LUPOGG": true
    },
    "count": 1,
    "bitmaps": 6,
@@ -4889,6 +6101,9 @@
    "rooms": {
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_NEWS": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -4904,6 +6119,9 @@
    },
    "rooms": {
     "RazaMuseum": 1
+   },
+   "mapped": {
+    "ModelNode": true
    },
    "count": 1,
    "bitmaps": 8,
@@ -4921,6 +6139,9 @@
    "rooms": {
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_ORC": true
+   },
    "count": 1,
    "bitmaps": 6,
    "groups": 1,
@@ -4936,6 +6157,9 @@
    },
    "rooms": {
     "RazaMuseum": 1
+   },
+   "mapped": {
+    "OO_MUSEUM_PORTAL": true
    },
    "count": 1,
    "bitmaps": 8,
@@ -4953,6 +6177,9 @@
    "rooms": {
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_SHRINE": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -4968,6 +6195,9 @@
    },
    "rooms": {
     "RazaMuseum": 1
+   },
+   "mapped": {
+    "OO_MUSEUM_SPIDER": true
    },
    "count": 1,
    "bitmaps": 6,
@@ -4985,6 +6215,9 @@
    "rooms": {
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_THRONE": true
+   },
    "count": 1,
    "bitmaps": 7,
    "groups": 1,
@@ -5000,6 +6233,9 @@
    },
    "rooms": {
     "RatCave1": 1
+   },
+   "mapped": {
+    "OO_NECROCK": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -5017,11 +6253,33 @@
    "rooms": {
     "Necropolis2": 1
    },
+   "mapped": {
+    "OO_NECVASE3": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "necvase3"
+  },
+  "pecanpie": {
+   "bgf": "pecanpie",
+   "name": "PecanPie",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/PecanPie": 1
+   },
+   "rooms": {
+    "Duke4": 1
+   },
+   "mapped": {
+    "FoodDispenser/PecanPie": false
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
   },
   "potion01": {
    "bgf": "potion01",
@@ -5032,6 +6290,9 @@
    },
    "rooms": {
     "RazaMuseum": 1
+   },
+   "mapped": {
+    "OO_MUSEUM_POTION": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -5049,6 +6310,9 @@
    "rooms": {
     "RazaApoth": 1
    },
+   "mapped": {
+    "OO_POTION": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -5065,11 +6329,33 @@
    "rooms": {
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_PRISM": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "prism3"
+  },
+  "pumppie": {
+   "bgf": "pumppie",
+   "name": "PumpkinPie",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/PumpkinPie": 1
+   },
+   "rooms": {
+    "Duke4": 1
+   },
+   "mapped": {
+    "FoodDispenser/PumpkinPie": false
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
   },
   "roomcage": {
    "bgf": "roomcage",
@@ -5080,6 +6366,9 @@
    },
    "rooms": {
     "RentableRoom": 1
+   },
+   "mapped": {
+    "DragonflyCage": false
    },
    "count": 1,
    "bitmaps": 5,
@@ -5097,11 +6386,14 @@
    "rooms": {
     "GuildHall17": 1
    },
+   "mapped": {
+    "Pillow": true
+   },
    "count": 1,
    "bitmaps": 2,
    "groups": 1,
    "static": false,
-   "done": null
+   "done": "roompilo"
   },
   "roompla1": {
    "bgf": "roompla1",
@@ -5112,6 +6404,9 @@
    },
    "rooms": {
     "RentableRoom": 1
+   },
+   "mapped": {
+    "OO_RR_PLANT1": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -5129,6 +6424,9 @@
    "rooms": {
     "RentableRoom": 1
    },
+   "mapped": {
+    "OO_RR_PLANT2": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -5144,6 +6442,9 @@
    },
    "rooms": {
     "RentableRoom": 1
+   },
+   "mapped": {
+    "OO_RR_TABLE": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -5161,11 +6462,33 @@
    "rooms": {
     "RentableRoom": 1
    },
+   "mapped": {
+    "OO_RR_BASIN": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "roomwash"
+  },
+  "rouladen": {
+   "bgf": "rouladen",
+   "name": "Rouladen",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Rouladen": 1
+   },
+   "rooms": {
+    "Duke4": 1
+   },
+   "mapped": {
+    "FoodDispenser/Rouladen": false
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
   },
   "scimitar": {
    "bgf": "scimitar",
@@ -5176,6 +6499,9 @@
    },
    "rooms": {
     "RazaMuseum": 1
+   },
+   "mapped": {
+    "OO_MUSEUM_SCIMITAR": true
    },
    "count": 1,
    "bitmaps": 3,
@@ -5193,6 +6519,9 @@
    "rooms": {
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_SCROLL": true
+   },
    "count": 1,
    "bitmaps": 2,
    "groups": 2,
@@ -5208,6 +6537,9 @@
    },
    "rooms": {
     "RazaMuseum": 1
+   },
+   "mapped": {
+    "OO_MUSEUM_SIGNETRING": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -5225,6 +6557,9 @@
    "rooms": {
     "OutdoorsKD1": 1
    },
+   "mapped": {
+    "OO_SKULL1": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -5240,6 +6575,9 @@
    },
    "rooms": {
     "OutdoorsKC1": 1
+   },
+   "mapped": {
+    "OO_SKULL2": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -5257,6 +6595,9 @@
    "rooms": {
     "OutdoorsKC1": 1
    },
+   "mapped": {
+    "OO_SKULL3": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -5272,6 +6613,9 @@
    },
    "rooms": {
     "OutdoorsKD1": 1
+   },
+   "mapped": {
+    "OO_SKULL5": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -5289,6 +6633,9 @@
    "rooms": {
     "OutdoorsKC1": 1
    },
+   "mapped": {
+    "OO_SKULL6": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -5304,6 +6651,9 @@
    },
    "rooms": {
     "RazaHut": 1
+   },
+   "mapped": {
+    "OO_SKULL7": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -5321,6 +6671,9 @@
    "rooms": {
     "Necropolis2": 1
    },
+   "mapped": {
+    "OO_SKULL9": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
@@ -5336,6 +6689,9 @@
    },
    "rooms": {
     "RentableRoom": 1
+   },
+   "mapped": {
+    "SmallBox": false
    },
    "count": 1,
    "bitmaps": 12,
@@ -5353,11 +6709,33 @@
    "rooms": {
     "RentableRoom": 1
    },
+   "mapped": {
+    "OO_STONECHAIR": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "stochair"
+  },
+  "stuffing": {
+   "bgf": "stuffing",
+   "name": "Stuffing",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/Stuffing": 1
+   },
+   "rooms": {
+    "Duke4": 1
+   },
+   "mapped": {
+    "FoodDispenser/Stuffing": false
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
   },
   "tcat": {
    "bgf": "tcat",
@@ -5369,11 +6747,33 @@
    "rooms": {
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_TOKEN": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
    "done": "tcat"
+  },
+  "turkey": {
+   "bgf": "turkey",
+   "name": "TurkeyLeg",
+   "kind": "prop",
+   "classes": {
+    "FoodDispenser/TurkeyLeg": 1
+   },
+   "rooms": {
+    "Duke4": 1
+   },
+   "mapped": {
+    "FoodDispenser/TurkeyLeg": false
+   },
+   "count": 1,
+   "bitmaps": 1,
+   "groups": 1,
+   "static": true,
+   "done": null
   },
   "urn4": {
    "bgf": "urn4",
@@ -5384,6 +6784,9 @@
    },
    "rooms": {
     "RazaHut": 1
+   },
+   "mapped": {
+    "OO_URN": true
    },
    "count": 1,
    "bitmaps": 1,
@@ -5401,11 +6804,38 @@
    "rooms": {
     "RazaMuseum": 1
    },
+   "mapped": {
+    "OO_MUSEUM_WAND": true
+   },
    "count": 1,
    "bitmaps": 2,
    "groups": 2,
    "static": false,
    "done": "wand2"
+  },
+  "bta": {
+   "bgf": "bta",
+   "name": "statue",
+   "kind": "statue",
+   "classes": {
+    "Statue": 66,
+    "Farnohl": 1
+   },
+   "rooms": {
+    "ForgottenToo": 9,
+    "KocatanHall": 15,
+    "DeathRealmThrone2": 1,
+    "TosForgotten": 42
+   },
+   "mapped": {
+    "Statue": false,
+    "Farnohl": false
+   },
+   "count": 67,
+   "bitmaps": 24,
+   "groups": 22,
+   "static": false,
+   "done": null
   },
   "tree2": {
    "bgf": "tree2",
@@ -5423,11 +6853,14 @@
     "OutdoorsKC4": 14,
     "OutdoorsKD3": 25
    },
+   "mapped": {
+    "OO_TREE2": true
+   },
    "count": 98,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "razshrub": {
    "bgf": "razshrub",
@@ -5443,11 +6876,14 @@
     "OutdoorsD6E6": 4,
     "Tos": 19
    },
+   "mapped": {
+    "OO_RAZA_SHRUB": true
+   },
    "count": 67,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "raztree1": {
    "bgf": "raztree1",
@@ -5463,11 +6899,14 @@
     "OutdoorsD6E6": 7,
     "Tos": 18
    },
+   "mapped": {
+    "OO_RAZA_TREE1": true
+   },
    "count": 58,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "midtree2": {
    "bgf": "midtree2",
@@ -5492,6 +6931,9 @@
     "Jixa1": 2,
     "RazaForest": 15,
     "Raza": 15
+   },
+   "mapped": {
+    "OO_MIDTREE2": true
    },
    "count": 57,
    "bitmaps": 1,
@@ -5519,11 +6961,14 @@
     "Castle2b": 23,
     "EastTos": 12
    },
+   "mapped": {
+    "OO_TALLTREE1": true
+   },
    "count": 54,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "midtree1": {
    "bgf": "midtree1",
@@ -5555,11 +7000,14 @@
     "Swamp1": 2,
     "EastTos": 2
    },
+   "mapped": {
+    "OO_MIDTREE1": true
+   },
    "count": 52,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "shrub": {
    "bgf": "shrub",
@@ -5578,11 +7026,14 @@
     "EastTos": 2,
     "Tos": 4
    },
+   "mapped": {
+    "Shrub": true
+   },
    "count": 48,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "shrubee1": {
    "bgf": "shrubee1",
@@ -5602,6 +7053,9 @@
     "Raza": 2,
     "EastTos": 20
    },
+   "mapped": {
+    "OO_SHRUBEE1": true
+   },
    "count": 46,
    "bitmaps": 1,
    "groups": 1,
@@ -5619,11 +7073,14 @@
     "OutdoorsKB3": 13,
     "OutdoorsKD2": 14
    },
+   "mapped": {
+    "OO_TREE1": true
+   },
    "count": 27,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "midtree3": {
    "bgf": "midtree3",
@@ -5648,11 +7105,14 @@
     "Jixa1": 1,
     "Jixa3": 1
    },
+   "mapped": {
+    "OO_MIDTREE3": true
+   },
    "count": 25,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "talltree2": {
    "bgf": "talltree2",
@@ -5680,11 +7140,14 @@
     "Jixa3": 1,
     "EastTos": 5
    },
+   "mapped": {
+    "OO_TALLTREE2": true
+   },
    "count": 25,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "tree3": {
    "bgf": "tree3",
@@ -5698,11 +7161,14 @@
     "OutdoorsKB5": 12,
     "OutdoorsKC2": 4
    },
+   "mapped": {
+    "OO_TREE3": true
+   },
    "count": 23,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "midtree4": {
    "bgf": "midtree4",
@@ -5728,11 +7194,14 @@
     "OutdoorsJ3_1": 1,
     "Jixa1": 1
    },
+   "mapped": {
+    "OO_MIDTREE4": true
+   },
    "count": 22,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "tallbush": {
    "bgf": "tallbush",
@@ -5745,11 +7214,14 @@
     "CorNoth": 14,
     "Gallery": 1
    },
+   "mapped": {
+    "Tallbush": true
+   },
    "count": 15,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "roundshrub": {
    "bgf": "roundshrub",
@@ -5765,11 +7237,14 @@
     "CorNoth": 2,
     "Duke1": 2
    },
+   "mapped": {
+    "OO_RSHRUB": true
+   },
    "count": 10,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "talltree3": {
    "bgf": "talltree3",
@@ -5785,11 +7260,14 @@
     "BanditCamp": 1,
     "EastTos": 1
    },
+   "mapped": {
+    "OO_TALLTREE3": true
+   },
    "count": 6,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "palm": {
    "bgf": "palm",
@@ -5801,11 +7279,14 @@
    "rooms": {
     "RatCave1": 1
    },
+   "mapped": {
+    "OO_PALM": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   },
   "yrxltree": {
    "bgf": "yrxltree",
@@ -5817,11 +7298,14 @@
    "rooms": {
     "OutdoorsKD1": 1
    },
+   "mapped": {
+    "YrxlTree": true
+   },
    "count": 1,
    "bitmaps": 1,
    "groups": 1,
    "static": true,
-   "done": null
+   "done": "props.json"
   }
  }
 }

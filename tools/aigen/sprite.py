@@ -84,11 +84,13 @@ def angle_frames(meta: dict, front: int) -> dict:
     """{view: bitmap} of the original's own side and back drawings of bitmap `front`, from the
     8-direction group that starts with it. [0, 1, 2, 3, 3, 3, 4, 5] (the museum figures) is front,
     front three-quarter, side (2: the front points to the image's left, so the object's left side),
-    back three-quarter, back (4), other side (6). Empty when the sprite has no such group; a view is
-    left out when it's missing (-1) or repeats the front."""
+    back three-quarter, back (4), other side (6); a group of 4 is front, side, back, other side. Empty
+    when the sprite has no such group; a view is left out when it's missing (-1) or repeats the front."""
     for g in meta.get("groups", []):
         if len(g) == 8 and g[0] == front:
             return {v: g[i] for v, i in VIEW_STEPS.items() if g[i] >= 0 and g[i] != front}
+        if len(g) == 4 and g[0] == front:  # four directions (tombstones, the boulder, the museum's orc)
+            return {v: g[i // 2] for v, i in VIEW_STEPS.items() if g[i // 2] >= 0 and g[i // 2] != front}
     return {}
 
 

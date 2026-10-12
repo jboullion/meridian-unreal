@@ -11,24 +11,44 @@
   "placed": 9,
   "rooms": 8,
   "batch": "marion",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
-    "variants": {"C": {"front": "openai"}},
+    "variants": {
+      "C": {"front": "openai"},
+      "MV": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
+    },
     "runs": {
       "C": {
         "tripo_task": "e28b2aca-41fb-473e-a20c-17d1f241a54a",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
         "tripo_name": "marble sculpture 3d model",
-        "tris_raw": 1758
+        "tris_raw": 1758,
+        "file": "build/aigen/props/throne/04_tripo_out/C.glb",
+        "digest": "6e9865a1e623f540",
+        "tris": 1758,
+        "size_m": [0.6177, 0.3029, 0.9803]
+      },
+      "MV": {
+        "tripo_task": "1aaf3669-c2ce-4852-8ab3-0ed86c632c88",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 2000 faces, multi-view (4 views)",
+        "credits": 60.0,
+        "file": "build/aigen/props/throne/04_tripo_out/MV.glb",
+        "digest": "5bea88de4c01cb84",
+        "tris": 1767,
+        "size_m": [0.5926, 0.333, 0.9793]
       }
     },
     "chosen": {
-      "variant": "C",
-      "file": "art_src/aigen/props/throne/throne_tripo.glb",
-      "tripo_task": "e28b2aca-41fb-473e-a20c-17d1f241a54a",
-      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
-      "tripo_name": "marble sculpture 3d model",
-      "tris_raw": 1758
+      "variant": "MV",
+      "file": "build/aigen/props/throne/04_tripo_out/MV.glb",
+      "tripo_task": "1aaf3669-c2ce-4852-8ab3-0ed86c632c88",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 2000 faces, multi-view (4 views)",
+      "credits": 60.0,
+      "digest": "5bea88de4c01cb84",
+      "tris": 1767,
+      "size_m": [0.5926, 0.333, 0.9793]
     }
   },
   "height_m": 1.6672,
@@ -42,12 +62,31 @@
       "seconds": null,
       "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
       "file": "build/aigen/props/throne/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/throne/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/throne/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/throne/02_restyle/openai_right.png"
     }
   },
   "normalized": {
     "file": "build/environment/kit/SM_AI_Throne.glb",
-    "tris": 1758,
-    "size_m": [1.0505, 0.5152, 1.6672],
-    "scale": 1.70068
-  }
+    "tris": 1767,
+    "size_m": [1.0089, 0.5669, 1.6672],
+    "scale": 1.7024
+  },
+  "upgrade": "overnight"
 }

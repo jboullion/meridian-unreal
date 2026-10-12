@@ -107,12 +107,15 @@
       }
     },
     "chosen": {
-      "variant": "C",
-      "file": "art_src/aigen/props/modant/modant_tripo.glb",
-      "tripo_task": "c9403450-444a-466f-bef7-aa844b70de47",
-      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
-      "tripo_name": "red insect 3d model",
-      "tris_raw": 7810
+      "variant": "MV4k",
+      "file": "build/aigen/props/modant/04_tripo_out/MV4k.glb",
+      "tripo_task": "3163ed85-e6b7-4413-83bc-08568f42949e",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view front/left/back/right restyled from the original's own angle frames (45 credits; 2026-10-09)",
+      "tripo_name": "red alien insect 3d model",
+      "tris_raw": 3924,
+      "digest": "13a3fabff87e55c3",
+      "tris": 3924,
+      "size_m": [0.7412, 0.9835, 0.5632]
     }
   },
   "status": "done",
@@ -148,9 +151,9 @@
   },
   "normalized": {
     "file": "build/environment/kit/SM_AI_Modant.glb",
-    "tris": 7810,
-    "size_m": [0.8468, 0.4264, 0.6789],
-    "scale": 0.86282
+    "tris": 3924,
+    "size_m": [0.8935, 1.1855, 0.6789],
+    "scale": 1.20543
   },
   "angles": {"left": 2, "back": 3, "right": 4},
   "normalized_variants": {

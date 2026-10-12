@@ -111,12 +111,15 @@
       }
     },
     "chosen": {
-      "variant": "C",
-      "file": "art_src/aigen/props/modfung/modfung_tripo.glb",
-      "tripo_task": "565fa005-b7fe-440c-a32a-320947ee0ad9",
-      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
+      "variant": "MV4k",
+      "file": "build/aigen/props/modfung/04_tripo_out/MV4k.glb",
+      "tripo_task": "52b7847f-b355-4344-97f4-d25ad7129adc",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, multi-view front/left/back/right restyled from the original's own angle frames (45 credits; 2026-10-09)",
       "tripo_name": "alien creature 3d model",
-      "tris_raw": 7978
+      "tris_raw": 3688,
+      "digest": "87c015752c8c5ce6",
+      "tris": 3688,
+      "size_m": [0.5345, 0.9807, 0.7698]
     }
   },
   "status": "done",
@@ -152,9 +155,9 @@
   },
   "normalized": {
     "file": "build/environment/kit/SM_AI_Modfung.glb",
-    "tris": 7978,
-    "size_m": [0.2908, 0.3178, 0.4076],
-    "scale": 0.41745
+    "tris": 3688,
+    "size_m": [0.283, 0.5193, 0.4076],
+    "scale": 0.52946
   },
   "angles": {"left": 2, "back": 3, "right": 4},
   "normalized_variants": {

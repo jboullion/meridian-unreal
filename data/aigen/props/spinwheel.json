@@ -11,24 +11,44 @@
   "placed": 12,
   "rooms": 12,
   "batch": "marion",
-  "restyle": {"providers": ["openai"], "views": ["front"]},
+  "restyle": {"providers": ["openai"]},
   "tripo": {
-    "variants": {"C": {"front": "openai"}},
+    "variants": {
+      "C": {"front": "openai"},
+      "MV": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
+    },
     "runs": {
       "C": {
         "tripo_task": "3537ab98-c8fd-4a57-91eb-44040d0e9f67",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image, Batch Images to 3D (45 credits)",
         "tripo_name": "wooden spinning wheel 3d model",
-        "tris_raw": 3780
+        "tris_raw": 3780,
+        "file": "build/aigen/props/spinwheel/04_tripo_out/C.glb",
+        "digest": "dd8b9d35599eb103",
+        "tris": 3780,
+        "size_m": [0.9774, 0.3412, 0.9768]
+      },
+      "MV": {
+        "tripo_task": "6d01eaa9-cac6-451a-9078-736d3052757c",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+        "credits": 60.0,
+        "file": "build/aigen/props/spinwheel/04_tripo_out/MV.glb",
+        "digest": "0b38c5356d0e5f66",
+        "tris": 3764,
+        "size_m": [0.9804, 0.4465, 0.982]
       }
     },
     "chosen": {
-      "variant": "C",
-      "file": "art_src/aigen/props/spinwheel/spinwheel_tripo.glb",
-      "tripo_task": "3537ab98-c8fd-4a57-91eb-44040d0e9f67",
-      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 faces, single image, Batch Images to 3D (45 credits)",
-      "tripo_name": "wooden spinning wheel 3d model",
-      "tris_raw": 3780
+      "variant": "MV",
+      "file": "build/aigen/props/spinwheel/04_tripo_out/MV.glb",
+      "tripo_task": "6d01eaa9-cac6-451a-9078-736d3052757c",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+      "credits": 60.0,
+      "digest": "0b38c5356d0e5f66",
+      "tris": 3764,
+      "size_m": [0.9804, 0.4465, 0.982]
     }
   },
   "polycount": 4000,
@@ -43,12 +63,31 @@
       "seconds": null,
       "batch": "batch_6acad1de4a1081909742d8fabf1bbef1",
       "file": "build/aigen/props/spinwheel/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/spinwheel/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/spinwheel/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/spinwheel/02_restyle/openai_right.png"
     }
   },
   "normalized": {
     "file": "build/environment/kit/SM_AI_Spinwheel.glb",
-    "tris": 3780,
-    "size_m": [1.676, 0.5852, 1.675],
-    "scale": 1.71482
-  }
+    "tris": 3764,
+    "size_m": [1.6723, 0.7617, 1.675],
+    "scale": 1.70576
+  },
+  "upgrade": "overnight"
 }

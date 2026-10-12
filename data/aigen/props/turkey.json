@@ -1,0 +1,58 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "turkey",
+  "kind": "props",
+  "class": "FoodDispenser/TurkeyLeg",
+  "bgf": "turkey",
+  "frame": 0,
+  "describe": "a whole roast turkey, golden brown and glistening, on an oval white platter garnished with green herbs and cherry tomatoes",
+  "mesh": "SM_AI_Turkey",
+  "size_by": "length",
+  "placed": 1,
+  "rooms": 1,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"]},
+  "height_m": 0.391,
+  "width_m": 0.7176,
+  "lift_m": 0.1736,
+  "sprite_px": [840, 859],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/turkey/02_restyle/openai_front.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "C": {
+        "tripo_task": "974fbf2d-5da8-4e9d-bd27-ad6e8e1bc0dc",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 2000 faces, single image",
+        "credits": 60.0,
+        "file": "build/aigen/props/turkey/04_tripo_out/C.glb",
+        "digest": "36f14983c2660f13",
+        "tris": 1681,
+        "size_m": [0.9116, 0.8757, 0.4217]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/turkey/04_tripo_out/C.glb",
+      "tripo_task": "974fbf2d-5da8-4e9d-bd27-ad6e8e1bc0dc",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 2000 faces, single image",
+      "credits": 60.0,
+      "digest": "36f14983c2660f13",
+      "tris": 1681,
+      "size_m": [0.9116, 0.8757, 0.4217]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Turkey.glb",
+    "tris": 1681,
+    "size_m": [0.7176, 0.6893, 0.332],
+    "scale": 0.78721
+  }
+}

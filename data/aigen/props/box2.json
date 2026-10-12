@@ -22,13 +22,43 @@
         "tripo_task": "35ade3e4-18ac-4e2f-a53d-df464581bbcc",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, single image, Batch Images to 3D (45 credits)",
         "tripo_name": "metal chest 3d model",
-        "tris_raw": 1695
+        "tris_raw": 1695,
+        "file": "build/aigen/props/box2/04_tripo_out/C.glb",
+        "digest": "b207d24d9c95d053",
+        "tris": 1695,
+        "size_m": [0.9805, 0.422, 0.6317]
       },
       "MV": {
         "tripo_task": "abeaf081-0754-4d70-a3a7-7b6f07ec2083",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 2000 faces, multi-view: the original's own front, left, back and right drawings, each restyled (45 credits)",
         "tripo_name": "metal chest 3d model",
-        "tris_raw": 1617
+        "tris_raw": 1617,
+        "file": "build/aigen/props/box2/04_tripo_out/MV.glb",
+        "digest": "74829182ff57437f",
+        "tris": 1617,
+        "size_m": [0.9811, 0.5791, 0.6147]
+      },
+      "APIMV": {
+        "tripo_task": "04c83c6e-853c-4810-98b8-8ad41817633a",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture standard, PBR, delight, 2000 faces, multi-view (4 views)",
+        "credits": 50.0,
+        "file": "build/aigen/props/box2/04_tripo_out/APIMV.glb",
+        "digest": "eb70cf403fcce7a2",
+        "tris": 1721,
+        "size_m": [0.979, 0.5896, 0.6189]
+      },
+      "APIMVT1": {
+        "file": "build/aigen/props/box2/04_tripo_out/APIMVT1.glb",
+        "digest": "c243305ac6e1427b",
+        "tris": 1671,
+        "size_m": [0.9725, 0.5856, 0.6124]
+      },
+      "APIMVT2": {
+        "file": "build/aigen/props/box2/04_tripo_out/APIMVT2.glb",
+        "digest": "243a77c4bcb0256d",
+        "tris": 1572,
+        "size_m": [0.9825, 0.5911, 0.6177]
       }
     },
     "chosen": {

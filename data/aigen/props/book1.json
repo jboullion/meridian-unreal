@@ -1,0 +1,61 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "book1",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 162,
+  "oo_const": "OO_VJOURNAL",
+  "bgf": "book1",
+  "frame": 0,
+  "describe": "a thick closed leather-bound journal lying flat: dark brown leather cover with ornate brass corner fittings and a row of small turquoise and gold studs along its top edge, cream page edges",
+  "mesh": "SM_AI_Book1",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"]},
+  "polycount": 1000,
+  "height_m": 0.4383,
+  "width_m": 1.0656,
+  "lift_m": 0.0,
+  "sprite_px": [124, 51],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/book1/02_restyle/openai_front.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "C": {
+        "tripo_task": "fa5ca2bd-b3d1-4cbe-a677-9d9f63189d68",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 1000 faces, single image",
+        "credits": 60.0,
+        "file": "build/aigen/props/book1/04_tripo_out/C.glb",
+        "digest": "82f9c15ebce70bd5",
+        "tris": 916,
+        "size_m": [0.8709, 0.9702, 0.2959]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/book1/04_tripo_out/C.glb",
+      "tripo_task": "fa5ca2bd-b3d1-4cbe-a677-9d9f63189d68",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 1000 faces, single image",
+      "credits": 60.0,
+      "digest": "82f9c15ebce70bd5",
+      "tris": 916,
+      "size_m": [0.8709, 0.9702, 0.2959]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Book1.glb",
+    "tris": 916,
+    "size_m": [1.2902, 1.4373, 0.4383],
+    "scale": 1.48148
+  }
+}

@@ -21,7 +21,10 @@ Record each run in the manifest too (`tripo.runs.<variant>.settings`).
 - **V2 (`api.tripo3d.ai/v2/openapi`) shuts down 2026-10-31 16:00 UTC.** The `tripo3d` Python SDK is V2-first, so don't use it. Call V3 with `requests`.
   - Migration guide: https://developers.tripo3d.com/en/docs/migration-v2-to-v3.md
   - Docs index: https://developers.tripo3d.com/llms.txt (every page also exists as `.md`)
-- **Base URL:** `https://openapi.tripo3d.com/v3`. Note it's `.com`.
+- **Base URL:** `https://openapi.tripo3d.ai/v3` for keys from platform.tripo3d.ai. `openapi.tripo3d.com` (the docs' examples) is the Chinese platform and answers 401 "Invalid API key" (2026-10-10).
+- **Backend:** `tools/aigen/tripo_api.py`, `aigen.py <assets> tripo-api [variant]`, `aigen.py tripo-balance`; overnight runs `tools/aigen/overnight.py`.
+- **Orientation:** models come back facing glTF +X (`export_orientation` "+x"); `tripo_api.face_front` turns them to +Z like Studio's.
+- **Settings that match Studio** (tested 2026-10-10 on the stump and chest): `geometry_quality` "detailed", `texture_quality` "detailed", `texture_version` "v3.5-20260815", `delight`, `enable_image_autofix` (single image), PBR. 60 credits a model. `texture_quality` "standard" (50) came out visibly softer.
 - **Auth:** `Authorization: Bearer tsk_…` (env `TRIPO_API_KEY`). A `tcli_` client id gives a 401.
 - **Upload:** `POST /v3/files` (multipart; PNG or JPEG up to 20 MB) → `data.file_token`.
 - **Tasks:** `POST /v3/generation/image-to-model` and `/generation/multiview-to-model`.

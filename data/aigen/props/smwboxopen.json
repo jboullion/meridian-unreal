@@ -1,0 +1,77 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "smwboxopen",
+  "kind": "props",
+  "class": "SmallBox",
+  "bgf": "smwbox",
+  "frame": 6,
+  "describe": "a small wooden chest standing open seen from the front: weathered brown wooden planks with dark knots, the flat lid swung fully up and back, the inside empty and plain wood",
+  "mesh": "SM_AI_Smwboxopen",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"]},
+  "height_m": 1.0398,
+  "width_m": 1.0828,
+  "lift_m": 0.0,
+  "sprite_px": [126, 128],
+  "angles": {"left": 10, "back": 9, "right": 8},
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/smwboxopen/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/smwboxopen/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/smwboxopen/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/smwboxopen/02_restyle/openai_right.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "MV": {
+        "tripo_task": "0870d3ff-f07f-4571-a648-979df66a550a",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 2000 faces, multi-view (4 views)",
+        "credits": 60.0,
+        "file": "build/aigen/props/smwboxopen/04_tripo_out/MV.glb",
+        "digest": "40b7fd61bf355f76",
+        "tris": 1269,
+        "size_m": [0.9715, 0.6904, 0.9749]
+      }
+    },
+    "chosen": {
+      "variant": "MV",
+      "file": "build/aigen/props/smwboxopen/04_tripo_out/MV.glb",
+      "tripo_task": "0870d3ff-f07f-4571-a648-979df66a550a",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 2000 faces, multi-view (4 views)",
+      "credits": 60.0,
+      "digest": "40b7fd61bf355f76",
+      "tris": 1269,
+      "size_m": [0.9715, 0.6904, 0.9749]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Smwboxopen.glb",
+    "tris": 1269,
+    "size_m": [1.0362, 0.7364, 1.0398],
+    "scale": 1.06657
+  }
+}

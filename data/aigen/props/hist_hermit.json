@@ -1,0 +1,80 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "hist_hermit",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 190,
+  "oo_const": "OO_HIST_HERMIT",
+  "bgf": "hist_hermit",
+  "frame": 0,
+  "describe": "a painted figure of an old hermit sitting cross-legged on the ground: a hooded brown robe, a long white beard, a wrapped belt around his waist",
+  "mesh": "SM_AI_HistHermit",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"]},
+  "polycount": 4000,
+  "height_m": 0.9625,
+  "width_m": 1.0055,
+  "lift_m": 0.0,
+  "sprite_px": [117, 112],
+  "angles": {"left": 4, "back": 3, "right": 2},
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/hist_hermit/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_hermit/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_hermit/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_hermit/02_restyle/openai_right.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "MV": {
+        "tripo_task": "a0cef8b0-15fc-482e-916e-2ca7b0d383b8",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+        "credits": 60.0,
+        "file": "build/aigen/props/hist_hermit/04_tripo_out/MV.glb",
+        "digest": "07e4be3db3316c4c",
+        "tris": 3866,
+        "size_m": [0.9815, 0.7064, 0.9252]
+      }
+    },
+    "chosen": {
+      "variant": "MV",
+      "file": "build/aigen/props/hist_hermit/04_tripo_out/MV.glb",
+      "tripo_task": "a0cef8b0-15fc-482e-916e-2ca7b0d383b8",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+      "credits": 60.0,
+      "digest": "07e4be3db3316c4c",
+      "tris": 3866,
+      "size_m": [0.9815, 0.7064, 0.9252]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_HistHermit.glb",
+    "tris": 3866,
+    "size_m": [1.0211, 0.7349, 0.9625],
+    "scale": 1.04029
+  }
+}

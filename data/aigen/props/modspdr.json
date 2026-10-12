@@ -49,12 +49,15 @@
       }
     },
     "chosen": {
-      "variant": "C",
-      "file": "art_src/aigen/props/modspdr/modspdr_tripo.glb",
-      "tripo_task": "d122558d-b68a-4cba-9bda-fe89e694dcd7",
-      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
-      "tripo_name": "giant spider 3d model",
-      "tris_raw": 5910
+      "variant": "MV4k",
+      "file": "build/aigen/props/modspdr/04_tripo_out/MV4k.glb",
+      "tripo_task": "a0411936-0b9f-41f2-acd2-8d340c3019e3",
+      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 4000 polycount (manifest override), multi-view front/left/back/right from the original's angle frames (45 credits)",
+      "tripo_name": "spider 3d model",
+      "tris_raw": 3639,
+      "digest": "9c6345a42e0f688d",
+      "tris": 3639,
+      "size_m": [0.7687, 0.9832, 0.6217]
     }
   },
   "status": "done",
@@ -90,9 +93,9 @@
   },
   "normalized": {
     "file": "build/environment/kit/SM_AI_Modspdr.glb",
-    "tris": 5910,
-    "size_m": [0.4779, 0.3777, 0.3652],
-    "scale": 0.48569
+    "tris": 3639,
+    "size_m": [0.4515, 0.5775, 0.3652],
+    "scale": 0.58739
   },
   "angles": {"left": 2, "back": 3, "right": 4},
   "polycount": 4000,

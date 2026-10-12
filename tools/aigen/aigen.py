@@ -131,7 +131,11 @@ def step_sprite(m: dict, a):
     # height, width, and the empty rows under it (a hanging chandelier: "lift_m" off the floor)
     sized, _ = sprite.source_frame(m, m.get("size_frame", m.get("frame", 0)))
     x0, y0, x1, y1 = sized.getchannel("A").getbbox()
-    mpp = sprite.bgf2png.M_PER_SQUARE / 64.0 / meta["shrink"]
+    # manifest "size_skip_top": the top fraction of the drawing isn't the object (a lamp's painted flame,
+    # which the restyle leaves out): the size is measured below it
+    y0 += round((y1 - y0) * m.get("size_skip_top", 0.0))
+    # manifest "shrink" overrides the bgf's own when it's wrong (the pumpkin pie: shrink 1, a 10 m pie)
+    mpp = sprite.bgf2png.M_PER_SQUARE / 64.0 / m.get("shrink", meta["shrink"])
     m["height_m"], m["width_m"] = round((y1 - y0) * mpp, 4), round((x1 - x0) * mpp, 4)
     m["lift_m"] = round((sized.height - y1) * mpp, 4)
     m["sprite_px"] = list(img.size)
@@ -475,6 +479,58 @@ def bridge_collect(spec: str = "all"):
     print("bridge-collect: %d/%d collected" % (len(got), len(targets)))
 
 
+def tripo_api_step(ms: list, a):
+    """Generate every variant in each asset's 03_tripo_in/ that has no 04_tripo_out/<variant>.glb (or only
+    `a.variant`) through the Tripo API (tripo_api.py), up to tripo_api.MAX_PARALLEL at once. A task id is
+    saved in the manifest as soon as it's submitted (tripo.runs.<variant>: tripo_task, "backend": "api"),
+    so a rerun resumes it instead of paying again; a failed one moves to "failed_task" and is retried."""
+    import tripo_api
+    jobs = []
+    for m in ms:
+        inp = work_dir(m) / "03_tripo_in"
+        variants = {}
+        for png in sorted(inp.glob("*.png")) if inp.exists() else []:
+            variant, _, view = png.stem.rpartition("_")
+            if view in tripo_api.VIEWS:
+                variants.setdefault(variant, {})[view] = png
+        for variant, views in variants.items():
+            if a.variant and variant != a.variant:
+                continue
+            out = work_dir(m) / "04_tripo_out" / ("%s.glb" % variant)
+            if out.exists() and not a.force:
+                continue
+            run = m.get("tripo", {}).get("runs", {}).get(variant, {})
+            if run.get("tripo_task") and run.get("backend") != "api" and not a.force:
+                print("tripo-api: %s %s has a Studio task without its GLB; skipped (--force to regenerate)" % (m["name"], variant))
+                continue
+            opts = tripo_api.options(tripo.polycount(m), len(views) > 1)
+            name, settings = m["name"], tripo_api.settings_text(opts, len(views))
+
+            def update(fields, name=name, variant=variant, pop=(), failed=False):
+                mm = load(name)
+                r = mm.setdefault("tripo", {}).setdefault("runs", {}).setdefault(variant, {})
+                if failed:
+                    fields = dict(fields, failed_task=r.get("tripo_task"))
+                for k in pop:
+                    r.pop(k, None)
+                r.update(fields)
+                save(mm)
+
+            jobs.append({"name": "%s %s" % (name, variant), "views": views, "opts": opts, "out": out,
+                         "task": run.get("tripo_task") if run.get("backend") == "api" and not a.force else None,
+                         "submitted": lambda tid, u=update, st=settings: u({"tripo_task": tid, "backend": "api", "settings": st},
+                                                                          pop=("failed", "failed_task")),
+                         "finished": lambda data, u=update, o=out: u({"credits": data.get("credits_consumed"), "file": rel(o)}),
+                         "failed": lambda msg, u=update: u({"failed": msg}, pop=("tripo_task",), failed=True)})
+    if not jobs:
+        print("tripo-api: nothing to generate")
+        return
+    print("tripo-api: %d models (%d new, %d resumed)" % (len(jobs), sum(not j["task"] for j in jobs), sum(bool(j["task"]) for j in jobs)),
+          flush=True)
+    res = tripo_api.run(jobs, log=lambda s: print(s, flush=True))
+    print("tripo-api: %(done)d done, %(failed)d failed, %(credits).0f credits" % res)
+
+
 def overview(spec: str, restyle_name: str = "openai_front", cols: int = 6):
     """One sheet of every asset: the 4x upscale next to an image of it: a restyle name ("openai_front"),
     or a path under the asset's work folder ("05_review/normalized/front.png") -> build/aigen/overview_<name>.png."""
@@ -520,12 +576,16 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == "bridge-collect":
         bridge_collect(sys.argv[2] if len(sys.argv) > 2 else "all")
         return
+    if len(sys.argv) > 1 and sys.argv[1] == "tripo-balance":
+        import tripo_api
+        print("tripo-balance: %s" % tripo_api.Client().balance())
+        return
     if len(sys.argv) > 1 and sys.argv[1] == "overview":
         overview(sys.argv[2] if len(sys.argv) > 2 else "all", sys.argv[3] if len(sys.argv) > 3 else "openai_front")
         return
     ap = argparse.ArgumentParser()
     ap.add_argument("asset", help='a manifest name, "a,b,c", or "all"')
-    ap.add_argument("step", choices=list(STEPS) + ["all", "batch-submit"])
+    ap.add_argument("step", choices=list(STEPS) + ["all", "batch-submit", "tripo-api"])
     ap.add_argument("variant", nargs="?")
     ap.add_argument("--provider")
     ap.add_argument("--views")
@@ -537,6 +597,9 @@ def main():
     ms = manifests(a.asset)
     if a.step == "batch-submit":
         batch_submit(ms, a)
+        return
+    if a.step == "tripo-api":
+        tripo_api_step(ms, a)
         return
     steps = ["sprite", "restyle", "review"] if a.step == "all" else [a.step]
     for m in ms:

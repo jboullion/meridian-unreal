@@ -1,0 +1,58 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "eyeplate",
+  "kind": "props",
+  "class": "FoodDispenser/Spideye",
+  "bgf": "eyeplate",
+  "frame": 0,
+  "describe": "a heaped mound of glossy red round eyeballs (like red berries) piled high on a flat silver platter",
+  "mesh": "SM_AI_Eyeplate",
+  "size_by": "length",
+  "placed": 3,
+  "rooms": 2,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"]},
+  "height_m": 0.6325,
+  "width_m": 1.0313,
+  "lift_m": 0.0,
+  "sprite_px": [150, 92],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/eyeplate/02_restyle/openai_front.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "C": {
+        "tripo_task": "8ab81c26-eb62-4861-aea8-967a106e9259",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 2000 faces, single image",
+        "credits": 60.0,
+        "file": "build/aigen/props/eyeplate/04_tripo_out/C.glb",
+        "digest": "9c8c78391f934575",
+        "tris": 1787,
+        "size_m": [0.9825, 0.9703, 0.6064]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/eyeplate/04_tripo_out/C.glb",
+      "tripo_task": "8ab81c26-eb62-4861-aea8-967a106e9259",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 2000 faces, single image",
+      "credits": 60.0,
+      "digest": "9c8c78391f934575",
+      "tris": 1787,
+      "size_m": [0.9825, 0.9703, 0.6064]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Eyeplate.glb",
+    "tris": 1787,
+    "size_m": [1.0313, 1.0185, 0.6366],
+    "scale": 1.04968
+  }
+}

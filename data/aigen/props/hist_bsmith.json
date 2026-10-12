@@ -1,0 +1,80 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "hist_bsmith",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 172,
+  "oo_const": "OO_HIST_BSMITH",
+  "bgf": "hist_bsmith",
+  "frame": 0,
+  "describe": "a painted figure of a lean bearded blacksmith standing straight: a long tan leather apron over dark clothes, bare forearms, brown boots",
+  "mesh": "SM_AI_HistBsmith",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"]},
+  "polycount": 4000,
+  "height_m": 1.1974,
+  "width_m": 0.3724,
+  "lift_m": 0.0172,
+  "sprite_px": [75, 213],
+  "angles": {"left": 4, "back": 3, "right": 2},
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/hist_bsmith/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_bsmith/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_bsmith/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_bsmith/02_restyle/openai_right.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "MV": {
+        "tripo_task": "4b5e78a2-3831-48cd-b626-148470c26458",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+        "credits": 60.0,
+        "file": "build/aigen/props/hist_bsmith/04_tripo_out/MV.glb",
+        "digest": "0d23a16fb32796b0",
+        "tris": 3790,
+        "size_m": [0.326, 0.1635, 0.9813]
+      }
+    },
+    "chosen": {
+      "variant": "MV",
+      "file": "build/aigen/props/hist_bsmith/04_tripo_out/MV.glb",
+      "tripo_task": "4b5e78a2-3831-48cd-b626-148470c26458",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+      "credits": 60.0,
+      "digest": "0d23a16fb32796b0",
+      "tris": 3790,
+      "size_m": [0.326, 0.1635, 0.9813]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_HistBsmith.glb",
+    "tris": 3790,
+    "size_m": [0.3978, 0.1996, 1.1974],
+    "scale": 1.22026
+  }
+}

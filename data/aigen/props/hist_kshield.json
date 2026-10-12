@@ -1,0 +1,79 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "hist_kshield",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 183,
+  "oo_const": "OO_HIST_KSHIELD",
+  "bgf": "hist_kshield",
+  "frame": 1,
+  "describe": "a knight heater shield seen from the front: a pointed shield with a polished silver face, a brown leather-covered rim and small gold studs around the edge",
+  "mesh": "SM_AI_HistKshield",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"]},
+  "height_m": 0.6703,
+  "width_m": 0.5414,
+  "lift_m": 0.0,
+  "sprite_px": [64, 78],
+  "angles": {"left": 5, "back": 4, "right": 3},
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/hist_kshield/02_restyle/openai_front.png"
+    },
+    "openai_left": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_kshield/02_restyle/openai_left.png"
+    },
+    "openai_back": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_kshield/02_restyle/openai_back.png"
+    },
+    "openai_right": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acafc897d288190aceb1d80a21daf0c",
+      "file": "build/aigen/props/hist_kshield/02_restyle/openai_right.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "MV": {
+        "tripo_task": "eb520411-882f-4073-81df-355c0a632a26",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 2000 faces, multi-view (4 views)",
+        "credits": 60.0,
+        "file": "build/aigen/props/hist_kshield/04_tripo_out/MV.glb",
+        "digest": "fee56f2fcb803915",
+        "tris": 1782,
+        "size_m": [0.7506, 0.2266, 0.984]
+      }
+    },
+    "chosen": {
+      "variant": "MV",
+      "file": "build/aigen/props/hist_kshield/04_tripo_out/MV.glb",
+      "tripo_task": "eb520411-882f-4073-81df-355c0a632a26",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 2000 faces, multi-view (4 views)",
+      "credits": 60.0,
+      "digest": "fee56f2fcb803915",
+      "tris": 1782,
+      "size_m": [0.7506, 0.2266, 0.984]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_HistKshield.glb",
+    "tris": 1782,
+    "size_m": [0.5113, 0.1543, 0.6703],
+    "scale": 0.68117
+  }
+}

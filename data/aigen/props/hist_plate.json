@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "hist_plate",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 180,
+  "oo_const": "OO_HIST_PLATE",
+  "bgf": "hist_plate",
+  "frame": 0,
+  "describe": "a golden plate armour breastplate standing upright: polished gold chest plate with shaped shoulder plates",
+  "mesh": "SM_AI_HistPlate",
+  "size_by": "height",
+  "placed": 1,
+  "rooms": 1,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"]},
+  "height_m": 0.699,
+  "width_m": 0.6646,
+  "lift_m": 0.0,
+  "sprite_px": [64, 61],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/hist_plate/02_restyle/openai_front.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "C": {
+        "tripo_task": "f62b185d-d821-4723-bf3a-40425eee1f81",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 2000 faces, single image",
+        "credits": 60.0,
+        "file": "build/aigen/props/hist_plate/04_tripo_out/C.glb",
+        "digest": "710c65dc8810c2d1",
+        "tris": 1874,
+        "size_m": [0.9728, 0.5852, 0.9822]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/hist_plate/04_tripo_out/C.glb",
+      "tripo_task": "f62b185d-d821-4723-bf3a-40425eee1f81",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 2000 faces, single image",
+      "credits": 60.0,
+      "digest": "710c65dc8810c2d1",
+      "tris": 1874,
+      "size_m": [0.9728, 0.5852, 0.9822]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_HistPlate.glb",
+    "tris": 1874,
+    "size_m": [0.6923, 0.4164, 0.699],
+    "scale": 0.71163
+  }
+}

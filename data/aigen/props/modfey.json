@@ -13,14 +13,22 @@
   "tripo": {
     "variants": {
       "C": {"front": "openai"},
-      "MV1k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
+      "MV": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
     },
     "runs": {
       "C": {
         "tripo_task": "3375a29c-fb70-4c44-b5fd-6ca7cc819956",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
         "tripo_name": "fantasy winged creature 3d model",
-        "tris_raw": 7806
+        "tris_raw": 7806,
+        "file": "build/aigen/props/modfey/04_tripo_out/C.glb",
+        "digest": "1d3e4ac9da275957",
+        "tris": 7806,
+        "size_m": [0.9644, 0.6642, 0.9778]
+      },
+      "MV": {
+        "failed": "submit: HTTP 400 code 2008: The input is rejected due to violation of content policy",
+        "failed_task": null
       }
     },
     "chosen": {
@@ -69,5 +77,7 @@
     "size_m": [0.4165, 0.2869, 0.4223],
     "scale": 0.43188
   },
-  "angles": {"left": 2, "back": 3, "right": 4}
+  "angles": {"left": 2, "back": 3, "right": 4},
+  "polycount": 4000,
+  "upgrade": "overnight"
 }

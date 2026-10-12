@@ -13,23 +13,40 @@
   "tripo": {
     "variants": {
       "C": {"front": "openai"},
-      "MV1k": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
+      "MV": {"front": "openai", "left": "openai", "back": "openai", "right": "openai"}
     },
     "runs": {
       "C": {
         "tripo_task": "ead62058-13d4-4f07-8f89-f0a0a623e8d4",
         "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
         "tripo_name": "avian warrior 3d model",
-        "tris_raw": 7718
+        "tris_raw": 7718,
+        "file": "build/aigen/props/modavar/04_tripo_out/C.glb",
+        "digest": "03a90d8d76266365",
+        "tris": 7718,
+        "size_m": [0.8209, 0.5485, 0.9846]
+      },
+      "MV": {
+        "tripo_task": "30117a4b-58d3-4771-b1d4-756bc494566a",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+        "credits": 60.0,
+        "file": "build/aigen/props/modavar/04_tripo_out/MV.glb",
+        "digest": "f0f54f5e85d14d20",
+        "tris": 3878,
+        "size_m": [0.7251, 0.9766, 0.8957]
       }
     },
     "chosen": {
-      "variant": "C",
-      "file": "art_src/aigen/props/modavar/modavar_tripo.glb",
-      "tripo_task": "ead62058-13d4-4f07-8f89-f0a0a623e8d4",
-      "settings": "Studio HD Model, H3.1, Ultra Mesh + AI Complete, 2K PBR, Remove Lighting, triangles, 8000 faces, single image (45 credits)",
-      "tripo_name": "avian warrior 3d model",
-      "tris_raw": 7718
+      "variant": "MV",
+      "file": "build/aigen/props/modavar/04_tripo_out/MV.glb",
+      "tripo_task": "30117a4b-58d3-4771-b1d4-756bc494566a",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, 4000 faces, multi-view (4 views)",
+      "credits": 60.0,
+      "digest": "f0f54f5e85d14d20",
+      "tris": 3878,
+      "size_m": [0.7251, 0.9766, 0.8957]
     }
   },
   "status": "done",
@@ -65,9 +82,11 @@
   },
   "normalized": {
     "file": "build/environment/kit/SM_AI_Modavar.glb",
-    "tris": 7718,
-    "size_m": [0.5875, 0.3925, 0.7047],
-    "scale": 0.71571
+    "tris": 3878,
+    "size_m": [0.5705, 0.7684, 0.7047],
+    "scale": 0.78678
   },
-  "angles": {"left": 2, "back": 3, "right": 4}
+  "angles": {"left": 2, "back": 3, "right": 4},
+  "polycount": 4000,
+  "upgrade": "overnight"
 }

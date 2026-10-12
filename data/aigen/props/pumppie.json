@@ -1,0 +1,60 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "pumppie",
+  "kind": "props",
+  "class": "FoodDispenser/PumpkinPie",
+  "bgf": "pumppie",
+  "frame": 0,
+  "describe": "a pumpkin pie on a white plate: a round pie with a crimped pastry crust and a smooth orange filling, one slice cut out",
+  "mesh": "SM_AI_Pumppie",
+  "size_by": "length",
+  "placed": 1,
+  "rooms": 1,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"]},
+  "polycount": 1000,
+  "height_m": 0.3298,
+  "width_m": 0.55,
+  "lift_m": 0.029,
+  "sprite_px": [600, 361],
+  "shrink": 32,
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/pumppie/02_restyle/openai_front.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "C": {
+        "tripo_task": "6200827c-325b-4605-ab05-0d82fe44ca8a",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 1000 faces, single image",
+        "credits": 60.0,
+        "file": "build/aigen/props/pumppie/04_tripo_out/C.glb",
+        "digest": "ed700d153b699f15",
+        "tris": 896,
+        "size_m": [0.9806, 0.9784, 0.1996]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/pumppie/04_tripo_out/C.glb",
+      "tripo_task": "6200827c-325b-4605-ab05-0d82fe44ca8a",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 1000 faces, single image",
+      "credits": 60.0,
+      "digest": "ed700d153b699f15",
+      "tris": 896,
+      "size_m": [0.9806, 0.9784, 0.1996]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_Pumppie.glb",
+    "tris": 896,
+    "size_m": [0.55, 0.5487, 0.1119],
+    "scale": 0.56086
+  }
+}

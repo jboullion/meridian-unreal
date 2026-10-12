@@ -17,6 +17,8 @@ More detail, loaded when needed:
 
 **World batch (2026-10-08):** every other static prop placed in any room: 67 (62 props plus the 5 leafless trees, which the user wants from Tripo), front image only (`C`), polycount 2000 (1000 for simple shapes, 4000 for the bare trees). Found by `inventory.py --world`; manifests drafted by `--manifests`. Leafy trees and shrubs went to the Blender kit instead (ADR 0007 "World batch").
 
+**Overnight batch (2026-10-11):** every prop in the game now has a model (ADR 0007 "Overnight batch"). **The Tripo API is the default backend**: `aigen.py <assets> tripo-api`, or the whole chain unattended with `python tools/aigen/overnight.py --new a,b --upgrade c,d` (restyle batches, Tripo, review, normalise, `build/aigen/overnight/<date>/report.md`). Settings: H3.1, detailed geometry and texture, texture v3.5, delight, 60 credits a model. Polycount 0 (no face limit) plus manifest `max_tris` for clusters of small round things (corn, grapes). Studio plus the bridge stays for one-offs and for credits on the Max plan.
+
 **Per city (2026-10-10):** each city of the world remaster (docs/world-maps.md, pass 3) gets a batch for its objects without a mesh (ADR 0007 "Marion batch": 19 props, 855 credits). Find them by checking the city's `zone_layout.json` objects against `props.json` the way `build_world.prop_config` does, not from `inventory_world.json` alone: crops (`FoodDispenser/<food>`, by the food's `*_disp_icon`), the `Tree` class (`"Tree/bottom=<n>"`) and icon-only ornaments (`"icons"`) aren't in it. Check first whether a mesh already serves the class elsewhere; props.json is shared by every room. Leafy trees go to the Blender kit, leafless ones to Tripo (the user's rule).
 
 ## Current defaults

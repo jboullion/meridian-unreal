@@ -1,0 +1,62 @@
+{
+  "_doc": "aigen manifest (tools/aigen/aigen.py, docs/adr/0007); fields as in brazier.json",
+  "name": "hist_gsword",
+  "kind": "props",
+  "class": "OrnamentalObject",
+  "oo_type": 178,
+  "oo_const": "OO_HIST_GSWORD",
+  "bgf": "hist_gsword",
+  "frame": 2,
+  "describe": "a straight longsword of gold: a long golden blade, a gold crossguard curving slightly and a gold grip with a round pommel",
+  "mesh": "SM_AI_HistGsword",
+  "size_by": "length",
+  "placed": 1,
+  "rooms": 1,
+  "batch": "overnight",
+  "restyle": {"providers": ["openai"], "extra": "Show it lying flat on its side, horizontal."},
+  "size_frame": 0,
+  "lay_flat": true,
+  "height_m": 0.1833,
+  "width_m": 0.7104,
+  "lift_m": 0.0,
+  "sprite_px": [186, 84],
+  "restyle_runs": {
+    "openai_front": {
+      "model": "gpt-image-2.5-sunburst",
+      "seconds": null,
+      "batch": "batch_6acaf7ec2d68819095afa0e28ddc2e05",
+      "file": "build/aigen/props/hist_gsword/02_restyle/openai_front.png"
+    }
+  },
+  "tripo": {
+    "runs": {
+      "C": {
+        "tripo_task": "99774acc-e5c5-473c-a29c-b5a7bc1cae62",
+        "backend": "api",
+        "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 2000 faces, single image",
+        "credits": 60.0,
+        "file": "build/aigen/props/hist_gsword/04_tripo_out/C.glb",
+        "digest": "64a7566a21a32715",
+        "tris": 1834,
+        "size_m": [0.9808, 0.191, 0.2142]
+      }
+    },
+    "chosen": {
+      "variant": "C",
+      "file": "build/aigen/props/hist_gsword/04_tripo_out/C.glb",
+      "tripo_task": "99774acc-e5c5-473c-a29c-b5a7bc1cae62",
+      "backend": "api",
+      "settings": "API v3 v3.1-20260211, geometry detailed, texture detailed v3.5-20260815, PBR, delight, autofix, 2000 faces, single image",
+      "credits": 60.0,
+      "digest": "64a7566a21a32715",
+      "tris": 1834,
+      "size_m": [0.9808, 0.191, 0.2142]
+    }
+  },
+  "normalized": {
+    "file": "build/environment/kit/SM_AI_HistGsword.glb",
+    "tris": 1834,
+    "size_m": [0.7104, 0.1552, 0.1383],
+    "scale": 0.7243
+  }
+}
