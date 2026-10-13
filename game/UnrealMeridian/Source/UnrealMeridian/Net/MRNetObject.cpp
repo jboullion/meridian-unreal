@@ -20,6 +20,13 @@ namespace
 	constexpr double SnapCm = 4.0 * MRUnits::CmPerSquare;
 	/** Close enough to stop walking. */
 	constexpr double ArriveCm = 12.0;
+	/**
+	 * A walker's positions come about every 250 ms (ours: UMRNetWorldSubsystem MoveInterval): after reaching one
+	 * it keeps its walk this long before standing, so it doesn't stop and start again between them.
+	 */
+	constexpr float WalkGraceSeconds = 0.3f;
+	/** Behind the server by more than this many seconds of its speed: hurry (as the original client does). */
+	constexpr double CatchUpSeconds = 0.35;
 }
 
 AMRNetObject::AMRNetObject(const FObjectInitializer& ObjectInitializer)
@@ -41,6 +48,10 @@ AMRNetObject::AMRNetObject(const FObjectInitializer& ObjectInitializer)
 		Move->bOrientRotationToMovement = true;
 		Move->RotationRate = FRotator(0.f, 540.f, 0.f);
 		Move->MaxWalkSpeed = 220.f;
+		// full speed at once and stopped at once, like the player (UMRCharacterMovementComponent): the engine's
+		// 2048 cm/s/s took 0.6 s to reach a run, so a walker always trailed and stopped short between updates
+		Move->MaxAcceleration = 12000.f;
+		Move->BrakingDecelerationWalking = 12000.f;
 		Move->bRunPhysicsWithNoController = true;
 	}
 }
@@ -183,6 +194,7 @@ void AMRNetObject::Place(const FVector& World, int32 KodAngle)
 	SetActorLocationAndRotation(At, FRotator(0.0, StandYaw, 0.0), false, nullptr, ETeleportType::TeleportPhysics);
 	Target = At;
 	bHasTarget = false;
+	ArrivedSeconds = WalkGraceSeconds;
 }
 
 void AMRNetObject::MoveTo(const FVector& World, uint8 Speed)
@@ -192,15 +204,21 @@ void AMRNetObject::MoveTo(const FVector& World, uint8 Speed)
 	{
 		SetActorLocation(At, false, nullptr, ETeleportType::TeleportPhysics);
 		bHasTarget = false;
+		ArrivedSeconds = WalkGraceSeconds;
 		return;
 	}
 	Target = At;
+	const double Dist = FVector::Dist2D(At, GetActorLocation());
+	if (Dist <= ArriveCm)
+	{
+		return;  // where it is already (a turn, BP_TURN): no walk
+	}
 	bHasTarget = true;
 	// the server's speed is in the original's units (a player walks at 25, runs at 55): 55 is the
-	// player's run (UMRCharacterMovementComponent::RunCms)
+	// player's run (UMRCharacterMovementComponent::RunCms). Further behind than CatchUpSeconds of that: faster.
 	const float Run = UMRCharacterMovementComponent::RunCms();
 	const float Cms = Speed > 0 ? Speed * Run / 55.f : UMRCharacterMovementComponent::WalkCms();
-	GetCharacterMovement()->MaxWalkSpeed = FMath::Clamp(Cms, 60.f, 2.f * Run);
+	GetCharacterMovement()->MaxWalkSpeed = FMath::Clamp(FMath::Max(Cms, static_cast<float>(Dist / CatchUpSeconds)), 60.f, 2.f * Run);
 }
 
 void AMRNetObject::TurnTo(int32 KodAngle)
@@ -215,9 +233,19 @@ void AMRNetObject::TurnTo(int32 KodAngle)
 void AMRNetObject::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (!bHasTarget)
+	{
+		// stood still past the grace: face the server's way
+		const bool bWasWalking = ArrivedSeconds < WalkGraceSeconds;
+		ArrivedSeconds += DeltaSeconds;
+		if (bWasWalking && ArrivedSeconds >= WalkGraceSeconds)
+		{
+			SetActorRotation(FRotator(0.0, StandYaw, 0.0));
+		}
+	}
 	if (BgfSprite)
 	{
-		BgfSprite->SetMoving(bHasTarget);
+		BgfSprite->SetMoving(bHasTarget || ArrivedSeconds < WalkGraceSeconds);
 	}
 	if (!bHasTarget)
 	{
@@ -229,8 +257,8 @@ void AMRNetObject::Tick(float DeltaSeconds)
 	if (Dist <= FMath::Max(ArriveCm, GetCharacterMovement()->MaxWalkSpeed * DeltaSeconds))
 	{
 		bHasTarget = false;
+		ArrivedSeconds = 0.f;
 		GetCharacterMovement()->StopMovementImmediately();
-		SetActorRotation(FRotator(0.0, StandYaw, 0.0));
 		return;
 	}
 	AddMovementInput(FVector(To.X, To.Y, 0.0).GetSafeNormal(), 1.f);

@@ -189,6 +189,8 @@ protected:
 
 	/** First-person camera position in actor space: the original's eye height, scaled with the sprite's height. */
 	FVector FirstPersonEye = FVector(12.f, 0.f, 75.f);
+	/** The eye's lag behind a step, cm (SmoothCameraStep): the camera boom sits this far off its height. */
+	float StepSmoothZ = 0.f;
 
 	/** Replicated because the rotation rules depend on it (the controller's yaw turns the body in
 	 * first person and the fixed views; the chase camera turns it toward movement). */
@@ -235,6 +237,11 @@ protected:
 	/** Keep the third-person camera within mr.Camera.ThirdPersonPitch of eye level. */
 	void ClampThirdPersonPitch();
 public:
+	/**
+	 * After each movement update (UMRCharacterMovementComponent::OnMovementUpdated): a step up or down, or out
+	 * of a pool, moves the capsule in one frame; the eye follows it over mr.Camera.StepSmoothSeconds instead.
+	 */
+	void SmoothCameraStep(float DeltaSeconds, const FVector& OldLocation, bool bWasOnGround);
 	/** How far the mouse has turned the view since ResetLookTravel (a right click or a drag). */
 	float GetLookTravel() const { return LookTravel; }
 	void ResetLookTravel() { LookTravel = 0.f; }

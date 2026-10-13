@@ -6,6 +6,7 @@
 #include "Character/MRCharacterMovementComponent.h"
 #include "Character/MRSpriteBodyComponent.h"
 #include "Character/MRSpriteData.h"
+#include "Character/MRSpringArmComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "UnrealMeridian.h"
@@ -51,6 +52,9 @@ namespace
 
 	float ThirdPersonPitchLimit() { return FMath::Clamp(CVarThirdPersonPitch.GetValueOnGameThread(), 0.f, 89.f); }
 
+	TAutoConsoleVariable<float> CVarStepSmooth(TEXT("mr.Camera.StepSmoothSeconds"), 0.12f,
+		TEXT("How long (s) the view takes to follow a step up or down (or out of a pool) that the body takes at once. 0: at once."));
+
 	// test keys 1-4 (OnEmote)
 	const FName EmoteKeys[] = {TEXT("wave"), TEXT("point"), TEXT("dance"), TEXT("cast")};
 }
@@ -65,7 +69,7 @@ AMRCharacter::AMRCharacter(const FObjectInitializer& ObjectInitializer)
 	GetCapsuleComponent()->InitCapsuleSize(UMRCharacterMovementComponent::CapsuleRadiusCm, UMRCharacterMovementComponent::CapsuleHeightCm / 2.f);
 	BaseEyeHeight = UMRCharacterMovementComponent::OriginalHeightCm - UMRCharacterMovementComponent::CapsuleHeightCm / 2.f;  // from the capsule centre
 
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom = CreateDefaultSubobject<UMRSpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetCapsuleComponent());
 	CameraBoom->SetRelativeLocation(FVector(0.f, 0.f, BaseEyeHeight));
 	CameraBoom->bUsePawnControlRotation = true;
@@ -547,6 +551,40 @@ void AMRCharacter::ServerSetViewMode_Implementation(EMRViewMode NewMode)
 void AMRCharacter::OnRep_ViewMode()
 {
 	ApplyViewMode();
+}
+
+void AMRCharacter::SmoothCameraStep(float DeltaSeconds, const FVector& OldLocation, bool bWasOnGround)
+{
+	if (!CameraBoom || !IsLocallyControlled())
+	{
+		return;
+	}
+	const float Seconds = CVarStepSmooth.GetValueOnGameThread();
+	const UCharacterMovementComponent* Move = GetCharacterMovement();
+	const FVector Now = GetActorLocation();
+	if (Seconds > 0.f && bWasOnGround && Move && Move->IsMovingOnGround())
+	{
+		// what rose or fell more than this frame's travel (steeper than 45 degrees) was a step: a slope's
+		// rise passes straight through
+		const double Rise = Now.Z - OldLocation.Z;
+		const double Excess = FMath::Abs(Rise) - FMath::Max(FVector::Dist2D(Now, OldLocation), 2.0);
+		if (Excess > 0.0 && FMath::Abs(Rise) < 400.0)
+		{
+			StepSmoothZ -= static_cast<float>(FMath::Sign(Rise) * Excess);
+		}
+	}
+	// 95% caught up after Seconds
+	StepSmoothZ = Seconds > 0.f ? FMath::Clamp(StepSmoothZ * FMath::Exp(-3.f * DeltaSeconds / Seconds), -300.f, 300.f) : 0.f;
+	if (FMath::Abs(StepSmoothZ) < 0.1f)
+	{
+		StepSmoothZ = 0.f;
+	}
+	const FVector Rel = CameraBoom->GetRelativeLocation();
+	const float Z = FirstPersonEye.Z + StepSmoothZ;
+	if (!FMath::IsNearlyEqual(Rel.Z, Z, 0.01))
+	{
+		CameraBoom->SetRelativeLocation(FVector(Rel.X, Rel.Y, Z));
+	}
 }
 
 void AMRCharacter::ApplyViewMode()

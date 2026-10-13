@@ -46,6 +46,8 @@ UMRBgfSpriteComponent::UMRBgfSpriteComponent(const FObjectInitializer& ObjectIni
 	: Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	// after the camera's update, like UMRSpriteBodyComponent: it faces this frame's view, not the last
+	PrimaryComponentTick.TickGroup = TG_PostUpdateWork;
 	SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SetCastShadow(false);
 	bUseAsyncCooking = true;

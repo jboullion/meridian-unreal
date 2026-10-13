@@ -1,5 +1,6 @@
 #include "Monsters/MRMonsterSubsystem.h"
 
+#include "Audio/MRAudioSubsystem.h"
 #include "Character/MRSpriteData.h"
 #include "Components/CapsuleComponent.h"
 #include "Core/MRUnits.h"
@@ -18,6 +19,8 @@ namespace
 {
 	TAutoConsoleVariable<int32> CVarSpawn(TEXT("mr.Monster.Spawn"), 1,
 		TEXT("Populate the zones with monsters and NPCs (server, when the world starts)."));
+	TAutoConsoleVariable<float> CVarSpawnBudget(TEXT("mr.Monster.SpawnBudgetMs"), 2.f,
+		TEXT("How long (ms) a frame may spend spawning a zone's monsters and NPCs as its level shows (at least one a frame). 0: all at once."));
 
 	TSharedPtr<FJsonObject> LoadJson(const FString& Name)
 	{
@@ -83,6 +86,8 @@ void UMRMonsterSubsystem::Tick(float DeltaTime)
 		ZoneCheckTimer = 0.5f;
 		FollowZones();
 	}
+	const float BudgetMs = CVarSpawnBudget.GetValueOnGameThread();
+	ProcessSpawns(BudgetMs > 0.f ? BudgetMs / 1000.0 : -1.0);
 	for (FSpawnRoom& Room : Rooms)
 	{
 		if (!Room.bPopulated)
@@ -159,7 +164,9 @@ void UMRMonsterSubsystem::Start()
 			continue;
 		}
 	}
-	FollowZones();  // the zones already in get their initial counts now
+	PreloadSounds();
+	FollowZones();  // the zones already in get their initial counts now (behind the warm-up screen)
+	ProcessSpawns(-1.0);
 	for (const FSpawnRoom& Room : Rooms)
 	{
 		Total += Room.Alive.Num();
@@ -174,8 +181,9 @@ void UMRMonsterSubsystem::FollowZones()
 	{
 		return;
 	}
-	for (FSpawnRoom& Room : Rooms)
+	for (int32 RoomIndex = 0; RoomIndex < Rooms.Num(); ++RoomIndex)
 	{
+		FSpawnRoom& Room = Rooms[RoomIndex];
 		const bool bIn = Zones->IsZoneVisibleLocally(Room.Rid);
 		if (bIn && !Room.bPopulated)
 		{
@@ -184,7 +192,7 @@ void UMRMonsterSubsystem::FollowZones()
 			const int32 Count = FMath::RandRange(Room.InitMin, FMath::Max(Room.InitMin, Room.InitMax));
 			for (int32 i = 0; i < Count; ++i)
 			{
-				SpawnInRoom(Room);
+				PendingSpawns.Add({RoomIndex, 0, INDEX_NONE});
 			}
 		}
 		else if (!bIn && Room.bPopulated)
@@ -200,7 +208,6 @@ void UMRMonsterSubsystem::FollowZones()
 			Room.Alive.Reset();
 		}
 	}
-	int32 Placed = 0;
 	for (TPair<int32, FNpcZone>& Pair : Npcs)
 	{
 		FNpcZone& Z = Pair.Value;
@@ -208,13 +215,9 @@ void UMRMonsterSubsystem::FollowZones()
 		if (bIn && !Z.bPlaced)
 		{
 			Z.bPlaced = true;
-			for (const FNpcSpot& S : Z.Spots)
+			for (int32 i = 0; i < Z.Spots.Num(); ++i)
 			{
-				if (AMRMonster* M = SpawnMonster(S.Class, Pair.Key, S.At, S.Yaw, false))
-				{
-					Z.Placed.Add(M);
-					++Placed;
-				}
+				PendingSpawns.Add({INDEX_NONE, Pair.Key, i});
 			}
 		}
 		else if (!bIn && Z.bPlaced)
@@ -230,10 +233,75 @@ void UMRMonsterSubsystem::FollowZones()
 			Z.Placed.Reset();
 		}
 	}
+}
+
+void UMRMonsterSubsystem::ProcessSpawns(double BudgetSeconds)
+{
+	const double Start = FPlatformTime::Seconds();
+	int32 Done = 0, Placed = 0;
+	while (PendingSpawns.Num() > 0 && (BudgetSeconds < 0.0 || Done == 0 || FPlatformTime::Seconds() - Start < BudgetSeconds))
+	{
+		const FPendingSpawn P = PendingSpawns[0];
+		PendingSpawns.RemoveAt(0, EAllowShrinking::No);
+		++Done;
+		// its zone may have gone again meanwhile
+		if (P.Room != INDEX_NONE)
+		{
+			if (Rooms.IsValidIndex(P.Room) && Rooms[P.Room].bPopulated)
+			{
+				SpawnInRoom(Rooms[P.Room]);
+			}
+		}
+		else if (FNpcZone* Z = Npcs.Find(P.NpcZone); Z && Z->bPlaced && Z->Spots.IsValidIndex(P.Spot))
+		{
+			const FNpcSpot& S = Z->Spots[P.Spot];
+			if (AMRMonster* M = SpawnMonster(S.Class, P.NpcZone, S.At, S.Yaw, false))
+			{
+				Z->Placed.Add(M);
+				++Placed;
+			}
+		}
+	}
 	if (Placed)
 	{
 		UE_LOG(LogMeridian, Log, TEXT("Monsters: %d NPCs placed"), Placed);
 	}
+}
+
+void UMRMonsterSubsystem::PreloadSounds() const
+{
+	UMRAudioSubsystem* Audio = GetWorld()->GetSubsystem<UMRAudioSubsystem>();
+	if (!Audio)
+	{
+		return;
+	}
+	TSet<FName> Classes;
+	for (const FSpawnRoom& Room : Rooms)
+	{
+		for (const TPair<FName, float>& C : Room.Classes)
+		{
+			Classes.Add(C.Key);
+		}
+	}
+	for (const TPair<int32, FNpcZone>& Pair : Npcs)
+	{
+		for (const FNpcSpot& S : Pair.Value.Spots)
+		{
+			Classes.Add(S.Class);
+		}
+	}
+	TSet<FString> Files;
+	for (const FName& Class : Classes)
+	{
+		if (const FMRMonsterDef* D = FMRSpriteLibrary::Get().Monsters.Find(Class))
+		{
+			for (const TPair<FName, FString>& Sound : D->Sounds)
+			{
+				Files.Add(Sound.Value);
+			}
+		}
+	}
+	Audio->PreloadSounds(Files);
 }
 
 void UMRMonsterSubsystem::SpawnNpcs(const TSharedPtr<FJsonObject>& Layout)
@@ -375,6 +443,7 @@ void UMRMonsterSubsystem::Reset()
 		It->Destroy();
 	}
 	Rooms.Reset();
+	PendingSpawns.Reset();
 	if (GetWorld()->GetNetMode() != NM_Client)
 	{
 		Start();

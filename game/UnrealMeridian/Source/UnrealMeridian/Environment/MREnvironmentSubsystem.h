@@ -165,8 +165,12 @@ private:
 	TSharedPtr<FJsonObject> Profile;
 	TMap<FString, TSharedPtr<FJsonObject>> Resolved;
 	TMap<TWeakObjectPtr<ULightComponent>, float> LampBase;
-	bool bLampsFound = false;
+	/** The levels whose lamps are in LampBase: zones stream in and out, each level's lamps are found as it comes. */
+	TSet<TWeakObjectPtr<ULevel>> LampLevels;
 	mutable TMap<FString, TWeakObjectPtr<AActor>> FoundActors;
+	/** Labels no actor had, with the world's level count then: no scan of every actor again until it changes. */
+	mutable TSet<FString> MissingActors;
+	mutable int32 MissingAtLevels = -1;
 	TSet<FString> Warned;
 
 	UPROPERTY()
@@ -194,7 +198,13 @@ private:
 	TWeakObjectPtr<AMRPrecipitationActor> Precip;
 	int32 PrecipZone = -1;
 	int32 AmbientZone = -1;
-	TMap<FString, TWeakObjectPtr<UMaterialInterface>> ZoneMaterials;
+	/** Kept once loaded (a weak cache reloaded them after each collection); null: the zone has none of its own. */
+	UPROPERTY(Transient)
+	TMap<FString, TObjectPtr<UMaterialInterface>> ZoneMaterials;
+	/** The weather's materials and sounds, loaded asynchronously at the first tick (PreloadWeather). */
+	TSharedPtr<struct FStreamableHandle> WeatherAssets;
+	bool bWeatherPreloaded = false;
+	void PreloadWeather();
 	FString KindOverride;
 	/** SetServerWeather: whether the server decides, what it said, the last kind that fell and since when. */
 	bool bServerWeather = false;

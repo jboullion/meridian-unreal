@@ -262,7 +262,10 @@ public:
 	const FSlateBrush* EnchantmentIcon(const struct FMRNetObject& O) const;
 	/** What U uses on something: the item under the mouse in the dialog, else the selected hotbar item (0: none). */
 	uint32 ItemToApply() const;
-	/** The minimap picture of a geometry zone (kept loaded), or null if it hasn't been captured. */
+	/**
+	 * The minimap picture of a geometry zone (kept loaded), or null if it hasn't been captured or is still loading:
+	 * it loads in the background (a load at once stalled the frame of every zone change), so ask again.
+	 */
 	class UTexture2D* GetMapTexture(int32 GeometryRid);
 
 	/**
@@ -311,6 +314,7 @@ private:
 
 	UPROPERTY(Transient)
 	TMap<int32, TObjectPtr<class UTexture2D>> MapTextures;
+	TMap<int32, TSharedPtr<struct FStreamableHandle>> MapLoads;
 
 	TWeakObjectPtr<APlayerController> OwnerPC;
 	TSharedPtr<SMRHUDRoot> HUD;

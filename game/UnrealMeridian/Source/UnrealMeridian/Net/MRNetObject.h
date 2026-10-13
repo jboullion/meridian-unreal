@@ -105,4 +105,6 @@ private:
 	FVector Target = FVector::ZeroVector;
 	float StandYaw = 0.f;
 	bool bHasTarget = false;
+	/** Since it reached the server's last position, s: still walking for a moment, as the next one is due. */
+	float ArrivedSeconds = 1000.f;
 };

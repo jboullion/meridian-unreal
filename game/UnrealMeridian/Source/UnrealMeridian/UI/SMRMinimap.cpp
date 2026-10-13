@@ -331,12 +331,18 @@ void SMRMinimap::Tick(const FGeometry& Geo, const double Time, const float Dt)
 		GeometryRid = Geom;
 		Rect = FBox2D(ForceInit);
 		MRMinimap::CaptureRect(Zones, Geom, Rect);
-		UTexture2D* Tex = Ui->GetMapTexture(Geom);
 		MapBrush = FSlateBrush();
+		bMapPending = true;
+	}
+	if (bMapPending)
+	{
+		// loading in the background (UMRUISubsystem::GetMapTexture): the picture shows when it's in
+		UTexture2D* Tex = Ui->GetMapTexture(Geom);
 		if (Tex)
 		{
 			UMRUIStyle::SetImage(MapBrush, Tex, FVector2f(Tex->GetSizeX(), Tex->GetSizeY()));
 		}
+		bMapPending = !Tex && Geom != 0;
 	}
 	Zoom = FMath::FInterpTo(Zoom, Ui->GetMapZoom(), Dt, 12.f);
 }

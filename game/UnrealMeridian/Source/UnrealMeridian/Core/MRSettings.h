@@ -13,7 +13,7 @@ namespace MRSettings
 {
 	/** The console variables the Options dialog changes and this file keeps. */
 	UNREALMERIDIAN_API const TArray<const TCHAR*>& SavedCVars();
-	/** Set the saved values (at start-up). */
+	/** Set the saved values (at start-up), after bringing settings saved before a change of defaults up to them. */
 	UNREALMERIDIAN_API void ApplySaved();
 	/** Set a console variable now and keep it. */
 	UNREALMERIDIAN_API void SetCVar(const TCHAR* Name, float Value);

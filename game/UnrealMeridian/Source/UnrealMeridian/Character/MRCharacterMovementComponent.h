@@ -72,11 +72,14 @@ public:
 	virtual bool StepUp(const FVector& GravDir, const FVector& Delta, const FHitResult& Hit, FStepDownResult* OutStepDownResult = nullptr) override;
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
+	/** Lets the character ease its view over a step (AMRCharacter::SmoothCameraStep). */
+	virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;
 	virtual FNetworkPredictionData_Client* GetPredictionData_Client() const override;
 
 protected:
 	bool bWantsToWalk = false;
 	bool bSteppingUpInAir = false;
+	bool bWasOnGround = false;
 
 	virtual void PhysWalking(float DeltaTime, int32 Iterations) override;
 	virtual void PhysFalling(float DeltaTime, int32 Iterations) override;

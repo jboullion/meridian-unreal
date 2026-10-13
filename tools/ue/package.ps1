@@ -2,16 +2,19 @@
 #   powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/package.ps1 -Platform Linux
 # Platforms: Win64, Linux (cross-compiled from Windows; needs the Linux download component and the
 # clang toolchain, see the ADR). Mac cannot be built here: use tools/ue/package_mac.sh on a Mac.
-# Output: build/package/<Platform>/. Needs the world built first (tools/ue/build_world.ps1).
+# Output: build/package/<Platform>/ (or -OutName: build/package/Win64-dev for a -Config Development package,
+# which writes a log for the packaged hitch test). Needs the world built first (tools/ue/build_world.ps1).
 param(
 	[ValidateSet("Win64", "Linux")] [string]$Platform = "Win64",
 	[string]$EngineRoot = "G:\Unreal Engine\UE_5.8",
-	[string]$Config = "Shipping"
+	[string]$Config = "Shipping",
+	[string]$OutName = ""
 )
 $ErrorActionPreference = "Stop"
 $repo = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $project = Join-Path $repo "game\UnrealMeridian\UnrealMeridian.uproject"
-$out = Join-Path $repo "build\package\$Platform"
+if (-not $OutName) { $OutName = $Platform }
+$out = Join-Path $repo "build\package\$OutName"
 
 if ($Platform -eq "Linux") {
 	if (-not $env:LINUX_MULTIARCH_ROOT) { $env:LINUX_MULTIARCH_ROOT = "C:\UnrealToolchains\v26_clang-20.1.8-rockylinux8\" }

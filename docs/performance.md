@@ -109,7 +109,7 @@ The profile runs freeze time, so they read lower than play.
 
 **Also chosen (user, 2026-10-10):**
 - **No bounce lighting indoors.** The interior moods set `dynamic_global_illumination_method` `None` (the outdoor `raza_afternoon` sets `Lumen` again), whatever the Lighting option. That gives the original's warm, dark rooms without the blue haze the sky put into Lumen's fill. It costs ~3.6 ms indoors against 3.9 ms at Medium (`build/lookdev/interior_lighting.png`). The Mausoleum inherits it.
-- **60 fps unless the player picks otherwise.** `Config/DefaultGameUserSettings.ini` `FrameRateLimit=60`. Options has 30, 60, 120, 144, Uncapped and vertical sync.
+- **60 fps unless the player picks otherwise.** `Config/DefaultGameUserSettings.ini` `FrameRateLimit=60`. Options has 30, 60, 120, 144, Uncapped and vertical sync. (Replaced by vertical sync on 2026-10-13: "Packaged game" below.)
 
 **Traps:**
 - An `sg.*` set with `-ExecCmds` is saved to `Saved/Config/WindowsEditor/GameUserSettings.ini` and carries into later runs. Set it in every run, then put it back.
@@ -125,10 +125,77 @@ The game used to load every zone at start (`UMRZoneSubsystem::LoadAllZoneLevels`
 - **Tours** that jump between zones (look-dev, the step survey, map capture, the hitch tour) call `EnsureZoneLoaded(rid, true)` per stop; others follow the view.
 - `mr.Zones.LoadAll 1` (at start) loads every zone as before.
 
+## Packaged game (2026-10-13)
+
+The packaged game still felt choppy and stuttered, though the uncooked hitch test looked fine. Everything above was measured uncooked, and before zone streaming. So this pass measured what players run: a packaged Development build (`tools/ue/package.ps1 -Config Development -OutName Win64-dev`) under the hitch test (`run_hitch_test.ps1 -Packaged build/package/Win64-dev`), which now:
+- lingers 75 s at the end, so zone unloads and garbage collection show;
+- marks each stop in the log ("MRHitch: at <stop>");
+- counts PSO misses, loading flushes, collections and hitches per stop;
+- with `-Extra -MRHitchDump`, logs every frame over 40 ms's stat stack.
+
+RTX 3070, 1920x1080, uncapped, the project's defaults (`-CleanConfig`):
+
+| Run | p50 | p95 | p99 | Frames over 33 ms | over 100 ms |
+|---|---:|---:|---:|---:|---:|
+| before (`pkg_default`) | 8.5 | 12.5 | 19.1 | 72 | 43 |
+| before, again (`pkg_default2`: the driver's shader cache warm) | 8.4 | 13.6 | 28.3 | 100 | 41 |
+| before, with `mr.Sprite.ScreenTexels 0` (`pkg_nodensity`) | 8.0 | 11.1 | 14.1 | 14 | 1 |
+| after, without the minimap's background load (`pkg_after`) | 8.1 | 11.5 | 14.8 | 11 | 3 |
+| **after** (`pkg_final`) | 7.8 | 11.2 | 14.3 | 9 | 1 |
+
+**The cause: our own sprite, in first person.**
+- The hitches were the render thread waiting 50–700 ms in View Visibility for the GPU's occlusion results.
+- An Unreal Insights trace showed where the GPU spent those frames: `GPUResourceUpdate` and `DrawCanvasToTarget`. That is sprite render targets being cleared and drawn.
+  - The trace: `-tracefile=... -trace=default,task -statnamedevents`.
+  - Exported with no window: `UnrealInsights.exe -OpenTraceFile=<trace> -NoUI -AutoQuit -ExecOnAnalysisCompleteCmd="@=<file of TimingInsights.ExportTimingEvents commands>"`.
+- The player's body is hidden from its own camera in first person (`SetOwnerNoSee`), but its shadow card still draws it. So it kept choosing its density from the camera: about 12 cm away, inside its head. That asked for the largest targets there are, 3 × 2048 × 2048, drawn again at every pose and every turn of the view.
+- `UMRSpriteBodyComponent::UpdateDensity` now keeps the base density for a body its viewer can't see. Its shadow doesn't need more.
+
+**Also changed:**
+- **Sprite render targets are pooled** (`UMRSpriteTargetPool`, `mr.Sprite.PoolMB` 96). A sprite borrows a set of its size and gives it back, rather than making three new targets on every look change and density step. A change that keeps the size keeps the targets. At most `mr.Sprite.ResizesPerFrame` (2) sprites resize a frame; the others keep their old targets meanwhile.
+- **No synchronous loads during play:**
+  - **Sounds:** the sound cache holds what it found. It was weak, so a sound collected after it played loaded again in the middle of a frame. The monsters' sounds and the weather's are preloaded (`UMRAudioSubsystem::PreloadSounds`).
+  - **The weather's materials** are preloaded at the first tick, and the zone materials are kept. A zone without its own instance is no longer looked up on disk each time.
+  - **The minimap's zone picture** loads in the background (`UMRUISubsystem::GetMapTexture`). Its synchronous load cost 55–82 ms at every zone change (`pkg_after`'s interiors).
+- **Zone stream-in is spread over frames:** a zone's monsters and NPCs spawn from a queue, at most `mr.Monster.SpawnBudgetMs` (2) a frame.
+- **Online, rooms built at runtime:** entering one applies every stored change and then rebuilds once (`AMRRuntimeRoom::BeginChanges`/`EndChanges`). It used to rebuild, collision cooking included, once per change.
+- **No forced collection after each zone unload** (`s.ForceGCAfterLevelStreamedOut=False`). The regular 61 s collection takes the leftovers. The incremental collector (`gc.AllowIncrementalReachability`) is still experimental in 5.8, so it is left off.
+- **Smaller fixes:**
+  - **Fire shadows:** a fire's shadow stays until another fire is clearly nearer (20%), so two fires no longer swap as you walk.
+  - **Mood actors:** a mood's actor that isn't in the world is remembered as missing until a level comes or goes, instead of scanning every actor on each apply.
+  - **Lamps:** they are found per streamed level. They used to be found once at the start, so lamps in later zones never lit.
+
+**PSO cache: not needed now.** With the warm-up, the packaged game misses 73–82 PSOs while the loading screen is up and 0–1 after it. A bundled PSO cache would only shorten the warm-up.
+
+**Frame pacing: vertical sync by default** (`Config/DefaultGameUserSettings.ini` `bUseVSync=True`, `FrameRateLimit=0`).
+- The 60 fps limit sleeps the game thread without lining frames up with the display. On a 120–165 Hz screen without variable refresh, frames stayed up for an uneven 2 or 3 refreshes: the "choppy at a good frame rate".
+- Settings saved before this change get it once, with lighting and reflections no higher than Medium (`MRSettings` `ApplyNewDefaults`, `[UnrealMeridian.Defaults] Version=1`). The maintainer's packaged settings had been uncapped with vsync off, every group at Epic. They predated the 60 fps and Medium defaults, and a saved file always wins.
+
+**Motion blur: off** (user's call). It was on at the engine's Epic post-process level (`r.MotionBlurQuality 4`). Now `r.DefaultFeature.MotionBlur=False` in `DefaultEngine.ini`, and `r.MotionBlurQuality=0` at every `PostProcessQuality` level in `DefaultScalability.ini`. It saves a little GPU time (the motion blur passes, a few tenths of a ms at 1080p), and the sprites and moths no longer smear. Motion blur hid judder at uneven frame rates; even pacing replaces that.
+
+**Smooth motion:**
+- **The view over steps:** a step up or down, or out of a pool, moved the capsule, and the eye with it, in one frame (up to 82 cm, 3 m at a room's wall). The view now follows over `mr.Camera.StepSmoothSeconds` (0.12). Only what rises or falls faster than 45° counts as a step, so slopes pass straight through (`AMRCharacter::SmoothCameraStep`, after each movement update).
+- **The third-person camera:** after a wall pulls it in, it eases back out (`UMRSpringArmComponent`, `mr.Camera.ArmReturnSpeed` 6). It still pulls in at once.
+- **Other players and monsters online:**
+  - **Speed:** they reach speed at once (their acceleration was the engine's 2048 cm/s², 0.6 s to a run), and hurry when more than 0.35 s behind the server, as the original client does.
+  - **Walk and stand:** they keep walking 0.3 s after reaching a position, as the next one is due. That holds both their sprite's walk (`UMRSpriteBodyComponent`) and a server bitmap's (`AMRNetObject`). A turn (`BP_TURN`) no longer starts a walk.
+- **Server bitmaps** tick after the camera's update, like our sprites, so they face this frame's view.
+
+**Left:**
+- **The remaining slow frames:**
+  - the warm-up's last frames;
+  - one GPU wait of the same kind outdoors, perhaps a nearby NPC's density step;
+  - the first frame at a teleport's stop.
+- **Online:**
+  - **Room entry:** a room's objects all spawn in one frame. Each is an `ACharacter` with an AI controller, even a static prop.
+  - **Server sounds:** a server sound's `.ogg` is decoded on the game thread (`MRServerSound::Decode`).
+  - Both only show online, so they wait for an online hitch test.
+- **The sprites' per-pose redraw** (three canvas passes per sprite, each a render graph of its own) is the GPU's steady cost with many sprites in view.
+
 ## Follow-ups
 
 - **The sky light now takes the skybox's colour.** The day is bluer, the dusk violet. The user likes it for now (2026-10-10); revisit if it should go: tint the dome only outside the sky light's capture, or lower `SkyboxBrightness` and lift the moods' ambient.
 - **Options > Graphics:** done 2026-10-10. It has lighting, shadows, effects, textures, grass, resolution scale and the frame limit (ADR 0009).
 - **Defaults tuned (2026-10-10):** Medium lighting and half the grass. See "Chosen" below. Still open: volumetric fog distance (0.3–0.7 ms).
-- **Packaged builds:** record a PSO cache (`-logPSO`, `ShaderPipelineCacheTools expand`) for the shaders precaching misses. Then time the packaged game with the hitch test, which is all uncooked so far.
-- **Online:** spread a room's object spawns over a few frames when there are many, if the hitch test ever runs online.
+- **Packaged builds:** timed on 2026-10-13 ("Packaged game" above). A recorded PSO cache (`-logPSO`, `ShaderPipelineCacheTools expand`) would only shorten the warm-up: there are no PSO misses after it.
+- **Online:** spread a room's object spawns over a few frames when there are many, if the hitch test ever runs online (also in "Packaged game", "Left").

@@ -172,6 +172,26 @@ void UMRAudioSubsystem::Preload()
 	}
 }
 
+void UMRAudioSubsystem::PreloadSounds(const TSet<FString>& Files)
+{
+	TArray<FSoftObjectPath> Paths;
+	for (const FString& File : Files)
+	{
+		const FString Key = File.ToLower();
+		if (File.IsEmpty() || PreloadRequested.Contains(Key))
+		{
+			continue;
+		}
+		PreloadRequested.Add(Key);
+		const FString Name = AssetName(File);
+		Paths.Emplace(FString::Printf(TEXT("%s%s.%s"), SoundDir, *Name, *Name));
+	}
+	if (Paths.Num() > 0 && UAssetManager::IsInitialized())
+	{
+		PreloadedMore.Add(UAssetManager::GetStreamableManager().RequestAsyncLoad(Paths, FStreamableDelegate(), FStreamableManager::AsyncLoadHighPriority));
+	}
+}
+
 double UMRAudioSubsystem::Number(const TCHAR* Field, double Default) const
 {
 	double Value = Default;
@@ -187,9 +207,9 @@ TSharedPtr<FJsonObject> UMRAudioSubsystem::Room(int32 InZone) const
 USoundBase* UMRAudioSubsystem::FindImported(const FString& File)
 {
 	const FString Key = File.ToLower();
-	if (const TWeakObjectPtr<USoundBase>* Cached = Sounds.Find(Key); Cached && Cached->IsValid())
+	if (const TObjectPtr<USoundBase>* Cached = Sounds.Find(Key); Cached && *Cached)
 	{
-		return Cached->Get();
+		return *Cached;
 	}
 	if (Missing.Contains(Key))
 	{
@@ -217,24 +237,25 @@ USoundBase* UMRAudioSubsystem::FindSound(const FString& File)
 		return nullptr;
 	}
 	const FString Key = File.ToLower();
-	TWeakObjectPtr<USoundBase>& Cached = Sounds.FindOrAdd(Key);
-	if (!Cached.IsValid() && !Missing.Contains(Key))
+	TObjectPtr<USoundBase>& Cached = Sounds.FindOrAdd(Key);
+	if (!Cached && !Missing.Contains(Key))
 	{
 		const FString Name = AssetName(File);
 		const FString Path = FString::Printf(TEXT("%s%s.%s"), SoundDir, *Name, *Name);
-		// preloaded (Preload) or already in memory; else a load now (a sound the rooms don't name)
+		// preloaded (Preload, PreloadSounds) or already in memory; else a load now (a sound nothing named)
 		Cached = FindObject<USoundBase>(nullptr, *Path);
-		if (!Cached.IsValid())
+		if (!Cached)
 		{
+			UE_LOG(LogMeridian, Log, TEXT("MRAudio: %s wasn't preloaded: loading it now"), *File);
 			Cached = LoadObject<USoundBase>(nullptr, *Path, nullptr, LOAD_NoWarn | LOAD_Quiet);
 		}
-		if (!Cached.IsValid())
+		if (!Cached)
 		{
 			Missing.Add(Key);
 			UE_LOG(LogMeridian, Warning, TEXT("MRAudio: no sound %s (python tools/audio/extract_audio.py, then build_world.ps1)"), *File);
 		}
 	}
-	return Cached.Get();
+	return Cached;
 }
 
 USoundAttenuation* UMRAudioSubsystem::Attenuation()

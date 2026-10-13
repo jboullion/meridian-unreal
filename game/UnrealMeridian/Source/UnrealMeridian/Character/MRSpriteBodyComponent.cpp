@@ -1,4 +1,5 @@
 #include "Character/MRSpriteBodyComponent.h"
+#include "Character/MRSpriteTargetPool.h"
 
 #include "CanvasItem.h"
 #include "Camera/PlayerCameraManager.h"
@@ -94,6 +95,8 @@ namespace
 	const FName EyesName(TEXT("eyes"));
 	const FName MouthName(TEXT("mouth"));
 	constexpr float MovingSpeed = 20.f;
+	/** How long another character keeps its walk after stopping (AMRNetObject's grace, the server's updates). */
+	constexpr float WalkGraceSeconds = 0.3f;
 }
 
 UMRSpriteBodyComponent::UMRSpriteBodyComponent()
@@ -138,6 +141,21 @@ void UMRSpriteBodyComponent::OnRegister()
 
 void UMRSpriteBodyComponent::OnUnregister()
 {
+	// the targets go back for the next sprite (not when the world is going: its pool goes with it)
+	UWorld* World = GetWorld();
+	if (UMRSpriteTargetPool* Pool = World && !World->bIsTearingDown ? World->GetSubsystem<UMRSpriteTargetPool>() : nullptr)
+	{
+		Pool->Release(FMRSpriteTargets(Target, CodeTarget, RampTarget));
+		Target = nullptr;
+		CodeTarget = nullptr;
+		RampTarget = nullptr;
+		if (Material)
+		{
+			Material->SetTextureParameterValue(TEXT("Sprite"), nullptr);
+			Material->SetTextureParameterValue(TEXT("SpriteCode"), nullptr);
+			Material->SetTextureParameterValue(TEXT("SpriteRamp"), nullptr);
+		}
+	}
 	if (ShadowCard)
 	{
 		ShadowCard->DestroyComponent();
@@ -171,7 +189,7 @@ void UMRSpriteBodyComponent::SetLook(FName LookName)
 		C = -1;
 	}
 	LastDrawKey = 0;
-	Target = nullptr;
+	bRetarget = true;
 	if (Look)
 	{
 		EnsureTarget();
@@ -358,7 +376,7 @@ float UMRSpriteBodyComponent::GetStandingHeightCm() const
 void UMRSpriteBodyComponent::EnsureTarget()
 {
 	CSV_SCOPED_TIMING_STAT_EXCLUSIVE(MRSpriteTargets);
-	if (Target || !Look)
+	if ((Target && !bRetarget) || !Look)
 	{
 		return;
 	}
@@ -366,51 +384,46 @@ void UMRSpriteBodyComponent::EnsureTarget()
 	// the look's body shrink sets its pixel size (a bunny's 330 pixels are 0.6 m, a player's 214 are 1.84 m)
 	const FMRSpritePart* Body = Look->Find(TEXT("body"));
 	const FMRSpriteBgf* BodyBgf = Body ? FMRSpriteLibrary::Get().FindBgf(Body->Bgf) : nullptr;
-	LastShrink = BodyBgf ? BodyBgf->Shrink : 4;
-	const float CmPerPx = FMRSpriteLibrary::Get().CmPerBasePixel(LastShrink);
+	const int32 Shrink = BodyBgf ? BodyBgf->Shrink : 4;
+	const float CmPerPx = FMRSpriteLibrary::Get().CmPerBasePixel(Shrink);
 	// the base density, or more for a sprite seen close (DensityStep, UpdateDensity) or a portrait
 	const float Base = FMath::Min(CVarSpriteTexels.GetValueOnGameThread() * CmPerPx, 1024.f / FMath::Max(Size.X, Size.Y));
 	const float Cap = FMath::Max(Base, CVarSpriteMaxTarget.GetValueOnGameThread() / FMath::Max(Size.X, Size.Y));
-	TexelsPerBasePixel = DensityOverride > 0.f ? FMath::Min(DensityOverride, Cap)
+	const float Texels = DensityOverride > 0.f ? FMath::Min(DensityOverride, Cap)
 		: FMath::Min(Base * FMath::Pow(UE_SQRT_2, static_cast<float>(DensityStep)), Cap);
-	Target = NewObject<UTextureRenderTarget2D>(this);
-	Target->RenderTargetFormat = RTF_RGBA8_SRGB;
-	Target->ClearColor = FLinearColor::Transparent;
-	Target->TargetGamma = 1.f;  // the canvas writes linear colour; the sRGB target encodes it
-	Target->AddressX = TA_Clamp;
-	Target->AddressY = TA_Clamp;
-	Target->InitAutoFormat(FMath::CeilToInt(Size.X * TexelsPerBasePixel), FMath::CeilToInt(Size.Y * TexelsPerBasePixel));
-	Target->UpdateResourceImmediate(true);
-	// exact values (ids), so linear and unfiltered
-	CodeTarget = NewObject<UTextureRenderTarget2D>(this);
-	CodeTarget->RenderTargetFormat = RTF_RGBA8;
-	CodeTarget->bForceLinearGamma = true;
-	CodeTarget->TargetGamma = 1.f;
-	CodeTarget->ClearColor = FLinearColor::Transparent;
-	CodeTarget->Filter = TF_Nearest;
-	CodeTarget->AddressX = TA_Clamp;
-	CodeTarget->AddressY = TA_Clamp;
-	CodeTarget->InitCustomFormat(Target->SizeX, Target->SizeY, PF_B8G8R8A8, true);
+	const FIntPoint Want(FMath::Max(1, FMath::CeilToInt(Size.X * Texels)), FMath::Max(1, FMath::CeilToInt(Size.Y * Texels)));
+	LastShrink = Shrink;
+	if (Target && Target->SizeX == Want.X && Target->SizeY == Want.Y)
+	{
+		// the same size (a new look as big as the last): drawn again into the same targets
+		TexelsPerBasePixel = Texels;
+		bRetarget = false;
+		LastDrawKey = 0;
+		return;
+	}
+	// a sprite already showing waits its turn (a few resize a frame), keeping its old targets meanwhile
+	UMRSpriteTargetPool* Pool = GetWorld() ? GetWorld()->GetSubsystem<UMRSpriteTargetPool>() : nullptr;
+	if (Target && Pool && !Pool->TryResize())
+	{
+		return;
+	}
+	const FMRSpriteTargets Old(Target, CodeTarget, RampTarget);
+	const FMRSpriteTargets New = Pool ? Pool->Acquire(Want) : UMRSpriteTargetPool::Make(this, Want);
+	Target = New.Colour;
+	CodeTarget = New.Code;
+	RampTarget = New.Ramp;
+	TexelsPerBasePixel = Texels;
 	if (Material)
 	{
 		Material->SetTextureParameterValue(TEXT("Sprite"), Target);
 		Material->SetTextureParameterValue(TEXT("SpriteCode"), CodeTarget);
-	}
-	CodeTarget->UpdateResourceImmediate(true);
-	RampTarget = NewObject<UTextureRenderTarget2D>(this);
-	RampTarget->RenderTargetFormat = RTF_RGBA8;
-	RampTarget->bForceLinearGamma = true;
-	RampTarget->TargetGamma = 1.f;
-	RampTarget->ClearColor = FLinearColor::Transparent;
-	RampTarget->Filter = TF_Nearest;
-	RampTarget->AddressX = TA_Clamp;
-	RampTarget->AddressY = TA_Clamp;
-	RampTarget->InitCustomFormat(Target->SizeX, Target->SizeY, PF_B8G8R8A8, true);
-	RampTarget->UpdateResourceImmediate(true);
-	if (Material)
-	{
 		Material->SetTextureParameterValue(TEXT("SpriteRamp"), RampTarget);
 	}
+	if (Pool)
+	{
+		Pool->Release(Old);
+	}
+	bRetarget = false;
 	LastDrawKey = 0;
 }
 
@@ -568,7 +581,7 @@ void UMRSpriteBodyComponent::SetPartBgfs(const TMap<FName, FName>& PartBgfs, con
 		Look = &CustomLook;
 	}
 	LastDrawKey = 0;
-	Target = nullptr;  // redrawn from scratch (and resized when the box grew)
+	bRetarget = true;  // redrawn from scratch (and resized when the box grew)
 	// a weapon, shield or bow changes how the arms rest and swing, and what is held in first person
 	BaseTracks.Reset();
 	SetBaseAction(BaseAction.IsNone() ? StandName : BaseAction);
@@ -647,7 +660,7 @@ void UMRSpriteBodyComponent::SetDensityOverride(float InTexelsPerBasePixel)
 	if (DensityOverride != InTexelsPerBasePixel)
 	{
 		DensityOverride = InTexelsPerBasePixel;
-		Target = nullptr;  // EnsureTarget makes it again at the new density
+		bRetarget = true;  // EnsureTarget resizes it for the new density
 	}
 }
 
@@ -658,7 +671,11 @@ void UMRSpriteBodyComponent::UpdateDensity(const FVector& ViewLoc)
 	int32 Step = 0;
 	const float PerScreenPx = CVarSpriteScreenTexels.GetValueOnGameThread();
 	const APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (Look && PerScreenPx > 0.f && DensityOverride <= 0.f && !Viewer.IsValid() && PC && PC->PlayerCameraManager
+	// our own body in first person: hidden from us, only its shadow shows, and the camera in its head asked for
+	// the largest targets there are (3 x 2048 x 2048), drawn again at every step and turn: the base density
+	const APawn* OwnerPawn = Cast<APawn>(GetOwner());
+	const bool bHiddenFromViewer = bOwnerNoSee && OwnerPawn && OwnerPawn->IsLocallyControlled();
+	if (Look && PerScreenPx > 0.f && DensityOverride <= 0.f && !Viewer.IsValid() && !bHiddenFromViewer && PC && PC->PlayerCameraManager
 		&& GEngine && GEngine->GameViewport && GEngine->GameViewport->Viewport)
 	{
 		const FIntPoint VP = GEngine->GameViewport->Viewport->GetSizeXY();
@@ -676,7 +693,7 @@ void UMRSpriteBodyComponent::UpdateDensity(const FVector& ViewLoc)
 	if (Step != DensityStep)
 	{
 		DensityStep = Step;
-		Target = nullptr;
+		bRetarget = true;
 	}
 }
 
@@ -1146,9 +1163,23 @@ void UMRSpriteBodyComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 	// movement -> stand / walk; the walk cycle follows the ground speed
 	const FVector Vel = Owner->GetVelocity();
-	const float Speed = FVector(Vel.X, Vel.Y, 0.f).Size();
+	float Speed = FVector(Vel.X, Vel.Y, 0.f).Size();
 	const ACharacter* Char = Cast<ACharacter>(Owner);
-	const bool bMoving = Speed > MovingSpeed && (!Char || !Char->GetMovementComponent() || Char->GetMovementComponent()->IsMovingOnGround());
+	const bool bMovingNow = Speed > MovingSpeed && (!Char || !Char->GetMovementComponent() || Char->GetMovementComponent()->IsMovingOnGround());
+	// others (players and monsters the server moves, offline monsters) keep walking a moment after a stop:
+	// their next position is usually due, and standing between two restarted the walk cycle each time
+	const bool bPlayer = Char && Char->IsPlayerControlled() && Char->IsLocallyControlled();
+	StillSeconds = bMovingNow ? 0.f : StillSeconds + DeltaTime;
+	const bool bMoving = bMovingNow || (!bPlayer && bWasMoving && StillSeconds < WalkGraceSeconds);
+	if (bMovingNow)
+	{
+		LastMovingSpeed = Speed;
+	}
+	else if (bMoving)
+	{
+		Speed = LastMovingSpeed;  // the walk cycle keeps its pace through the pause
+	}
+	bWasMoving = bMoving;
 	SetBaseAction(bMoving ? WalkName : StandName);
 	if (bMoving && bActionLoops && !CurrentAction.IsNone())
 	{

@@ -66,6 +66,14 @@ private:
 		bool bPlaced = false;
 	};
 	TMap<int32, FNpcZone> Npcs;
+	/** A monster (Room) or an NPC (NpcZone's Spot) due when its zone showed: a few each frame (ProcessSpawns). */
+	struct FPendingSpawn
+	{
+		int32 Room = INDEX_NONE;
+		int32 NpcZone = 0;
+		int32 Spot = INDEX_NONE;
+	};
+	TArray<FPendingSpawn> PendingSpawns;
 	bool bStarted = false;
 	float StartDelay = 2.f;
 	/** Zones in and out are checked this often (seconds). */
@@ -74,7 +82,14 @@ private:
 	void Start();
 	void SpawnInRoom(FSpawnRoom& Room);
 	void SpawnNpcs(const TSharedPtr<class FJsonObject>& Layout);
-	/** Populate the zones whose levels showed, clear the ones that unloaded. */
+	/** Populate the zones whose levels showed (PendingSpawns), clear the ones that unloaded. */
 	void FollowZones();
+	/**
+	 * Spawn what's pending for up to BudgetSeconds (at least one; negative: all). A zone's whole population in
+	 * one frame, each placed by up to a few hundred traces, stalled the frame its level showed.
+	 */
+	void ProcessSpawns(double BudgetSeconds);
+	/** Load the sounds of every monster and NPC the zones may spawn, so the first hit doesn't wait on a load. */
+	void PreloadSounds() const;
 	bool FindFloor(int32 Rid, const FVector& Near, float Jitter, float HalfHeight, float Radius, FVector& Out) const;
 };

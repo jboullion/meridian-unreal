@@ -196,7 +196,7 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
     - a resolution scale (Auto, 50–100%);
     - a frame limit of 30, 60, 120, 144 or Uncapped.
 
-    The defaults are Medium lighting and 60 fps (`Config/DefaultGameUserSettings.ini`). The page scrolls.
+    The defaults are Medium lighting and vertical sync with no frame limit of its own (`Config/DefaultGameUserSettings.ini`; 60 fps without vsync until 2026-10-13, docs/performance.md "Packaged game"). Settings saved before a change of defaults get the new ones once (`MRSettings` `ApplyNewDefaults`). The page scrolls.
   - **Sound:** music and sounds on or off with their volumes, room sounds, random sounds (the `mr.Audio.*` console variables).
   - **Controls:** every key (`Core/MRSettings` `MRKeys`), with the presets:
     - **Modern:** WASD and the mouse;

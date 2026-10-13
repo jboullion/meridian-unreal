@@ -38,6 +38,9 @@
 #include "Core/MRSettings.h"
 #include "UI/SMRChatLog.h"
 #include "Net/MRAssetCache.h"
+#include "Engine/AssetManager.h"
+#include "Engine/StreamableManager.h"
+#include "Misc/PackageName.h"
 #include "Net/MRNetLook.h"
 #include "Net/MRNetObject.h"
 #include "Net/MRNetWorldSubsystem.h"
@@ -2075,10 +2078,29 @@ UTexture2D* UMRUISubsystem::GetMapTexture(int32 GeometryRid)
 	{
 		return *Found;
 	}
-	UTexture2D* Tex = LoadObject<UTexture2D>(nullptr, *MRMinimap::TexturePath(GeometryRid), nullptr, LOAD_Quiet | LOAD_NoWarn);
-	UMRUIStyle::FinishTexture(Tex);
-	MapTextures.Add(GeometryRid, Tex);
-	return Tex;
+	if (MapLoads.Contains(GeometryRid) || !UAssetManager::IsInitialized())
+	{
+		return nullptr;
+	}
+	const FString Path = MRMinimap::TexturePath(GeometryRid);
+	if (!FPackageName::DoesPackageExist(FPackageName::ObjectPathToPackageName(Path)))
+	{
+		MapTextures.Add(GeometryRid, nullptr);  // not captured
+		return nullptr;
+	}
+	TWeakObjectPtr<UMRUISubsystem> Weak(this);
+	MapLoads.Add(GeometryRid, UAssetManager::GetStreamableManager().RequestAsyncLoad(FSoftObjectPath(Path),
+		FStreamableDelegate::CreateLambda([Weak, GeometryRid, Path]()
+		{
+			if (UMRUISubsystem* Self = Weak.Get())
+			{
+				UTexture2D* Tex = FindObject<UTexture2D>(nullptr, *Path);
+				UMRUIStyle::FinishTexture(Tex);
+				Self->MapTextures.Add(GeometryRid, Tex);
+				Self->MapLoads.Remove(GeometryRid);
+			}
+		}), FStreamableManager::AsyncLoadHighPriority));
+	return nullptr;
 }
 
 #undef LOCTEXT_NAMESPACE

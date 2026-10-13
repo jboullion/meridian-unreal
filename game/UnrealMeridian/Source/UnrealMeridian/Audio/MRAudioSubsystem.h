@@ -117,11 +117,24 @@ private:
 
 	/** Load every sound the rooms name, asynchronously: playing one never waits on a load. */
 	void Preload();
+public:
+	/** Load these original sounds (file names, as FindSound takes them) asynchronously and keep them: the
+	 *  monsters' and the weather's, so their first play doesn't load in the middle of a frame. */
+	void PreloadSounds(const TSet<FString>& Files);
+private:
 
 	TSharedPtr<struct FStreamableHandle> Preloaded;
+	/** PreloadSounds' loads (monsters, weather), kept like Preloaded. */
+	TArray<TSharedPtr<struct FStreamableHandle>> PreloadedMore;
+	TSet<FString> PreloadRequested;
 	TSharedPtr<FJsonObject> Rooms;
 	TSharedPtr<FJsonObject> Config;
-	TMap<FString, TWeakObjectPtr<USoundBase>> Sounds;
+	/**
+	 * Every sound found, kept: a weak cache let a sound be collected after it played, and the next play loaded
+	 * it again in the middle of a frame (a monster's hit, the thunder).
+	 */
+	UPROPERTY(Transient)
+	TMap<FString, TObjectPtr<USoundBase>> Sounds;
 	TSet<FString> Missing;
 
 	UPROPERTY()

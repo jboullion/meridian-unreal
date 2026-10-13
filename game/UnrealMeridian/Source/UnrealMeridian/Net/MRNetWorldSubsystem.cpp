@@ -389,13 +389,16 @@ void UMRNetWorldSubsystem::FinishEnterRoom(int32 PrevRid)
 	const FMRWadingOverride Wading = FMRWadingOverride::FromServer(Net->GetPlayer().RoomFlags, Net->GetPlayer().Depth);
 	if (AMRRuntimeRoom* Room = CurrentRuntimeRoom())
 	{
-		// the room as its file has it, then every change the server sent since BP_PLAYER (lifts at once)
+		// the room as its file has it, then every change the server sent since BP_PLAYER (lifts at once),
+		// rebuilt once at the end
+		Room->BeginChanges();
 		Room->SetWadingOverride(Wading);
 		Room->ResetChanges();
 		for (const FMRNetRoomChange& C : Net->GetRoomChanges())
 		{
 			ApplyRoomChange(Room, C);
 		}
+		Room->EndChanges();
 	}
 	else if (Wading.Any())
 	{

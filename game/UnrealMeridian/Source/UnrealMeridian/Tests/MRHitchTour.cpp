@@ -52,6 +52,12 @@ void UMRHitchTour::Start(APlayerController* InController)
 		InController->ConsoleCommand(TEXT("r.GPUCsvStatsEnabled 1"));
 		InController->ConsoleCommand(TEXT("CsvProfile Start"));
 	}
+	// -MRHitchDump: the stat stack of every frame over 40 ms in the log (stats: not in Shipping)
+	if (FParse::Param(FCommandLine::Get(), TEXT("MRHitchDump")))
+	{
+		InController->ConsoleCommand(TEXT("t.HitchFrameTimeThreshold 40"));
+		InController->ConsoleCommand(TEXT("stat dumphitches"));
+	}
 	// eye positions in world cm (data/environment/lookdev_cameras.json), first stop: where the game spawns us
 	Stops = {
 		{TEXT("spawn"), FVector::ZeroVector, 0.f},
@@ -67,6 +73,8 @@ void UMRHitchTour::Start(APlayerController* InController)
 		{TEXT("int_crypt"), FVector(402180, 202370, 1614), 0.f},
 		{TEXT("int_bar"), FVector(600435, 200455, 170), 48.f},
 		{TEXT("square_again"), FVector(6150, 4500, 205), 36.f},
+		// past mr.Zones.KeepSeconds (60) and the engine's GC interval (61 s): the interiors' zones unload
+		{TEXT("linger"), FVector(6150, 4500, 205), 36.f, 75.f},
 	};
 	Frames.Reserve(20000);
 	StartTime = LastFrameTime = FPlatformTime::Seconds();
@@ -111,6 +119,25 @@ void UMRHitchTour::Tick(float DeltaTime)
 	}
 	APawn* Pawn = PC->GetPawn();
 	const float T = float(Now - StopStart);
+	if (const float Linger = Stops[StopIndex].Linger; Linger > 0.f)
+	{
+		if (T < Linger)
+		{
+			FRotator R = PC->GetControlRotation();
+			R.Yaw = Stops[StopIndex].Yaw + 360.f * T / 20.f;  // a turn every 20 s
+			R.Pitch = 0.f;
+			PC->SetControlRotation(R);
+		}
+		else if (++StopIndex < Stops.Num())
+		{
+			BeginStop();
+		}
+		else
+		{
+			Finish();
+		}
+		return;
+	}
 	if (T < SpinSeconds)
 	{
 		FRotator R = PC->GetControlRotation();
@@ -140,6 +167,7 @@ void UMRHitchTour::BeginStop()
 	APlayerController* PC = Controller.Get();
 	APawn* Pawn = PC ? PC->GetPawn() : nullptr;
 	const FStop& S = Stops[StopIndex];
+	UE_LOG(LogMeridian, Display, TEXT("MRHitch: at %s"), *S.Name);
 	if (Pawn && !S.Eye.IsZero())
 	{
 		// a stop's zone streams in as a player's would (the stops are a walk: neighbours already in)

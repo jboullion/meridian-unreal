@@ -155,7 +155,9 @@ void UMRFireSubsystem::Tick(float DeltaTime)
 		}
 		if (bPickShadows && Fire->bShadowEligible)
 		{
-			Candidates.Emplace(Dist, Fire);
+			// a fire casting shadows keeps them until another is clearly nearer: two at about the same distance
+			// swapped back and forth as you walked, and each swap rebuilds a light and its shadow pages
+			Candidates.Emplace(Shadowed.Contains(Fire) ? Dist * 0.8 : Dist, Fire);
 		}
 	}
 

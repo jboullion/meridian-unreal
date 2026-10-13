@@ -337,7 +337,8 @@ TSharedRef<SWidget> SMROptionsDialog::MakeGraphics()
 	Add(LOCTEXT("Resolution", "Screen size"), Res);
 	Add(LOCTEXT("VSync", "Vertical sync"), Toggle(Ui, []() { const UGameUserSettings* G = Graphics(); return G && G->IsVSyncEnabled(); },
 		[](bool b) { if (UGameUserSettings* G = Graphics()) { G->SetVSyncEnabled(b); SaveGraphics(false); } }));
-	// 60 unless chosen (Config/DefaultGameUserSettings.ini): uncapped, the CPU stalls now and then
+	// none beyond the vertical sync unless chosen (Config/DefaultGameUserSettings.ini): with neither, the CPU
+	// stalls now and then, and a limit without the sync paces frames unevenly (docs/performance.md)
 	Add(LOCTEXT("Frames", "Frame limit"), Choices(Ui, {LOCTEXT("F30", "30"), LOCTEXT("F60", "60"), LOCTEXT("F120", "120"), LOCTEXT("F144", "144"),
 			LOCTEXT("FNone", "Uncapped")},
 		[]()

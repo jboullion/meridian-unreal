@@ -67,6 +67,12 @@ public:
 	bool HasTexture(uint16 Texture) const { return TextureByNumber.Contains(Texture); }
 	/** A texture fetched after the build (a changed texture's). */
 	void AddTexture(uint16 Texture, UTexture2D* Tex, const FVector2D& Repeat);
+	/**
+	 * Changes between these rebuild the room once, at EndChanges: entering a room applies every change the
+	 * server sent since (UMRNetWorldSubsystem::FinishEnterRoom), each of which rebuilt it, collision and all.
+	 */
+	void BeginChanges() { ++ChangeDepth; }
+	void EndChanges();
 
 	const FMRRooFile& GetRoom() const { return Room; }
 	/** The drawn mesh's bounds when it was built (room-local cm). */
@@ -90,6 +96,8 @@ private:
 
 	/** The meshes again from Room: the drawn one, and collision too when bCollision. */
 	void Rebuild(bool bCollision);
+	/** Rebuild now, or at EndChanges inside BeginChanges. */
+	void RequestRebuild(bool bCollision);
 	void SetHeight(int32 Sector, bool bCeiling, int16 Height);
 	UMaterialInstanceDynamic* MaterialFor(uint16 Texture);
 
@@ -119,6 +127,9 @@ private:
 	TArray<FLift> Lifts;
 	FMRWadingOverride Wading;
 	bool bChanged = false;
+	int32 ChangeDepth = 0;
+	bool bPendingRebuild = false;
+	bool bPendingCollision = false;
 	int32 Rebuilds = 0;
 	FBox MeshBounds = FBox(ForceInit);
 	double SinceDraw = 0.0;

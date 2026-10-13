@@ -1,4 +1,5 @@
 #include "Character/MRCharacterMovementComponent.h"
+#include "Character/MRCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "HAL/IConsoleManager.h"
@@ -284,6 +285,16 @@ void UMRCharacterMovementComponent::HandleImpact(const FHitResult& Hit, float Ti
 		}
 	}
 	Super::HandleImpact(Hit, TimeSlice, MoveDelta);
+}
+
+void UMRCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity)
+{
+	Super::OnMovementUpdated(DeltaSeconds, OldLocation, OldVelocity);
+	if (AMRCharacter* Char = Cast<AMRCharacter>(CharacterOwner))
+	{
+		Char->SmoothCameraStep(DeltaSeconds, OldLocation, bWasOnGround);
+	}
+	bWasOnGround = IsMovingOnGround();
 }
 
 void UMRCharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)

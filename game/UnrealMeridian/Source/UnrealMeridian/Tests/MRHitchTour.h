@@ -14,7 +14,9 @@ class APlayerController;
  * takes the player through Raza, the Outskirts and a few interiors, turning a full circle and walking a
  * little at each stop. Writes Saved/MRHitch/<label>.csv (one row per frame) and logs
  * "MRHitch: ..." summary lines, then quits. -MRHitchLabel=<name> names the CSV; -MRHitchCsv also records a
- * CSV profile with per-pass GPU timings (Saved/Profiling/CSV/).
+ * CSV profile with per-pass GPU timings (Saved/Profiling/CSV/); -MRHitchDump logs the stat stack of each
+ * frame over 40 ms (stat dumphitches; Development builds). "MRHitch: at <stop>" marks each stop in the log,
+ * so run_hitch_test.ps1 can count PSO misses, loading flushes and GCs per stop.
  */
 UCLASS()
 class UNREALMERIDIAN_API UMRHitchTour : public UObject, public FTickableGameObject
@@ -36,6 +38,7 @@ private:
 		FString Name;
 		FVector Eye;  // world cm; zero: stay where the player is
 		float Yaw = 0.f;
+		float Linger = 0.f;  // seconds turning slowly instead of the circle and walk (zone unloads, GC)
 	};
 	struct FFrame
 	{

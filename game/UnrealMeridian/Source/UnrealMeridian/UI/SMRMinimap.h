@@ -83,6 +83,8 @@ private:
 	FOnMapClick OnClicked;
 	TWeakObjectPtr<UMRUISubsystem> UI;
 	int32 GeometryRid = -1;
+	/** The zone's picture is still to come (loading, or none). */
+	bool bMapPending = false;
 	FBox2D Rect = FBox2D(ForceInit);
 	mutable FSlateBrush MapBrush;
 	FText ZoneName;

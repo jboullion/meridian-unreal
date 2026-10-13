@@ -1,6 +1,10 @@
 #include "Environment/MREnvironmentSubsystem.h"
 
 #include "Audio/MRAudioSubsystem.h"
+#include "Engine/AssetManager.h"
+#include "Engine/Level.h"
+#include "Engine/StreamableManager.h"
+#include "Misc/PackageName.h"
 
 #include "Components/LightComponent.h"
 #include "Components/PointLightComponent.h"
@@ -710,6 +714,17 @@ AActor* UMREnvironmentSubsystem::FindActor(const FString& Label) const
 	{
 		return Known->Get();
 	}
+	// and so is a miss (a mood naming an actor this world hasn't), until a level comes or goes
+	const int32 Levels = GetWorld()->GetLevels().Num();
+	if (Levels != MissingAtLevels)
+	{
+		MissingActors.Reset();
+		MissingAtLevels = Levels;
+	}
+	else if (MissingActors.Contains(Label))
+	{
+		return nullptr;
+	}
 	const FName Tag(*Label);
 	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
 	{
@@ -723,6 +738,7 @@ AActor* UMREnvironmentSubsystem::FindActor(const FString& Label) const
 			return *It;
 		}
 	}
+	MissingActors.Add(Label);
 	return nullptr;
 }
 
@@ -747,23 +763,41 @@ int32 UMREnvironmentSubsystem::LocalZoneId() const
 
 void UMREnvironmentSubsystem::ApplyLamps(float LampsOn)
 {
-	// the lamps' lights, found once (every zone is loaded at the start) instead of scanning every actor
-	// on every apply
-	if (!bLampsFound)
+	// the lamps' lights, found as each zone's level comes in (they stream: only the zones near the player are
+	// loaded) instead of scanning every actor on every apply; a light keeps its level's intensity as its base
+	for (ULevel* Level : GetWorld()->GetLevels())
 	{
-		bLampsFound = true;
-		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+		if (!Level || !Level->bIsVisible || LampLevels.Contains(Level))
 		{
-			if (!It->Tags.Contains(NightLampTag))
+			continue;
+		}
+		LampLevels.Add(Level);
+		for (AActor* Actor : Level->Actors)
+		{
+			if (!Actor || !Actor->Tags.Contains(NightLampTag))
 			{
 				continue;
 			}
 			TArray<ULightComponent*> Lights;
-			It->GetComponents(Lights);
+			Actor->GetComponents(Lights);
 			for (ULightComponent* Light : Lights)
 			{
 				LampBase.FindOrAdd(Light, Light->Intensity);
 			}
+		}
+	}
+	for (auto It = LampLevels.CreateIterator(); It; ++It)
+	{
+		if (!It->IsValid())
+		{
+			It.RemoveCurrent();
+		}
+	}
+	for (auto It = LampBase.CreateIterator(); It; ++It)
+	{
+		if (!It->Key.IsValid())
+		{
+			It.RemoveCurrent();
 		}
 	}
 	for (const auto& Pair : LampBase)
@@ -1055,6 +1089,26 @@ void UMREnvironmentSubsystem::Apply(const TSharedPtr<FJsonObject>& State, double
 	}
 }
 
+void UMREnvironmentSubsystem::PreloadWeather()
+{
+	bWeatherPreloaded = true;
+	// the shared rain, splash and ambient materials and the bolt: a storm's first frame loaded them
+	const FString Base = TEXT("/Game/Generated/Environment/Materials/");
+	TArray<FSoftObjectPath> Paths;
+	for (const TCHAR* Name : {TEXT("MI_Precip"), TEXT("MI_Splash"), TEXT("MI_Ambient"), TEXT("MI_Bolt")})
+	{
+		Paths.Emplace(FString::Printf(TEXT("%s%s.%s"), *Base, Name, Name));
+	}
+	if (UAssetManager::IsInitialized())
+	{
+		WeatherAssets = UAssetManager::GetStreamableManager().RequestAsyncLoad(Paths, FStreamableDelegate(), FStreamableManager::AsyncLoadHighPriority);
+	}
+	if (UMRAudioSubsystem* Audio = GetWorld()->GetSubsystem<UMRAudioSubsystem>())
+	{
+		Audio->PreloadSounds({WeatherSoundFile(TEXT("rain")), WeatherSoundFile(TEXT("wind")), WeatherSoundFile(TEXT("thunder"))});
+	}
+}
+
 void UMREnvironmentSubsystem::Tick(float DeltaTime)
 {
 	CSV_SCOPED_TIMING_STAT_EXCLUSIVE(MREnvTick);
@@ -1062,6 +1116,10 @@ void UMREnvironmentSubsystem::Tick(float DeltaTime)
 	if (!World || !Root.IsValid() || (World->WorldType == EWorldType::Editor && CVarEditor.GetValueOnGameThread() == 0))
 	{
 		return;
+	}
+	if (!bWeatherPreloaded && World->IsGameWorld())
+	{
+		PreloadWeather();
 	}
 	const int32 Zone = LocalZoneId();
 	const double Now = FPlatformTime::Seconds();
@@ -1476,14 +1534,17 @@ UMaterialInterface* UMREnvironmentSubsystem::ZoneMaterial(const TCHAR* Prefix, i
 {
 	// the zone's instance carries its shelter map (build_world.py: <Prefix>_<rid>), else the default
 	const FString Key = FString::Printf(TEXT("%s_%d"), Prefix, Zone);
-	TWeakObjectPtr<UMaterialInterface>& Cached = ZoneMaterials.FindOrAdd(Key);
-	if (!Cached.IsValid())
+	if (const TObjectPtr<UMaterialInterface>* Found = ZoneMaterials.Find(Key))
 	{
-		const FString Base = TEXT("/Game/Generated/Environment/Materials/");
-		UMaterialInterface* M = LoadObject<UMaterialInterface>(nullptr, *(Base + Key + TEXT(".") + Key), nullptr, LOAD_NoWarn | LOAD_Quiet);
-		Cached = M ? M : LoadObject<UMaterialInterface>(nullptr, *FString::Printf(TEXT("%s%s.%s"), *Base, Prefix, Prefix), nullptr, LOAD_NoWarn | LOAD_Quiet);
+		return *Found;
 	}
-	return Cached.Get();
+	// most zones have none of their own: asking for a package that isn't there costs a search each time
+	const FString Base = TEXT("/Game/Generated/Environment/Materials/");
+	UMaterialInterface* M = FPackageName::DoesPackageExist(Base + Key)
+		? LoadObject<UMaterialInterface>(nullptr, *(Base + Key + TEXT(".") + Key), nullptr, LOAD_NoWarn | LOAD_Quiet) : nullptr;
+	M = M ? M : LoadObject<UMaterialInterface>(nullptr, *FString::Printf(TEXT("%s%s.%s"), *Base, Prefix, Prefix), nullptr, LOAD_NoWarn | LOAD_Quiet);
+	ZoneMaterials.Add(Key, M);
+	return M;
 }
 
 void UMREnvironmentSubsystem::UpdatePrecipitation(int32 Zone)

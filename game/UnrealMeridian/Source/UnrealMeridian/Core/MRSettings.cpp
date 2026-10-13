@@ -1,5 +1,7 @@
 #include "Core/MRSettings.h"
 
+#include "Engine/Engine.h"
+#include "GameFramework/GameUserSettings.h"
 #include "HAL/IConsoleManager.h"
 #include "Misc/ConfigCacheIni.h"
 
@@ -9,7 +11,38 @@ namespace
 {
 	const TCHAR* CVarSection = TEXT("UnrealMeridian.CVars");
 	const TCHAR* KeySection = TEXT("UnrealMeridian.Keys");
+	const TCHAR* DefaultsSection = TEXT("UnrealMeridian.Defaults");
 	int32 KeyVersion = 1;
+
+	/**
+	 * Settings saved before the project's defaults changed keep the player's choices, except what the new
+	 * default was made for, once (Config/DefaultGameUserSettings.ini only reaches a new install):
+	 * 1 (2026-10-13): vertical sync, with no frame limit of its own (even frame pacing on any display), and
+	 *    lighting and reflections no higher than Medium (docs/performance.md "Packaged game").
+	 */
+	constexpr int32 DefaultsVersion = 1;
+
+	void ApplyNewDefaults()
+	{
+		int32 Saved = 0;
+		GConfig->GetInt(DefaultsSection, TEXT("Version"), Saved, GGameUserSettingsIni);
+		UGameUserSettings* G = GEngine ? GEngine->GetGameUserSettings() : nullptr;
+		if (Saved >= DefaultsVersion || !G)
+		{
+			return;
+		}
+		if (Saved < 1)
+		{
+			G->SetVSyncEnabled(true);
+			G->SetFrameRateLimit(0.f);
+			G->SetGlobalIlluminationQuality(FMath::Min(G->GetGlobalIlluminationQuality(), 1));
+			G->SetReflectionQuality(FMath::Min(G->GetReflectionQuality(), 1));
+		}
+		G->ApplyNonResolutionSettings();
+		G->SaveSettings();
+		GConfig->SetInt(DefaultsSection, TEXT("Version"), DefaultsVersion, GGameUserSettingsIni);
+		GConfig->Flush(false, GGameUserSettingsIni);
+	}
 }
 
 // ------------------------------------------------------------------------------ console variables
@@ -36,6 +69,7 @@ void MRSettings::ApplySaved()
 	{
 		return;
 	}
+	ApplyNewDefaults();
 	for (const TCHAR* Name : SavedCVars())
 	{
 		FString Value;

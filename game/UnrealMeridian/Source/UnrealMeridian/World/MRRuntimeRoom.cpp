@@ -180,6 +180,29 @@ void AMRRuntimeRoom::Rebuild(bool bCollision)
 	}
 }
 
+void AMRRuntimeRoom::RequestRebuild(bool bCollision)
+{
+	if (ChangeDepth > 0)
+	{
+		bPendingRebuild = true;
+		bPendingCollision |= bCollision;
+		return;
+	}
+	Rebuild(bCollision);
+}
+
+void AMRRuntimeRoom::EndChanges()
+{
+	ChangeDepth = FMath::Max(0, ChangeDepth - 1);
+	if (ChangeDepth == 0 && bPendingRebuild)
+	{
+		bPendingRebuild = false;
+		const bool bCollision = bPendingCollision;
+		bPendingCollision = false;
+		Rebuild(bCollision);
+	}
+}
+
 // ------------------------------------------------------------------------------ the server's changes
 
 void AMRRuntimeRoom::ResetChanges()
@@ -190,7 +213,7 @@ void AMRRuntimeRoom::ResetChanges()
 	{
 		Room = Original;
 		bChanged = false;
-		Rebuild(true);
+		RequestRebuild(true);
 	}
 }
 
@@ -205,7 +228,7 @@ void AMRRuntimeRoom::SetWadingOverride(const FMRWadingOverride& InWading)
 		Wading.bSet[1] ? *FString::Printf(TEXT("1 at %.0f cm "), Wading.FloorRoo[1] * MRUnits::CmPerRoo) : TEXT(""),
 		Wading.bSet[2] ? *FString::Printf(TEXT("2 at %.0f cm "), Wading.FloorRoo[2] * MRUnits::CmPerRoo) : TEXT(""),
 		Wading.bSet[3] ? *FString::Printf(TEXT("3 at %.0f cm"), Wading.FloorRoo[3] * MRUnits::CmPerRoo) : TEXT(""));
-	Rebuild(true);
+	RequestRebuild(true);
 }
 
 void AMRRuntimeRoom::SetHeight(int32 Sector, bool bCeiling, int16 Height)
@@ -253,7 +276,7 @@ void AMRRuntimeRoom::MoveSector(uint8 Type, uint16 SectorId, int16 Height, uint8
 		Height, Speed, Moved);
 	if (bAtOnce)
 	{
-		Rebuild(true);
+		RequestRebuild(true);
 	}
 	if (Lifts.Num() > 0)
 	{
@@ -324,7 +347,7 @@ void AMRRuntimeRoom::ChangeSector(uint16 SectorId, uint8 Depth, uint8 Scroll)
 	if (Changed)
 	{
 		bChanged = true;
-		Rebuild(true);
+		RequestRebuild(true);
 	}
 }
 
@@ -355,7 +378,7 @@ bool AMRRuntimeRoom::ChangeTexture(uint16 Id, uint16 Texture, uint8 Flags)
 	if (Changed)
 	{
 		bChanged = true;
-		Rebuild(true);
+		RequestRebuild(true);
 	}
 	return Texture == 0 || HasTexture(Texture);
 }
@@ -373,5 +396,5 @@ void AMRRuntimeRoom::AddTexture(uint16 Texture, UTexture2D* Tex, const FVector2D
 	{
 		(*MID)->SetTextureParameterValue(TEXT("Tex"), Tex);
 	}
-	Rebuild(false);  // the walls' UVs follow the texture's size
+	RequestRebuild(false);  // the walls' UVs follow the texture's size
 }

@@ -149,6 +149,8 @@ private:
 	bool bActionLoops = false;
 
 	float TexelsPerBasePixel = 4.f;
+	/** The targets are due a new size or a redraw from scratch (EnsureTarget; borrowed from UMRSpriteTargetPool). */
+	bool bRetarget = false;
 	/** Close up: the target's density is the base x 1.41^DensityStep (mr.Sprite.ScreenTexels). */
 	int32 DensityStep = 0;
 	float DensityOverride = 0.f;
@@ -157,6 +159,10 @@ private:
 	int32 LastShrink = 4;
 	uint32 LastDrawKey = 0;
 	int32 LastAngle = 0;
+	/** The walk/stand hysteresis (TickComponent): stopped this long, walking last tick, at this speed. */
+	float StillSeconds = 0.f;
+	bool bWasMoving = false;
+	float LastMovingSpeed = 0.f;
 	bool bUnlit = false;
 	bool bForceUnlit = false;
 	TWeakObjectPtr<USceneComponent> Viewer;
