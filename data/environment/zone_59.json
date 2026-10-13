@@ -1,0 +1,25 @@
+{
+  "_doc": "Zone art for Hall of the Forgotten Heroes (rid 59), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): the interiors' recipe. Cut-outs become solids; indoor grime along the wall feet and under the ceiling.",
+  "rid": 59,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -1.0,
+        -0.7,
+        29.6,
+        31.8
+      ],
+      "displacement": "none",
+      "_doc": "every cut-out, rebuilt as a solid"
+    }
+  ],
+  "grime": {
+    "base": "indoor_base",
+    "ceiling": "ceiling"
+  }
+}

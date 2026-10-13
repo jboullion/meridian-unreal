@@ -182,12 +182,18 @@ namespace
 	{
 	public:
 		FMRRoomMesh Mesh;
+		/**
+		 * Leave out surfaces without a texture (0): the original client doesn't draw them (clientd3d
+		 * d3drender.c draws a wall section, floor or ceiling only with a bitmap; docs/findings.md
+		 * "Untextured surfaces aren't drawn"). The drawn mesh only; collision keeps them. As roo2gltf.
+		 */
+		bool bDropUntextured = false;
 
 		/** A convex polygon (ROO points), fanned into triangles; light: a level or one per glTF normal. */
 		void Poly(uint16 Tex, const TArray<FRoo>& Pts, const TArray<FVector2D>& UVs, TFunctionRef<double(const FVector&)> Light,
 			const FVector2D& Scroll = FVector2D::ZeroVector)
 		{
-			if (Pts.Num() < 3)
+			if (Pts.Num() < 3 || (Tex == 0 && bDropUntextured))
 			{
 				return;
 			}
@@ -329,6 +335,7 @@ FBox FMRRoomMesh::Bounds() const
 FMRRoomMesh MRRoomMesh::Build(const FMRRooFile& Room, const FRepeat& Repeat, bool bCollision, const FMRWadingOverride& Wading)
 {
 	FBuilder MB;
+	MB.bDropUntextured = !bCollision;
 	const FHeights H{Room, bCollision, Wading};
 	const FSectorLookup Sectors(Room);
 	auto LightAt = [&Room, &Sectors](double X, double Y, double& Out)

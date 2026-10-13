@@ -1,0 +1,21 @@
+{
+  "_doc": "Zone art for Into the Valley of Death (rid 2850), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): outdoors, no buildings rebuilt yet. Cut-outs become solids; grime at the walls' feet.",
+  "rid": 2850,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -18.1,
+        -12.6,
+        78.5,
+        59.9
+      ],
+      "displacement": "none",
+      "_doc": "every non-foliage cut-out, rebuilt as a solid"
+    }
+  ]
+}

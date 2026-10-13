@@ -1,0 +1,55 @@
+{
+  "_doc": "Hand-kept rules for tools/world/zone_tags.py, which writes data/world/zone_tags.json: a ground type for every floor texture, and a biome for every room. Ground effects (grass, pebbles, other plants) are meant to key on the ground type, ambient effects (bats, motes, leaves) on the biome (docs/adr/0003 \"Ground types and biomes\"). Fix a wrong label in \"ground_overrides\" (texture -> type) or \"biome_overrides\" (room id -> biome), never in the generated file.",
+  "ground_types": {
+    "_doc": "Floor texture name (build/textures/catalog.json) -> ground type: the first pattern that matches (case-insensitive). Up-facing surfaces that aren't ground get roof, ceiling, furniture (tabletops, counters, steps, fountain tops), wall or crops, so ground effects never land on them; \"floor\" is an indoor floor the name doesn't say more about. Unmatched surfaces are \"other\".",
+    "rules": [
+      ["roof|thatch|shingle", "roof"],
+      ["ceiling|cieling|canopy", "ceiling"],
+      ["table|tabletop|top\b|cab|counter|bedspread|chair|box top|cloth|bar top|stair|step|fount|pillar|fireplace", "furniture"],
+      ["tapestry|curtain|wall|barrier|door|gate", "wall"],
+      ["crop|hay|flower|topiary|wheat|corn", "crops"],
+      ["water|pool|stream|river|lake|sea|ocean", "water"],
+      ["lava|magma|hell", "lava"],
+      ["snow|ice", "snow"],
+      ["swamp|marsh|mud|bog", "mud"],
+      ["jungle", "jungle"],
+      ["forest", "forest floor"],
+      ["sand|dune|beach|desert", "sand"],
+      ["cobl", "cobble"],
+      ["grass|lawn|field|meadow|turf", "grass"],
+      ["dirt|earth|road|path|trail|soil|badlands", "dirt"],
+      ["cave|rock|cliff|gravel|boulder|crag|quarry", "rock"],
+      ["flagston|marble|tile|stone|slab|brick|pav", "paving"],
+      ["wood|plank|board", "wood"],
+      ["carpet|rug|mat\b", "carpet"],
+      ["floor|flr|arena|fortress", "floor"]
+    ]
+  },
+  "ground_overrides": {"grd08968": "water"},
+  "biomes": {
+    "_doc": "A room's biome, from the original's terrain flags (Kod viTerrain_type, TERRAIN_* without the prefix, lower case), its kind (outdoor / interior / underground: tools/world/zone_configs.py) and its region (data/world/regions.json): the first rule all of whose conditions hold. terrain_any: one of these flags; kind: one of these kinds; region_any: the region contains one of these words.",
+    "rules": [
+      {"biome": "sewer", "terrain_any": ["sewers"]},
+      {"biome": "lava", "terrain_any": ["lava"]},
+      {"biome": "dungeon", "terrain_any": ["necropolis", "lair"], "kind": ["underground", "interior"]},
+      {"biome": "cave", "terrain_any": ["caves", "mines"]},
+      {"biome": "dungeon", "kind": ["underground"]},
+      {"biome": "island", "region_any": ["Ko'catan"], "kind": ["outdoor"]},
+      {"biome": "jungle", "terrain_any": ["jungle"]},
+      {"biome": "desert", "terrain_any": ["desert", "badlands"]},
+      {"biome": "swamp", "terrain_any": ["swamp"]},
+      {"biome": "tundra", "terrain_any": ["tundra"]},
+      {"biome": "mountain", "terrain_any": ["mountain", "hills"], "kind": ["outdoor"]},
+      {"biome": "beach", "terrain_any": ["beach"], "kind": ["outdoor"]},
+      {"biome": "city", "terrain_any": ["city"], "kind": ["outdoor"]},
+      {"biome": "fields", "terrain_any": ["fields"], "kind": ["outdoor"]},
+      {"biome": "forest", "terrain_any": ["forest"], "kind": ["outdoor"]},
+      {"biome": "castle", "terrain_any": ["castle"]},
+      {"biome": "temple", "terrain_any": ["temple"]},
+      {"biome": "city", "terrain_any": ["road"], "kind": ["outdoor"]},
+      {"biome": "building", "kind": ["interior"]},
+      {"biome": "wilds", "kind": ["outdoor"]}
+    ]
+  },
+  "biome_overrides": {"206": "fields"}
+}

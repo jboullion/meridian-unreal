@@ -1,0 +1,21 @@
+{
+  "_doc": "Zone art for Territory of the Noble Avars (rid 2142), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): outdoors, no buildings rebuilt yet. Cut-outs become solids; grime at the walls' feet.",
+  "rid": 2142,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -35.1,
+        -5.4,
+        194.6,
+        130.8
+      ],
+      "displacement": "none",
+      "_doc": "every non-foliage cut-out, rebuilt as a solid"
+    }
+  ]
+}

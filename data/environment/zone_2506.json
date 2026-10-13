@@ -1,0 +1,25 @@
+{
+  "_doc": "Zone art for Lair of the Orc Pit Boss (rid 2506), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): the interiors' recipe. Cut-outs become solids; indoor grime along the wall feet and under the ceiling.",
+  "rid": 2506,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -13.1,
+        19.9,
+        175.9,
+        156.1
+      ],
+      "displacement": "none",
+      "_doc": "every cut-out, rebuilt as a solid"
+    }
+  ],
+  "grime": {
+    "base": "indoor_base",
+    "ceiling": "ceiling"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "_doc": "Zone art for The Hall of Developers (rid 2827), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): the interiors' recipe. Cut-outs become solids; indoor grime along the wall feet and under the ceiling.",
+  "rid": 2827,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        1.2,
+        7.8,
+        53.8,
+        51.0
+      ],
+      "displacement": "none",
+      "_doc": "every cut-out, rebuilt as a solid"
+    }
+  ],
+  "grime": {
+    "base": "indoor_base",
+    "ceiling": "ceiling"
+  }
+}

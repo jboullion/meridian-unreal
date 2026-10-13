@@ -128,12 +128,16 @@ class ULevelStreaming;
  * so walking out of the north gate is seamless.
  *
  * Streaming: every zone's geometry is a streaming sublevel of L_World (L_Zone_<rid>_<KodClass>).
- *  - The server loads all of them at startup (authoritative collision, AI, traces).
- *  - Each client loads its current zone plus every zone one exit away and keeps them visible
- *    (AMRPlayerController drives this), so taking an exit is a same-frame switch.
- *  - The server only teleports or spawns a player into a zone the player's client has already
- *    made visible; otherwise it asks the client to load it and waits (up to a timeout), so a
- *    player can never land on geometry their client hasn't got.
+ *  - Only the zones near the player are loaded (docs/performance.md "Zone streaming"): the zone the
+ *    player is in, the zone the view is in, a zone a caller pinned (EnsureZoneLoaded), each with every
+ *    zone one exit away (offline the zone's exits; online also the server's room links). They are
+ *    loaded and visible: zones sit 2 km apart, so a neighbour costs only culling, and taking an exit
+ *    is a same-frame switch.
+ *  - A zone no longer wanted stays for mr.Zones.KeepSeconds, at most mr.Zones.MaxLoaded stay (the
+ *    least recently wanted go first), and levels unload one at a time.
+ *  - A spawn or teleport into a zone not in yet waits for it (up to a timeout), so nobody lands on
+ *    geometry that isn't there; online a built room waits the same way (UMRNetWorldSubsystem).
+ *  - mr.Zones.LoadAll 1 loads every zone at start, as before 2026-10-11.
  */
 UCLASS()
 class UNREALMERIDIAN_API UMRZoneSubsystem : public UWorldSubsystem
@@ -155,8 +159,15 @@ public:
 	/** True if Controller can be put into the zone right now: its level is in and visible. */
 	bool IsZoneReadyFor(const AController* Controller, int32 Rid) const;
 
-	/** Server: load every zone level; bBlock waits until they are all in. */
+	/** Load every zone level (mr.Zones.LoadAll); bBlock waits until they are all in. */
 	void LoadAllZoneLevels(bool bBlock);
+
+	/**
+	 * Keep a zone (and its neighbours) loaded until the next call: tours and tests that move between
+	 * zones (look-dev, the step survey, map capture, the hitch tour), the start zone, a server room.
+	 * bBlock waits until its level shows. True when the zone is visible (or has no level).
+	 */
+	bool EnsureZoneLoaded(int32 Rid, bool bBlock);
 
 	/** How long a spawn or a teleport waits for its zone's level before going anyway. */
 	static constexpr double StreamWaitTimeoutSeconds = 8.0;
@@ -288,4 +299,20 @@ private:
 
 	/** LevelName -> streaming level, filled on first lookup. */
 	mutable TMap<FName, TWeakObjectPtr<ULevelStreaming>> LevelCache;
+
+	// --- residency (only the zones near the player loaded)
+	/** Load what the player's zone, the view's zone and the pinned zone want; unload what's gone stale. */
+	void UpdateResidency();
+	/** A zone and every zone one exit away (and the zone it shares geometry with). */
+	void AddResidentZones(int32 Rid, TSet<int32>& Out) const;
+	/** Room file (lower case) per zone, the inverse of RoomFiles (online room links). */
+	FString RoomFileOf(int32 Rid) const;
+	/** Each zone level's last time something wanted it (FPlatformTime seconds). */
+	TMap<FName, double> LevelWanted;
+	int32 PinnedRid = 0;
+	double PinnedTime = 0.0;
+	/** A pin outlives the player and the view being elsewhere by this long (a tour's camera cut, a spawn). */
+	static constexpr double PinSeconds = 5.0;
+	bool bResidency = false;
+	FTimerHandle ResidencyTimer;
 };

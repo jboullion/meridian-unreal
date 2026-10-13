@@ -1,0 +1,25 @@
+{
+  "_doc": "Zone art for Headquarters for the Avar Warriors (rid 2122), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): the interiors' recipe. Cut-outs become solids; indoor grime along the wall feet and under the ceiling.",
+  "rid": 2122,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        10.0,
+        -38.4,
+        152.8,
+        193.5
+      ],
+      "displacement": "none",
+      "_doc": "every cut-out, rebuilt as a solid"
+    }
+  ],
+  "grime": {
+    "base": "indoor_base",
+    "ceiling": "ceiling"
+  }
+}

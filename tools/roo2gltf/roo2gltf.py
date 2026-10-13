@@ -57,9 +57,14 @@ WF_NO_VTILE = 0x200
 # one texel = 1/shrink Kod units = 16/shrink ROO units.  Unknown textures tile per square.
 _TEX_CATALOG = ROOT / "build" / "textures" / "catalog.json"
 TEX_SIZES: dict[str, tuple[float, float]] = {}
+# textures a map names that no client has (the Forests of Meridian 3's six): the original binds no
+# bitmap (clientd3d draw.c GetGridPdib returns NULL) and draws nothing, as for no texture at all
+TEX_MISSING: set[str] = set()
 if _TEX_CATALOG.exists():
-    for _k, _t in json.loads(_TEX_CATALOG.read_text())["textures"].items():
+    _catalog = json.loads(_TEX_CATALOG.read_text())
+    for _k, _t in _catalog["textures"].items():
         TEX_SIZES[_k] = (_t["w"] / _t["shrink"] * HEIGHT_TO_ROO, _t["h"] / _t["shrink"] * HEIGHT_TO_ROO)
+    TEX_MISSING = {"grd%05d" % t for t in _catalog.get("missing", [])}
 
 
 def tex_repeat(t: int) -> tuple[float, float]:
@@ -170,8 +175,9 @@ class SectorHeights:
 class MeshBuilder:
     """Accumulates triangles per material key."""
 
-    def __init__(self):
+    def __init__(self, drop=()):
         self.prims: dict[str, dict[str, list]] = {}
+        self.drop = set(drop)  # material keys left out (the drawn mesh: "untextured")
 
     def _prim(self, key):
         return self.prims.setdefault(key, {"pos": [], "nrm": [], "uv": [], "col": [], "idx": []})
@@ -186,7 +192,7 @@ class MeshBuilder:
     def poly(self, key, pts, uvs, light=1.0):
         """light: the original sector light level (0..1) for the face, or a function of its glTF
         normal; written as the vertex colour (COLOR_0), the materials' ambient floor (docs/adr/0005)."""
-        if len(pts) < 3:
+        if len(pts) < 3 or key in self.drop:
             return
         g = [to_gltf(p) for p in pts]
         n = newell_normal(g)
@@ -276,8 +282,12 @@ def build_room_mesh(room: Room, collision: bool = False) -> MeshBuilder:
     step walls around them to match), and without the middle (normal-texture) sections the original
     lets you walk through: every sidedef of the wall has WF_PASSABLE (blakserv roofile.c
     BSPCanMoveInRoomTreeInternal, clientd3d move.c). Raza's wheat and crop field borders, its
-    hanging signs and the interiors' wall torches are such walls."""
-    mb = MeshBuilder()
+    hanging signs and the interiors' wall torches are such walls.
+    The drawn mesh leaves out surfaces without a texture, which the original client doesn't draw
+    (clientd3d d3drender.c draws a wall section, floor or ceiling only when it has a bitmap; you see
+    past it: docs/findings.md "Untextured surfaces aren't drawn"); collision keeps them. So does a
+    texture no client has (TEX_MISSING): the original finds no bitmap and draws nothing."""
+    mb = MeshBuilder(drop=() if collision else ("untextured", *TEX_MISSING))
     H = SectorHeights(room.sectors, wading=collision)
     light_at = sector_lights(room)
     at = sector_at(room)
@@ -667,6 +677,13 @@ def write_walls(room: Room, path: Path) -> int:
     return len(walls)
 
 
+# Zones drawn from one physical map with a shifted grid origin, overlaid into one outdoor space
+# instead of two copies: zone -> the zone it shares with. Raza town and its Outskirts are the one
+# pair. (Matching map extents used to decide this, which would overlay unrelated overland maps of
+# the same size once they're built.)
+SHARED_GEOMETRY = {330: 300}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rid", type=int, nargs="*")
@@ -714,28 +731,32 @@ def main():
     # into one seamless outdoor space instead of two copies.
     rooms_by_rid = {}
     for lay in layouts:
-        r = Room.load(str(next(p for p in a.rooms.iterdir() if p.name.lower() == lay["roo"].lower())))
-        pts = [p for n in r.bsp.walk() if n.type == BSP_LEAF for p in n.points]
-        rooms_by_rid[lay["rid"]] = (min(p[0] for p in pts), min(p[1] for p in pts),
-                                    max(p[0] for p in pts), max(p[1] for p in pts))
+        if lay["rid"] not in SHARED_GEOMETRY:
+            continue
+        for rid in (lay["rid"], SHARED_GEOMETRY[lay["rid"]]):
+            if rid in rooms_by_rid:
+                continue
+            roo_name = next((l["roo"] for l in layouts if l["rid"] == rid), None)
+            if roo_name is None:
+                continue
+            r = Room.load(str(next(p for p in a.rooms.iterdir() if p.name.lower() == roo_name.lower())))
+            pts = [p for n in r.bsp.walk() if n.type == BSP_LEAF for p in n.points]
+            rooms_by_rid[rid] = (min(p[0] for p in pts), min(p[1] for p in pts),
+                                 max(p[0] for p in pts), max(p[1] for p in pts))
     for lay in layouts:
-        bx = rooms_by_rid[lay["rid"]]
-        for other in layouts:
-            ob = rooms_by_rid[other["rid"]]
-            # identical extents on a large (outdoor-sized) map; small interiors of equal size
-            # are common and unrelated (e.g. the Raza bar and vault)
-            if other["rid"] < lay["rid"] and abs((bx[2] - bx[0]) - (ob[2] - ob[0])) < 1 \
-                    and abs((bx[3] - bx[1]) - (ob[3] - ob[1])) < 1 \
-                    and (bx[2] - bx[0]) > 40 * ROO_PER_SQUARE:
-                off = (bx[0] - ob[0], bx[1] - ob[1])
-                lay["shares_geometry_with"] = {
-                    "rid": other["rid"],
-                    "roo_offset": list(off),
-                    "offset_m": [round(off[0] * M_PER_ROO, 3), 0.0, round(off[1] * M_PER_ROO, 3)],
-                    "note": "this zone's coords = other zone's coords + offset; place this zone's "
-                            "origin at -offset_m relative to the other to overlay them",
-                }
-                print(f"  {lay['rid']} shares geometry with {other['rid']} (offset {off})")
+        other_rid = SHARED_GEOMETRY.get(lay["rid"])
+        if other_rid not in rooms_by_rid or lay["rid"] not in rooms_by_rid:
+            continue
+        bx, ob = rooms_by_rid[lay["rid"]], rooms_by_rid[other_rid]
+        off = (bx[0] - ob[0], bx[1] - ob[1])
+        lay["shares_geometry_with"] = {
+            "rid": other_rid,
+            "roo_offset": list(off),
+            "offset_m": [round(off[0] * M_PER_ROO, 3), 0.0, round(off[1] * M_PER_ROO, 3)],
+            "note": "this zone's coords = other zone's coords + offset; place this zone's "
+                    "origin at -offset_m relative to the other to overlay them",
+        }
+        print(f"  {lay['rid']} shares geometry with {other_rid} (offset {off})")
 
     # World placement (single source of truth for the UE level builder and the game's zone
     # subsystem).  Zones sit on a 2 km grid in UE space (X east, Y south, cm); a zone that shares

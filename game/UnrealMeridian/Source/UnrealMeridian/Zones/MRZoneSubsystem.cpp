@@ -17,6 +17,20 @@
 #include "Player/MRPlayerState.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "TimerManager.h"
+#include "Camera/PlayerCameraManager.h"
+#include "World/MRRuntimeRooms.h"
+
+static TAutoConsoleVariable<int32> CVarZonesLoadAll(TEXT("mr.Zones.LoadAll"), 0,
+	TEXT("1: load every zone at start and keep them all (as before 2026-10-11). 0: only the zones near the player (docs/performance.md)."),
+	ECVF_Default);
+static TAutoConsoleVariable<float> CVarZonesKeepSeconds(TEXT("mr.Zones.KeepSeconds"), 60.f,
+	TEXT("How long a zone no longer near the player stays loaded, so walking back doesn't load it again."), ECVF_Default);
+static TAutoConsoleVariable<FString> CVarZonesForceRuntime(TEXT("mr.Zones.ForceRuntime"), TEXT(""),
+	TEXT("Room files (comma-separated, e.g. d6e6.roo) to draw as rooms built at runtime even though we built them: the original look, ")
+	TEXT("and the online test's runtime room now that nearly every map is built."), ECVF_Default);
+static TAutoConsoleVariable<int32> CVarZonesMaxLoaded(TEXT("mr.Zones.MaxLoaded"), 24,
+	TEXT("At most this many zone levels stay loaded (the least recently wanted unload first; wanted ones always stay)."), ECVF_Default);
 
 namespace
 {
@@ -70,10 +84,194 @@ void UMRZoneSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void UMRZoneSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
-	if (InWorld.GetNetMode() != NM_Client)
+	if (InWorld.GetNetMode() == NM_Client)
 	{
-		// The server (dedicated, listen or standalone) simulates every zone.
+		return;
+	}
+	if (CVarZonesLoadAll.GetValueOnGameThread() != 0)
+	{
 		LoadAllZoneLevels(true);
+		return;
+	}
+	// only the zones near the player (the start zone loads with the first spawn or server room)
+	bResidency = true;
+	InWorld.GetTimerManager().SetTimer(ResidencyTimer, FTimerDelegate::CreateUObject(this, &UMRZoneSubsystem::UpdateResidency), 0.25f, true);
+}
+
+bool UMRZoneSubsystem::EnsureZoneLoaded(int32 Rid, bool bBlock)
+{
+	if (!bResidency)
+	{
+		return IsZoneVisibleLocally(Rid);
+	}
+	PinnedRid = Rid;
+	PinnedTime = FPlatformTime::Seconds();
+	UpdateResidency();
+	if (bBlock && !IsZoneVisibleLocally(Rid))
+	{
+		if (UWorld* World = GetWorld())
+		{
+			const double Start = FPlatformTime::Seconds();
+			World->FlushLevelStreaming(EFlushLevelStreamingType::Full);
+			UE_LOG(LogMeridian, Log, TEXT("MRStreaming: zone %d in after %.2f s"), Rid, FPlatformTime::Seconds() - Start);
+		}
+	}
+	return IsZoneVisibleLocally(Rid);
+}
+
+FString UMRZoneSubsystem::RoomFileOf(int32 Rid) const
+{
+	for (const TPair<FString, int32>& Pair : RoomFiles)
+	{
+		if (Pair.Value == Rid)
+		{
+			return Pair.Key;
+		}
+	}
+	return FString();
+}
+
+void UMRZoneSubsystem::AddResidentZones(int32 Rid, TSet<int32>& Out) const
+{
+	const FMRZoneInfo* Z = Zones.Find(Rid);
+	if (!Z)
+	{
+		return;
+	}
+	Out.Add(Rid);
+	if (Z->SharesGeometryWith)
+	{
+		Out.Add(Z->SharesGeometryWith);
+	}
+	Out.Append(Z->Neighbours);
+	// online the server's links reach further than our exits (rooms we don't know the exits of)
+	if (const UMRRuntimeRooms* Runtime = GetWorld() ? GetWorld()->GetSubsystem<UMRRuntimeRooms>() : nullptr)
+	{
+		const FString Room = RoomFileOf(Rid);
+		if (!Room.IsEmpty())
+		{
+			TArray<int32> Linked;
+			Runtime->BuiltNeighbours(Room, Linked);
+			Out.Append(Linked);
+		}
+	}
+}
+
+void UMRZoneSubsystem::UpdateResidency()
+{
+	UWorld* World = GetWorld();
+	if (!bResidency || !World)
+	{
+		return;
+	}
+	// who wants what: the local player's zone, the zone the view is in, the pinned zone, the gallery
+	TSet<int32> Centres;
+	for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
+	{
+		const APlayerController* PC = It->Get();
+		if (!PC || !PC->IsLocalController())
+		{
+			continue;
+		}
+		if (const AMRPlayerState* PS = PC->GetPlayerState<AMRPlayerState>(); PS && PS->GetZoneId())
+		{
+			Centres.Add(PS->GetZoneId());
+		}
+		if (PC->PlayerCameraManager)
+		{
+			if (const int32 ViewRid = ZoneAtLocation(PC->PlayerCameraManager->GetCameraLocation()))
+			{
+				Centres.Add(ViewRid);
+			}
+		}
+	}
+	// a pin lasts until neither the player nor the view is in its zone, PinSeconds after it was set
+	// (they got there and moved on, or went elsewhere); a level that was loading stays mr.Zones.KeepSeconds
+	if (PinnedRid && !Centres.Contains(PinnedRid) && FPlatformTime::Seconds() - PinnedTime > PinSeconds)
+	{
+		PinnedRid = 0;
+	}
+	if (PinnedRid)
+	{
+		Centres.Add(PinnedRid);
+	}
+	if (Zones.Contains(GalleryRid))
+	{
+		Centres.Add(GalleryRid);
+	}
+	TSet<int32> Wanted;
+	for (const int32 Rid : Centres)
+	{
+		AddResidentZones(Rid, Wanted);
+	}
+
+	const double Now = FPlatformTime::Seconds();
+	TSet<FName> WantedLevels;
+	int32 Started = 0;
+	for (const int32 Rid : Wanted)
+	{
+		const FMRZoneInfo* Z = Zones.Find(Rid);
+		ULevelStreaming* Streaming = Z ? FindZoneLevel(Rid) : nullptr;
+		if (!Streaming || WantedLevels.Contains(Z->LevelName))
+		{
+			continue;
+		}
+		WantedLevels.Add(Z->LevelName);
+		LevelWanted.Add(Z->LevelName, Now);
+		if (!Streaming->ShouldBeLoaded() || !Streaming->ShouldBeVisible())
+		{
+			Streaming->SetShouldBeLoaded(true);
+			Streaming->SetShouldBeVisible(true);
+			++Started;
+		}
+	}
+	if (Started)
+	{
+		UE_LOG(LogMeridian, Log, TEXT("MRStreaming: loading %d zone level(s) near zone(s) %s"), Started,
+			*FString::JoinBy(Centres, TEXT(", "), [](int32 R) { return FString::FromInt(R); }));
+	}
+
+	// unload one level a pass: the stalest past mr.Zones.KeepSeconds, or the least recently wanted
+	// when more than mr.Zones.MaxLoaded are in
+	const double Keep = CVarZonesKeepSeconds.GetValueOnGameThread();
+	const int32 MaxLoaded = FMath::Max(1, CVarZonesMaxLoaded.GetValueOnGameThread());
+	int32 Loaded = 0;
+	ULevelStreaming* Stalest = nullptr;
+	FName StalestName;
+	double StalestTime = TNumericLimits<double>::Max();
+	TSet<FName> Seen;
+	for (const TPair<int32, FMRZoneInfo>& Pair : Zones)
+	{
+		const FName Name = Pair.Value.LevelName;
+		if (Seen.Contains(Name))
+		{
+			continue;
+		}
+		Seen.Add(Name);
+		ULevelStreaming* Streaming = FindZoneLevel(Pair.Key);
+		if (!Streaming || !Streaming->ShouldBeLoaded())
+		{
+			continue;
+		}
+		++Loaded;
+		if (WantedLevels.Contains(Name))
+		{
+			continue;
+		}
+		const double When = LevelWanted.FindRef(Name);
+		if (When < StalestTime)
+		{
+			StalestTime = When;
+			Stalest = Streaming;
+			StalestName = Name;
+		}
+	}
+	if (Stalest && (Now - StalestTime > Keep || Loaded > MaxLoaded))
+	{
+		Stalest->SetShouldBeVisible(false);
+		Stalest->SetShouldBeLoaded(false);
+		LevelWanted.Remove(StalestName);
+		UE_LOG(LogMeridian, Log, TEXT("MRStreaming: unloading %s (%d loaded)"), *StalestName.ToString(), Loaded - 1);
 	}
 }
 
@@ -120,7 +318,7 @@ bool UMRZoneSubsystem::IsZoneVisibleLocally(int32 Rid) const
 
 bool UMRZoneSubsystem::IsZoneReadyFor(const AController* Controller, int32 Rid) const
 {
-	// this game runs one world, every zone loaded (LoadAllZoneLevels): ready once its level shows
+	// one world, its zones near the player loaded (UpdateResidency): ready once the zone's level shows
 	return IsZoneVisibleLocally(Rid);
 }
 
@@ -161,7 +359,7 @@ void UMRZoneSubsystem::AddGalleryZone(const FString& Dir)
 {
 	// The prop gallery (tools/environment/prop_gallery.py, docs/adr/0007 "Prop gallery"): every prop
 	// and tree mesh beside its sprite, a zone of its own with no exits. Its level is in L_World but
-	// only this registers it, so only -MRGallery loads it (LoadAllZoneLevels).
+	// only this registers it, so only -MRGallery loads it (UpdateResidency keeps it in).
 	const TSharedPtr<FJsonValue> Root = LoadJson(FPaths::Combine(Dir, TEXT("environment"), TEXT("prop_gallery.json")));
 	const TSharedPtr<FJsonObject> G = Root.IsValid() ? Root->AsObject() : nullptr;
 	if (!G.IsValid())
@@ -864,6 +1062,7 @@ bool UMRZoneSubsystem::TeleportPawn(APawn* Pawn, int32 DestRid, int32 Row, int32
 		TPair<int32, double>* Pending = PendingTeleport.Find(Pawn);
 		if (!Pending || Pending->Key != DestRid)
 		{
+			EnsureZoneLoaded(DestRid, false);  // a zone further than one exit (a teleporter, recall)
 			PendingTeleport.Add(Pawn, TPair<int32, double>(DestRid, Now));
 			UE_LOG(LogMeridian, Log, TEXT("MRStreaming: waiting for zone %d to load before the teleport"), DestRid);
 			return false;
@@ -872,8 +1071,9 @@ bool UMRZoneSubsystem::TeleportPawn(APawn* Pawn, int32 DestRid, int32 Row, int32
 		{
 			return false;
 		}
-		UE_LOG(LogMeridian, Warning, TEXT("MRStreaming: zone %d didn't load within %.0f s; teleporting anyway"),
+		UE_LOG(LogMeridian, Warning, TEXT("MRStreaming: zone %d didn't load within %.0f s; loading it now"),
 			DestRid, StreamWaitTimeoutSeconds);
+		EnsureZoneLoaded(DestRid, true);  // a hitch rather than a fall through a floor that isn't in
 	}
 	if (PendingTeleport.Remove(Pawn) > 0)
 	{
@@ -896,7 +1096,14 @@ bool UMRZoneSubsystem::TeleportPawn(APawn* Pawn, int32 DestRid, int32 Row, int32
 
 int32 UMRZoneSubsystem::RidForRoom(const FString& RooFile) const
 {
-	const int32* Rid = RoomFiles.Find(FPaths::GetCleanFilename(RooFile).ToLower());
+	const FString Room = FPaths::GetCleanFilename(RooFile).ToLower();
+	TArray<FString> Forced;
+	CVarZonesForceRuntime.GetValueOnGameThread().ToLower().ParseIntoArray(Forced, TEXT(","));
+	if (Forced.Contains(Room))
+	{
+		return 0;  // drawn as a room built at runtime, as if we hadn't built it
+	}
+	const int32* Rid = RoomFiles.Find(Room);
 	return Rid ? *Rid : 0;
 }
 

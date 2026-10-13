@@ -57,6 +57,8 @@ param(
     [switch]$Gallery,
     # another camera set in data/environment (e.g. prop_cameras.json: the props placed in the zones)
     [string]$Cameras = "",
+    # more game arguments, as they are (e.g. "-MRLookDevUI -MRSpriteEquip=maceov@22:4": tools/ue/run_comparison_shots.ps1)
+    [string]$Extra = "",
     [string]$Engine = "G:\Unreal Engine\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe",
     [int]$TimeoutSeconds = 900
 )
@@ -86,6 +88,7 @@ elseif (-not $Lightning) { $gameArgs += " -MRNoLightning" }
 if ($WeatherKind) { $gameArgs += " -MRWeatherKind=$WeatherKind" }
 if ($Season -ge 0) { $gameArgs += " -MRSeason=$Season" }
 if ($Exec) { $gameArgs += " -ExecCmds=`"$Exec`"" }
+if ($Extra) { $gameArgs += " $Extra" }
 
 $started = Get-Date
 for ($attempt = 1; $attempt -le 2; $attempt++) {

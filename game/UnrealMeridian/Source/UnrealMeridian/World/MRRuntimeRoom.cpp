@@ -119,14 +119,21 @@ void AMRRuntimeRoom::Rebuild(bool bCollision)
 	RenderMeshComponent->ClearAllMeshSections();
 	TArray<FLinearColor> Colors;
 	const TArray<FVector2D> NoUVs;
-	for (int32 i = 0; i < RenderMesh.Sections.Num(); ++i)
+	int32 Section = 0;
+	for (const FMRRoomMeshSection& S : RenderMesh.Sections)
 	{
-		const FMRRoomMeshSection& S = RenderMesh.Sections[i];
+		// a texture the server's files don't have isn't drawn: the original binds no bitmap
+		// (clientd3d draw.c GetGridPdib) and skips the surface, as an untextured one. A texture changed
+		// to later arrives through AddTexture, which rebuilds.
+		if (S.Texture != 0 && !HasTexture(S.Texture))
+		{
+			continue;
+		}
 		ToColors(S, Colors);
 		// UV1: how fast the texture scrolls there (M_RuntimeRoom adds Time * UV1)
-		RenderMeshComponent->CreateMeshSection_LinearColor(i, S.Positions, S.Triangles, S.Normals, S.UVs, S.Scroll, NoUVs, NoUVs, Colors,
+		RenderMeshComponent->CreateMeshSection_LinearColor(Section, S.Positions, S.Triangles, S.Normals, S.UVs, S.Scroll, NoUVs, NoUVs, Colors,
 			TArray<FProcMeshTangent>(), false);
-		RenderMeshComponent->SetMaterial(i, MaterialFor(S.Texture));
+		RenderMeshComponent->SetMaterial(Section++, MaterialFor(S.Texture));
 	}
 
 	int32 CollisionTriangles = -1;

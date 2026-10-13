@@ -1,6 +1,39 @@
 {
  "_doc": "The original's sound, from the Server-104 Kod (docs/adr/0006 phase 1a): what each demo zone plays\nand every sound the game names, so the remaster plays the same files by the same rules. See tools/audio/extract_audio.py and docs/adr/0006-audio.md.",
  "sounds": {
+  "ac_atkh.ogg": {
+   "file": "ac_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "AvarChieftain hit"
+   ],
+   "missing": true
+  },
+  "ac_atkm.ogg": {
+   "file": "ac_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "AvarChieftain miss"
+   ]
+  },
+  "ac_awr.ogg": {
+   "file": "ac_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "AvarChieftain aware"
+   ]
+  },
+  "ac_dth.ogg": {
+   "file": "ac_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "AvarChieftain death"
+   ]
+  },
   "ambcave.ogg": {
    "file": "ambcave.ogg",
    "category": "loop",
@@ -12,7 +45,32 @@
     "room 2602",
     "room 2603",
     "room 703",
-    "room 704"
+    "room 704",
+    "room 110",
+    "room 2962",
+    "room 2812",
+    "room 2960",
+    "room 27",
+    "room 5",
+    "room 551",
+    "room 750",
+    "room 35",
+    "room 2500",
+    "room 2501",
+    "room 2502",
+    "room 2503",
+    "room 2504",
+    "room 2505",
+    "room 2509",
+    "room 2510",
+    "room 2506",
+    "room 2507",
+    "room 2508",
+    "room 858",
+    "room 859",
+    "room 860",
+    "room 2110",
+    "room 802"
    ]
   },
   "ambcntry.ogg": {
@@ -29,7 +87,122 @@
     "room 206",
     "room 535",
     "room 557",
-    "room 568"
+    "room 568",
+    "room 2902",
+    "room 2904",
+    "room 2903",
+    "room 150",
+    "room 574",
+    "room 575",
+    "room 583",
+    "room 586",
+    "room 60",
+    "room 61",
+    "room 2950",
+    "room 70",
+    "room 511",
+    "room 516",
+    "room 521",
+    "room 522",
+    "room 2815",
+    "room 2816",
+    "room 2817",
+    "room 2818",
+    "room 531",
+    "room 532",
+    "room 533",
+    "room 534",
+    "room 541",
+    "room 542",
+    "room 544",
+    "room 545",
+    "room 546",
+    "room 550",
+    "room 547",
+    "room 554",
+    "room 555",
+    "room 556",
+    "room 2951",
+    "room 563",
+    "room 564",
+    "room 566",
+    "room 567",
+    "room 712",
+    "room 584",
+    "room 587",
+    "room 597",
+    "room 603",
+    "room 2819",
+    "room 2820",
+    "room 2900",
+    "room 2901",
+    "room 2952",
+    "room 48",
+    "room 2961",
+    "room 24",
+    "room 26",
+    "room 28",
+    "room 4",
+    "room 6"
+   ]
+  },
+  "ant_atkh.ogg": {
+   "file": "ant_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Ant hit",
+    "BullAnt hit",
+    "RedAnt hit"
+   ]
+  },
+  "ant_atkm.ogg": {
+   "file": "ant_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Ant miss",
+    "BullAnt miss",
+    "RedAnt miss"
+   ]
+  },
+  "ant_awr.ogg": {
+   "file": "ant_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Ant aware",
+    "BullAnt aware",
+    "RedAnt aware"
+   ]
+  },
+  "ant_dth.ogg": {
+   "file": "ant_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Ant death",
+    "BullAnt death",
+    "RedAnt death"
+   ]
+  },
+  "area01.ogg": {
+   "file": "area01.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 950",
+    "room 951",
+    "room 952"
+   ]
+  },
+  "arena1.ogg": {
+   "file": "arena1.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 60",
+    "room 79"
    ]
   },
   "arr_metl.ogg": {
@@ -37,7 +210,104 @@
    "category": "world",
    "loop": false,
    "used_by": [
-    "room 2602"
+    "room 2602",
+    "room 2506"
+   ]
+  },
+  "as_atkh.ogg": {
+   "file": "as_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "AvarShaman hit"
+   ],
+   "missing": true
+  },
+  "as_atkm.ogg": {
+   "file": "as_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "AvarShaman miss"
+   ]
+  },
+  "as_awr.ogg": {
+   "file": "as_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "AvarShaman aware"
+   ]
+  },
+  "as_dth.ogg": {
+   "file": "as_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "AvarShaman death"
+   ]
+  },
+  "av_atkh.ogg": {
+   "file": "av_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Avar hit"
+   ],
+   "missing": true
+  },
+  "av_atkm.ogg": {
+   "file": "av_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Avar miss"
+   ]
+  },
+  "av_awr.ogg": {
+   "file": "av_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Avar aware"
+   ]
+  },
+  "av_dth.ogg": {
+   "file": "av_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Avar death"
+   ]
+  },
+  "avarwar.ogg": {
+   "file": "avarwar.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2827",
+    "room 2823",
+    "room 2824",
+    "room 2100",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2122",
+    "room 2123",
+    "room 2131",
+    "room 2132",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "badfor.ogg": {
+   "file": "Badfor.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2953",
+    "room 2954"
    ]
   },
   "bank.ogg": {
@@ -47,7 +317,10 @@
    "used_by": [
     "room 333",
     "room 373",
-    "room 376"
+    "room 376",
+    "room 2806",
+    "room 2804",
+    "room 54"
    ]
   },
   "bar.ogg": {
@@ -56,7 +329,13 @@
    "loop": true,
    "used_by": [
     "room 202",
-    "room 371"
+    "room 371",
+    "room 106",
+    "room 700",
+    "room 74",
+    "room 52",
+    "room 953",
+    "room 954"
    ]
   },
   "bar2.ogg": {
@@ -65,7 +344,12 @@
    "loop": true,
    "used_by": [
     "room 370",
-    "room 375"
+    "room 375",
+    "room 2905",
+    "room 103",
+    "room 2805",
+    "room 153",
+    "room 36"
    ]
   },
   "beach.ogg": {
@@ -75,7 +359,69 @@
    "used_by": [
     "room 300",
     "room 535",
-    "room 568"
+    "room 568",
+    "room 101",
+    "room 107",
+    "room 102",
+    "room 150",
+    "room 574",
+    "room 593",
+    "room 515",
+    "room 516",
+    "room 552",
+    "room 554",
+    "room 562",
+    "room 563",
+    "room 576",
+    "room 5",
+    "room 2111",
+    "room 2113",
+    "room 2121",
+    "room 2131",
+    "room 2141",
+    "room 2151",
+    "room 2000",
+    "room 2009"
+   ]
+  },
+  "berg.ogg": {
+   "file": "berg.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2800"
+   ]
+  },
+  "boil.ogg": {
+   "file": "boil.ogg",
+   "category": "loop",
+   "loop": true,
+   "used_by": [
+    "room 707",
+    "room 951"
+   ]
+  },
+  "boneprst.ogg": {
+   "file": "BONEPRST.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2826",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2101",
+    "room 2102"
+   ]
+  },
+  "bridge.ogg": {
+   "file": "bridge.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2856",
+    "room 2151"
    ]
   },
   "bsp_atkh.ogg": {
@@ -143,12 +489,34 @@
     "User user_cant_go_wav_rsc"
    ]
   },
+  "castle.ogg": {
+   "file": "castle.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2819",
+    "room 2820",
+    "room 855",
+    "room 39",
+    "room 2",
+    "room 37",
+    "room 850",
+    "room 851",
+    "room 852",
+    "room 853",
+    "room 750",
+    "room 854"
+   ]
+  },
   "castle2.ogg": {
    "file": "castle2.ogg",
    "category": "music",
    "loop": true,
    "used_by": [
-    "room 2603"
+    "room 2603",
+    "room 38",
+    "room 40",
+    "room 41"
    ]
   },
   "cave.ogg": {
@@ -158,7 +526,39 @@
    "used_by": [
     "room 377",
     "room 378",
-    "room 379"
+    "room 379",
+    "room 110",
+    "room 108",
+    "room 111",
+    "room 112",
+    "room 42",
+    "room 2010",
+    "room 2012"
+   ]
+  },
+  "chupa_atkh.ogg": {
+   "file": "chupa_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Chupacabra hit",
+    "Chupacabra miss"
+   ]
+  },
+  "chupa_awr.ogg": {
+   "file": "chupa_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Chupacabra aware"
+   ]
+  },
+  "chupa_dth.ogg": {
+   "file": "chupa_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Chupacabra death"
    ]
   },
   "city02.ogg": {
@@ -194,6 +594,15 @@
     "room 384"
    ]
   },
+  "city04.ogg": {
+   "file": "city04.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 150",
+    "room 155"
+   ]
+  },
   "cnt_atkh.ogg": {
    "file": "cnt_atkh.ogg",
    "category": "combat",
@@ -226,12 +635,140 @@
     "Centipede death"
    ]
   },
+  "cor_atkm.ogg": {
+   "file": "cor_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "CaveOrc miss"
+   ]
+  },
+  "cor_awr.ogg": {
+   "file": "cor_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "CaveOrc aware"
+   ]
+  },
+  "cor_dth.ogg": {
+   "file": "cor_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "CaveOrc death"
+   ]
+  },
+  "corloth.ogg": {
+   "file": "corloth.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 101",
+    "room 107",
+    "room 102"
+   ]
+  },
+  "creep.ogg": {
+   "file": "creep.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2812",
+    "room 2960",
+    "room 858",
+    "room 859",
+    "room 860"
+   ]
+  },
+  "dance1.ogg": {
+   "file": "dance1.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2821"
+   ]
+  },
+  "df_atkm.ogg": {
+   "file": "df_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "DragonFly hit",
+    "DragonFly miss",
+    "DragonFlyQueen hit",
+    "DragonFlyQueen miss"
+   ]
+  },
+  "df_awr.ogg": {
+   "file": "df_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "DragonFly aware",
+    "DragonFlyQueen aware"
+   ]
+  },
+  "df_dth.ogg": {
+   "file": "df_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "DragonFly death",
+    "DragonFlyQueen death"
+   ]
+  },
+  "dgswish1.ogg": {
+   "file": "DgSwish1.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Bandit aware",
+    "BanditCaptain aware",
+    "BanditSniper aware"
+   ]
+  },
+  "doordown.ogg": {
+   "file": "doordown.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 79",
+    "room 2819",
+    "room 951",
+    "room 2505",
+    "room 834"
+   ]
+  },
+  "doorlck.ogg": {
+   "file": "doorlck.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 116",
+    "room 2009"
+   ]
+  },
   "doorrsup.ogg": {
    "file": "doorrsup.ogg",
    "category": "world",
    "loop": false,
    "used_by": [
-    "room 2602"
+    "room 2602",
+    "room 2825",
+    "room 79",
+    "room 951",
+    "room 2505",
+    "room 2506",
+    "room 834"
+   ]
+  },
+  "dorclose.ogg": {
+   "file": "dorclose.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 951"
    ]
   },
   "doropen1.ogg": {
@@ -303,7 +840,288 @@
     "room 568 door",
     "room 703 door",
     "room 704 door",
-    "room 710 door"
+    "room 710 door",
+    "room 2902 door",
+    "room 2904 door",
+    "room 2903 door",
+    "room 2906 door",
+    "room 2907 door",
+    "room 2905 door",
+    "room 2908 door",
+    "room 110 door",
+    "room 104 door",
+    "room 115 door",
+    "room 105 door",
+    "room 106 door",
+    "room 116 door",
+    "room 103 door",
+    "room 117 door",
+    "room 101 door",
+    "room 107 door",
+    "room 102 door",
+    "room 108 door",
+    "room 111 door",
+    "room 112 door",
+    "room 109 door",
+    "room 113 door",
+    "room 114 door",
+    "room 2809 door",
+    "room 2813 door",
+    "room 2827 door",
+    "room 2825 door",
+    "room 2826 door",
+    "room 2814 door",
+    "room 2807 door",
+    "room 2806 door",
+    "room 2800 door",
+    "room 2803 door",
+    "room 2805 door",
+    "room 2823 door",
+    "room 2824 door",
+    "room 2808 door",
+    "room 2802 door",
+    "room 2804 door",
+    "room 2801 door",
+    "room 156 door",
+    "room 151 door",
+    "room 152 door",
+    "room 153 door",
+    "room 158 door",
+    "room 150 door",
+    "room 155 door",
+    "room 157 door",
+    "room 574 door",
+    "room 575 door",
+    "room 700 door",
+    "room 701 door",
+    "room 714 door",
+    "room 716 door",
+    "room 702 door",
+    "room 720 door",
+    "room 707 door",
+    "room 711 door",
+    "room 708 door",
+    "room 709 door",
+    "room 583 door",
+    "room 586 door",
+    "room 593 door",
+    "room 596 door",
+    "room 15 door",
+    "room 53 door",
+    "room 73 door",
+    "room 60 door",
+    "room 79 door",
+    "room 54 door",
+    "room 74 door",
+    "room 71 door",
+    "room 61 door",
+    "room 2950 door",
+    "room 58 door",
+    "room 70 door",
+    "room 57 door",
+    "room 72 door",
+    "room 75 door",
+    "room 52 door",
+    "room 78 door",
+    "room 51 door",
+    "room 77 door",
+    "room 56 door",
+    "room 76 door",
+    "room 154 door",
+    "room 511 door",
+    "room 515 door",
+    "room 516 door",
+    "room 521 door",
+    "room 522 door",
+    "room 45 door",
+    "room 49 door",
+    "room 2811 door",
+    "room 2815 door",
+    "room 2816 door",
+    "room 2817 door",
+    "room 2818 door",
+    "room 531 door",
+    "room 532 door",
+    "room 533 door",
+    "room 534 door",
+    "room 541 door",
+    "room 542 door",
+    "room 544 door",
+    "room 545 door",
+    "room 546 door",
+    "room 550 door",
+    "room 547 door",
+    "room 1512 door",
+    "room 1502 door",
+    "room 1503 door",
+    "room 1504 door",
+    "room 1505 door",
+    "room 1506 door",
+    "room 1525 door",
+    "room 1501 door",
+    "room 1510 door",
+    "room 1511 door",
+    "room 1507 door",
+    "room 1508 door",
+    "room 1509 door",
+    "room 1524 door",
+    "room 2850 door",
+    "room 2851 door",
+    "room 2852 door",
+    "room 2853 door",
+    "room 2854 door",
+    "room 552 door",
+    "room 554 door",
+    "room 555 door",
+    "room 556 door",
+    "room 2951 door",
+    "room 562 door",
+    "room 563 door",
+    "room 564 door",
+    "room 566 door",
+    "room 567 door",
+    "room 576 door",
+    "room 578 door",
+    "room 579 door",
+    "room 712 door",
+    "room 719 door",
+    "room 584 door",
+    "room 585 door",
+    "room 587 door",
+    "room 589 door",
+    "room 36 door",
+    "room 597 door",
+    "room 598 door",
+    "room 599 door",
+    "room 603 door",
+    "room 2819 door",
+    "room 2820 door",
+    "room 2900 door",
+    "room 2901 door",
+    "room 615 door",
+    "room 2821 door",
+    "room 2953 door",
+    "room 2954 door",
+    "room 2952 door",
+    "room 801 door",
+    "room 48 door",
+    "room 1500 door",
+    "room 2961 door",
+    "room 2962 door",
+    "room 2812 door",
+    "room 2960 door",
+    "room 855 door",
+    "room 38 door",
+    "room 39 door",
+    "room 2 door",
+    "room 37 door",
+    "room 850 door",
+    "room 851 door",
+    "room 852 door",
+    "room 853 door",
+    "room 856 door",
+    "room 27 door",
+    "room 5 door",
+    "room 551 door",
+    "room 1526 door",
+    "room 950 door",
+    "room 951 door",
+    "room 952 door",
+    "room 953 door",
+    "room 954 door",
+    "room 2855 door",
+    "room 2856 door",
+    "room 2822 door",
+    "room 42 door",
+    "room 750 door",
+    "room 1601 door",
+    "room 1602 door",
+    "room 854 door",
+    "room 35 door",
+    "room 2500 door",
+    "room 2501 door",
+    "room 2502 door",
+    "room 2503 door",
+    "room 2504 door",
+    "room 2505 door",
+    "room 2509 door",
+    "room 2510 door",
+    "room 2506 door",
+    "room 2507 door",
+    "room 2508 door",
+    "room 858 door",
+    "room 859 door",
+    "room 860 door",
+    "room 40 door",
+    "room 41 door",
+    "room 715 door",
+    "room 825 door",
+    "room 831 door",
+    "room 832 door",
+    "room 826 door",
+    "room 827 door",
+    "room 828 door",
+    "room 829 door",
+    "room 830 door",
+    "room 834 door",
+    "room 833 door",
+    "room 2100 door",
+    "room 705 door",
+    "room 713 door",
+    "room 2110 door",
+    "room 2111 door",
+    "room 2112 door",
+    "room 2113 door",
+    "room 2114 door",
+    "room 2115 door",
+    "room 2121 door",
+    "room 2122 door",
+    "room 2123 door",
+    "room 2124 door",
+    "room 2125 door",
+    "room 2131 door",
+    "room 2132 door",
+    "room 2133 door",
+    "room 2134 door",
+    "room 2135 door",
+    "room 2136 door",
+    "room 2141 door",
+    "room 2142 door",
+    "room 2143 door",
+    "room 2144 door",
+    "room 2151 door",
+    "room 2152 door",
+    "room 2154 door",
+    "room 2002 door",
+    "room 2005 door",
+    "room 2003 door",
+    "room 59 door",
+    "room 2014 door",
+    "room 2015 door",
+    "room 2001 door",
+    "room 2010 door",
+    "room 2012 door",
+    "room 2004 door",
+    "room 2006 door",
+    "room 2008 door",
+    "room 2013 door",
+    "room 2000 door",
+    "room 2009 door",
+    "room 2101 door",
+    "room 2102 door",
+    "room 32 door",
+    "room 47 door",
+    "room 3 door",
+    "room 24 door",
+    "room 26 door",
+    "room 28 door",
+    "room 4 door",
+    "room 6 door",
+    "room 43 door",
+    "room 802 door",
+    "room 902 door",
+    "room 1 door",
+    "room 901 door"
    ]
   },
   "down2.ogg": {
@@ -314,7 +1132,32 @@
     "room 306",
     "room 2600",
     "room 704",
-    "room 710"
+    "room 710",
+    "room 101",
+    "room 702",
+    "room 707",
+    "room 599",
+    "room 801",
+    "room 859",
+    "room 802"
+   ]
+  },
+  "drgnfly.ogg": {
+   "file": "drgnfly.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2110",
+    "room 2111",
+    "room 2121"
+   ]
+  },
+  "drink.ogg": {
+   "file": "drink.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 2510"
    ]
   },
   "drips.ogg": {
@@ -325,7 +1168,14 @@
     "room 377",
     "room 378",
     "room 379",
-    "room 380"
+    "room 380",
+    "room 108",
+    "room 111",
+    "room 112",
+    "room 708",
+    "room 42",
+    "room 2010",
+    "room 2012"
    ]
   },
   "drop.ogg": {
@@ -339,7 +1189,43 @@
     "room 2602",
     "room 2603",
     "room 703",
-    "room 704"
+    "room 704",
+    "room 110",
+    "room 2962",
+    "room 2812",
+    "room 2960",
+    "room 27",
+    "room 5",
+    "room 551",
+    "room 750",
+    "room 35",
+    "room 2500",
+    "room 2501",
+    "room 2502",
+    "room 2503",
+    "room 2504",
+    "room 2505",
+    "room 2509",
+    "room 2510",
+    "room 2506",
+    "room 2507",
+    "room 2508",
+    "room 858",
+    "room 859",
+    "room 860",
+    "room 2110"
+   ]
+  },
+  "dvalley.ogg": {
+   "file": "dvalley.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2850",
+    "room 2851",
+    "room 2852",
+    "room 2853",
+    "room 2854"
    ]
   },
   "eagle.ogg": {
@@ -349,7 +1235,104 @@
    "used_by": [
     "room 526",
     "room 350",
-    "room 382"
+    "room 382",
+    "room 596",
+    "room 515",
+    "room 45",
+    "room 49",
+    "room 1512",
+    "room 1502",
+    "room 1503",
+    "room 1504",
+    "room 1505",
+    "room 1506",
+    "room 1525",
+    "room 1501",
+    "room 1510",
+    "room 1511",
+    "room 1507",
+    "room 1508",
+    "room 1509",
+    "room 1524",
+    "room 576",
+    "room 578",
+    "room 579",
+    "room 585",
+    "room 589",
+    "room 598",
+    "room 599",
+    "room 615",
+    "room 801",
+    "room 1500",
+    "room 2",
+    "room 1526",
+    "room 32",
+    "room 47"
+   ]
+  },
+  "elem_atkh.ogg": {
+   "file": "elem_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "EarthElemental hit",
+    "FireElemental hit",
+    "FireElementalChampion hit",
+    "IceElemental hit"
+   ]
+  },
+  "elem_atkm.ogg": {
+   "file": "elem_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "EarthElemental miss",
+    "FireElemental miss",
+    "FireElementalChampion miss",
+    "IceElemental miss"
+   ]
+  },
+  "elem_awr.ogg": {
+   "file": "elem_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "EarthElemental aware",
+    "FireElemental aware",
+    "FireElementalChampion aware",
+    "IceElemental aware"
+   ]
+  },
+  "elem_dth.ogg": {
+   "file": "elem_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "EarthElemental death",
+    "FireElemental death",
+    "FireElementalChampion death",
+    "IceElemental death"
+   ]
+  },
+  "extra01.ogg": {
+   "file": "extra01.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 59",
+    "room 2014",
+    "room 2015"
+   ]
+  },
+  "fanfare1.ogg": {
+   "file": "fanfare1.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 60",
+    "room 79",
+    "room 2821",
+    "room 951"
    ]
   },
   "faren.ogg": {
@@ -383,9 +1366,10 @@
   },
   "fbolt.ogg": {
    "file": "fbolt.ogg",
-   "category": "spell",
+   "category": "world",
    "loop": false,
    "used_by": [
+    "room 1",
     "spell Lightning"
    ]
   },
@@ -395,6 +1379,14 @@
    "loop": false,
    "used_by": [
     "spell Brittle"
+   ]
+  },
+  "femalefall822m.ogg": {
+   "file": "femalefall822m.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 2151"
    ]
   },
   "ffirebal.ogg": {
@@ -446,6 +1438,10 @@
    "category": "combat",
    "loop": false,
    "used_by": [
+    "Bandit hit",
+    "BanditCaptain hit",
+    "BanditSniper hit",
+    "NecromancerTroop hit",
     "Player player_sound_hit_monster_flesh2"
    ]
   },
@@ -472,7 +1468,13 @@
    "category": "loop",
    "loop": true,
    "used_by": [
-    "room 303"
+    "room 303",
+    "room 113",
+    "room 51",
+    "room 2100",
+    "room 2136",
+    "room 2003",
+    "room 2101"
    ]
   },
   "flight.ogg": {
@@ -492,12 +1494,134 @@
     "spell MysticTouch"
    ]
   },
+  "fng_atkh.ogg": {
+   "file": "fng_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "FungusBeast hit"
+   ]
+  },
+  "fng_atkm.ogg": {
+   "file": "fng_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "FungusBeast miss"
+   ]
+  },
+  "fng_awr.ogg": {
+   "file": "fng_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "FungusBeast aware"
+   ]
+  },
+  "fng_dth.ogg": {
+   "file": "fng_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "FungusBeast death"
+   ]
+  },
+  "forest.ogg": {
+   "file": "forest.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 714",
+    "room 716",
+    "room 583",
+    "room 515",
+    "room 516",
+    "room 545",
+    "room 554",
+    "room 564",
+    "room 576",
+    "room 584",
+    "room 585",
+    "room 28",
+    "room 4"
+   ]
+  },
+  "forest1.ogg": {
+   "file": "forest1.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 26"
+   ]
+  },
+  "fountain.ogg": {
+   "file": "fountain.ogg",
+   "category": "loop",
+   "loop": true,
+   "used_by": [
+    "room 851",
+    "room 950"
+   ]
+  },
+  "fquake.ogg": {
+   "file": "fquake.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 2822"
+   ]
+  },
+  "frg_atkh.ogg": {
+   "file": "frg_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Frogman hit",
+    "Ranuculus hit"
+   ]
+  },
+  "frg_atkm.ogg": {
+   "file": "frg_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Frogman miss",
+    "Ranuculus miss"
+   ]
+  },
+  "frg_awr.ogg": {
+   "file": "frg_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Frogman aware"
+   ]
+  },
+  "frg_dth.ogg": {
+   "file": "frg_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Frogman death",
+    "Ranuculus death"
+   ]
+  },
   "frngfir.ogg": {
    "file": "frngfir.ogg",
    "category": "spell",
    "loop": false,
    "used_by": [
     "spell RingOfFlames"
+   ]
+  },
+  "frying.ogg": {
+   "file": "frying.ogg",
+   "category": "world",
+   "loop": true,
+   "used_by": [
+    "room 2822 wading",
+    "room 2101",
+    "room 1 wading"
    ]
   },
   "fshatter.ogg": {
@@ -526,12 +1650,30 @@
     "spell ShockingFury"
    ]
   },
-  "gong.ogg": {
-   "file": "gong.ogg",
-   "category": "combat",
+  "ghost_respawn.ogg": {
+   "file": "ghost_respawn.ogg",
+   "category": "world",
    "loop": false,
    "used_by": [
+    "room 41"
+   ]
+  },
+  "gong.ogg": {
+   "file": "gong.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 2821",
+    "room 705",
     "Player pvp_notify_wav"
+   ]
+  },
+  "goodfor.ogg": {
+   "file": "goodfor.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 58"
    ]
   },
   "gulls.ogg": {
@@ -541,7 +1683,46 @@
    "used_by": [
     "room 300",
     "room 535",
-    "room 568"
+    "room 568",
+    "room 101",
+    "room 107",
+    "room 102",
+    "room 150",
+    "room 574",
+    "room 593",
+    "room 515",
+    "room 516",
+    "room 552",
+    "room 554",
+    "room 562",
+    "room 563",
+    "room 576",
+    "room 5",
+    "room 2111",
+    "room 2113",
+    "room 2121",
+    "room 2131",
+    "room 2141",
+    "room 2151",
+    "room 2000",
+    "room 2009"
+   ]
+  },
+  "gwrm1awr.ogg": {
+   "file": "gwrm1awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "GroundWorm aware",
+    "Nyrphling miss"
+   ]
+  },
+  "gwrm2awr.ogg": {
+   "file": "gwrm2awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "GroundWormQueen aware"
    ]
   },
   "gwrm3awr.ogg": {
@@ -549,7 +1730,8 @@
    "category": "combat",
    "loop": false,
    "used_by": [
-    "GroundWormLarva aware"
+    "GroundWormLarva aware",
+    "Nyrphling hit"
    ]
   },
   "gwrmatk.ogg": {
@@ -557,7 +1739,9 @@
    "category": "combat",
    "loop": false,
    "used_by": [
-    "GroundWormLarva miss"
+    "GroundWorm miss",
+    "GroundWormLarva miss",
+    "GroundWormQueen miss"
    ]
   },
   "gwrmdie.ogg": {
@@ -565,7 +1749,17 @@
    "category": "combat",
    "loop": false,
    "used_by": [
-    "GroundWormLarva death"
+    "GroundWorm death",
+    "GroundWormLarva death",
+    "GroundWormQueen death"
+   ]
+  },
+  "hioa.ogg": {
+   "file": "hioa.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2906"
    ]
   },
   "hit.ogg": {
@@ -576,6 +1770,16 @@
     "Player player_wave_hit"
    ]
   },
+  "huzzah.ogg": {
+   "file": "huzzah.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 60",
+    "room 79",
+    "room 2821"
+   ]
+  },
   "ice03.ogg": {
    "file": "ice03.ogg",
    "category": "periodic",
@@ -583,7 +1787,46 @@
    "used_by": [
     "room 526",
     "room 350",
-    "room 382"
+    "room 382",
+    "room 596",
+    "room 515",
+    "room 45",
+    "room 49",
+    "room 1512",
+    "room 1502",
+    "room 1503",
+    "room 1504",
+    "room 1505",
+    "room 1506",
+    "room 1525",
+    "room 1501",
+    "room 1510",
+    "room 1511",
+    "room 1507",
+    "room 1508",
+    "room 1509",
+    "room 1524",
+    "room 576",
+    "room 578",
+    "room 579",
+    "room 585",
+    "room 589",
+    "room 598",
+    "room 599",
+    "room 615",
+    "room 801",
+    "room 1500",
+    "room 2",
+    "room 1526",
+    "room 2111",
+    "room 2113",
+    "room 2115",
+    "room 2121",
+    "room 2131",
+    "room 2141",
+    "room 2151",
+    "room 32",
+    "room 47"
    ]
   },
   "ice04.ogg": {
@@ -593,7 +1836,46 @@
    "used_by": [
     "room 526",
     "room 350",
-    "room 382"
+    "room 382",
+    "room 596",
+    "room 515",
+    "room 45",
+    "room 49",
+    "room 1512",
+    "room 1502",
+    "room 1503",
+    "room 1504",
+    "room 1505",
+    "room 1506",
+    "room 1525",
+    "room 1501",
+    "room 1510",
+    "room 1511",
+    "room 1507",
+    "room 1508",
+    "room 1509",
+    "room 1524",
+    "room 576",
+    "room 578",
+    "room 579",
+    "room 585",
+    "room 589",
+    "room 598",
+    "room 599",
+    "room 615",
+    "room 801",
+    "room 1500",
+    "room 2",
+    "room 1526",
+    "room 2111",
+    "room 2113",
+    "room 2115",
+    "room 2121",
+    "room 2131",
+    "room 2141",
+    "room 2151",
+    "room 32",
+    "room 47"
    ]
   },
   "icecave.ogg": {
@@ -603,7 +1885,82 @@
    "used_by": [
     "room 526",
     "room 350",
-    "room 382"
+    "room 382",
+    "room 596",
+    "room 515",
+    "room 45",
+    "room 49",
+    "room 1512",
+    "room 1502",
+    "room 1503",
+    "room 1504",
+    "room 1505",
+    "room 1506",
+    "room 1525",
+    "room 1501",
+    "room 1510",
+    "room 1511",
+    "room 1507",
+    "room 1508",
+    "room 1509",
+    "room 1524",
+    "room 576",
+    "room 578",
+    "room 579",
+    "room 585",
+    "room 589",
+    "room 598",
+    "room 599",
+    "room 615",
+    "room 801",
+    "room 1500",
+    "room 2",
+    "room 1526",
+    "room 2111",
+    "room 2113",
+    "room 2115",
+    "room 2121",
+    "room 2131",
+    "room 2141",
+    "room 2151",
+    "room 32",
+    "room 47"
+   ]
+  },
+  "icedragonroar1.wav": {
+   "file": "icedragonroar1.wav",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "BlackDragon death",
+    "EarthDragon death"
+   ]
+  },
+  "icedragonroar2.wav": {
+   "file": "icedragonroar2.wav",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "BlackDragon hit",
+    "EarthDragon hit"
+   ]
+  },
+  "icedragonroar3.wav": {
+   "file": "icedragonroar3.wav",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "BlackDragon miss",
+    "EarthDragon miss"
+   ]
+  },
+  "icedragonroar4.wav": {
+   "file": "icedragonroar4.wav",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "BlackDragon aware",
+    "EarthDragon aware"
    ]
   },
   "imp.ogg": {
@@ -623,6 +1980,14 @@
    ],
    "missing": true
   },
+  "jala.ogg": {
+   "file": "jala.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2814"
+   ]
+  },
   "jdistill.ogg": {
    "file": "Jdistill.ogg",
    "category": "spell",
@@ -631,11 +1996,767 @@
     "spell Distill"
    ]
   },
-  "kantimag.ogg": {
-   "file": "kantimag.ogg",
-   "category": "spell",
+  "jixa.ogg": {
+   "file": "jixa.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2903"
+   ]
+  },
+  "jungle.ogg": {
+   "file": "jungle.ogg",
+   "category": "loop",
+   "loop": true,
+   "used_by": [
+    "room 2112",
+    "room 2114",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle01.ogg": {
+   "file": "jungle01.ogg",
+   "category": "periodic",
    "loop": false,
    "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle02.ogg": {
+   "file": "jungle02.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle03.ogg": {
+   "file": "jungle03.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle04.ogg": {
+   "file": "jungle04.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle05.ogg": {
+   "file": "jungle05.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle06.ogg": {
+   "file": "jungle06.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle07.ogg": {
+   "file": "jungle07.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle08.ogg": {
+   "file": "jungle08.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle09.ogg": {
+   "file": "jungle09.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle10.ogg": {
+   "file": "jungle10.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle11.ogg": {
+   "file": "jungle11.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle12.ogg": {
+   "file": "jungle12.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle13.ogg": {
+   "file": "jungle13.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle14.ogg": {
+   "file": "jungle14.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle15.ogg": {
+   "file": "jungle15.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle16.ogg": {
+   "file": "jungle16.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle17.ogg": {
+   "file": "jungle17.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle18.ogg": {
+   "file": "jungle18.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle19.ogg": {
+   "file": "jungle19.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle20.ogg": {
+   "file": "jungle20.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle21.ogg": {
+   "file": "jungle21.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle22.ogg": {
+   "file": "jungle22.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle23.ogg": {
+   "file": "jungle23.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle24.ogg": {
+   "file": "jungle24.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "jungle25.ogg": {
+   "file": "jungle25.ogg",
+   "category": "periodic",
+   "loop": false,
+   "used_by": [
+    "room 2111",
+    "room 2112",
+    "room 2113",
+    "room 2114",
+    "room 2115",
+    "room 2121",
+    "room 2122",
+    "room 2123",
+    "room 2124",
+    "room 2125",
+    "room 2131",
+    "room 2132",
+    "room 2133",
+    "room 2134",
+    "room 2135",
+    "room 2141",
+    "room 2142",
+    "room 2143",
+    "room 2144",
+    "room 2151",
+    "room 2152",
+    "room 2154"
+   ]
+  },
+  "kantimag.ogg": {
+   "file": "kantimag.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 2854",
     "spell AntiMagicAura"
    ]
   },
@@ -736,6 +2857,31 @@
     "spell Mend"
    ]
   },
+  "kr_atkm.ogg": {
+   "file": "kr_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Kriipa hit",
+    "Kriipa miss"
+   ]
+  },
+  "kr_awr.ogg": {
+   "file": "kr_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Kriipa aware"
+   ]
+  },
+  "kr_dth.ogg": {
+   "file": "kr_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Kriipa death"
+   ]
+  },
   "kraanan.ogg": {
    "file": "kraanan.ogg",
    "category": "spell",
@@ -799,6 +2945,36 @@
     "spell ResistPoison"
    ]
   },
+  "ksong.ogg": {
+   "file": "ksong.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2825",
+    "room 71",
+    "room 75",
+    "room 78",
+    "room 5"
+   ]
+  },
+  "lavaflow.ogg": {
+   "file": "lavaflow.ogg",
+   "category": "loop",
+   "loop": true,
+   "used_by": [
+    "room 2822",
+    "room 833",
+    "room 1"
+   ]
+  },
+  "lavasplash.ogg": {
+   "file": "lavasplash.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 2822"
+   ]
+  },
   "lhit1b.ogg": {
    "file": "lhit1b.ogg",
    "category": "combat",
@@ -821,6 +2997,15 @@
    "loop": false,
    "used_by": [
     "Player player_sound_hit_monster_leather3"
+   ]
+  },
+  "lich_awr.ogg": {
+   "file": "lich_awr.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 2825",
+    "room 2954"
    ]
   },
   "lichres.ogg": {
@@ -853,7 +3038,19 @@
     "room 706",
     "room 703",
     "room 704",
-    "room 710"
+    "room 710",
+    "room 701",
+    "room 702",
+    "room 720",
+    "room 707",
+    "room 711",
+    "room 708",
+    "room 709",
+    "room 712",
+    "room 719",
+    "room 715",
+    "room 705",
+    "room 713"
    ]
   },
   "lup_atkh.ogg": {
@@ -910,6 +3107,15 @@
     "spell Melancholy"
    ]
   },
+  "madsci.ogg": {
+   "file": "madsci.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2135",
+    "room 2136"
+   ]
+  },
   "main.ogg": {
    "file": "main.ogg",
    "category": "music",
@@ -918,7 +3124,32 @@
     "room 204",
     "room 205",
     "room 207",
-    "room 372"
+    "room 372",
+    "room 2907",
+    "room 105",
+    "room 2803",
+    "room 156",
+    "room 152",
+    "room 158",
+    "room 157",
+    "room 902",
+    "room 901"
+   ]
+  },
+  "malefall822m.ogg": {
+   "file": "malefall822m.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 2151"
+   ]
+  },
+  "marion.ogg": {
+   "file": "marion.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 70"
    ]
   },
   "mhit1b.ogg": {
@@ -943,6 +3174,55 @@
    "loop": false,
    "used_by": [
     "Player player_sound_hit_monster_metal3"
+   ]
+  },
+  "mino_atkh.ogg": {
+   "file": "mino_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Minotaur hit",
+    "Minotaur miss"
+   ]
+  },
+  "mino_awr.ogg": {
+   "file": "mino_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Minotaur aware"
+   ]
+  },
+  "mino_dth.ogg": {
+   "file": "mino_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Minotaur death"
+   ]
+  },
+  "mol_atk.ogg": {
+   "file": "mol_atk.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "MolluskMonster miss"
+   ]
+  },
+  "mol_awr.ogg": {
+   "file": "mol_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "MolluskMonster aware"
+   ]
+  },
+  "mol_dth.ogg": {
+   "file": "mol_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "MolluskMonster death"
    ]
   },
   "mum_atkh.ogg": {
@@ -990,7 +3270,24 @@
    "category": "music",
    "loop": true,
    "used_by": [
-    "room 2600"
+    "room 2600",
+    "room 826",
+    "room 827"
+   ]
+  },
+  "nec02.ogg": {
+   "file": "nec02.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 79",
+    "room 831",
+    "room 832",
+    "room 828",
+    "room 829",
+    "room 830",
+    "room 834",
+    "room 833"
    ]
   },
   "nec03.ogg": {
@@ -998,7 +3295,46 @@
    "category": "music",
    "loop": true,
    "used_by": [
-    "room 306"
+    "room 306",
+    "room 2855",
+    "room 825"
+   ]
+  },
+  "necloop1.ogg": {
+   "file": "necloop1.ogg",
+   "category": "loop",
+   "loop": true,
+   "used_by": [
+    "room 826",
+    "room 827"
+   ]
+  },
+  "necloop2.ogg": {
+   "file": "necloop2.ogg",
+   "category": "loop",
+   "loop": true,
+   "used_by": [
+    "room 2825",
+    "room 71",
+    "room 75",
+    "room 78",
+    "room 2855",
+    "room 1601",
+    "room 1602",
+    "room 825"
+   ]
+  },
+  "necloop4.ogg": {
+   "file": "necloop4.ogg",
+   "category": "loop",
+   "loop": true,
+   "used_by": [
+    "room 831",
+    "room 832",
+    "room 828",
+    "room 829",
+    "room 830",
+    "room 834"
    ]
   },
   "necro01.ogg": {
@@ -1010,7 +3346,23 @@
     "room 2600",
     "room 2601",
     "room 2602",
-    "room 2603"
+    "room 2603",
+    "room 2825",
+    "room 71",
+    "room 75",
+    "room 78",
+    "room 2855",
+    "room 1601",
+    "room 1602",
+    "room 825",
+    "room 831",
+    "room 832",
+    "room 826",
+    "room 827",
+    "room 828",
+    "room 829",
+    "room 830",
+    "room 834"
    ]
   },
   "necro02.ogg": {
@@ -1022,7 +3374,23 @@
     "room 2600",
     "room 2601",
     "room 2602",
-    "room 2603"
+    "room 2603",
+    "room 2825",
+    "room 71",
+    "room 75",
+    "room 78",
+    "room 2855",
+    "room 1601",
+    "room 1602",
+    "room 825",
+    "room 831",
+    "room 832",
+    "room 826",
+    "room 827",
+    "room 828",
+    "room 829",
+    "room 830",
+    "room 834"
    ]
   },
   "necro03.ogg": {
@@ -1034,7 +3402,23 @@
     "room 2600",
     "room 2601",
     "room 2602",
-    "room 2603"
+    "room 2603",
+    "room 2825",
+    "room 71",
+    "room 75",
+    "room 78",
+    "room 2855",
+    "room 1601",
+    "room 1602",
+    "room 825",
+    "room 831",
+    "room 832",
+    "room 826",
+    "room 827",
+    "room 828",
+    "room 829",
+    "room 830",
+    "room 834"
    ]
   },
   "necro04.ogg": {
@@ -1046,7 +3430,23 @@
     "room 2600",
     "room 2601",
     "room 2602",
-    "room 2603"
+    "room 2603",
+    "room 2825",
+    "room 71",
+    "room 75",
+    "room 78",
+    "room 2855",
+    "room 1601",
+    "room 1602",
+    "room 825",
+    "room 831",
+    "room 832",
+    "room 826",
+    "room 827",
+    "room 828",
+    "room 829",
+    "room 830",
+    "room 834"
    ]
   },
   "necro05.ogg": {
@@ -1058,7 +3458,23 @@
     "room 2600",
     "room 2601",
     "room 2602",
-    "room 2603"
+    "room 2603",
+    "room 2825",
+    "room 71",
+    "room 75",
+    "room 78",
+    "room 2855",
+    "room 1601",
+    "room 1602",
+    "room 825",
+    "room 831",
+    "room 832",
+    "room 826",
+    "room 827",
+    "room 828",
+    "room 829",
+    "room 830",
+    "room 834"
    ]
   },
   "necro06.ogg": {
@@ -1070,7 +3486,23 @@
     "room 2600",
     "room 2601",
     "room 2602",
-    "room 2603"
+    "room 2603",
+    "room 2825",
+    "room 71",
+    "room 75",
+    "room 78",
+    "room 2855",
+    "room 1601",
+    "room 1602",
+    "room 825",
+    "room 831",
+    "room 832",
+    "room 826",
+    "room 827",
+    "room 828",
+    "room 829",
+    "room 830",
+    "room 834"
    ]
   },
   "necro07.ogg": {
@@ -1082,7 +3514,23 @@
     "room 2600",
     "room 2601",
     "room 2602",
-    "room 2603"
+    "room 2603",
+    "room 2825",
+    "room 71",
+    "room 75",
+    "room 78",
+    "room 2855",
+    "room 1601",
+    "room 1602",
+    "room 825",
+    "room 831",
+    "room 832",
+    "room 826",
+    "room 827",
+    "room 828",
+    "room 829",
+    "room 830",
+    "room 834"
    ]
   },
   "necro08.ogg": {
@@ -1094,7 +3542,23 @@
     "room 2600",
     "room 2601",
     "room 2602",
-    "room 2603"
+    "room 2603",
+    "room 2825",
+    "room 71",
+    "room 75",
+    "room 78",
+    "room 2855",
+    "room 1601",
+    "room 1602",
+    "room 825",
+    "room 831",
+    "room 832",
+    "room 826",
+    "room 827",
+    "room 828",
+    "room 829",
+    "room 830",
+    "room 834"
    ]
   },
   "necro09.ogg": {
@@ -1106,7 +3570,116 @@
     "room 2600",
     "room 2601",
     "room 2602",
-    "room 2603"
+    "room 2603",
+    "room 2825",
+    "room 71",
+    "room 75",
+    "room 78",
+    "room 2855",
+    "room 1601",
+    "room 1602",
+    "room 825",
+    "room 831",
+    "room 832",
+    "room 826",
+    "room 827",
+    "room 828",
+    "room 829",
+    "room 830",
+    "room 834"
+   ]
+  },
+  "ocean.ogg": {
+   "file": "ocean.ogg",
+   "category": "loop",
+   "loop": true,
+   "used_by": [
+    "room 101",
+    "room 107",
+    "room 102",
+    "room 593",
+    "room 552",
+    "room 562",
+    "room 713",
+    "room 2000",
+    "room 2009"
+   ]
+  },
+  "orc1.ogg": {
+   "file": "orc1.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2962",
+    "room 2500",
+    "room 2501",
+    "room 2502"
+   ]
+  },
+  "orc2.ogg": {
+   "file": "orc2.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2503",
+    "room 2504",
+    "room 2505"
+   ]
+  },
+  "orc_atkh.ogg": {
+   "file": "orc_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "CaveOrc hit",
+    "Orc hit"
+   ]
+  },
+  "orc_atkm.ogg": {
+   "file": "orc_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Orc miss"
+   ]
+  },
+  "orc_awr.ogg": {
+   "file": "orc_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Orc aware"
+   ]
+  },
+  "orc_dth.ogg": {
+   "file": "orc_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Orc death"
+   ]
+  },
+  "orcbeg.ogg": {
+   "file": "orcbeg.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2124",
+    "room 2125",
+    "room 2133",
+    "room 2134"
+   ]
+  },
+  "orcpit.ogg": {
+   "file": "orcpit.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2509",
+    "room 2510",
+    "room 2506",
+    "room 2507",
+    "room 2508"
    ]
   },
   "ouchf1.ogg": {
@@ -1176,9 +3749,14 @@
   },
   "pdeath.ogg": {
    "file": "pdeath.ogg",
-   "category": "combat",
+   "category": "world",
    "loop": false,
    "used_by": [
+    "room 713",
+    "Bandit death",
+    "BanditCaptain death",
+    "BanditSniper death",
+    "NecromancerTroop death",
     "Player playerm_death_wav"
    ]
   },
@@ -1198,6 +3776,15 @@
     "Player player_level_music"
    ],
    "missing": true
+  },
+  "pk_fm.ogg": {
+   "file": "pk_fm.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 60",
+    "room 3"
+   ]
   },
   "player_cannot_carry.ogg": {
    "file": "player_cannot_carry.ogg",
@@ -1404,6 +3991,14 @@
     "spell Anonymity"
    ]
   },
+  "ranu_awr.ogg": {
+   "file": "ranu_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Ranuculus aware"
+   ]
+  },
   "rapparit.ogg": {
    "file": "rapparit.ogg",
    "category": "spell",
@@ -1425,7 +4020,11 @@
    "category": "combat",
    "loop": false,
    "used_by": [
-    "GiantRat hit"
+    "DuskRat hit",
+    "GiantRat hit",
+    "GiantRatSoldier hit",
+    "SmallRat hit",
+    "SnowRat hit"
    ]
   },
   "rat_atkm.ogg": {
@@ -1433,7 +4032,11 @@
    "category": "combat",
    "loop": false,
    "used_by": [
-    "GiantRat miss"
+    "DuskRat miss",
+    "GiantRat miss",
+    "GiantRatSoldier miss",
+    "SmallRat miss",
+    "SnowRat miss"
    ]
   },
   "rat_awr.ogg": {
@@ -1441,7 +4044,11 @@
    "category": "combat",
    "loop": false,
    "used_by": [
-    "GiantRat aware"
+    "DuskRat aware",
+    "GiantRat aware",
+    "GiantRatSoldier aware",
+    "SmallRat aware",
+    "SnowRat aware"
    ]
   },
   "rat_dth.ogg": {
@@ -1449,7 +4056,11 @@
    "category": "combat",
    "loop": false,
    "used_by": [
-    "GiantRat death"
+    "DuskRat death",
+    "GiantRat death",
+    "GiantRatSoldier death",
+    "SmallRat death",
+    "SnowRat death"
    ]
   },
   "rdenial.ogg": {
@@ -1575,7 +4186,65 @@
     "room 206",
     "room 535",
     "room 557",
-    "room 568"
+    "room 568",
+    "room 2902",
+    "room 2904",
+    "room 2903",
+    "room 574",
+    "room 575",
+    "room 583",
+    "room 586",
+    "room 593",
+    "room 596",
+    "room 2950",
+    "room 511",
+    "room 516",
+    "room 521",
+    "room 522",
+    "room 49",
+    "room 2815",
+    "room 2816",
+    "room 2817",
+    "room 2818",
+    "room 531",
+    "room 532",
+    "room 533",
+    "room 534",
+    "room 541",
+    "room 542",
+    "room 544",
+    "room 545",
+    "room 546",
+    "room 550",
+    "room 547",
+    "room 552",
+    "room 554",
+    "room 555",
+    "room 556",
+    "room 2951",
+    "room 562",
+    "room 563",
+    "room 564",
+    "room 566",
+    "room 567",
+    "room 576",
+    "room 584",
+    "room 587",
+    "room 597",
+    "room 603",
+    "room 2819",
+    "room 2820",
+    "room 2900",
+    "room 2901",
+    "room 2952",
+    "room 48",
+    "room 2961",
+    "room 2",
+    "room 24",
+    "room 26",
+    "room 28",
+    "room 4",
+    "room 6"
    ]
   },
   "rs_for02.ogg": {
@@ -1592,7 +4261,65 @@
     "room 206",
     "room 535",
     "room 557",
-    "room 568"
+    "room 568",
+    "room 2902",
+    "room 2904",
+    "room 2903",
+    "room 574",
+    "room 575",
+    "room 583",
+    "room 586",
+    "room 593",
+    "room 596",
+    "room 2950",
+    "room 511",
+    "room 516",
+    "room 521",
+    "room 522",
+    "room 49",
+    "room 2815",
+    "room 2816",
+    "room 2817",
+    "room 2818",
+    "room 531",
+    "room 532",
+    "room 533",
+    "room 534",
+    "room 541",
+    "room 542",
+    "room 544",
+    "room 545",
+    "room 546",
+    "room 550",
+    "room 547",
+    "room 552",
+    "room 554",
+    "room 555",
+    "room 556",
+    "room 2951",
+    "room 562",
+    "room 563",
+    "room 564",
+    "room 566",
+    "room 567",
+    "room 576",
+    "room 584",
+    "room 587",
+    "room 597",
+    "room 603",
+    "room 2819",
+    "room 2820",
+    "room 2900",
+    "room 2901",
+    "room 2952",
+    "room 48",
+    "room 2961",
+    "room 2",
+    "room 24",
+    "room 26",
+    "room 28",
+    "room 4",
+    "room 6"
    ]
   },
   "rs_for03.ogg": {
@@ -1609,7 +4336,65 @@
     "room 206",
     "room 535",
     "room 557",
-    "room 568"
+    "room 568",
+    "room 2902",
+    "room 2904",
+    "room 2903",
+    "room 574",
+    "room 575",
+    "room 583",
+    "room 586",
+    "room 593",
+    "room 596",
+    "room 2950",
+    "room 511",
+    "room 516",
+    "room 521",
+    "room 522",
+    "room 49",
+    "room 2815",
+    "room 2816",
+    "room 2817",
+    "room 2818",
+    "room 531",
+    "room 532",
+    "room 533",
+    "room 534",
+    "room 541",
+    "room 542",
+    "room 544",
+    "room 545",
+    "room 546",
+    "room 550",
+    "room 547",
+    "room 552",
+    "room 554",
+    "room 555",
+    "room 556",
+    "room 2951",
+    "room 562",
+    "room 563",
+    "room 564",
+    "room 566",
+    "room 567",
+    "room 576",
+    "room 584",
+    "room 587",
+    "room 597",
+    "room 603",
+    "room 2819",
+    "room 2820",
+    "room 2900",
+    "room 2901",
+    "room 2952",
+    "room 48",
+    "room 2961",
+    "room 2",
+    "room 24",
+    "room 26",
+    "room 28",
+    "room 4",
+    "room 6"
    ]
   },
   "rs_for05.ogg": {
@@ -1626,7 +4411,65 @@
     "room 206",
     "room 535",
     "room 557",
-    "room 568"
+    "room 568",
+    "room 2902",
+    "room 2904",
+    "room 2903",
+    "room 574",
+    "room 575",
+    "room 583",
+    "room 586",
+    "room 593",
+    "room 596",
+    "room 2950",
+    "room 511",
+    "room 516",
+    "room 521",
+    "room 522",
+    "room 49",
+    "room 2815",
+    "room 2816",
+    "room 2817",
+    "room 2818",
+    "room 531",
+    "room 532",
+    "room 533",
+    "room 534",
+    "room 541",
+    "room 542",
+    "room 544",
+    "room 545",
+    "room 546",
+    "room 550",
+    "room 547",
+    "room 552",
+    "room 554",
+    "room 555",
+    "room 556",
+    "room 2951",
+    "room 562",
+    "room 563",
+    "room 564",
+    "room 566",
+    "room 567",
+    "room 576",
+    "room 584",
+    "room 587",
+    "room 597",
+    "room 603",
+    "room 2819",
+    "room 2820",
+    "room 2900",
+    "room 2901",
+    "room 2952",
+    "room 48",
+    "room 2961",
+    "room 2",
+    "room 24",
+    "room 26",
+    "room 28",
+    "room 4",
+    "room 6"
    ]
   },
   "rs_for14.ogg": {
@@ -1643,7 +4486,65 @@
     "room 206",
     "room 535",
     "room 557",
-    "room 568"
+    "room 568",
+    "room 2902",
+    "room 2904",
+    "room 2903",
+    "room 574",
+    "room 575",
+    "room 583",
+    "room 586",
+    "room 593",
+    "room 596",
+    "room 2950",
+    "room 511",
+    "room 516",
+    "room 521",
+    "room 522",
+    "room 49",
+    "room 2815",
+    "room 2816",
+    "room 2817",
+    "room 2818",
+    "room 531",
+    "room 532",
+    "room 533",
+    "room 534",
+    "room 541",
+    "room 542",
+    "room 544",
+    "room 545",
+    "room 546",
+    "room 550",
+    "room 547",
+    "room 552",
+    "room 554",
+    "room 555",
+    "room 556",
+    "room 2951",
+    "room 562",
+    "room 563",
+    "room 564",
+    "room 566",
+    "room 567",
+    "room 576",
+    "room 584",
+    "room 587",
+    "room 597",
+    "room 603",
+    "room 2819",
+    "room 2820",
+    "room 2900",
+    "room 2901",
+    "room 2952",
+    "room 48",
+    "room 2961",
+    "room 2",
+    "room 24",
+    "room 26",
+    "room 28",
+    "room 4",
+    "room 6"
    ]
   },
   "rs_for18.ogg": {
@@ -1660,7 +4561,65 @@
     "room 206",
     "room 535",
     "room 557",
-    "room 568"
+    "room 568",
+    "room 2902",
+    "room 2904",
+    "room 2903",
+    "room 574",
+    "room 575",
+    "room 583",
+    "room 586",
+    "room 593",
+    "room 596",
+    "room 2950",
+    "room 511",
+    "room 516",
+    "room 521",
+    "room 522",
+    "room 49",
+    "room 2815",
+    "room 2816",
+    "room 2817",
+    "room 2818",
+    "room 531",
+    "room 532",
+    "room 533",
+    "room 534",
+    "room 541",
+    "room 542",
+    "room 544",
+    "room 545",
+    "room 546",
+    "room 550",
+    "room 547",
+    "room 552",
+    "room 554",
+    "room 555",
+    "room 556",
+    "room 2951",
+    "room 562",
+    "room 563",
+    "room 564",
+    "room 566",
+    "room 567",
+    "room 576",
+    "room 584",
+    "room 587",
+    "room 597",
+    "room 603",
+    "room 2819",
+    "room 2820",
+    "room 2900",
+    "room 2901",
+    "room 2952",
+    "room 48",
+    "room 2961",
+    "room 2",
+    "room 24",
+    "room 26",
+    "room 28",
+    "room 4",
+    "room 6"
    ]
   },
   "rs_for20.ogg": {
@@ -1677,7 +4636,65 @@
     "room 206",
     "room 535",
     "room 557",
-    "room 568"
+    "room 568",
+    "room 2902",
+    "room 2904",
+    "room 2903",
+    "room 574",
+    "room 575",
+    "room 583",
+    "room 586",
+    "room 593",
+    "room 596",
+    "room 2950",
+    "room 511",
+    "room 516",
+    "room 521",
+    "room 522",
+    "room 49",
+    "room 2815",
+    "room 2816",
+    "room 2817",
+    "room 2818",
+    "room 531",
+    "room 532",
+    "room 533",
+    "room 534",
+    "room 541",
+    "room 542",
+    "room 544",
+    "room 545",
+    "room 546",
+    "room 550",
+    "room 547",
+    "room 552",
+    "room 554",
+    "room 555",
+    "room 556",
+    "room 2951",
+    "room 562",
+    "room 563",
+    "room 564",
+    "room 566",
+    "room 567",
+    "room 576",
+    "room 584",
+    "room 587",
+    "room 597",
+    "room 603",
+    "room 2819",
+    "room 2820",
+    "room 2900",
+    "room 2901",
+    "room 2952",
+    "room 48",
+    "room 2961",
+    "room 2",
+    "room 24",
+    "room 26",
+    "room 28",
+    "room 4",
+    "room 6"
    ]
   },
   "rs_wind.ogg": {
@@ -1688,6 +4705,45 @@
     "room 526",
     "room 350",
     "room 382",
+    "room 596",
+    "room 515",
+    "room 45",
+    "room 49",
+    "room 1512",
+    "room 1502",
+    "room 1503",
+    "room 1504",
+    "room 1505",
+    "room 1506",
+    "room 1525",
+    "room 1501",
+    "room 1510",
+    "room 1511",
+    "room 1507",
+    "room 1508",
+    "room 1509",
+    "room 1524",
+    "room 576",
+    "room 578",
+    "room 579",
+    "room 585",
+    "room 589",
+    "room 598",
+    "room 599",
+    "room 615",
+    "room 801",
+    "room 1500",
+    "room 2",
+    "room 1526",
+    "room 2111",
+    "room 2113",
+    "room 2115",
+    "room 2121",
+    "room 2131",
+    "room 2141",
+    "room 2151",
+    "room 32",
+    "room 47",
     "weather wind"
    ]
   },
@@ -1736,6 +4792,7 @@
    "category": "combat",
    "loop": false,
    "used_by": [
+    "Beetle hit",
     "Scorpion hit"
    ]
   },
@@ -1744,6 +4801,7 @@
    "category": "combat",
    "loop": false,
    "used_by": [
+    "Beetle miss",
     "Scorpion miss"
    ]
   },
@@ -1752,6 +4810,9 @@
    "category": "combat",
    "loop": false,
    "used_by": [
+    "Beetle aware",
+    "Nyrphling aware",
+    "Nyrphling death",
     "Scorpion aware"
    ]
   },
@@ -1760,6 +4821,7 @@
    "category": "combat",
    "loop": false,
    "used_by": [
+    "Beetle death",
     "Scorpion death"
    ]
   },
@@ -1787,7 +4849,14 @@
     "room 377",
     "room 378",
     "room 379",
-    "room 380"
+    "room 380",
+    "room 108",
+    "room 111",
+    "room 112",
+    "room 708",
+    "room 42",
+    "room 2010",
+    "room 2012"
    ]
   },
   "sewer04.ogg": {
@@ -1798,7 +4867,14 @@
     "room 377",
     "room 378",
     "room 379",
-    "room 380"
+    "room 380",
+    "room 108",
+    "room 111",
+    "room 112",
+    "room 708",
+    "room 42",
+    "room 2010",
+    "room 2012"
    ]
   },
   "seweramb.ogg": {
@@ -1809,7 +4885,14 @@
     "room 377",
     "room 378",
     "room 379",
-    "room 380"
+    "room 380",
+    "room 108",
+    "room 111",
+    "room 112",
+    "room 708",
+    "room 42",
+    "room 2010",
+    "room 2012"
    ]
   },
   "sforcelt.ogg": {
@@ -1826,6 +4909,31 @@
    "loop": false,
    "used_by": [
     "spell FinalRites"
+   ]
+  },
+  "sha_atkm.ogg": {
+   "file": "sha_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Shadowbeast hit",
+    "Shadowbeast miss"
+   ]
+  },
+  "sha_awr.ogg": {
+   "file": "sha_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Shadowbeast aware"
+   ]
+  },
+  "sha_dth.ogg": {
+   "file": "sha_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Shadowbeast death"
    ]
   },
   "shadi11m.ogg": {
@@ -1854,7 +4962,21 @@
     "room 717",
     "room 703",
     "room 704",
-    "room 710"
+    "room 710",
+    "room 701",
+    "room 714",
+    "room 716",
+    "room 702",
+    "room 720",
+    "room 707",
+    "room 711",
+    "room 708",
+    "room 709",
+    "room 712",
+    "room 719",
+    "room 715",
+    "room 705",
+    "room 713"
    ]
   },
   "sholysym.ogg": {
@@ -1895,7 +5017,8 @@
    "category": "combat",
    "loop": false,
    "used_by": [
-    "BatteredSkeleton aware"
+    "BatteredSkeleton aware",
+    "NecromancerTroop aware"
    ]
   },
   "skl2_die.ogg": {
@@ -1906,11 +5029,62 @@
     "BatteredSkeleton death"
    ]
   },
+  "skl3_atk.ogg": {
+   "file": "skl3_atk.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "TuskedSkeleton miss"
+   ]
+  },
+  "skl3_awr.ogg": {
+   "file": "skl3_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "TuskedSkeleton aware"
+   ]
+  },
+  "skl3_die.ogg": {
+   "file": "skl3_die.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "TuskedSkeleton death"
+   ]
+  },
+  "skl4_atk.ogg": {
+   "file": "skl4_atk.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "DaemonSkeleton miss"
+   ]
+  },
+  "skl4_awr.ogg": {
+   "file": "skl4_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "DaemonSkeleton aware"
+   ]
+  },
+  "skl4_die.ogg": {
+   "file": "skl4_die.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "DaemonSkeleton death"
+   ]
+  },
   "skl_atkm.ogg": {
    "file": "skl_atkm.ogg",
    "category": "combat",
    "loop": false,
    "used_by": [
+    "CaptainKnight miss",
+    "HalfKnight miss",
+    "KnightA miss",
     "Skeleton miss"
    ]
   },
@@ -1919,6 +5093,9 @@
    "category": "combat",
    "loop": false,
    "used_by": [
+    "CaptainKnight aware",
+    "HalfKnight aware",
+    "KnightA aware",
     "Skeleton aware"
    ]
   },
@@ -1927,6 +5104,9 @@
    "category": "combat",
    "loop": false,
    "used_by": [
+    "CaptainKnight death",
+    "HalfKnight death",
+    "KnightA death",
     "Skeleton death"
    ]
   },
@@ -1936,6 +5116,42 @@
    "loop": false,
    "used_by": [
     "spell Slitherbolt"
+   ]
+  },
+  "slm_atkh.ogg": {
+   "file": "slm_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "BigSlime hit",
+    "Slime hit"
+   ]
+  },
+  "slm_atkm.ogg": {
+   "file": "slm_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "BigSlime miss",
+    "Slime miss"
+   ]
+  },
+  "slm_awr.ogg": {
+   "file": "slm_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "BigSlime aware",
+    "Slime aware"
+   ]
+  },
+  "slm_dth.ogg": {
+   "file": "slm_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "BigSlime death",
+    "Slime death"
    ]
   },
   "smarkdis.ogg": {
@@ -1962,7 +5178,19 @@
     "room 303",
     "room 332",
     "room 201",
-    "room 374"
+    "room 374",
+    "room 2908",
+    "room 104",
+    "room 109",
+    "room 113",
+    "room 114",
+    "room 2807",
+    "room 2802",
+    "room 2801",
+    "room 151",
+    "room 51",
+    "room 154",
+    "room 856"
    ]
   },
   "sngldrip.ogg": {
@@ -1973,7 +5201,14 @@
     "room 377",
     "room 378",
     "room 379",
-    "room 380"
+    "room 380",
+    "room 108",
+    "room 111",
+    "room 112",
+    "room 708",
+    "room 42",
+    "room 2010",
+    "room 2012"
    ]
   },
   "song.ogg": {
@@ -1981,7 +5216,34 @@
    "category": "music",
    "loop": true,
    "used_by": [
-    "room 2601"
+    "room 2601",
+    "room 27",
+    "room 551"
+   ]
+  },
+  "song00.ogg": {
+   "file": "song00.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 35"
+   ]
+  },
+  "song02.ogg": {
+   "file": "song02.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 53"
+   ]
+  },
+  "song08.ogg": {
+   "file": "song08.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2000",
+    "room 2009"
    ]
   },
   "song10.ogg": {
@@ -1989,7 +5251,23 @@
    "category": "music",
    "loop": true,
    "used_by": [
-    "room 2602"
+    "room 2602",
+    "room 2822"
+   ]
+  },
+  "song12.ogg": {
+   "file": "song12.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2002",
+    "room 2005",
+    "room 2003",
+    "room 2001",
+    "room 2004",
+    "room 2006",
+    "room 2008",
+    "room 2013"
    ]
   },
   "spd_atkh.ogg": {
@@ -1997,6 +5275,7 @@
    "category": "combat",
    "loop": false,
    "used_by": [
+    "DeathSpider hit",
     "Spider hit"
    ]
   },
@@ -2005,6 +5284,7 @@
    "category": "combat",
    "loop": false,
    "used_by": [
+    "DeathSpider miss",
     "Spider miss"
    ]
   },
@@ -2013,6 +5293,7 @@
    "category": "combat",
    "loop": false,
    "used_by": [
+    "DeathSpider aware",
     "Spider aware"
    ]
   },
@@ -2021,6 +5302,7 @@
    "category": "combat",
    "loop": false,
    "used_by": [
+    "DeathSpider death",
     "Spider death"
    ]
   },
@@ -2092,14 +5374,295 @@
     "room 568 wading",
     "room 703 wading",
     "room 704 wading",
-    "room 710 wading"
+    "room 710 wading",
+    "room 2902 wading",
+    "room 2904 wading",
+    "room 2903 wading",
+    "room 2906 wading",
+    "room 2907 wading",
+    "room 2905 wading",
+    "room 2908 wading",
+    "room 110 wading",
+    "room 104 wading",
+    "room 115 wading",
+    "room 105 wading",
+    "room 106 wading",
+    "room 116 wading",
+    "room 103 wading",
+    "room 117 wading",
+    "room 101 wading",
+    "room 107 wading",
+    "room 102 wading",
+    "room 108 wading",
+    "room 111 wading",
+    "room 112 wading",
+    "room 109 wading",
+    "room 113 wading",
+    "room 114 wading",
+    "room 2809 wading",
+    "room 2810 wading",
+    "room 2813 wading",
+    "room 2827 wading",
+    "room 2825 wading",
+    "room 2826 wading",
+    "room 2814 wading",
+    "room 2807 wading",
+    "room 2806 wading",
+    "room 2800 wading",
+    "room 2803 wading",
+    "room 2805 wading",
+    "room 2823 wading",
+    "room 2824 wading",
+    "room 2808 wading",
+    "room 2802 wading",
+    "room 2804 wading",
+    "room 2801 wading",
+    "room 156 wading",
+    "room 151 wading",
+    "room 152 wading",
+    "room 153 wading",
+    "room 158 wading",
+    "room 150 wading",
+    "room 155 wading",
+    "room 157 wading",
+    "room 574 wading",
+    "room 575 wading",
+    "room 700 wading",
+    "room 701 wading",
+    "room 714 wading",
+    "room 716 wading",
+    "room 702 wading",
+    "room 720 wading",
+    "room 707 wading",
+    "room 711 wading",
+    "room 708 wading",
+    "room 709 wading",
+    "room 583 wading",
+    "room 586 wading",
+    "room 593 wading",
+    "room 596 wading",
+    "room 15 wading",
+    "room 53 wading",
+    "room 73 wading",
+    "room 60 wading",
+    "room 79 wading",
+    "room 54 wading",
+    "room 74 wading",
+    "room 71 wading",
+    "room 61 wading",
+    "room 2950 wading",
+    "room 58 wading",
+    "room 70 wading",
+    "room 57 wading",
+    "room 72 wading",
+    "room 75 wading",
+    "room 52 wading",
+    "room 78 wading",
+    "room 51 wading",
+    "room 77 wading",
+    "room 56 wading",
+    "room 76 wading",
+    "room 154 wading",
+    "room 511 wading",
+    "room 515 wading",
+    "room 516 wading",
+    "room 521 wading",
+    "room 522 wading",
+    "room 45 wading",
+    "room 49 wading",
+    "room 2811 wading",
+    "room 2815 wading",
+    "room 2816 wading",
+    "room 2817 wading",
+    "room 2818 wading",
+    "room 531 wading",
+    "room 532 wading",
+    "room 533 wading",
+    "room 534 wading",
+    "room 541 wading",
+    "room 542 wading",
+    "room 544 wading",
+    "room 545 wading",
+    "room 546 wading",
+    "room 550 wading",
+    "room 547 wading",
+    "room 1512 wading",
+    "room 1502 wading",
+    "room 1503 wading",
+    "room 1504 wading",
+    "room 1505 wading",
+    "room 1506 wading",
+    "room 1525 wading",
+    "room 1501 wading",
+    "room 1510 wading",
+    "room 1511 wading",
+    "room 1507 wading",
+    "room 1508 wading",
+    "room 1509 wading",
+    "room 1524 wading",
+    "room 2850 wading",
+    "room 2851 wading",
+    "room 2852 wading",
+    "room 2853 wading",
+    "room 2854 wading",
+    "room 552 wading",
+    "room 554 wading",
+    "room 555 wading",
+    "room 556 wading",
+    "room 2951 wading",
+    "room 562 wading",
+    "room 563 wading",
+    "room 564 wading",
+    "room 566 wading",
+    "room 567 wading",
+    "room 576 wading",
+    "room 578 wading",
+    "room 579 wading",
+    "room 712 wading",
+    "room 719 wading",
+    "room 584 wading",
+    "room 585 wading",
+    "room 587 wading",
+    "room 589 wading",
+    "room 36 wading",
+    "room 597 wading",
+    "room 598 wading",
+    "room 599 wading",
+    "room 603 wading",
+    "room 2819 wading",
+    "room 2820 wading",
+    "room 2900 wading",
+    "room 2901 wading",
+    "room 615 wading",
+    "room 2821 wading",
+    "room 2953 wading",
+    "room 2954 wading",
+    "room 2952 wading",
+    "room 801 wading",
+    "room 48 wading",
+    "room 1500 wading",
+    "room 2961 wading",
+    "room 2962 wading",
+    "room 2812 wading",
+    "room 2960 wading",
+    "room 855 wading",
+    "room 38 wading",
+    "room 39 wading",
+    "room 2 wading",
+    "room 37 wading",
+    "room 850 wading",
+    "room 851 wading",
+    "room 852 wading",
+    "room 853 wading",
+    "room 856 wading",
+    "room 27 wading",
+    "room 5 wading",
+    "room 551 wading",
+    "room 1526 wading",
+    "room 950 wading",
+    "room 951 wading",
+    "room 952 wading",
+    "room 953 wading",
+    "room 954 wading",
+    "room 2855 wading",
+    "room 2856 wading",
+    "room 42 wading",
+    "room 750 wading",
+    "room 1601 wading",
+    "room 1602 wading",
+    "room 854 wading",
+    "room 35 wading",
+    "room 2500 wading",
+    "room 2501 wading",
+    "room 2502 wading",
+    "room 2503 wading",
+    "room 2504 wading",
+    "room 2505 wading",
+    "room 2509 wading",
+    "room 2510 wading",
+    "room 2506 wading",
+    "room 2507 wading",
+    "room 2508 wading",
+    "room 858 wading",
+    "room 859 wading",
+    "room 860 wading",
+    "room 40 wading",
+    "room 41 wading",
+    "room 715 wading",
+    "room 825 wading",
+    "room 831 wading",
+    "room 832 wading",
+    "room 826 wading",
+    "room 827 wading",
+    "room 828 wading",
+    "room 829 wading",
+    "room 830 wading",
+    "room 834 wading",
+    "room 833 wading",
+    "room 2100 wading",
+    "room 705 wading",
+    "room 713 wading",
+    "room 2110 wading",
+    "room 2111 wading",
+    "room 2112 wading",
+    "room 2113 wading",
+    "room 2114 wading",
+    "room 2115 wading",
+    "room 2121 wading",
+    "room 2122 wading",
+    "room 2123 wading",
+    "room 2124 wading",
+    "room 2125 wading",
+    "room 2131 wading",
+    "room 2132 wading",
+    "room 2133 wading",
+    "room 2134 wading",
+    "room 2135 wading",
+    "room 2136 wading",
+    "room 2141 wading",
+    "room 2142 wading",
+    "room 2143 wading",
+    "room 2144 wading",
+    "room 2151 wading",
+    "room 2152 wading",
+    "room 2154 wading",
+    "room 2002 wading",
+    "room 2005 wading",
+    "room 2003 wading",
+    "room 59 wading",
+    "room 2014 wading",
+    "room 2015 wading",
+    "room 2001 wading",
+    "room 2010 wading",
+    "room 2012 wading",
+    "room 2004 wading",
+    "room 2006 wading",
+    "room 2008 wading",
+    "room 2013 wading",
+    "room 2000 wading",
+    "room 2009 wading",
+    "room 2101 wading",
+    "room 2102 wading",
+    "room 32 wading",
+    "room 47 wading",
+    "room 3 wading",
+    "room 24 wading",
+    "room 26 wading",
+    "room 28 wading",
+    "room 4 wading",
+    "room 6 wading",
+    "room 43 wading",
+    "room 802 wading",
+    "room 902 wading",
+    "room 901 wading"
    ]
   },
   "splearn.ogg": {
    "file": "splearn.ogg",
-   "category": "ui",
+   "category": "world",
    "loop": false,
    "used_by": [
+    "room 714",
     "Player player_sound_learn_spell"
    ]
   },
@@ -2226,7 +5789,71 @@
     "room 535",
     "room 350",
     "room 382",
-    "room 568"
+    "room 568",
+    "room 101",
+    "room 107",
+    "room 102",
+    "room 150",
+    "room 574",
+    "room 593",
+    "room 596",
+    "room 515",
+    "room 516",
+    "room 45",
+    "room 49",
+    "room 1512",
+    "room 1502",
+    "room 1503",
+    "room 1504",
+    "room 1505",
+    "room 1506",
+    "room 1525",
+    "room 1501",
+    "room 1510",
+    "room 1511",
+    "room 1507",
+    "room 1508",
+    "room 1509",
+    "room 1524",
+    "room 552",
+    "room 554",
+    "room 562",
+    "room 563",
+    "room 576",
+    "room 578",
+    "room 579",
+    "room 585",
+    "room 589",
+    "room 598",
+    "room 599",
+    "room 615",
+    "room 801",
+    "room 1500",
+    "room 2",
+    "room 5",
+    "room 1526",
+    "room 2111",
+    "room 2113",
+    "room 2115",
+    "room 2121",
+    "room 2131",
+    "room 2141",
+    "room 2151",
+    "room 2000",
+    "room 2009",
+    "room 32",
+    "room 47"
+   ]
+  },
+  "swswish3.ogg": {
+   "file": "swswish3.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Bandit miss",
+    "BanditCaptain miss",
+    "BanditSniper miss",
+    "NecromancerTroop miss"
    ]
   },
   "system_save.ogg": {
@@ -2237,12 +5864,35 @@
     "User user_saving_wav_rsc"
    ]
   },
+  "temple.ogg": {
+   "file": "temple.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 801",
+    "room 48",
+    "room 802"
+   ]
+  },
   "thunderclap.ogg": {
    "file": "thunderclap.ogg",
    "category": "weather",
    "loop": false,
    "used_by": [
     "weather thunder"
+   ]
+  },
+  "tos.ogg": {
+   "file": "tos.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 73",
+    "room 61",
+    "room 57",
+    "room 77",
+    "room 56",
+    "room 76"
    ]
   },
   "tougher.ogg": {
@@ -2258,7 +5908,8 @@
    "category": "combat",
    "loop": false,
    "used_by": [
-    "Ent hit"
+    "Ent hit",
+    "EvilEnt hit"
    ]
   },
   "tr_atkm.ogg": {
@@ -2266,7 +5917,8 @@
    "category": "combat",
    "loop": false,
    "used_by": [
-    "Ent miss"
+    "Ent miss",
+    "EvilEnt miss"
    ]
   },
   "tr_awr.ogg": {
@@ -2274,7 +5926,8 @@
    "category": "combat",
    "loop": false,
    "used_by": [
-    "Ent aware"
+    "Ent aware",
+    "EvilEnt aware"
    ]
   },
   "tr_dth.ogg": {
@@ -2282,7 +5935,8 @@
    "category": "combat",
    "loop": false,
    "used_by": [
-    "Ent death"
+    "Ent death",
+    "EvilEnt death"
    ]
   },
   "tranport.ogg": {
@@ -2293,12 +5947,78 @@
     "spell DeliveranceTouch"
    ]
   },
+  "trl_atkh.ogg": {
+   "file": "trl_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "StoneTroll hit",
+    "Troll hit"
+   ]
+  },
+  "trl_atkm.ogg": {
+   "file": "trl_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "StoneTroll miss",
+    "Troll miss"
+   ]
+  },
+  "trl_awr.ogg": {
+   "file": "trl_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "StoneTroll aware",
+    "Troll aware"
+   ]
+  },
+  "trl_dth.ogg": {
+   "file": "trl_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "StoneTroll death",
+    "Troll death"
+   ]
+  },
+  "undrwrld.ogg": {
+   "file": "undrwrld.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 1"
+   ]
+  },
   "walk1.ogg": {
    "file": "walk1.ogg",
    "category": "music",
    "loop": true,
    "used_by": [
-    "room 535"
+    "room 535",
+    "room 574",
+    "room 575",
+    "room 586",
+    "room 593",
+    "room 596",
+    "room 2950",
+    "room 566",
+    "room 567",
+    "room 32",
+    "room 47",
+    "room 24"
+   ]
+  },
+  "walk2.ogg": {
+   "file": "walk2.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2951",
+    "room 2952",
+    "room 26",
+    "room 6"
    ]
   },
   "walk4.ogg": {
@@ -2306,7 +6026,12 @@
    "category": "music",
    "loop": true,
    "used_by": [
-    "room 526"
+    "room 526",
+    "room 578",
+    "room 579",
+    "room 589",
+    "room 598",
+    "room 599"
    ]
   },
   "walk5.ogg": {
@@ -2318,7 +6043,13 @@
     "room 331",
     "room 536",
     "room 537",
-    "room 557"
+    "room 557",
+    "room 45",
+    "room 49",
+    "room 555",
+    "room 556",
+    "room 563",
+    "room 615"
    ]
   },
   "walk7.ogg": {
@@ -2327,7 +6058,59 @@
    "loop": true,
    "used_by": [
     "room 717",
-    "room 568"
+    "room 568",
+    "room 511",
+    "room 521",
+    "room 522",
+    "room 531",
+    "room 532",
+    "room 533",
+    "room 534",
+    "room 541",
+    "room 542",
+    "room 544",
+    "room 546",
+    "room 550",
+    "room 547",
+    "room 552",
+    "room 562",
+    "room 587",
+    "room 597"
+   ]
+  },
+  "walk8.ogg": {
+   "file": "walk8.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2809",
+    "room 2810",
+    "room 2813",
+    "room 2808",
+    "room 2811"
+   ]
+  },
+  "walkberg.ogg": {
+   "file": "walkberg.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2815",
+    "room 2816",
+    "room 2817",
+    "room 2818",
+    "room 2961"
+   ]
+  },
+  "walkjixa.ogg": {
+   "file": "walkjixa.ogg",
+   "category": "music",
+   "loop": true,
+   "used_by": [
+    "room 2902",
+    "room 2904",
+    "room 2900",
+    "room 2901"
    ]
   },
   "wave1.ogg": {
@@ -2337,7 +6120,29 @@
    "used_by": [
     "room 300",
     "room 535",
-    "room 568"
+    "room 568",
+    "room 101",
+    "room 107",
+    "room 102",
+    "room 150",
+    "room 574",
+    "room 593",
+    "room 515",
+    "room 516",
+    "room 552",
+    "room 554",
+    "room 562",
+    "room 563",
+    "room 576",
+    "room 5",
+    "room 2111",
+    "room 2113",
+    "room 2121",
+    "room 2131",
+    "room 2141",
+    "room 2151",
+    "room 2000",
+    "room 2009"
    ]
   },
   "wave2.ogg": {
@@ -2347,7 +6152,29 @@
    "used_by": [
     "room 300",
     "room 535",
-    "room 568"
+    "room 568",
+    "room 101",
+    "room 107",
+    "room 102",
+    "room 150",
+    "room 574",
+    "room 593",
+    "room 515",
+    "room 516",
+    "room 552",
+    "room 554",
+    "room 562",
+    "room 563",
+    "room 576",
+    "room 5",
+    "room 2111",
+    "room 2113",
+    "room 2121",
+    "room 2131",
+    "room 2141",
+    "room 2151",
+    "room 2000",
+    "room 2009"
    ]
   },
   "wave3.ogg": {
@@ -2357,7 +6184,29 @@
    "used_by": [
     "room 300",
     "room 535",
-    "room 568"
+    "room 568",
+    "room 101",
+    "room 107",
+    "room 102",
+    "room 150",
+    "room 574",
+    "room 593",
+    "room 515",
+    "room 516",
+    "room 552",
+    "room 554",
+    "room 562",
+    "room 563",
+    "room 576",
+    "room 5",
+    "room 2111",
+    "room 2113",
+    "room 2121",
+    "room 2131",
+    "room 2141",
+    "room 2151",
+    "room 2000",
+    "room 2009"
    ]
   },
   "wave4.ogg": {
@@ -2367,7 +6216,29 @@
    "used_by": [
     "room 300",
     "room 535",
-    "room 568"
+    "room 568",
+    "room 101",
+    "room 107",
+    "room 102",
+    "room 150",
+    "room 574",
+    "room 593",
+    "room 515",
+    "room 516",
+    "room 552",
+    "room 554",
+    "room 562",
+    "room 563",
+    "room 576",
+    "room 5",
+    "room 2111",
+    "room 2113",
+    "room 2121",
+    "room 2131",
+    "room 2141",
+    "room 2151",
+    "room 2000",
+    "room 2009"
    ]
   },
   "weatstp1.ogg": {
@@ -2396,7 +6267,21 @@
     "room 377",
     "room 378",
     "room 379",
-    "room 380"
+    "room 380",
+    "room 108",
+    "room 111",
+    "room 112",
+    "room 574",
+    "room 575",
+    "room 516",
+    "room 532",
+    "room 545",
+    "room 554",
+    "room 562",
+    "room 584",
+    "room 5",
+    "room 854",
+    "room 901"
    ]
   },
   "wfront03.ogg": {
@@ -2404,7 +6289,13 @@
    "category": "periodic",
    "loop": false,
    "used_by": [
-    "room 300"
+    "room 300",
+    "room 101",
+    "room 107",
+    "room 102",
+    "room 150",
+    "room 2000",
+    "room 2009"
    ]
   },
   "wfront05.ogg": {
@@ -2412,7 +6303,78 @@
    "category": "periodic",
    "loop": false,
    "used_by": [
-    "room 300"
+    "room 300",
+    "room 101",
+    "room 107",
+    "room 102",
+    "room 150",
+    "room 2000",
+    "room 2009"
+   ]
+  },
+  "wolf_atkh.ogg": {
+   "file": "wolf_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Wolf hit",
+    "Wolf miss"
+   ]
+  },
+  "wolf_awr.ogg": {
+   "file": "wolf_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Wolf aware"
+   ]
+  },
+  "wolf_dth.ogg": {
+   "file": "wolf_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Wolf death"
+   ]
+  },
+  "wooddn1.ogg": {
+   "file": "wooddn1.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 707"
+   ]
+  },
+  "woodup1.ogg": {
+   "file": "woodup1.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 707"
+   ]
+  },
+  "wrm_atk.ogg": {
+   "file": "wrm_atk.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "NarthylWorm miss"
+   ]
+  },
+  "wrm_awr.ogg": {
+   "file": "wrm_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "NarthylWorm aware"
+   ]
+  },
+  "wrm_die.ogg": {
+   "file": "wrm_die.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "NarthylWorm death"
    ]
   },
   "wscndwnd.ogg": {
@@ -2421,6 +6383,135 @@
    "loop": false,
    "used_by": [
     "spell CrystalizeMana"
+   ]
+  },
+  "wtemple1.ogg": {
+   "file": "wtemple1.ogg",
+   "category": "world",
+   "loop": false,
+   "used_by": [
+    "room 5"
+   ]
+  },
+  "xeo1awr.ogg": {
+   "file": "xeo1awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "XeoAcid aware",
+    "XeoAir aware",
+    "XeoEarth aware",
+    "XeoFire aware",
+    "XeoHoly aware",
+    "XeoIll aware",
+    "XeoUnholy aware",
+    "XeoWater aware"
+   ]
+  },
+  "xeoatk.ogg": {
+   "file": "xeoatk.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "XeoAcid hit",
+    "XeoAcid miss",
+    "XeoAir hit",
+    "XeoAir miss",
+    "XeoEarth hit",
+    "XeoEarth miss",
+    "XeoFire hit",
+    "XeoFire miss",
+    "XeoHoly hit",
+    "XeoHoly miss",
+    "XeoIll hit",
+    "XeoIll miss",
+    "XeoUnholy hit",
+    "XeoUnholy miss",
+    "XeoWater hit",
+    "XeoWater miss"
+   ]
+  },
+  "xeodie.ogg": {
+   "file": "xeodie.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "XeoAcid death",
+    "XeoAir death",
+    "XeoEarth death",
+    "XeoFire death",
+    "XeoHoly death",
+    "XeoIll death",
+    "XeoUnholy death",
+    "XeoWater death"
+   ]
+  },
+  "yti_atkh.ogg": {
+   "file": "yti_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Spinebeast hit",
+    "SpinebeastSmall hit"
+   ]
+  },
+  "yti_atkm.ogg": {
+   "file": "yti_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Spinebeast miss",
+    "SpinebeastSmall miss"
+   ]
+  },
+  "yti_awr.ogg": {
+   "file": "yti_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Spinebeast aware",
+    "SpinebeastSmall aware"
+   ]
+  },
+  "yti_dth.ogg": {
+   "file": "yti_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Spinebeast death",
+    "SpinebeastSmall death"
+   ]
+  },
+  "zmb_atkh.ogg": {
+   "file": "zmb_atkh.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Zombie hit"
+   ]
+  },
+  "zmb_atkm.ogg": {
+   "file": "zmb_atkm.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Zombie miss"
+   ]
+  },
+  "zmb_awr.ogg": {
+   "file": "zmb_awr.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Zombie aware"
+   ]
+  },
+  "zmb_dth.ogg": {
+   "file": "zmb_dth.ogg",
+   "category": "combat",
+   "loop": false,
+   "used_by": [
+    "Zombie death"
    ]
   }
  }

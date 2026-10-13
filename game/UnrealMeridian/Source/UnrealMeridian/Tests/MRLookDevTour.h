@@ -26,6 +26,8 @@ class APlayerController;
  *                             times over SampleFrames frames ("MRLookDevProfile:" log lines) and
  *                             write a CSV-profiler capture with per-pass GPU timings next to the
  *                             screenshots (<camera>__<variant>.csv; tools/lookdev/profile_report.py).
+ *   -MRLookDevUI              keep the HUD in the pictures; a camera's "steps" set its UI state
+ *   -MRLookDevWield=<n>       use hotbar slot n once first (the offline inventory's mace is 2)
  *
  * The `MRBookmark <name>` console command (AMRPlayerController) logs the current view as a
  * bookmark entry to paste into the camera file.
@@ -52,6 +54,13 @@ private:
 		/** Optional: the player stands here (feet, world cm) facing PawnYaw, seen by the camera (sprite look-dev). */
 		TOptional<FVector> PawnFeet;
 		float PawnYaw = 0.f;
+		/** Optional "steps": UI states for -MRLookDevUI shots ("inventory": the inventory open,
+		 *  "login": the login screen, as UMRUIShots previews it without a server). */
+		TArray<FString> Steps;
+		/** Optional "stand": with -MRLookDevWithPawn, the player stands on the floor below Location
+		 *  (traced down from it, so give a point under any roof) and looks through its own eyes,
+		 *  instead of having its eyes put at Location. */
+		bool bStand = false;
 	};
 
 	struct FVariant
@@ -72,6 +81,8 @@ private:
 	/** Audio mode (-MRLookDevAudio=<seconds>): record the main mix at the shot, then go on. */
 	void StopRecording();
 	void After(float Seconds, void (UMRLookDevTour::*Step)());
+	/** -MRLookDevUI: the shot's UI state (its steps), and the hotbar slot wielded once (-MRLookDevWield). */
+	void ApplyUISteps(APlayerController* PC, const FShot& Shot);
 	void NextVariant();
 	void StartSampling();
 	void SampleFrame();
@@ -92,6 +103,9 @@ private:
 	bool bProfile = false;
 	float AudioSeconds = 0.f;     // > 0: -MRLookDevAudio, a WAV per shot
 	bool bWithPawn = false;
+	bool bWithUI = false;         // -MRLookDevUI: the HUD in the pictures (the comparison shots, tools/ue/run_comparison_shots.ps1)
+	int32 WieldSlot = -1;         // -MRLookDevWield=<hotbar index>: used once, before the first camera
+	bool bLoginShown = false;
 	TArray<float> BurstTimes;     // -MRLookDevBurst=<s,s,...>: a frame at each time after the cut, unsettled
 	int32 BurstIndex = 0;       // -MRLookDevWithPawn: the player's character at the shot, seen through its own camera
 	TArray<FVariant> Variants;

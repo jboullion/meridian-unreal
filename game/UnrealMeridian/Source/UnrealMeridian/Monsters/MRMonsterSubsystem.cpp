@@ -78,8 +78,17 @@ void UMRMonsterSubsystem::Tick(float DeltaTime)
 		}
 		return;
 	}
+	if ((ZoneCheckTimer -= DeltaTime) <= 0.f)
+	{
+		ZoneCheckTimer = 0.5f;
+		FollowZones();
+	}
 	for (FSpawnRoom& Room : Rooms)
 	{
+		if (!Room.bPopulated)
+		{
+			continue;  // its zone isn't loaded
+		}
 		Room.Alive.RemoveAll([](const TWeakObjectPtr<AMRMonster>& M) { return !M.IsValid() || M->IsDead(); });
 		Room.Timer -= DeltaTime;
 		if (Room.Timer <= 0.f)
@@ -149,14 +158,82 @@ void UMRMonsterSubsystem::Start()
 			Rooms.Pop();
 			continue;
 		}
-		const int32 Count = FMath::RandRange(Room.InitMin, FMath::Max(Room.InitMin, Room.InitMax));
-		for (int32 i = 0; i < Count; ++i)
-		{
-			SpawnInRoom(Room);
-		}
+	}
+	FollowZones();  // the zones already in get their initial counts now
+	for (const FSpawnRoom& Room : Rooms)
+	{
 		Total += Room.Alive.Num();
 	}
 	UE_LOG(LogMeridian, Log, TEXT("Monsters: %d spawned in %d rooms, %d alive in all"), Total, Rooms.Num(), NumAlive());
+}
+
+void UMRMonsterSubsystem::FollowZones()
+{
+	const UMRZoneSubsystem* Zones = GetWorld()->GetSubsystem<UMRZoneSubsystem>();
+	if (!Zones)
+	{
+		return;
+	}
+	for (FSpawnRoom& Room : Rooms)
+	{
+		const bool bIn = Zones->IsZoneVisibleLocally(Room.Rid);
+		if (bIn && !Room.bPopulated)
+		{
+			Room.bPopulated = true;
+			Room.Timer = Room.GenSeconds;
+			const int32 Count = FMath::RandRange(Room.InitMin, FMath::Max(Room.InitMin, Room.InitMax));
+			for (int32 i = 0; i < Count; ++i)
+			{
+				SpawnInRoom(Room);
+			}
+		}
+		else if (!bIn && Room.bPopulated)
+		{
+			Room.bPopulated = false;
+			for (const TWeakObjectPtr<AMRMonster>& M : Room.Alive)
+			{
+				if (M.IsValid())
+				{
+					M->Destroy();
+				}
+			}
+			Room.Alive.Reset();
+		}
+	}
+	int32 Placed = 0;
+	for (TPair<int32, FNpcZone>& Pair : Npcs)
+	{
+		FNpcZone& Z = Pair.Value;
+		const bool bIn = Zones->IsZoneVisibleLocally(Pair.Key);
+		if (bIn && !Z.bPlaced)
+		{
+			Z.bPlaced = true;
+			for (const FNpcSpot& S : Z.Spots)
+			{
+				if (AMRMonster* M = SpawnMonster(S.Class, Pair.Key, S.At, S.Yaw, false))
+				{
+					Z.Placed.Add(M);
+					++Placed;
+				}
+			}
+		}
+		else if (!bIn && Z.bPlaced)
+		{
+			Z.bPlaced = false;
+			for (const TWeakObjectPtr<AMRMonster>& M : Z.Placed)
+			{
+				if (M.IsValid())
+				{
+					M->Destroy();
+				}
+			}
+			Z.Placed.Reset();
+		}
+	}
+	if (Placed)
+	{
+		UE_LOG(LogMeridian, Log, TEXT("Monsters: %d NPCs placed"), Placed);
+	}
 }
 
 void UMRMonsterSubsystem::SpawnNpcs(const TSharedPtr<FJsonObject>& Layout)
@@ -167,7 +244,7 @@ void UMRMonsterSubsystem::SpawnNpcs(const TSharedPtr<FJsonObject>& Layout)
 	{
 		return;
 	}
-	int32 Count = 0;
+	Npcs.Reset();
 	for (const TSharedPtr<FJsonValue>& V : *LayoutZones)
 	{
 		const TSharedPtr<FJsonObject> Z = V->AsObject();
@@ -190,13 +267,10 @@ void UMRMonsterSubsystem::SpawnNpcs(const TSharedPtr<FJsonObject>& Layout)
 			const FVector At = Info->Origin + MRUnits::LayoutToLocal(P[0]->AsNumber(), P[1]->AsNumber(), P[2]->AsNumber());
 			double KodYaw = 0.0;
 			const bool bYaw = O->AsObject()->TryGetNumberField(TEXT("yaw_kod"), KodYaw);
-			if (SpawnMonster(Class, Rid, At, bYaw ? MRUnits::KodAngleToYaw(static_cast<int32>(KodYaw)) : 0.f, false))
-			{
-				++Count;
-			}
+			// placed when the zone's level is in (FollowZones)
+			Npcs.FindOrAdd(Rid).Spots.Add({Class, At, bYaw ? static_cast<float>(MRUnits::KodAngleToYaw(static_cast<int32>(KodYaw))) : 0.f});
 		}
 	}
-	UE_LOG(LogMeridian, Log, TEXT("Monsters: %d NPCs placed"), Count);
 }
 
 void UMRMonsterSubsystem::SpawnInRoom(FSpawnRoom& Room)

@@ -1,0 +1,65 @@
+{
+  "_doc": "Zone art for Cor Noth (rid 150), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): outdoors, no buildings rebuilt yet. Cut-outs become solids; grime at the walls' feet; grass tufts on the grass.",
+  "rid": 150,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Water",
+      "kind": "water",
+      "region_m": [
+        0.1,
+        -14.2,
+        190.2,
+        113.2
+      ],
+      "materials": [
+        "grd08911",
+        "grd01804"
+      ],
+      "bed_depth_m": 0.9,
+      "bed_texture": "grd09629",
+      "_doc": "the river and lakes: a water surface over a sunken bed, as Raza's pond (Cor Noth art pass, 2026-10-12)"
+    },
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        0.1,
+        -14.2,
+        190.2,
+        113.2
+      ],
+      "displacement": "none",
+      "_doc": "every non-foliage cut-out, rebuilt as a solid"
+    }
+  ],
+  "scatter": [
+    {
+      "name": "grass",
+      "_doc": "Grass tufts on the grass floors, as in the forest ring (zone_536.json).",
+      "meshes": [
+        "SM_GrassClump_A",
+        "SM_GrassClump_B",
+        "SM_GrassClump_C"
+      ],
+      "per_m2": {
+        "grd02303": 6.0,
+        "grd02304": 6.0,
+        "grd02305": 6.0
+      },
+      "scale": [
+        0.7,
+        1.4
+      ],
+      "cull_m": [
+        28,
+        42
+      ],
+      "shadows": true,
+      "seed": 1,
+      "keep_out_m": 0.12
+    }
+  ]
+}

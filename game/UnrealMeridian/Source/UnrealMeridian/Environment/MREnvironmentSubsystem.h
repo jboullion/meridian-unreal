@@ -149,6 +149,15 @@ private:
 	 * follows the camera, unshadowed and without specular. Online the server's value, offline "default".
 	 */
 	void UpdateViewLight();
+	/**
+	 * Keep the sky dome (NightSky, 100 km across) and the atmosphere (its planet's top) under the view:
+	 * both were placed at the world's origin, and the zones reach 374 km out since the batch build
+	 * (2026-10-12): far zones saw past the dome and a sky bent over a distant part of the planet.
+	 * Moves in steps of SkyFollowStepCm, so the atmosphere isn't changed every frame.
+	 */
+	void FollowSky();
+	FVector SkyAnchor = FVector(TNumericLimits<double>::Max());
+	static constexpr double SkyFollowStepCm = 1000000.0;  // 10 km
 	bool IsOutdoor() const;
 
 	TSharedPtr<FJsonObject> Root;

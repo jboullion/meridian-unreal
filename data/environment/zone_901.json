@@ -1,0 +1,38 @@
+{
+  "_doc": "Zone art for The meeting place of the Gods (rid 901), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): outdoors, no buildings rebuilt yet. Cut-outs become solids; grime at the walls' feet.",
+  "rid": 901,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Water",
+      "kind": "water",
+      "region_m": [
+        -0.4,
+        -0.4,
+        42.5,
+        56.3
+      ],
+      "materials": [
+        "grd01803",
+        "grd08911"
+      ],
+      "bed_texture": "grd09629",
+      "bed_depth_m": 0.9,
+      "_doc": "rivers and lakes: a water surface over a shelving bed"
+    },
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -0.4,
+        -0.4,
+        42.5,
+        56.3
+      ],
+      "displacement": "none",
+      "_doc": "every non-foliage cut-out, rebuilt as a solid"
+    }
+  ]
+}

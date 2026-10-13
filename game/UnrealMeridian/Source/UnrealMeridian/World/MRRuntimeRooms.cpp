@@ -441,6 +441,24 @@ void UMRRuntimeRooms::FetchTexture(const FString& RoomFile, uint16 Texture)
 
 // ------------------------------------------------------------------------------ prefetch
 
+void UMRRuntimeRooms::BuiltNeighbours(const FString& RoomFile, TArray<int32>& Out) const
+{
+	const FIndexEntry* Entry = Index.Find(RoomFile.ToLower());
+	const UMRZoneSubsystem* Zones = GetWorld() ? GetWorld()->GetSubsystem<UMRZoneSubsystem>() : nullptr;
+	if (!Entry || !Zones)
+	{
+		return;
+	}
+	for (const int32 Link : Entry->Links)
+	{
+		const FString Roo = RoomForKodRid(Link);
+		if (const int32 Rid = Roo.IsEmpty() ? 0 : Zones->RidForRoom(Roo))
+		{
+			Out.AddUnique(Rid);
+		}
+	}
+}
+
 void UMRRuntimeRooms::Prefetch(const FString& RoomFile)
 {
 	FMRAssetCache* Cache = Assets();

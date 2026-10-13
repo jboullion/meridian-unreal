@@ -1,0 +1,21 @@
+{
+  "_doc": "Zone art for Abyssal Bore (rid 1511), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): outdoors, no buildings rebuilt yet. Cut-outs become solids; grime at the walls' feet.",
+  "rid": 1511,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -1.0,
+        -17.5,
+        112.1,
+        115.4
+      ],
+      "displacement": "none",
+      "_doc": "every cut-out, rebuilt as a solid"
+    }
+  ]
+}

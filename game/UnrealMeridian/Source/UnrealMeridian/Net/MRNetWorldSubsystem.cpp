@@ -10,6 +10,7 @@
 #include "Engine/LocalPlayer.h"
 #include "EngineUtils.h"
 #include "Engine/World.h"
+#include "TimerManager.h"
 #include "Game/MRGameMode.h"
 #include "GameFramework/PlayerController.h"
 #include "ProfilingDebugging/CsvProfiler.h"
@@ -268,8 +269,50 @@ void UMRNetWorldSubsystem::OnRoomEntered()
 	bRoomMatchesServer = !Zone || !Zone->bHasRooSecurity || MRNetRead::SecurityMatches(Zone->RooSecurity, P.RoomSecurity);
 	if (BuiltRid && bRoomMatchesServer)
 	{
-		Rid = BuiltRid;
-		FinishEnterRoom(PrevRid);
+		if (Zones->EnsureZoneLoaded(BuiltRid, false))
+		{
+			Rid = BuiltRid;
+			FinishEnterRoom(PrevRid);
+			return;
+		}
+		// a built zone that isn't in yet (only the zones near the player are loaded: a recall, death,
+		// the first room): wait for its level as for a room built at runtime, up to the stream timeout
+		Rid = 0;
+		LoadingRoom = P.RoomName;
+		SetPawnFrozen(true);
+		Net->SetStatus(FString::Printf(TEXT("Loading %s..."), *P.RoomName));
+		const int32 Ticket = ++RoomTicket;
+		const double Start = FPlatformTime::Seconds();
+		TWeakObjectPtr<UMRNetWorldSubsystem> Weak(this);
+		TSharedRef<FTimerHandle> Handle = MakeShared<FTimerHandle>();
+		GetWorld()->GetTimerManager().SetTimer(*Handle, FTimerDelegate::CreateWeakLambda(this, [Weak, Ticket, PrevRid, BuiltRid, Start, Handle]()
+		{
+			UMRNetWorldSubsystem* Self = Weak.Get();
+			UMRZoneSubsystem* Z = Self ? Self->GetWorld()->GetSubsystem<UMRZoneSubsystem>() : nullptr;
+			if (!Self || !Z || Ticket != Self->RoomTicket)
+			{
+				if (Self)
+				{
+					Self->GetWorld()->GetTimerManager().ClearTimer(*Handle);
+				}
+				return;  // another room came since
+			}
+			bool bIn = Z->EnsureZoneLoaded(BuiltRid, false);
+			if (!bIn && FPlatformTime::Seconds() - Start < 2.0 * UMRZoneSubsystem::StreamWaitTimeoutSeconds)
+			{
+				return;
+			}
+			if (!bIn)
+			{
+				bIn = Z->EnsureZoneLoaded(BuiltRid, true);  // still streaming: wait for it rather than walk on nothing
+			}
+			Self->GetWorld()->GetTimerManager().ClearTimer(*Handle);
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: zone %d %s after %.2f s"), BuiltRid, bIn ? TEXT("in") : TEXT("still not in"),
+				FPlatformTime::Seconds() - Start);
+			Self->LoadingRoom.Reset();
+			Self->Rid = BuiltRid;
+			Self->FinishEnterRoom(PrevRid);
+		}), 0.1f, true);
 		return;
 	}
 	if (BuiltRid)

@@ -1,0 +1,46 @@
+{
+  "_doc": "Zone art for North Quilicia Wood (rid 511), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): outdoors, no buildings rebuilt yet. Cut-outs become solids; grime at the walls' feet; grass tufts on the grass.",
+  "rid": 511,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -0.2,
+        4.5,
+        119.8,
+        119.0
+      ],
+      "displacement": "none",
+      "_doc": "every non-foliage cut-out, rebuilt as a solid"
+    }
+  ],
+  "scatter": [
+    {
+      "name": "grass",
+      "_doc": "Grass tufts on the grass floors, as in the forest ring (zone_536.json).",
+      "meshes": [
+        "SM_GrassClump_A",
+        "SM_GrassClump_B",
+        "SM_GrassClump_C"
+      ],
+      "per_m2": {
+        "grd02303": 6.0
+      },
+      "scale": [
+        0.7,
+        1.4
+      ],
+      "cull_m": [
+        28,
+        42
+      ],
+      "shadows": true,
+      "seed": 1,
+      "keep_out_m": 0.12
+    }
+  ]
+}

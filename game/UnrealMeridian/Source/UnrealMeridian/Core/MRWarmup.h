@@ -7,8 +7,8 @@
 DECLARE_MULTICAST_DELEGATE(FMRWarmupReady);
 
 /**
- * The warm-up behind the loading screen (SMRLoadingScreen, docs/performance.md): every zone is loaded
- * at once (UMRZoneSubsystem::LoadAllZoneLevels), and what the world needs to draw without hitches is
+ * The warm-up behind the loading screen (SMRLoadingScreen, docs/performance.md): the start zone and the
+ * zones one exit away load (UMRZoneSubsystem; every zone with mr.Zones.LoadAll 1), and what the world needs to draw without hitches is
  * still being made afterwards: shaders (an uncooked game compiles the ones missing from the DDC),
  * the sprite atlases (loaded here, which would otherwise stop the frame the first time a look is drawn),
  * meshes, distance fields and textures (uncooked: built or fetched from the DDC), the pipeline states

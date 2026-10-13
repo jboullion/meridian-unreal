@@ -1,0 +1,39 @@
+{
+  "_doc": "Zone art for Waylay Oasis (rid 1500), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): outdoors, no buildings rebuilt yet. Cut-outs become solids; grime at the walls' feet.",
+  "rid": 1500,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Water",
+      "kind": "water",
+      "region_m": [
+        -58.2,
+        -80.2,
+        410.2,
+        282.6
+      ],
+      "materials": [
+        "grd01802",
+        "grd08895",
+        "grd08968"
+      ],
+      "bed_texture": "grd09629",
+      "bed_depth_m": 0.9,
+      "_doc": "rivers and lakes: a water surface over a shelving bed"
+    },
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -58.2,
+        -80.2,
+        410.2,
+        282.6
+      ],
+      "displacement": "none",
+      "_doc": "every cut-out, rebuilt as a solid"
+    }
+  ]
+}

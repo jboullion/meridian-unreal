@@ -49,6 +49,9 @@ public:
 	/** Download the files of the rooms one exit away from this one (data/net/rooms.json links). */
 	void Prefetch(const FString& RoomFile);
 
+	/** The built zones one exit away from a room (its data/net/rooms.json links, by room file): kept loaded with it. */
+	void BuiltNeighbours(const FString& RoomFile, TArray<int32>& Out) const;
+
 	/** The room's Kod RID in data/net/rooms.json, or 0. */
 	int32 KodRidForRoom(const FString& RoomFile) const;
 	/** The .roo of a Kod RID, or empty. */

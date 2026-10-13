@@ -1,0 +1,38 @@
+{
+  "_doc": "Zone art for Seafarer's Peak (rid 515), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): outdoors, no buildings rebuilt yet. Cut-outs become solids; grime at the walls' feet.",
+  "rid": 515,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Water",
+      "kind": "water",
+      "region_m": [
+        -396.9,
+        -424.5,
+        535.3,
+        304.9
+      ],
+      "materials": [
+        "grd07204"
+      ],
+      "bed_texture": "grd09629",
+      "bed_depth_m": 3.0,
+      "shelf": false,
+      "_doc": "the sea or a great lake: a water surface over a flat bed 3 m down"
+    },
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -396.9,
+        -424.5,
+        535.3,
+        304.9
+      ],
+      "displacement": "none",
+      "_doc": "every non-foliage cut-out, rebuilt as a solid"
+    }
+  ]
+}

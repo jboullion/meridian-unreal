@@ -1045,15 +1045,39 @@ def build_water(out, water_out, polys, entry):
     bed_tex = entry.get("bed_texture", "grd09629")
     depth = entry.get("bed_depth_m", 0.9)
     level = entry.get("surface_m", 0.12)
-    # boundary edges: used by one polygon only
-    count = {}
+    # "shelf": false (the sea: Barloque's ports, 371,000 m2) keeps the bed flat at bed_depth_m: no
+    # 0.75 m fan to shelve it at the rim, which would be millions of triangles there
+    shelf = entry.get("shelf", True)
+    boxes = [(min(p.x for p in q.pts), max(p.x for p in q.pts), min(p.z for p in q.pts), max(p.z for p in q.pts)) for q in polys]
+
+    def in_water(x, z):
+        return any(b[0] - 1e-6 <= x <= b[1] + 1e-6 and b[2] - 1e-6 <= z <= b[3] + 1e-6 and any(geometry.intersect_point_tri_2d(
+            Vector((x, z)), Vector((q.pts[0].x, q.pts[0].z)), Vector((q.pts[i].x, q.pts[i].z)),
+            Vector((q.pts[i + 1].x, q.pts[i + 1].z))) for i in range(1, len(q.pts) - 1)) for q, b in zip(polys, boxes))
+
+    # the rim: edges with water on one side only. An edge used by one polygon isn't enough: a river
+    # is many sectors whose edges don't meet vertex to vertex, so its inner edges would get skirts and a
+    # shelving bed across the water (Cor Noth, 2026-10-12); each edge keeps its own height (a river steps down)
+    count, ends = {}, {}
     for poly in polys:
         k = len(poly.pts)
         for i in range(k):
             a, b = poly.pts[i], poly.pts[(i + 1) % k]
             key = tuple(sorted(((round(a.x, 3), round(a.z, 3)), (round(b.x, 3), round(b.z, 3)))))
             count[key] = count.get(key, 0) + 1
-    edges = [key for key, n in count.items() if n == 1]
+            ends.setdefault(key, (a, b) if (round(a.x, 3), round(a.z, 3)) == key[0] else (b, a))
+    edges = []
+    for key, n in count.items():
+        if n != 1:
+            continue
+        (ax, az), (bx, bz) = key
+        mx, mz = (ax + bx) / 2, (az + bz) / 2
+        nx, nz = -(bz - az), bx - ax
+        ln = math.hypot(nx, nz) or 1.0
+        nx, nz = nx / ln * 0.05, nz / ln * 0.05
+        if in_water(mx + nx, mz + nz) and in_water(mx - nx, mz - nz):
+            continue  # water on both sides: inside the river
+        edges.append(key)
 
     def edge_dist(x, z):
         best = 1e9
@@ -1066,9 +1090,17 @@ def build_water(out, water_out, polys, entry):
 
     def bed_y(p):
         # shelving bed: shallow at the rim, full depth ~2.5 m in
+        if not shelf:
+            return p.y - depth
         return p.y - min(depth, 0.2 + depth * edge_dist(p.x, p.z) / 2.5)
 
     for poly in polys:
+        if not shelf:
+            out.poly([Vector((p.x, p.y - depth, p.z)) for p in poly.pts],
+                     [Vector((p.x / M_PER_SQUARE, p.z / M_PER_SQUARE)) for p in poly.pts], bed_tex, UP)
+            water_out.poly([Vector((p.x, p.y + level, p.z)) for p in poly.pts],
+                           [Vector((p.x / M_PER_SQUARE, p.z / M_PER_SQUARE)) for p in poly.pts], "water", UP)
+            continue
         # subdivide each floor polygon into a fan of small triangles so the bed can shelve
         c = sum(poly.pts, Vector()) / len(poly.pts)
         k = len(poly.pts)
@@ -1087,17 +1119,15 @@ def build_water(out, water_out, polys, entry):
                         out.tri(pts, [Vector((p.x / M_PER_SQUARE, p.z / M_PER_SQUARE)) for p in pts], bed_tex, UP)
         water_out.poly([Vector((p.x, p.y + level, p.z)) for p in poly.pts],
                        [Vector((p.x / M_PER_SQUARE, p.z / M_PER_SQUARE)) for p in poly.pts], "water", UP)
-    y0 = polys[0].pts[0].y
     for (ax, az), (bx, bz) in edges:
-        a_top, b_top = Vector((ax, y0, az)), Vector((bx, y0, bz))
+        a_top, b_top = ends[((ax, az), (bx, bz))]
+        a_top, b_top = a_top.copy(), b_top.copy()
         a_bot, b_bot = Vector((ax, bed_y(a_top), az)), Vector((bx, bed_y(b_top), bz))
         mid = (a_top + b_top) / 2
         inward = Vector((-(bz - az), 0.0, bx - ax)).normalized()
         # face the skirt towards the water: probe which side has bed below the rim
         probe = mid + inward * 0.3
-        if not any(geometry.intersect_point_tri_2d(
-                Vector((probe.x, probe.z)), Vector((q.pts[0].x, q.pts[0].z)), Vector((q.pts[i].x, q.pts[i].z)),
-                Vector((q.pts[i + 1].x, q.pts[i + 1].z))) for q in polys for i in range(1, len(q.pts) - 1)):
+        if not in_water(probe.x, probe.z):
             inward = -inward
         length = (b_top - a_top).length
         out.poly([a_top, b_top, b_bot, a_bot],
@@ -1140,6 +1170,39 @@ def to_blender(v):
     return Vector((v.x, -v.z, v.y))
 
 
+# Vertex colour R of meshes that aren't displaced (cut-outs, water, "displacement": "none"): the art
+# masters take R as the sector light level for the indoor ambient floor (environment_materials.py,
+# base * R * SectorAmbient), the same as the blockout's, where roo2gltf writes each sector's light.
+# The displacement mask (R otherwise) is 0 on every edge, which left thin cut-outs unlit indoors: the
+# Arena of Kraanan's banners drew black (2026-10-12). Set per zone from its blockout (blockout_light).
+AMBIENT_R = 1.0
+
+
+def blockout_light(glb):
+    """The blockout's typical sector light level: the median of its vertex colour R (roo2gltf)."""
+    import struct
+    data = open(glb, "rb").read()
+    jlen = struct.unpack("<I", data[12:16])[0]
+    doc = json.loads(data[20:20 + jlen])
+    binary = data[20 + jlen + 8:]
+    values = []
+    for mesh in doc.get("meshes", []):
+        for prim in mesh["primitives"]:
+            i = prim["attributes"].get("COLOR_0")
+            if i is None:
+                continue
+            acc = doc["accessors"][i]
+            view = doc["bufferViews"][acc["bufferView"]]
+            comp = {5126: ("f", 4, 1.0), 5121: ("B", 1, 255.0), 5123: ("H", 2, 65535.0)}[acc["componentType"]]
+            n = {"VEC3": 3, "VEC4": 4}[acc["type"]]
+            start = view.get("byteOffset", 0) + acc.get("byteOffset", 0)
+            stride = view.get("byteStride", comp[1] * n)
+            for k in range(acc["count"]):
+                values.append(struct.unpack_from("<" + comp[0], binary, start + k * stride)[0] / comp[2])
+    values.sort()
+    return values[len(values) // 2] if values else 1.0
+
+
 def make_object(name, out, collection, grid=True, bake=None):
     mesh = bpy.data.meshes.new(name)
     verts, faces = [], []
@@ -1165,7 +1228,7 @@ def make_object(name, out, collection, grid=True, bake=None):
     if bake:
         moved = zone_detail.bake_displacement(bm, out.slots, bake, DISPLACEMENT_M, mask)
         log("%s: baked displacement into %d vertices" % (name, moved))
-    weights = [v[mask] for v in bm.verts]
+    weights = [v[mask] for v in bm.verts] if (grid or bake) else [AMBIENT_R] * len(bm.verts)
     bm.to_mesh(mesh)
     bm.free()
     if bake:
@@ -1312,6 +1375,8 @@ def main():
 
     glb = os.path.join(REPO, zone["mesh"])
     prims = blockout.read_glb(glb)
+    global AMBIENT_R
+    AMBIENT_R = blockout_light(glb)
     out_dir = os.path.join(REPO, "build", "environment", "zone_%d" % rid)
     os.makedirs(out_dir, exist_ok=True)
 
@@ -1509,9 +1574,12 @@ def main():
         name = "SM_Z%d_Grime" % rid
         obj = make_object(name, out, art_col, grid=False)
         path = os.path.join(out_dir, name + ".glb")
-        export_glb(obj, path)
-        manifest["meshes"].append({"name": name, "file": os.path.basename(path), "building": "Grime",
-                                   "displacement": "none", "decal": True})
+        if len(obj.data.polygons):
+            export_glb(obj, path)
+            manifest["meshes"].append({"name": name, "file": os.path.basename(path), "building": "Grime",
+                                       "displacement": "none", "decal": True})
+        elif os.path.exists(path):
+            os.remove(path)  # no wall gets grime (a forest of foliage walls): nothing for the world build to import
         log("%s: %d wall-foot strips, %d eave strips, %d ceiling strips -> %d triangles" % (name, n_base, n_eave, n_ceil, len(obj.data.polygons)))
 
     # skirting boards and cornices along the room walls (zone_<rid>.json "trims"; zone_trims.py)

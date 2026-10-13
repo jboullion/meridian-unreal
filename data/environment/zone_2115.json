@@ -1,0 +1,38 @@
+{
+  "_doc": "Zone art for Outside the Guard Tower (rid 2115), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): outdoors, no buildings rebuilt yet. Cut-outs become solids; grime at the walls' feet.",
+  "rid": 2115,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Water",
+      "kind": "water",
+      "region_m": [
+        -471.8,
+        -81.3,
+        489.4,
+        537.8
+      ],
+      "materials": [
+        "grd09084"
+      ],
+      "bed_texture": "grd09629",
+      "bed_depth_m": 3.0,
+      "shelf": false,
+      "_doc": "the sea or a great lake: a water surface over a flat bed 3 m down"
+    },
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -471.8,
+        -81.3,
+        489.4,
+        537.8
+      ],
+      "displacement": "none",
+      "_doc": "every non-foliage cut-out, rebuilt as a solid"
+    }
+  ]
+}

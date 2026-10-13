@@ -90,6 +90,35 @@ namespace
 		};
 	}
 
+	/** Textures no client has (catalog.json "missing"): roo2gltf's drawn mesh leaves them out, as a runtime room does. */
+	TSet<uint16> CatalogMissing()
+	{
+		TSet<uint16> Missing;
+		if (const TSharedPtr<FJsonObject> Cat = LoadJson(FPaths::Combine(RepoDir(), TEXT("build"), TEXT("textures"), TEXT("catalog.json"))))
+		{
+			const TArray<TSharedPtr<FJsonValue>>* List = nullptr;
+			if (Cat->TryGetArrayField(TEXT("missing"), List))
+			{
+				for (const TSharedPtr<FJsonValue>& V : *List)
+				{
+					Missing.Add(static_cast<uint16>(V->AsNumber()));
+				}
+			}
+		}
+		return Missing;
+	}
+
+	/** The render mesh's triangles without the missing textures' sections. */
+	int32 DrawnTriangles(const FMRRoomMesh& Mesh, const TSet<uint16>& Missing)
+	{
+		int32 N = 0;
+		for (const FMRRoomMeshSection& S : Mesh.Sections)
+		{
+			N += Missing.Contains(S.Texture) ? 0 : S.Triangles.Num() / 3;
+		}
+		return N;
+	}
+
 	FString RoomsDir()
 	{
 		return FPaths::Combine(RepoDir(), TEXT("ReferenceServers"), TEXT("Server-104"), TEXT("resource"), TEXT("rooms"));
@@ -109,6 +138,7 @@ bool FMRWorldRoomsTest::RunTest(const FString& Parameters)
 		return true;
 	}
 	const MRRoomMesh::FRepeat Repeat = CatalogRepeat();
+	const TSet<uint16> Missing = CatalogMissing();
 	int32 Compared = 0;
 	for (const TSharedPtr<FJsonValue>& V : Layout->GetArrayField(TEXT("zones")))
 	{
@@ -137,7 +167,7 @@ bool FMRWorldRoomsTest::RunTest(const FString& Parameters)
 			AddWarning(FString::Printf(TEXT("%s: no roo2gltf output to compare with"), *Stem));
 			continue;
 		}
-		TestEqual(FString::Printf(TEXT("%s render triangles (roo2gltf)"), *Stem), MRRoomMesh::Build(Room, Repeat, false).NumTriangles(), PyRender);
+		TestEqual(FString::Printf(TEXT("%s render triangles (roo2gltf)"), *Stem), DrawnTriangles(MRRoomMesh::Build(Room, Repeat, false), Missing), PyRender);
 		TestEqual(FString::Printf(TEXT("%s collision triangles (roo2gltf)"), *Stem), MRRoomMesh::Build(Room, Repeat, true).NumTriangles(), PyCollision);
 		// the original's step rule at each wall: the same ways across, with the same lower textures
 		const TArray<TSharedPtr<FJsonValue>>* PySteps = nullptr;

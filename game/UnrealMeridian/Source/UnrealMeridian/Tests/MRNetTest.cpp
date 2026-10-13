@@ -81,6 +81,12 @@ void UMRNetTest::Start(APlayerController* InController)
 	FParse::Value(FCommandLine::Get(), TEXT("MRNetPal="), PalName);
 	bDeath = FParse::Param(FCommandLine::Get(), TEXT("MRNetDeath"));
 	bAdmin = FParse::Param(FCommandLine::Get(), TEXT("MRNetAdmin"));
+	// the travel step's runtime room: Deep in the Forest of Farol is a built zone since the world remaster's
+	// batch build (2026-10-11), so it's drawn as built at runtime here, as the rooms we haven't built are
+	if (IConsoleVariable* Forced = IConsoleManager::Get().FindConsoleVariable(TEXT("mr.Zones.ForceRuntime")))
+	{
+		Forced->Set(TEXT("d6e6.roo"));
+	}
 	int32 Server = INDEX_NONE;
 	for (int32 i = 0; Net && i < Net->GetServers().Num(); ++i)
 	{
@@ -2865,6 +2871,7 @@ void UMRNetTest::Tick()
 	{
 		// our zones -> Farol West (331, its flagpole) -> the Forest of Farol (536, built since pass 2 of
 		// the world remaster) -> off its east edge: Deep in the Forest of Farol (d6e6.roo), built at runtime
+		// (mr.Zones.ForceRuntime, set in Start: it's a built zone since the batch build)
 		constexpr int32 FarolWest = 331;
 		constexpr int32 ForestOfFarol = 536;
 		const int32 Here = NetWorld->GetRid();

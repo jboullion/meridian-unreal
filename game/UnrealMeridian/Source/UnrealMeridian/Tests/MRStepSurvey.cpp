@@ -146,6 +146,10 @@ bool UMRStepSurvey::BeginRoom()
 		}
 		const int32 BuiltRid = Zones->RidForRoom(RoomFile);
 		const FMRZoneInfo* Zone = BuiltRid ? Zones->FindZone(BuiltRid) : nullptr;
+		if (BuiltRid)
+		{
+			Zones->EnsureZoneLoaded(BuiltRid, true);  // only the zones near the view are loaded
+		}
 		bRuntime = Zone == nullptr;
 		FVector Origin = Zone ? Zone->Origin : RuntimeOrigin;
 		if (bRuntime)

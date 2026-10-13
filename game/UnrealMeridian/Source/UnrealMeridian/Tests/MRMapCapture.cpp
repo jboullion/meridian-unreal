@@ -76,7 +76,7 @@ void UMRMapCapture::NextZone()
 {
 	APlayerController* PC = Controller.Get();
 	UWorld* World = PC ? PC->GetWorld() : nullptr;
-	const UMRZoneSubsystem* ZoneSys = World ? World->GetSubsystem<UMRZoneSubsystem>() : nullptr;
+	UMRZoneSubsystem* ZoneSys = World ? World->GetSubsystem<UMRZoneSubsystem>() : nullptr;
 	if (!ZoneSys)
 	{
 		return;
@@ -88,6 +88,7 @@ void UMRMapCapture::NextZone()
 		return;
 	}
 	const FMRZoneInfo* Zone = ZoneSys->FindZone(Zones[Index]);
+	ZoneSys->EnsureZoneLoaded(Zones[Index], true);  // only the zones near the view are loaded
 	APawn* Pawn = PC->GetPawn();
 	if (Zone && Pawn)
 	{

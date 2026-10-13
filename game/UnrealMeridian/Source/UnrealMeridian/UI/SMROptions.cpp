@@ -1,7 +1,10 @@
 #include "UI/SMROptions.h"
 
+#include "Character/MRCharacter.h"
 #include "Core/MRSettings.h"
 #include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
+#include "UnrealClient.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Net/MRNetSubsystem.h"
@@ -191,6 +194,40 @@ namespace
 				MRUI::Label(Ui->GetStyle(), TAttribute<FText>::CreateLambda([Name]() { return FText::AsNumber(FMath::RoundToInt(MRSettings::GetCVar(Name))); }), 9.5f, true)
 			];
 	}
+
+	/** The horizontal field of view (mr.Camera.FOV): Original (0, the original's view for this screen) or 40-110 degrees. */
+	TSharedRef<SWidget> FieldOfView(UMRUISubsystem* Ui)
+	{
+		const float Px = Ui->GetStyle()->Px();
+		static const TCHAR* Name = TEXT("mr.Camera.FOV");
+		auto InUse = []()
+		{
+			FIntPoint Size(16, 9);
+			if (GEngine && GEngine->GameViewport && GEngine->GameViewport->Viewport)
+			{
+				Size = GEngine->GameViewport->Viewport->GetSizeXY();
+			}
+			return FMath::RoundToInt(AMRCharacter::HorizontalFov(Size.Y > 0 ? static_cast<float>(Size.X) / Size.Y : 16.f / 9.f));
+		};
+		auto IsOriginal = []() { return MRSettings::GetCVar(Name) <= 0.f; };
+		return SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 4.f * Px, 0.f)
+			[
+				SNew(SMRTextButton, Ui).Text(LOCTEXT("FovOriginal", "Original")).TextSize(8.5f).MinWidth(52.f)
+					.bActive_Lambda(IsOriginal)
+					.OnClicked(FSimpleDelegate::CreateLambda([]() { MRSettings::SetCVar(Name, 0.f); }))
+			]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+			[
+				SNew(SMRSlider, Ui).Min(40).Max(110).Width(110.f).bTrack(true)
+					.Value_Lambda(InUse)
+					.OnChanged(SMRSlider::FOnValue::CreateLambda([](int32 V) { MRSettings::SetCVar(Name, static_cast<float>(V)); }))
+			]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(4.f * Px, 0.f, 0.f, 0.f)
+			[
+				MRUI::Label(Ui->GetStyle(), TAttribute<FText>::CreateLambda([InUse]() { return FText::AsNumber(InUse()); }), 9.5f, true)
+			];
+	}
 }
 
 // ------------------------------------------------------------------------------ tabs
@@ -311,7 +348,7 @@ TSharedRef<SWidget> SMROptionsDialog::MakeGraphics()
 		},
 		[](int32 i) { if (UGameUserSettings* G = Graphics()) { const float L[] = {30.f, 60.f, 120.f, 144.f, 0.f}; G->SetFrameRateLimit(L[i]); SaveGraphics(false); } },
 		32.f));
-	Add(LOCTEXT("FOV", "Field of view"), CVarSlider(Ui, TEXT("mr.Camera.FOV"), 70, 110));
+	Add(LOCTEXT("FOV", "Field of view"), FieldOfView(Ui));
 	// more rows than the page is tall: it scrolls, like the keys
 	return SNew(SBox).HeightOverride(190.f * Px)[SAssignNew(GraphicsScroll, SScrollBox) + SScrollBox::Slot()[Box]];
 }

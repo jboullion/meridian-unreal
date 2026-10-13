@@ -1,0 +1,62 @@
+{
+  "_doc": "Zone art for Eastern Duke's Way (rid 2952), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): outdoors, no buildings rebuilt yet. Cut-outs become solids; grime at the walls' feet; grass tufts on the grass.",
+  "rid": 2952,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Water",
+      "kind": "water",
+      "region_m": [
+        -13.1,
+        -12.6,
+        96.7,
+        111.3
+      ],
+      "materials": [
+        "grd01802"
+      ],
+      "bed_texture": "grd09629",
+      "bed_depth_m": 0.9,
+      "_doc": "rivers and lakes: a water surface over a shelving bed"
+    },
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -13.1,
+        -12.6,
+        96.7,
+        111.3
+      ],
+      "displacement": "none",
+      "_doc": "every non-foliage cut-out, rebuilt as a solid"
+    }
+  ],
+  "scatter": [
+    {
+      "name": "grass",
+      "_doc": "Grass tufts on the grass floors, as in the forest ring (zone_536.json).",
+      "meshes": [
+        "SM_GrassClump_A",
+        "SM_GrassClump_B",
+        "SM_GrassClump_C"
+      ],
+      "per_m2": {
+        "grd02301": 6.0
+      },
+      "scale": [
+        0.7,
+        1.4
+      ],
+      "cull_m": [
+        28,
+        42
+      ],
+      "shadows": true,
+      "seed": 1,
+      "keep_out_m": 0.12
+    }
+  ]
+}

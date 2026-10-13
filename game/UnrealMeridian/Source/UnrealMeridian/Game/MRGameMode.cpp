@@ -63,6 +63,10 @@ void AMRGameMode::RestartPlayer(AController* NewPlayer)
 	{
 		PS->SetZoneId(StartZone);
 	}
+	if (!SpawnWaitStart.Contains(NewPlayer))
+	{
+		Zones->EnsureZoneLoaded(StartZone, true);  // the start zone now; its neighbours stream in behind the warm-up
+	}
 
 	// Spawn only once the start zone's geometry is in, so nobody drops through an unloaded floor.
 	// Retry shortly; after the timeout spawn anyway.
@@ -87,7 +91,14 @@ void AMRGameMode::RestartPlayer(AController* NewPlayer)
 			}), 0.1f, false);
 			return;
 		}
-		UE_LOG(LogMeridian, Warning, TEXT("MRStreaming: start zone %d never loaded; spawning anyway"), StartZone);
+		// a packaged game's first start compiles its pipelines and streams slowly: rather than drop
+		// the player through a floor that isn't in yet, wait for the level here (the loading screen is up)
+		UE_LOG(LogMeridian, Warning, TEXT("MRStreaming: start zone %d not in after %.0f s; loading it now"), StartZone,
+			UMRZoneSubsystem::StreamWaitTimeoutSeconds);
+		if (!Zones->EnsureZoneLoaded(StartZone, true))
+		{
+			UE_LOG(LogMeridian, Warning, TEXT("MRStreaming: start zone %d never loaded; spawning anyway"), StartZone);
+		}
 	}
 	if (WaitStart)
 	{

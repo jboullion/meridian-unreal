@@ -40,7 +40,12 @@
 
 namespace
 {
-	TAutoConsoleVariable<float> CVarFieldOfView(TEXT("mr.Camera.FOV"), 90.f, TEXT("The camera's horizontal field of view, degrees (Options > Graphics)."));
+	TAutoConsoleVariable<float> CVarFieldOfView(TEXT("mr.Camera.FOV"), 0.f,
+		TEXT("The camera's horizontal field of view, degrees; 0 = the original's view, 50 x 32.1 widened for wide screens (Options > Graphics)."));
+
+	// the original D3D view: d3drender.c FovHorizontal = PI / 3.6, FovVertical = PI / 5.6, an aspect of about 1.62
+	constexpr float OriginalFovH = 180.f / 3.6f;
+	constexpr float OriginalFovV = 180.f / 5.6f;
 	TAutoConsoleVariable<float> CVarThirdPersonPitch(TEXT("mr.Camera.ThirdPersonPitch"), 20.f,
 		TEXT("How far (degrees) the third-person cameras may tilt up or down from eye level (0 = locked at eye level)."));
 
@@ -71,7 +76,7 @@ AMRCharacter::AMRCharacter(const FObjectInitializer& ObjectInitializer)
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
-	Camera->SetFieldOfView(90.f);
+	Camera->SetFieldOfView(OriginalHorizontalFov(16.f / 9.f));  // Tick keeps it for the viewport's shape
 
 	// Drawn as a sprite (UMRSpriteBodyComponent, created at BeginPlay): ACharacter's skeletal mesh is unused.
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -423,6 +428,21 @@ void AMRCharacter::InitAbilityActorInfo()
 
 // ---------------------------------------------------------------------------- tick
 
+float AMRCharacter::OriginalHorizontalFov(float Aspect)
+{
+	// UE's camera keeps the horizontal angle: the original's 32.1 degrees high (Hor+), or 50 across on a
+	// screen narrower than the original's 1.62
+	const float HalfTanV = FMath::Tan(FMath::DegreesToRadians(OriginalFovV * 0.5f));
+	const float Wide = FMath::RadiansToDegrees(2.f * FMath::Atan(HalfTanV * FMath::Max(Aspect, 0.1f)));
+	return FMath::Clamp(Wide, OriginalFovH, 170.f);
+}
+
+float AMRCharacter::HorizontalFov(float Aspect)
+{
+	const float Chosen = CVarFieldOfView.GetValueOnGameThread();
+	return Chosen > 0.f ? FMath::Clamp(Chosen, 40.f, 120.f) : OriginalHorizontalFov(Aspect);
+}
+
 void AMRCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -433,9 +453,14 @@ void AMRCharacter::Tick(float DeltaSeconds)
 	}
 	if (IsLocallyControlled() && Camera)
 	{
-		// Options > Graphics: the field of view
-		const float Fov = FMath::Clamp(CVarFieldOfView.GetValueOnGameThread(), 60.f, 120.f);
-		if (!FMath::IsNearlyEqual(Camera->FieldOfView, Fov))
+		// Options > Graphics: the field of view, the original's by default, for the viewport's shape
+		int32 SizeX = 16, SizeY = 9;
+		if (const APlayerController* PC = GetController<APlayerController>())
+		{
+			PC->GetViewportSize(SizeX, SizeY);
+		}
+		const float Fov = HorizontalFov(SizeY > 0 ? static_cast<float>(SizeX) / SizeY : 16.f / 9.f);
+		if (!FMath::IsNearlyEqual(Camera->FieldOfView, Fov, 0.01f))
 		{
 			Camera->SetFieldOfView(Fov);
 		}

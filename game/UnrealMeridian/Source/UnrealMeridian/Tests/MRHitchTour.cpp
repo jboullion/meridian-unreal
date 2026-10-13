@@ -12,6 +12,7 @@
 #include "Misc/Paths.h"
 #include "RenderTimer.h"
 #include "UnrealMeridian.h"
+#include "Zones/MRZoneSubsystem.h"
 
 namespace
 {
@@ -141,6 +142,11 @@ void UMRHitchTour::BeginStop()
 	const FStop& S = Stops[StopIndex];
 	if (Pawn && !S.Eye.IsZero())
 	{
+		// a stop's zone streams in as a player's would (the stops are a walk: neighbours already in)
+		if (UMRZoneSubsystem* Zones = Pawn->GetWorld()->GetSubsystem<UMRZoneSubsystem>())
+		{
+			Zones->EnsureZoneLoaded(Zones->ZoneAtLocation(S.Eye), false);
+		}
 		Pawn->TeleportTo(S.Eye - FVector(0.f, 0.f, EyeAboveCentreCm), FRotator(0.f, S.Yaw, 0.f));
 	}
 	if (PC)

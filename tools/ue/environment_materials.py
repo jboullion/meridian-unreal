@@ -32,6 +32,7 @@ import re
 import unreal
 
 import build_cache
+import import_source
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 PLACEHOLDERS = os.path.join(REPO, "build", "textures_placeholder")
@@ -957,8 +958,39 @@ def build_ground_master(name, macro):
     mel.connect_material_expressions(nblend, "", lerp, "B")
     mel.connect_material_expressions(strength, "", lerp, "Alpha")
     rough = _expr(mat, unreal.MaterialExpressionScalarParameter, -400, 1000, parameter_name="Roughness", default_value=0.92)
+    # walls with a ground texture (the cliffs' Rock Wall 2, grass on a river bank, cave stone) take the
+    # mesh's own UVs (the original's wall mapping): the top-down world projection smeared every texel
+    # down a wall into vertical stripes (the King's Way, 2026-10-12). Up-facing faces keep it.
+    uv0 = _expr(mat, unreal.MaterialExpressionTextureCoordinate, -1500, -650)
+    cw = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, -700, parameter_name="BaseColor",
+               sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR, texture=default)
+    mel.connect_material_expressions(uv0, "", cw, "UVs")
+    nw = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, 1550, parameter_name="Normal",
+               sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL, texture=default_normal)
+    mel.connect_material_expressions(uv0, "", nw, "UVs")
+    vn = _expr(mat, unreal.MaterialExpressionVertexNormalWS, -650, -800)
+    vz = _expr(mat, unreal.MaterialExpressionComponentMask, -520, -800, r=False, g=False, b=True)
+    mel.connect_material_expressions(vn, "", vz, "")
+    fsub = _expr(mat, unreal.MaterialExpressionSubtract, -400, -800, const_b=0.5)
+    mel.connect_material_expressions(vz, "", fsub, "A")
+    fmul = _expr(mat, unreal.MaterialExpressionMultiply, -300, -800, const_b=5.0)
+    mel.connect_material_expressions(fsub, "", fmul, "A")
+    floorness = _expr(mat, unreal.MaterialExpressionSaturate, -200, -800)
+    mel.connect_material_expressions(fmul, "", floorness, "")
+    colf = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -100, -600)
+    mel.connect_material_expressions(cw, "RGB", colf, "A")
+    mel.connect_material_expressions(col, "", colf, "B")
+    mel.connect_material_expressions(floorness, "", colf, "Alpha")
+    nwl = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -400, 1550)
+    mel.connect_material_expressions(flat, "", nwl, "A")
+    mel.connect_material_expressions(nw, "RGB", nwl, "B")
+    mel.connect_material_expressions(strength, "", nwl, "Alpha")
+    lerpf = _expr(mat, unreal.MaterialExpressionLinearInterpolate, -100, 900)
+    mel.connect_material_expressions(nwl, "", lerpf, "A")
+    mel.connect_material_expressions(lerp, "", lerpf, "B")
+    mel.connect_material_expressions(floorness, "", lerpf, "Alpha")
     # the season on the grass (stone and earth keep their colour)
-    w_base, w_normal, w_rough, up, wet = _weather_surface(mat, (_season(mat, (col, ""), -200, -900, grass=True), ""), (lerp, ""), (rough, ""), 0, 1400)
+    w_base, w_normal, w_rough, up, wet = _weather_surface(mat, (_season(mat, (colf, ""), -200, -900, grass=True), ""), (lerpf, ""), (rough, ""), 0, 1400)
     # puddles where the ground is flat and the noise is high, growing with the wetness: dark, still
     # and mirror-glossy (the original's paths and squares hold water)
     uvp = _world_uv(mat, 0, 2200, "PuddleCm", 700.0, offset=0.13)
@@ -2126,14 +2158,8 @@ def ensure_shelter_textures(entries):
         if cache.fresh(path, key):
             cache.done(path, key, "textures", False)
             continue
-        task = unreal.AssetImportTask()
-        task.filename = src
-        task.destination_path = TEX_DIR
-        task.destination_name = name
-        task.automated = True
-        task.replace_existing = True
-        task.save = False
-        asset_tools.import_asset_tasks([task])
+        # shelter_1500.png would import as a UDIM tile (import_source.py)
+        asset_tools.import_asset_tasks([import_source.task(src, TEX_DIR, name)])
         tex = eal.load_asset(path)
         if not tex:
             log("WARNING: %s did not import" % src)

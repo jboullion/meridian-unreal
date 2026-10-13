@@ -6,6 +6,7 @@
 #include "Components/PointLightComponent.h"
 #include "Engine/GameInstance.h"
 #include "Net/MRNetSubsystem.h"
+#include "Components/SkyAtmosphereComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/PostProcessVolume.h"
@@ -1103,6 +1104,7 @@ void UMREnvironmentSubsystem::Tick(float DeltaTime)
 	}
 	TickLightning(DeltaTime);
 	UpdateViewLight();
+	FollowSky();
 	if (!bForce && Now < NextUpdate)
 	{
 		return;
@@ -1126,6 +1128,42 @@ void UMREnvironmentSubsystem::Tick(float DeltaTime)
 	UpdatePrecipitation(Zone);
 	UpdateAmbient(Zone);
 	UpdateSounds();
+}
+
+void UMREnvironmentSubsystem::FollowSky()
+{
+	UWorld* World = GetWorld();
+	const APlayerController* PC = World && World->IsGameWorld() ? World->GetFirstPlayerController() : nullptr;
+	if (!PC || !PC->PlayerCameraManager)
+	{
+		return;
+	}
+	const FVector View = PC->PlayerCameraManager->GetCameraLocation();
+	if (FVector::Dist2D(View, SkyAnchor) < SkyFollowStepCm)
+	{
+		return;
+	}
+	SkyAnchor = FVector(FMath::RoundToDouble(View.X / SkyFollowStepCm) * SkyFollowStepCm,
+		FMath::RoundToDouble(View.Y / SkyFollowStepCm) * SkyFollowStepCm, 0.0);
+	if (AActor* Dome = FindActor(TEXT("NightSky")))
+	{
+		if (USceneComponent* DomeRoot = Dome->GetRootComponent())
+		{
+			DomeRoot->SetMobility(EComponentMobility::Movable);  // (built static before 2026-10-12)
+		}
+		Dome->SetActorLocation(FVector(SkyAnchor.X, SkyAnchor.Y, Dome->GetActorLocation().Z));
+	}
+	if (AActor* Sky = FindActor(TEXT("SkyAtmosphere")))
+	{
+		if (USkyAtmosphereComponent* SkyComp = Sky->FindComponentByClass<USkyAtmosphereComponent>())
+		{
+			// the planet's top under the view, not at the world's origin
+			SkyComp->SetMobility(EComponentMobility::Movable);
+			SkyComp->TransformMode = ESkyAtmosphereTransformMode::PlanetTopAtComponentTransform;
+			Sky->SetActorLocation(FVector(SkyAnchor.X, SkyAnchor.Y, Sky->GetActorLocation().Z));
+			SkyComp->MarkRenderStateDirty();
+		}
+	}
 }
 
 void UMREnvironmentSubsystem::UpdateViewLight()

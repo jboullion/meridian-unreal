@@ -6,6 +6,7 @@
 #include "Character/MRCharacter.h"
 #include "Dom/JsonObject.h"
 #include "Engine/GameViewportClient.h"
+#include "Engine/LocalPlayer.h"
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
@@ -25,6 +26,8 @@
 #include "Containers/Ticker.h"
 #include "AudioMixerBlueprintLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/MRNetSubsystem.h"
+#include "UI/MRUISubsystem.h"
 #include "UnrealClient.h"
 #include "Zones/MRZoneSubsystem.h"
 #if WITH_EDITOR
@@ -153,6 +156,8 @@ bool UMRLookDevTour::LoadShots()
 			O->TryGetNumberField(TEXT("pawn_yaw"), PawnYaw);
 			Shot.PawnYaw = PawnYaw;
 		}
+		O->TryGetStringArrayField(TEXT("steps"), Shot.Steps);
+		O->TryGetBoolField(TEXT("stand"), Shot.bStand);
 		Shots.Add(Shot);
 	}
 	return Shots.Num() > 0;
@@ -174,6 +179,8 @@ void UMRLookDevTour::Start(APlayerController* InController)
 	FParse::Value(FCommandLine::Get(), TEXT("MRLookDevSettle="), FixedSettle);
 	FParse::Value(FCommandLine::Get(), TEXT("MRLookDevAudio="), AudioSeconds);
 	bWithPawn = FParse::Param(FCommandLine::Get(), TEXT("MRLookDevWithPawn"));
+	bWithUI = FParse::Param(FCommandLine::Get(), TEXT("MRLookDevUI"));
+	FParse::Value(FCommandLine::Get(), TEXT("MRLookDevWield="), WieldSlot);
 	FString Burst;
 	if (FParse::Value(FCommandLine::Get(), TEXT("MRLookDevBurst="), Burst, false))
 	{
@@ -292,6 +299,10 @@ void UMRLookDevTour::Next()
 		return;
 	}
 	const FShot& Shot = Shots[Index];
+	if (UMRZoneSubsystem* Zones = PC->GetWorld()->GetSubsystem<UMRZoneSubsystem>())
+	{
+		Zones->EnsureZoneLoaded(Zones->ZoneAtLocation(Shot.Location), true);  // only the zones near the view are loaded
+	}
 	Camera->SetActorLocationAndRotation(Shot.Location, Shot.Rotation);
 	Camera->GetCameraComponent()->SetFieldOfView(Shot.Fov);
 	APawn* Pawn = PC->GetPawn();
@@ -299,7 +310,17 @@ void UMRLookDevTour::Next()
 	{
 		// as a player sees it: the character standing at the shot, its eyes at the camera, seen
 		// through its own (first-person) camera, the body in the scene
-		Pawn->TeleportTo(Shot.Location - (Pawn->GetPawnViewLocation() - Pawn->GetActorLocation()), FRotator(0.f, Shot.Rotation.Yaw, 0.f));
+		FHitResult Floor;
+		const FCollisionQueryParams Query(TEXT("MRLookDevStand"), false, Pawn);
+		if (Shot.bStand && PC->GetWorld()->LineTraceSingleByChannel(Floor, Shot.Location, Shot.Location - FVector(0, 0, 3000), ECC_Visibility, Query))
+		{
+			// on its feet at the spot (a server square), at its own eye height
+			Pawn->TeleportTo(Floor.ImpactPoint + FVector(0.f, 0.f, Pawn->GetSimpleCollisionHalfHeight() + 2.f), FRotator(0.f, Shot.Rotation.Yaw, 0.f));
+		}
+		else
+		{
+			Pawn->TeleportTo(Shot.Location - (Pawn->GetPawnViewLocation() - Pawn->GetActorLocation()), FRotator(0.f, Shot.Rotation.Yaw, 0.f));
+		}
 		PC->SetControlRotation(Shot.Rotation);
 		PC->SetViewTarget(Pawn);
 	}
@@ -310,6 +331,10 @@ void UMRLookDevTour::Next()
 	if (PC->PlayerCameraManager)
 	{
 		PC->PlayerCameraManager->SetGameCameraCutThisFrame();  // drop history from the last camera
+	}
+	if (bWithUI)
+	{
+		ApplyUISteps(PC, Shot);
 	}
 
 	ShotStart = FPlatformTime::Seconds();
@@ -332,7 +357,37 @@ void UMRLookDevTour::Sample()
 		// while bound, screenshots come here as pixels instead of going to disk
 		FrameHandle = UGameViewportClient::OnScreenshotCaptured().AddUObject(this, &UMRLookDevTour::OnFrame);
 	}
-	FScreenshotRequest::RequestScreenshot(false, false);
+	FScreenshotRequest::RequestScreenshot(bWithUI, false);
+}
+
+void UMRLookDevTour::ApplyUISteps(APlayerController* PC, const FShot& Shot)
+{
+	UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+	UGameInstance* GI = PC->GetGameInstance();
+	UMRNetSubsystem* Net = GI ? GI->GetSubsystem<UMRNetSubsystem>() : nullptr;
+	if (!UI)
+	{
+		return;
+	}
+	if (WieldSlot >= 0)
+	{
+		UI->UseHotbarSlot(WieldSlot);  // once: using the slot again would put the weapon away
+		WieldSlot = -1;
+	}
+	UI->SetInventoryOpen(Shot.Steps.Contains(TEXT("inventory")));
+	const bool bLogin = Shot.Steps.Contains(TEXT("login"));
+	if (bLogin && Net)
+	{
+		// the login screen without a server (UMRUIShots PreviewLogin)
+		Net->SetPreview(EMRNetPhase::Offline, {});
+		UI->ShowLogin(PC);
+		bLoginShown = true;
+	}
+	else if (bLoginShown)
+	{
+		UI->HideLogin();
+		bLoginShown = false;
+	}
 }
 
 void UMRLookDevTour::OnFrame(int32 Width, int32 Height, const TArray<FColor>& Pixels)

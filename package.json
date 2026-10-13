@@ -27,6 +27,7 @@
     "world": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/build_world.ps1",
     "world:clean": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/build_world.ps1 -Clean",
     "lookdev": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_lookdev.ps1",
+    "shots": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_comparison_shots.ps1",
     "lookdev:gallery": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/run_lookdev.ps1 -Label gallery -Gallery",
     "package": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/package.ps1",
     "release": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/ue/release.ps1",
@@ -35,6 +36,7 @@
 
     "data": "python tools/kod_extract/extract.py",
     "maps": "python tools/world/map_inventory.py",
+    "tags": "python tools/world/zone_tags.py",
     "props:inventory": "python tools/aigen/inventory.py --world",
     "props:gallery-layout": "python tools/environment/prop_gallery.py",
     "props:overview": "python tools/aigen/aigen.py overview all 05_review/normalized/front.png"

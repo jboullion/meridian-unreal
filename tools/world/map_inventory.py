@@ -250,8 +250,13 @@ def build(args) -> int:
             status = "built"
         else:
             status = "runtime"
+        keep = reg.get("keep")  # left alone by hand: "original" (the historic towns), "unused", "later"
+        if keep and status == "runtime":
+            status = {"original": "kept original", "unused": "not remastered"}.get(keep, "later")
         todo = []
-        if status != "remastered":
+        if status in ("kept original", "not remastered"):
+            pass
+        elif status != "remastered":
             if not b:
                 todo.append("build")
             else:
@@ -269,6 +274,7 @@ def build(args) -> int:
             "approved": reg.get("approved"),
             "to_do": todo,
             "note": reg.get("note", ""),
+            "keep": keep or "",
         })
     if missing:
         print("No region in data/world/regions.json for: " + ", ".join(missing), file=sys.stderr)
@@ -291,7 +297,7 @@ def build(args) -> int:
 
 # --------------------------------------------------------------------------------- the page
 
-STATUS_ORDER = ["remastered", "art in progress", "built", "runtime"]
+STATUS_ORDER = ["remastered", "art in progress", "built", "runtime", "later", "kept original", "not remastered"]
 
 
 def write_doc(entries: list[dict], regions: dict, kod_rooms: int) -> None:
@@ -304,7 +310,7 @@ def write_doc(entries: list[dict], regions: dict, kod_rooms: int) -> None:
            "",
            "**Status:** *remastered* = built, with an art config (`data/environment/zone_<rid>.json`), look-dev cameras and the "
            "maintainer's approval; *art in progress* = an art config, not approved yet; *built* = a UE level (upscaled textures, "
-           "props) without an art pass; *runtime* = built from the server's file when entered, with the original look.",
+           "props) without an art pass; *runtime* = built from the server's file when entered, with the original look; *later* = left for its own plan (the Death Realm); *kept original* = kept as the original on purpose, for history (built from its file, never remastered); *not remastered* = no Kod room uses it.",
            "",
            "## Summary",
            "",

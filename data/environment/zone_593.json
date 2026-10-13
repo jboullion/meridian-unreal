@@ -1,0 +1,65 @@
+{
+  "_doc": "Zone art for Main gate of Barloque-- Royal City of Meridian (rid 593), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): outdoors, no buildings rebuilt yet. Cut-outs become solids; grime at the walls' feet; grass tufts on the grass.",
+  "rid": 593,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Water",
+      "kind": "water",
+      "region_m": [
+        -70.3,
+        -414.9,
+        516.1,
+        80.2
+      ],
+      "materials": [
+        "grd08911",
+        "grd08912",
+        "grd08914"
+      ],
+      "bed_depth_m": 3.0,
+      "bed_texture": "grd09629",
+      "shelf": false,
+      "_doc": "the sea: a water surface over a flat bed 3 m down (Barloque art pass, 2026-10-12)"
+    },
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -70.3,
+        -414.9,
+        516.1,
+        80.2
+      ],
+      "displacement": "none",
+      "_doc": "every non-foliage cut-out, rebuilt as a solid"
+    }
+  ],
+  "scatter": [
+    {
+      "name": "grass",
+      "_doc": "Grass tufts on the grass floors, as in the forest ring (zone_536.json).",
+      "meshes": [
+        "SM_GrassClump_A",
+        "SM_GrassClump_B",
+        "SM_GrassClump_C"
+      ],
+      "per_m2": {
+        "grd02303": 6.0
+      },
+      "scale": [
+        0.7,
+        1.4
+      ],
+      "cull_m": [
+        28,
+        42
+      ],
+      "shadows": true,
+      "seed": 1,
+      "keep_out_m": 0.12
+    }
+  ]
+}

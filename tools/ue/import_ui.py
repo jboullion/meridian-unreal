@@ -12,10 +12,17 @@ style from data/ui/minimap.json. A file is re-imported only when its content cha
 Saved/MRBuild/ui_cache.json, keyed by asset and variant).
 """
 import hashlib
+import importlib
 import json
 import os
+import sys
 
 import unreal
+
+if os.path.dirname(os.path.abspath(__file__)) not in sys.path:
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import import_source  # noqa: E402
+importlib.reload(import_source)  # an editor that stays open keeps the last run's module
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 STYLE = os.path.join(REPO, "data", "ui", "ui_style.json")
@@ -47,13 +54,8 @@ def import_folder(src, dest, prefix, cache, tag, tiles=()):
             stale.append((f, name, key, h))
     tasks = []
     for f, name, key, h in stale:
-        t = unreal.AssetImportTask()
-        t.filename = os.path.join(src, f)
-        t.destination_path = dest
-        t.automated = True
-        t.replace_existing = True
-        t.save = False
-        tasks.append(t)
+        # T_Map_1500.png would import as a UDIM tile (import_source.py)
+        tasks.append(import_source.task(os.path.join(src, f), dest, name))
     if tasks:
         asset_tools.import_asset_tasks(tasks)
     for f, name, key, h in stale:

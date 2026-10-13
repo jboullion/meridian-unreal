@@ -115,6 +115,16 @@ The profile runs freeze time, so they read lower than play.
 - An `sg.*` set with `-ExecCmds` is saved to `Saved/Config/WindowsEditor/GameUserSettings.ini` and carries into later runs. Set it in every run, then put it back.
 - `mr.Grass.*` are new in this pass (`AMRScatterActor::ApplySettings`). They thin and shorten the world build's grass at runtime, so they can become the Options foliage setting.
 
+## Zone streaming (2026-10-11)
+
+The game used to load every zone at start (`UMRZoneSubsystem::LoadAllZoneLevels`): 64 zones took 3.3 s and the process about 560 MB, and every zone's fires, grass, monsters and sounds stayed in the world. The world remaster takes the built zones to about 330 (`tools/world/overnight.py`), so the game now keeps only the zones near the player loaded, as the client of the retired UE-server path did (ADR 0001 decision 6):
+- **What's loaded:** the zone the player is in, the zone the view is in and a zone pinned by `EnsureZoneLoaded` (a spawn, a server room, a tour's stop), each with every zone one exit away (offline the zone's exits, online also the server's room links, `UMRRuntimeRooms::BuiltNeighbours`) and the zone it shares geometry with. All of them visible: zones sit 2 km apart, so a neighbour costs only culling and taking an exit is a same-frame switch.
+- **What goes:** a zone no longer wanted stays `mr.Zones.KeepSeconds` (60), at most `mr.Zones.MaxLoaded` (24) stay, the least recently wanted unloading first, one level per check (4 a second).
+- **Arriving further away** (a teleporter, recall, death, the Underworld): offline the teleport waits for the level (up to 8 s); online a built room freezes the pawn with "Loading <room>..." until its level shows, as a room built at runtime does.
+- **Offline monsters and NPCs** appear with their zone's level and go when it unloads (`UMRMonsterSubsystem::FollowZones`).
+- **Tours** that jump between zones (look-dev, the step survey, map capture, the hitch tour) call `EnsureZoneLoaded(rid, true)` per stop; others follow the view.
+- `mr.Zones.LoadAll 1` (at start) loads every zone as before.
+
 ## Follow-ups
 
 - **The sky light now takes the skybox's colour.** The day is bluer, the dusk violet. The user likes it for now (2026-10-10); revisit if it should go: tint the dome only outside the sky light's capture, or lower `SkyboxBrightness` and lift the moods' ambient.

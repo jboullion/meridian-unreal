@@ -56,7 +56,7 @@ for _p in (os.path.dirname(os.path.abspath(__file__)), os.path.join(REPO, "tools
     if _p not in sys.path:
         sys.path.insert(0, _p)
 # an editor that stays open (run_in_editor.py) keeps modules from the last run; pick up edits
-for _m in ("build_cache", "blockout", "scatter", "fires", "chimneys", "zone_mood", "environment_materials", "build_audio"):
+for _m in ("build_cache", "import_source", "blockout", "scatter", "fires", "chimneys", "zone_mood", "environment_materials", "build_audio"):
     if _m in sys.modules:
         importlib.reload(sys.modules[_m])
 import blockout  # noqa: E402
@@ -75,6 +75,8 @@ GALLERY = os.path.join(REPO, "data", "environment", "prop_gallery.json")  # tool
 PROPS = os.path.join(REPO, "data", "environment", "props.json")
 GENERATED = "/Game/Generated"
 WORLD_PATH = GENERATED + "/Maps/L_World"
+# L_World is saved after every this many rebuilt zone levels, not only at the end (main save_progress)
+SAVE_WORLD_EVERY = 10
 ZONE_LEVEL_DIR = GENERATED + "/Maps/Zones"
 
 asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
@@ -1114,7 +1116,10 @@ def build_persistent_level(zone_levels, maps, night_sky=None):
     bolt_light.set_editor_property("use_temperature", False)
     bolt_light.set_editor_property("light_color", unreal.Color(r=190, g=205, b=255, a=255))
     bolt_light.set_editor_property("visible", False)
-    spawn(unreal.SkyAtmosphere, label="SkyAtmosphere")
+    atmosphere = spawn(unreal.SkyAtmosphere, label="SkyAtmosphere")
+    # movable: the environment director keeps it (and the dome) under the view (FollowSky): the zones
+    # reach 374 km from the origin since the batch build (2026-10-12)
+    atmosphere.root_component.set_mobility(unreal.ComponentMobility.MOVABLE)
     sky = spawn(unreal.SkyLight, label="SkyLight")
     sky.light_component.set_editor_property("mobility", unreal.ComponentMobility.MOVABLE)
     sky.light_component.set_editor_property("real_time_capture", True)
@@ -1127,6 +1132,7 @@ def build_persistent_level(zone_levels, maps, night_sky=None):
         dome = spawn(unreal.StaticMeshActor, label="NightSky")
         dome.set_actor_scale3d(unreal.Vector(2.0e5, 2.0e5, 2.0e5))  # engine sphere: 50 cm -> 100 km
         comp = dome.static_mesh_component
+        comp.set_mobility(unreal.ComponentMobility.MOVABLE)  # follows the view (FollowSky)
         comp.set_static_mesh(eal.load_asset("/Engine/BasicShapes/Sphere"))
         comp.set_material(0, eal.load_asset(night_sky))
         comp.set_collision_profile_name("NoCollision")
@@ -1190,8 +1196,20 @@ def main(args):
     build_runtime_room_material()  # rooms built at runtime from the server's files (docs/adr/0012)
 
     zone_levels, bad = [], 0
+    rebuilt_since_save = 0
+
+    def save_progress(after):
+        # L_World with every zone level so far, and the later zones' levels earlier builds made, so a
+        # build that dies (a long headless build ran out of video memory, 2026-10-11) still leaves the
+        # zones it built in the game; the build cache keeps the rest, and the next run goes on from here
+        later = [zone_level_path(z2) for z2 in zones[after + 1:]
+                 if "shares_geometry_with" not in z2 and eal.does_asset_exist(zone_level_path(z2))]
+        build_persistent_level(zone_levels + later, maps, materials.night_sky)
+        cache.save()
+        log("saved %s partway: %d zone levels" % (WORLD_PATH, len(zone_levels) + len(later)))
+
     try:
-        for z in zones:
+        for index, z in enumerate(zones):
             if "shares_geometry_with" in z:
                 continue
             parts, summary = import_zone_parts(z, materials)
@@ -1207,6 +1225,10 @@ def main(args):
             prune_art(z, parts)
             if rebuilt:
                 log("zone %d %s: level rebuilt (%s)" % (z["rid"], z["class"], summary))
+                rebuilt_since_save += 1
+                if rebuilt_since_save >= SAVE_WORLD_EVERY:
+                    save_progress(index)
+                    rebuilt_since_save = 0
         gallery_level = build_gallery(materials, prop_materials, maps)
         if gallery_level:
             zone_levels.append(gallery_level)

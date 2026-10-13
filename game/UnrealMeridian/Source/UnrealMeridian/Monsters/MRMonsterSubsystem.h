@@ -14,6 +14,8 @@ class AMRMonster;
  * - Monster rooms (data/zones.json "spawning": weighted classes, init_count_min..max at start,
  *   one more every gen_time_ms while under monster_count_max) spawn at the room's generator
  *   points (zone_layout "generators") or, when it has none, at random floor points in the room.
+ * - Only the zones near the player are loaded (UMRZoneSubsystem): a zone's NPCs and monsters appear
+ *   when its level shows (its initial count) and go when it unloads, so none stand on a missing floor.
  *
  * Console: mr.Monster.Spawn 0 disables it (before the map starts); MRMonsterReset respawns all.
  */
@@ -46,13 +48,33 @@ private:
 		float GenSeconds = 20.f;
 		float Timer = 0.f;
 		TArray<TWeakObjectPtr<AMRMonster>> Alive;
+		/** Its initial count spawned since its zone last showed. */
+		bool bPopulated = false;
 	};
 	TArray<FSpawnRoom> Rooms;
+	struct FNpcSpot
+	{
+		FName Class;
+		FVector At = FVector::ZeroVector;
+		float Yaw = 0.f;
+	};
+	/** A zone's NPCs: where they stand, and the ones placed while its level is in. */
+	struct FNpcZone
+	{
+		TArray<FNpcSpot> Spots;
+		TArray<TWeakObjectPtr<AMRMonster>> Placed;
+		bool bPlaced = false;
+	};
+	TMap<int32, FNpcZone> Npcs;
 	bool bStarted = false;
 	float StartDelay = 2.f;
+	/** Zones in and out are checked this often (seconds). */
+	float ZoneCheckTimer = 0.f;
 
 	void Start();
 	void SpawnInRoom(FSpawnRoom& Room);
 	void SpawnNpcs(const TSharedPtr<class FJsonObject>& Layout);
+	/** Populate the zones whose levels showed, clear the ones that unloaded. */
+	void FollowZones();
 	bool FindFloor(int32 Rid, const FVector& Near, float Jitter, float HalfHeight, float Radius, FVector& Out) const;
 };

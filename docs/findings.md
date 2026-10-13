@@ -43,6 +43,14 @@
 - **Hanging objects.** Objects with `OF_HANGING` (the `Chandelier`; OrnamentalObjects with `pbHanging`: flowers, garlic, herbs, stalactites, none in the demo) hang from the ceiling: z = ceiling - the sprite's height (`clientd3d/object.c` `RoomObjectSetHeight`). `roo2gltf` writes each indoor object's `ceiling_y` into `data/zone_layout.json`; props.json `"hanging"` hangs the mesh's top there.
 - **Objects never block** in the original. props.json `"blocks"` makes a class solid in the remaster (lamps, braziers, tables, chests; sign posts and tree trunks as hidden cylinders; ADR 0007).
 
+## Untextured surfaces aren't drawn
+
+The original D3D client draws a wall section only when its sidedef has that section's bitmap (`clientd3d/d3drender.c`: `if (pWall->pos_sidedef->normal_bmap ...)`, likewise `below_bmap` and `above_bmap` and the negative side, around line 1560), and a floor or ceiling only when the sector has one (`if (pSector->floor) ... else return;`, around line 2154; the ceiling the same). A surface without a texture is simply not drawn: you see past it, usually to the sky. Maps use that a lot: the overland maps' outer walls, open areas at a city's edge (South Barloque, about 10,000 m2). Collision doesn't depend on it.
+
+Until 2026-10-12 `roo2gltf` drew these faces (texture key `untextured`) in the blockout's placeholder colour (a flat pastel), and rooms built at runtime (`MRRoomMesh`) drew them too: 216 of the built zones had some, 6.4 km2 in all. Both now leave them out of the drawn mesh; the collision mesh keeps them (`roo2gltf` `MeshBuilder(drop=...)`, `MRRoomMesh` `bDropUntextured`), and look-dev cameras cast their view rays against the collision mesh.
+
+**Missing textures too (2026-10-13).** A texture a map names but no client has is bound to no bitmap (`clientd3d/draw.c` `GetGridPdib` returns NULL when `GetGridBitmap` finds nothing), so the same checks skip the surface. Six are missing from every client (`build/textures/catalog.json` `"missing"`: 1531, 1532, 1534, 1535, 3601, 5301), all in the Forests of Meridian 2 and 3 (`forest2.roo`, `forest3.roo`), about 7,000 m2 of walls and floor. `roo2gltf` drew them in placeholder colours (forest 3's pale cyan and pink blocks); it now drops them from the drawn mesh with the untextured faces (`TEX_MISSING`), and a room built at runtime skips a section whose texture it doesn't have (`AMRRuntimeRoom::Rebuild`). Forest 3 shows the sky through its missing floor, as the original would.
+
 ## Raza town and the Outskirts are one map
 - `raza.roo` (RID 300) and `razaforest.roo` (RID 330) hold the **same geometry**. The forest file's coordinates are the town's plus (2208, 42592) ROO units, which is about (4.7 m, 91.5 m).
 - The Kod object placements in `razaforest.kod` are the town's objects shifted by the same amount.

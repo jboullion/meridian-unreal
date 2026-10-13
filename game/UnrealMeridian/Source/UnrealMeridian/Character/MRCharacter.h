@@ -77,6 +77,13 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Camera")
 	EMRViewMode GetViewMode() const { return ViewMode; }
 
+	/** The original's view as a horizontal field of view for a viewport this wide (width / height):
+	 *  32.1 degrees high, widened for wide screens, never under 50 across (as Meridian Shards). */
+	static float OriginalHorizontalFov(float Aspect);
+
+	/** The horizontal field of view in use: mr.Camera.FOV, or the original's when it's 0. */
+	static float HorizontalFov(float Aspect);
+
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void SetViewMode(EMRViewMode NewMode);
 

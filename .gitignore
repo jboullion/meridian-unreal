@@ -8,6 +8,8 @@
 /build/
 # the original palette, for runtime BGF decoding (tools/bgf2png/bgf2png.py --palette)
 /data/runtime/
+# the comparison shots' cameras (tools/ue/run_comparison_shots.ps1, from meridian-browser's shots.json)
+/data/environment/comparison_cameras.json
 
 # --- Secrets
 .env

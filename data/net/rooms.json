@@ -1,12 +1,16 @@
 {
- "_doc": "Every Kod room (tools/kod_extract): rid, class, roo file, name, and the rooms its exits lead to. The online client uses it for rooms it builds at runtime (docs/adr/0012-client-parity-and-world-coverage.md).",
+ "_doc": "Every Kod room (tools/kod_extract): rid, class, roo file, name, the rooms its exits lead to and its terrain flags (TERRAIN_*). The online client uses it for rooms it builds at runtime (docs/adr/0012-client-parity-and-world-coverage.md).",
  "rooms": [
   {
    "rid": 1,
    "class": "Underworld",
    "roo": "uworld.roo",
    "name": "The Underworld",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_LAVA",
+    "TERRAIN_MYSTICAL"
+   ]
   },
   {
    "rid": 2,
@@ -16,6 +20,10 @@
    "links": [
     38,
     599
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_MOUNTAIN"
    ]
   },
   {
@@ -23,14 +31,21 @@
    "class": "Field1",
    "roo": "field1.roo",
    "name": "The Fields",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_FIELDS"
+   ]
   },
   {
    "rid": 4,
    "class": "Forest4",
    "roo": "forest4.roo",
    "name": "The Deep Dark Woods of Tos",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_FOREST"
+   ]
   },
   {
    "rid": 5,
@@ -39,6 +54,11 @@
    "name": "The Underground Lake",
    "links": [
     27
+   ],
+   "terrain": [
+    "TERRAIN_LAKE",
+    "TERRAIN_WATERFALL",
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -46,28 +66,39 @@
    "class": "Forest5",
    "roo": "forest5.roo",
    "name": "The Deep Dark Woods of Marion",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_FOREST"
+   ]
   },
   {
    "rid": 15,
    "class": "ProfileRoom",
    "roo": "tos.roo",
    "name": "Room",
-   "links": []
+   "links": [],
+   "terrain": []
   },
   {
    "rid": 24,
    "class": "Forest1",
    "roo": "forest1.roo",
    "name": "The Forests of Meridian",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_FOREST"
+   ]
   },
   {
    "rid": 26,
    "class": "Forest2",
    "roo": "forest2.roo",
    "name": "The Forests of Meridian",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_FOREST"
+   ]
   },
   {
    "rid": 27,
@@ -78,6 +109,10 @@
     5,
     587,
     2500
+   ],
+   "terrain": [
+    "TERRAIN_TEMPLE",
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -87,6 +122,9 @@
    "name": "The Forests of Meridian",
    "links": [
     36
+   ],
+   "terrain": [
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -97,6 +135,9 @@
    "links": [
     28,
     47
+   ],
+   "terrain": [
+    "TERRAIN_MOUNTAIN"
    ]
   },
   {
@@ -104,7 +145,11 @@
    "class": "SpiderNest1",
    "roo": "nest1.roo",
    "name": "The Spider Nest",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_CAVES",
+    "TERRAIN_LAIR"
+   ]
   },
   {
    "rid": 36,
@@ -113,6 +158,9 @@
    "name": "The Hermit's Hut",
    "links": [
     597
+   ],
+   "terrain": [
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -122,6 +170,9 @@
    "name": "Far'Nohl's Chambers",
    "links": [
     38
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -135,6 +186,9 @@
     39,
     40,
     42
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -144,6 +198,9 @@
    "name": "Upstairs in Castle Victoria",
    "links": [
     38
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -154,6 +211,10 @@
    "links": [
     38,
     41
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE",
+    "TERRAIN_LAIR"
    ]
   },
   {
@@ -163,6 +224,10 @@
    "name": "The Throne Room of Castle Victoria ",
    "links": [
     40
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE",
+    "TERRAIN_LAIR"
    ]
   },
   {
@@ -172,6 +237,10 @@
    "name": "Underbasement of Victoria",
    "links": [
     38
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE",
+    "TERRAIN_SEWERS"
    ]
   },
   {
@@ -179,7 +248,10 @@
    "class": "OutOfGrace",
    "roo": "outgrace.roo",
    "name": "Out of Grace with the Higher Powers",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_MYSTICAL"
+   ]
   },
   {
    "rid": 45,
@@ -189,6 +261,10 @@
    "links": [
     49,
     615
+   ],
+   "terrain": [
+    "TERRAIN_TEMPLE",
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -196,7 +272,10 @@
    "class": "Canyon2",
    "roo": "canyons2.roo",
    "name": "Martyr's Battleground",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_MOUNTAIN"
+   ]
   },
   {
    "rid": 48,
@@ -205,6 +284,10 @@
    "name": "The Temple of Shal'ille",
    "links": [
     534
+   ],
+   "terrain": [
+    "TERRAIN_TEMPLE",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -216,6 +299,11 @@
     45,
     593,
     1500
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_MOUNTAIN",
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -235,6 +323,11 @@
     77,
     586,
     950
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_FOUNTAIN",
+    "TERRAIN_ROAD"
    ]
   },
   {
@@ -244,6 +337,10 @@
    "name": "The Freelance Merchant and Menders Shop",
    "links": [
     50
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -254,6 +351,10 @@
    "links": [
     50,
     74
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -263,6 +364,10 @@
    "name": "Frisconar's Mysticals",
    "links": [
     50
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -272,6 +377,10 @@
    "name": "First Royal Bank of Tos",
    "links": [
     61
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -281,6 +390,10 @@
    "name": "Abandoned Building",
    "links": [
     50
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -290,6 +403,10 @@
    "name": "Abandoned Building",
    "links": [
     50
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -299,6 +416,10 @@
    "name": "Forgotten Lover's Tryst",
    "links": [
     50
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -310,6 +431,10 @@
     2000,
     2014,
     2015
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -319,6 +444,9 @@
    "name": "The Arena of Kraanan",
    "links": [
     73
+   ],
+   "terrain": [
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -335,6 +463,10 @@
     596,
     707,
     2950
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_ROAD"
    ]
   },
   {
@@ -345,6 +477,10 @@
    "links": [
     50,
     71
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -354,6 +490,10 @@
    "name": "The Crypt",
    "links": [
     70
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -363,6 +503,10 @@
    "name": "The Adventurer's Hall of Tos",
    "links": [
     61
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -373,6 +517,9 @@
    "links": [
     60,
     61
+   ],
+   "terrain": [
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -383,6 +530,9 @@
    "links": [
     52,
     75
+   ],
+   "terrain": [
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -394,6 +544,10 @@
     74,
     76,
     858
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -404,6 +558,10 @@
    "links": [
     50,
     75
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -414,6 +572,9 @@
    "links": [
     50,
     78
+   ],
+   "terrain": [
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -423,6 +584,10 @@
    "name": "The Smuggler's Way",
    "links": [
     77
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -432,6 +597,9 @@
    "name": "The Arena of Death",
    "links": [
     61
+   ],
+   "terrain": [
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -450,6 +618,12 @@
     115,
     116,
     714
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP",
+    "TERRAIN_FOUNTAIN",
+    "TERRAIN_BEACH"
    ]
   },
   {
@@ -465,6 +639,12 @@
     700,
     702,
     716
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_FOUNTAIN",
+    "TERRAIN_BEACH",
+    "TERRAIN_ROAD"
    ]
   },
   {
@@ -474,6 +654,10 @@
    "name": "The Bhrama & Falcon",
    "links": [
     101
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -483,6 +667,10 @@
    "name": "Joguer's Herbs and Roots",
    "links": [
     101
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -492,6 +680,10 @@
    "name": "Adventurer's Hall of Barloque",
    "links": [
     101
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -501,6 +693,10 @@
    "name": "Brownestone Inn",
    "links": [
     101
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -513,6 +709,11 @@
     114,
     117,
     709
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_BEACH",
+    "TERRAIN_ROAD"
    ]
   },
   {
@@ -526,6 +727,10 @@
     111,
     562,
     708
+   ],
+   "terrain": [
+    "TERRAIN_WATERFALL",
+    "TERRAIN_SEWERS"
    ]
   },
   {
@@ -535,6 +740,10 @@
    "name": "The Sparkling Stone Shop",
    "links": [
     102
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -544,6 +753,10 @@
    "name": "A shadowy corner",
    "links": [
     108
+   ],
+   "terrain": [
+    "TERRAIN_SHOP",
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -554,6 +767,10 @@
    "links": [
     108,
     112
+   ],
+   "terrain": [
+    "TERRAIN_WATERFALL",
+    "TERRAIN_SEWERS"
    ]
   },
   {
@@ -564,6 +781,10 @@
    "links": [
     111,
     380
+   ],
+   "terrain": [
+    "TERRAIN_WATERFALL",
+    "TERRAIN_SEWERS"
    ]
   },
   {
@@ -573,6 +794,10 @@
    "name": "The Royal Blacksmith of Barloque",
    "links": [
     102
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -582,6 +807,10 @@
    "name": "Office of the Barloque Vaultman",
    "links": [
     107
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -591,6 +820,10 @@
    "name": "Office of the Justicar",
    "links": [
     101
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -600,6 +833,9 @@
    "name": "Old Jailhouse",
    "links": [
     101
+   ],
+   "terrain": [
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -609,6 +845,10 @@
    "name": "The citizen's market of Barloque",
    "links": [
     107
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -629,6 +869,11 @@
     575,
     701,
     711
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_LAKE",
+    "TERRAIN_ROAD"
    ]
   },
   {
@@ -638,6 +883,10 @@
    "name": "Solomon's Edibles",
    "links": [
     150
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -647,6 +896,10 @@
    "name": "The Adventurer's Hall of Cor Noth",
    "links": [
     150
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -656,6 +909,10 @@
    "name": "Cibilo Creek Inn",
    "links": [
     150
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -665,6 +922,10 @@
    "name": "The Weapon Master's Abode",
    "links": [
     150
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -674,6 +935,10 @@
    "name": "The Spindle and the Spinster",
    "links": [
     150
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -683,6 +948,10 @@
    "name": "The Hall of Genealogy",
    "links": [
     150
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -692,6 +961,10 @@
    "name": "The University of Cor Noth",
    "links": [
     150
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -701,6 +974,10 @@
    "name": "The Meridian 59 Museum",
    "links": [
     150
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -715,6 +992,12 @@
     205,
     206,
     2600
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST",
+    "TERRAIN_FIELDS"
    ]
   },
   {
@@ -724,6 +1007,10 @@
    "name": "Ye Olde Slasher Salesman",
    "links": [
     200
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -733,6 +1020,10 @@
    "name": "The Limping Toad Inn and Tavern",
    "links": [
     200
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -742,6 +1033,10 @@
    "name": "The home of the elder",
    "links": [
     200
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -751,6 +1046,10 @@
    "name": "The Adventurer's Hall of Marion",
    "links": [
     200
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -760,6 +1059,10 @@
    "name": "Lady Aftyn's Sanctuary",
    "links": [
     200
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -773,6 +1076,12 @@
     208,
     516,
     717
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST",
+    "TERRAIN_FIELDS"
    ]
   },
   {
@@ -782,6 +1091,9 @@
    "name": "The Green's Home",
    "links": [
     206
+   ],
+   "terrain": [
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -791,6 +1103,9 @@
    "name": "Workers quarters",
    "links": [
     206
+   ],
+   "terrain": [
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -810,6 +1125,12 @@
     330,
     332,
     333
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_LAKE",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -819,6 +1140,10 @@
    "name": "The Inn of Raza",
    "links": [
     300
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -828,6 +1153,10 @@
    "name": "The Adventurer's Hall of Raza",
    "links": [
     300
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -837,6 +1166,10 @@
    "name": "The Blacksmith of Raza",
    "links": [
     300
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -846,6 +1179,10 @@
    "name": "Ravi's Magicks of Raza",
    "links": [
     300
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -855,6 +1192,10 @@
    "name": "The Home of Roderic D'Stane",
    "links": [
     300
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -864,6 +1205,10 @@
    "name": "Mausoleum",
    "links": [
     300
+   ],
+   "terrain": [
+    "TERRAIN_CAVES",
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -873,7 +1218,8 @@
    "name": "Eric's Stout Spirits",
    "links": [
     300
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 308,
@@ -882,7 +1228,8 @@
    "name": "The Grand Museum of Raza",
    "links": [
     300
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 330,
@@ -892,6 +1239,9 @@
    "links": [
     300,
     331
+   ],
+   "terrain": [
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -903,6 +1253,9 @@
     330,
     526,
     536
+   ],
+   "terrain": [
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -912,6 +1265,10 @@
    "name": "Raza Vaults",
    "links": [
     300
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -921,6 +1278,10 @@
    "name": "Royal Bank of Raza",
    "links": [
     300
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -936,6 +1297,11 @@
     568,
     704,
     710
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_ROAD",
+    "TERRAIN_MOUNTAIN"
    ]
   },
   {
@@ -945,6 +1311,10 @@
    "name": "Old Granary ",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -954,6 +1324,10 @@
    "name": "Icehouse",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -963,6 +1337,10 @@
    "name": "Old Schoolhouse",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -972,6 +1350,10 @@
    "name": "Deserted Eating House",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -981,6 +1363,10 @@
    "name": "Abandoned Building",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -990,6 +1376,10 @@
    "name": "Abandoned Building",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -999,6 +1389,10 @@
    "name": "Abandoned Building",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -1008,6 +1402,10 @@
    "name": "Abandoned Building",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -1017,6 +1415,10 @@
    "name": "Abandoned Building",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -1026,6 +1428,10 @@
    "name": "Disused Shop",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -1035,6 +1441,10 @@
    "name": "Abandoned Counting Room",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -1044,6 +1454,10 @@
    "name": "Old Barracks",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -1053,6 +1467,10 @@
    "name": "Dusty Chamber",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -1062,6 +1480,10 @@
    "name": "Warm Haven ",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -1071,6 +1493,10 @@
    "name": "Yonder Inn of Jasper",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -1080,6 +1506,10 @@
    "name": "Pietro's Wicked Brews",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -1089,6 +1519,10 @@
    "name": "Adventurer's Hall of Jasper",
    "links": [
     350
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -1098,6 +1532,10 @@
    "name": "General Store of Jasper",
    "links": [
     350
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -1107,6 +1545,10 @@
    "name": "Quintor's Smithy",
    "links": [
     350
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -1116,6 +1558,10 @@
    "name": "The Home of the Wise Man",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -1125,6 +1571,10 @@
    "name": "The Royal Bank of Jasper",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -1135,6 +1585,10 @@
    "links": [
     378,
     382
+   ],
+   "terrain": [
+    "TERRAIN_WATERFALL",
+    "TERRAIN_SEWERS"
    ]
   },
   {
@@ -1145,6 +1599,10 @@
    "links": [
     377,
     379
+   ],
+   "terrain": [
+    "TERRAIN_WATERFALL",
+    "TERRAIN_SEWERS"
    ]
   },
   {
@@ -1155,6 +1613,10 @@
    "links": [
     378,
     380
+   ],
+   "terrain": [
+    "TERRAIN_WATERFALL",
+    "TERRAIN_SEWERS"
    ]
   },
   {
@@ -1165,6 +1627,10 @@
    "links": [
     112,
     379
+   ],
+   "terrain": [
+    "TERRAIN_SEWERS",
+    "TERRAIN_LAIR"
    ]
   },
   {
@@ -1183,6 +1649,11 @@
     384,
     547,
     557
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_ROAD",
+    "TERRAIN_MOUNTAIN"
    ]
   },
   {
@@ -1192,6 +1663,10 @@
    "name": "The Vault of Jasper",
    "links": [
     382
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -1202,6 +1677,10 @@
    "links": [
     531,
     717
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -1211,6 +1690,10 @@
    "name": "Seafarer's Peak",
    "links": [
     516
+   ],
+   "terrain": [
+    "TERRAIN_BEACH",
+    "TERRAIN_MOUNTAIN"
    ]
   },
   {
@@ -1220,6 +1703,12 @@
    "name": "The Hills",
    "links": [
     526
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_LAKE",
+    "TERRAIN_FOREST",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -1230,6 +1719,10 @@
    "links": [
     522,
     531
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -1240,6 +1733,10 @@
    "links": [
     521,
     533
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -1251,6 +1748,10 @@
     331,
     516,
     750
+   ],
+   "terrain": [
+    "TERRAIN_MOUNTAIN",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -1263,6 +1764,10 @@
     521,
     532,
     541
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -1272,6 +1777,10 @@
    "name": "The Vale of Sorrows",
    "links": [
     531
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -1283,6 +1792,10 @@
     522,
     534,
     542
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -1293,6 +1806,9 @@
    "links": [
     533,
     544
+   ],
+   "terrain": [
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1305,6 +1821,12 @@
     536,
     545,
     706
+   ],
+   "terrain": [
+    "TERRAIN_LAKE",
+    "TERRAIN_WATERFALL",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1318,6 +1840,9 @@
     537,
     550,
     706
+   ],
+   "terrain": [
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1329,6 +1854,9 @@
     536,
     547,
     706
+   ],
+   "terrain": [
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1339,6 +1867,10 @@
    "links": [
     531,
     542
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -1349,6 +1881,10 @@
    "links": [
     533,
     541
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -1361,6 +1897,10 @@
     545,
     552,
     554
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -1373,6 +1913,13 @@
     544,
     550,
     554
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_WATERFALL",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -1384,6 +1931,10 @@
     536,
     545,
     547
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1396,6 +1947,9 @@
     537,
     550,
     557
+   ],
+   "terrain": [
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1410,6 +1964,10 @@
     551,
     555,
     557
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1419,6 +1977,10 @@
    "name": "Underground Lake - Home of the Mollusk",
    "links": [
     550
+   ],
+   "terrain": [
+    "TERRAIN_TEMPLE",
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -1429,6 +1991,10 @@
    "links": [
     544,
     562
+   ],
+   "terrain": [
+    "TERRAIN_BEACH",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1440,6 +2006,12 @@
     544,
     545,
     564
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_LAKE",
+    "TERRAIN_WATERFALL",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1449,6 +2021,10 @@
    "name": "The Forest Shrine",
    "links": [
     550
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_FIELDS"
    ]
   },
   {
@@ -1460,6 +2036,9 @@
     545,
     555,
     557
+   ],
+   "terrain": [
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1471,6 +2050,10 @@
     382,
     547,
     550
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_FIELDS"
    ]
   },
   {
@@ -1481,6 +2064,11 @@
    "links": [
     108,
     552
+   ],
+   "terrain": [
+    "TERRAIN_WATERFALL",
+    "TERRAIN_BEACH",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1492,6 +2080,11 @@
     564,
     583,
     712
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_LAKE",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1503,6 +2096,11 @@
     554,
     563,
     574
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1513,6 +2111,10 @@
    "links": [
     567,
     576
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1523,6 +2125,11 @@
    "links": [
     566,
     568
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1535,6 +2142,11 @@
     567,
     578,
     703
+   ],
+   "terrain": [
+    "TERRAIN_LAKE",
+    "TERRAIN_WATERFALL",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1547,6 +2159,13 @@
     563,
     564,
     584
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_LAKE",
+    "TERRAIN_WATERFALL",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1557,6 +2176,12 @@
    "links": [
     150,
     576
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_WATERFALL",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1569,6 +2194,12 @@
     575,
     578,
     587
+   ],
+   "terrain": [
+    "TERRAIN_LAKE",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST",
+    "TERRAIN_MOUNTAIN"
    ]
   },
   {
@@ -1581,6 +2212,9 @@
     576,
     579,
     826
+   ],
+   "terrain": [
+    "TERRAIN_MOUNTAIN"
    ]
   },
   {
@@ -1592,6 +2226,10 @@
     578,
     589,
     801
+   ],
+   "terrain": [
+    "TERRAIN_MOUNTAIN",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -1603,6 +2241,11 @@
     563,
     584,
     593
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1614,6 +2257,11 @@
     574,
     583,
     585
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1624,6 +2272,11 @@
    "links": [
     584,
     586
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FIELDS",
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -1636,6 +2289,11 @@
     585,
     587,
     596
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST",
+    "TERRAIN_FIELDS"
    ]
   },
   {
@@ -1647,6 +2305,9 @@
     576,
     586,
     597
+   ],
+   "terrain": [
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1657,6 +2318,9 @@
    "links": [
     579,
     599
+   ],
+   "terrain": [
+    "TERRAIN_MOUNTAIN"
    ]
   },
   {
@@ -1669,6 +2333,12 @@
     102,
     583,
     603
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_BEACH",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1681,6 +2351,10 @@
     586,
     597,
     2950
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_MOUNTAIN"
    ]
   },
   {
@@ -1693,6 +2367,9 @@
     587,
     596,
     598
+   ],
+   "terrain": [
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1703,6 +2380,9 @@
    "links": [
     597,
     599
+   ],
+   "terrain": [
+    "TERRAIN_MOUNTAIN"
    ]
   },
   {
@@ -1714,6 +2394,10 @@
     2,
     589,
     598
+   ],
+   "terrain": [
+    "TERRAIN_MOUNTAIN",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -1725,6 +2409,10 @@
     593,
     851,
     860
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1734,6 +2422,9 @@
    "name": "The Badlands",
    "links": [
     2820
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -1743,6 +2434,11 @@
    "name": "The Guildmaster's Hall",
    "links": [
     102
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP",
+    "TERRAIN_FOUNTAIN"
    ]
   },
   {
@@ -1752,6 +2448,9 @@
    "name": "Mercenary Alley",
    "links": [
     150
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL"
    ]
   },
   {
@@ -1761,6 +2460,10 @@
    "name": "The Hall of Explorers",
    "links": [
     102
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -1770,6 +2473,11 @@
    "name": "The Den of Shadows",
    "links": [
     568
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_RIVER",
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -1779,6 +2487,11 @@
    "name": "The Wryn's Keep",
    "links": [
     350
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_CITY",
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -1788,6 +2501,10 @@
    "name": "West Tower Guild Hall in Ko'catan",
    "links": [
     2000
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -1799,6 +2516,10 @@
     535,
     536,
     537
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -1808,6 +2529,12 @@
    "name": "Konima's Abandoned Dwelling",
    "links": [
     61
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP",
+    "TERRAIN_FOUNTAIN"
    ]
   },
   {
@@ -1817,6 +2544,10 @@
    "name": "The Sewer Hideout",
    "links": [
     108
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_SEWERS"
    ]
   },
   {
@@ -1826,6 +2557,10 @@
    "name": "The Abandoned Warehouse",
    "links": [
     107
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -1835,6 +2570,9 @@
    "name": "Jaarba's Abode",
    "links": [
     350
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL"
    ]
   },
   {
@@ -1844,6 +2582,10 @@
    "name": "The Ivory Chapel",
    "links": [
     150
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -1853,6 +2595,11 @@
    "name": "The home of the Friends of the Forest",
    "links": [
     563
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_RESIDENCE",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -1862,6 +2609,9 @@
    "name": "The Hall of the Slaughtered Command",
    "links": [
     2009
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL"
    ]
   },
   {
@@ -1871,6 +2621,10 @@
    "name": "The Bookmaker's Guild House",
    "links": [
     101
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -1878,7 +2632,10 @@
    "class": "GuildHall15",
    "roo": "GuildH15.roo",
    "name": "Room",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_GUILDHALL"
+   ]
   },
   {
    "rid": 716,
@@ -1887,6 +2644,9 @@
    "name": "The Symbol of Dawn",
    "links": [
     102
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL"
    ]
   },
   {
@@ -1897,6 +2657,10 @@
    "links": [
     206,
     511
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -1906,6 +2670,10 @@
    "name": "The Wetland Fortress",
    "links": [
     2953
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL",
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -1915,6 +2683,9 @@
    "name": "Muskgate Post",
    "links": [
     2809
+   ],
+   "terrain": [
+    "TERRAIN_GUILDHALL"
    ]
   },
   {
@@ -1924,6 +2695,10 @@
    "name": "Inner Sanctum of Queen Venya'cyr",
    "links": [
     825
+   ],
+   "terrain": [
+    "TERRAIN_LAIR",
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -1933,6 +2708,11 @@
    "name": "The Dreaded Caves of Ice",
    "links": [
     526
+   ],
+   "terrain": [
+    "TERRAIN_TUNDRA",
+    "TERRAIN_CAVES",
+    "TERRAIN_LAIR"
    ]
   },
   {
@@ -1942,6 +2722,10 @@
    "name": "The Temple of Kraanan",
    "links": [
     579
+   ],
+   "terrain": [
+    "TERRAIN_TEMPLE",
+    "TERRAIN_MOUNTAIN"
    ]
   },
   {
@@ -1949,7 +2733,12 @@
    "class": "TempleQor",
    "roo": "tempqor.roo",
    "name": "The Temple of Qor",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_TEMPLE",
+    "TERRAIN_LAVA",
+    "TERRAIN_CAVES"
+   ]
   },
   {
    "rid": 825,
@@ -1959,6 +2748,9 @@
    "links": [
     749,
     830
+   ],
+   "terrain": [
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -1969,6 +2761,9 @@
    "links": [
     578,
     827
+   ],
+   "terrain": [
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -1979,6 +2774,9 @@
    "links": [
     826,
     828
+   ],
+   "terrain": [
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -1993,6 +2791,9 @@
     832,
     833,
     834
+   ],
+   "terrain": [
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -2003,6 +2804,9 @@
    "links": [
     828,
     830
+   ],
+   "terrain": [
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -2013,6 +2817,9 @@
    "links": [
     825,
     829
+   ],
+   "terrain": [
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -2022,6 +2829,9 @@
    "name": "Ancient Building",
    "links": [
     828
+   ],
+   "terrain": [
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -2031,6 +2841,9 @@
    "name": "Ancient Building",
    "links": [
     828
+   ],
+   "terrain": [
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -2040,6 +2853,10 @@
    "name": "Goad's Grinder",
    "links": [
     828
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_LAVA"
    ]
   },
   {
@@ -2049,6 +2866,9 @@
    "name": "Maze of The Mimic",
    "links": [
     828
+   ],
+   "terrain": [
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -2061,6 +2881,10 @@
     853,
     855,
     856
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE",
+    "TERRAIN_FOUNTAIN"
    ]
   },
   {
@@ -2074,6 +2898,10 @@
     852,
     853,
     2819
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE",
+    "TERRAIN_FOUNTAIN"
    ]
   },
   {
@@ -2084,6 +2912,9 @@
    "links": [
     851,
     853
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -2096,6 +2927,9 @@
     851,
     852,
     854
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -2105,6 +2939,12 @@
    "name": "Chamber of the Mocker",
    "links": [
     853
+   ],
+   "terrain": [
+    "TERRAIN_RESIDENCE",
+    "TERRAIN_CASTLE",
+    "TERRAIN_FOUNTAIN",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -2114,7 +2954,8 @@
    "name": "The Councilors' Chamber",
    "links": [
     850
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 856,
@@ -2123,6 +2964,10 @@
    "name": "Madelia's Fine Peacockeries",
    "links": [
     850
+   ],
+   "terrain": [
+    "TERRAIN_SHOP",
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -2132,6 +2977,10 @@
    "name": "Chamber of the Forgotten Heroes",
    "links": [
     850
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -2142,6 +2991,9 @@
    "links": [
     75,
     859
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -2152,6 +3004,9 @@
    "links": [
     858,
     860
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -2162,6 +3017,9 @@
    "links": [
     603,
     859
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -2169,28 +3027,42 @@
    "class": "GodRoom",
    "roo": "zndramas.roo",
    "name": "The meeting place of the Gods",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_WATERFALL",
+    "TERRAIN_MYSTICAL"
+   ]
   },
   {
    "rid": 902,
    "class": "University",
    "roo": "univ.roo",
    "name": "Meridian University",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_MYSTICAL"
+   ]
   },
   {
    "rid": 903,
    "class": "Gallery",
    "roo": "univ.roo",
    "name": "object gallery",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_MYSTICAL"
+   ]
   },
   {
    "rid": 904,
    "class": "NewRoom",
    "roo": "tos.roo",
    "name": "New room",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_WATERFALL",
+    "TERRAIN_MYSTICAL"
+   ]
   },
   {
    "rid": 950,
@@ -2201,6 +3073,11 @@
     50,
     951,
     2900
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE",
+    "TERRAIN_FOUNTAIN",
+    "TERRAIN_FIELDS"
    ]
   },
   {
@@ -2212,6 +3089,10 @@
     950,
     952,
     953
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE",
+    "TERRAIN_FOUNTAIN"
    ]
   },
   {
@@ -2221,6 +3102,9 @@
    "name": "The Chambers of Duke Akardius",
    "links": [
     951
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -2231,6 +3115,9 @@
    "links": [
     951,
     954
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -2240,6 +3127,9 @@
    "name": "The Duke's Grand Ballroom",
    "links": [
     953
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -2251,6 +3141,9 @@
     49,
     1501,
     1512
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2261,6 +3154,9 @@
    "links": [
     1500,
     1502
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2273,6 +3169,9 @@
     1503,
     1505,
     1522
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2284,6 +3183,9 @@
     1502,
     1504,
     1521
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2295,6 +3197,9 @@
     1503,
     1505,
     1520
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2306,6 +3211,9 @@
     1502,
     1504,
     1523
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2318,6 +3226,9 @@
     1515,
     1516,
     1524
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2329,6 +3240,9 @@
     1508,
     1509,
     1514
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2340,6 +3254,9 @@
     1507,
     1513,
     1524
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2351,6 +3268,9 @@
     1507,
     1515,
     1524
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2358,14 +3278,20 @@
    "class": "DesertRiver1",
    "roo": "desertriver1.roo",
    "name": "Cliffbound River",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_BADLANDS"
+   ]
   },
   {
    "rid": 1511,
    "class": "DesertRiver2",
    "roo": "desertriver2.roo",
    "name": "Abyssal Bore",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_BADLANDS"
+   ]
   },
   {
    "rid": 1512,
@@ -2374,6 +3300,9 @@
    "name": "Collapsed Causeway",
    "links": [
     1500
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2386,6 +3315,9 @@
     1508,
     1514,
     1517
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2398,6 +3330,9 @@
     1513,
     1515,
     1518
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2410,6 +3345,9 @@
     1509,
     1514,
     1519
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2422,6 +3360,9 @@
     1517,
     1520,
     1526
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2434,6 +3375,9 @@
     1516,
     1521,
     1525
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2446,6 +3390,9 @@
     1519,
     1522,
     1525
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2458,6 +3405,9 @@
     1518,
     1523,
     1526
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2470,6 +3420,9 @@
     1516,
     1521,
     1523
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2482,6 +3435,9 @@
     1517,
     1520,
     1522
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2494,6 +3450,9 @@
     1518,
     1521,
     1523
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2506,6 +3465,9 @@
     1519,
     1520,
     1522
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2517,6 +3479,9 @@
     1506,
     1508,
     1509
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2529,6 +3494,9 @@
     1517,
     1518,
     1522
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2542,6 +3510,9 @@
     1519,
     1520,
     1601
+   ],
+   "terrain": [
+    "TERRAIN_BADLANDS"
    ]
   },
   {
@@ -2552,6 +3523,9 @@
    "links": [
     1526,
     1602
+   ],
+   "terrain": [
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -2561,6 +3535,9 @@
    "name": "A labyrinth lost in the sands",
    "links": [
     1601
+   ],
+   "terrain": [
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -2579,6 +3556,12 @@
     2009,
     2013,
     2505
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_LAKE",
+    "TERRAIN_BEACH",
+    "TERRAIN_ROAD"
    ]
   },
   {
@@ -2589,6 +3572,10 @@
    "links": [
     2000,
     2008
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -2598,6 +3585,10 @@
    "name": "Two Lizards Magic Shop",
    "links": [
     2000
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -2607,6 +3598,10 @@
    "name": "The Chimney House",
    "links": [
     2009
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -2617,6 +3612,10 @@
    "links": [
     2000,
     2010
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -2626,6 +3625,10 @@
    "name": "The Hungry Vaults",
    "links": [
     2000
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -2636,6 +3639,10 @@
    "links": [
     2009,
     2012
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -2647,6 +3654,10 @@
     2000,
     2014,
     2015
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -2657,6 +3668,10 @@
    "links": [
     2000,
     2001
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -2669,6 +3684,11 @@
     2000,
     2003,
     2006
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_BEACH",
+    "TERRAIN_ROAD"
    ]
   },
   {
@@ -2679,6 +3699,9 @@
    "links": [
     2004,
     2012
+   ],
+   "terrain": [
+    "TERRAIN_SEWERS"
    ]
   },
   {
@@ -2689,6 +3712,9 @@
    "links": [
     2006,
     2010
+   ],
+   "terrain": [
+    "TERRAIN_SEWERS"
    ]
   },
   {
@@ -2699,6 +3725,10 @@
    "links": [
     2000,
     2115
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -2708,6 +3738,10 @@
    "name": "The Hall of Heroes West",
    "links": [
     2007
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -2717,6 +3751,10 @@
    "name": "The Hall of Heroes East",
    "links": [
     2007
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -2726,6 +3764,10 @@
    "name": "The Bowmaker's Hut",
    "links": [
     2113
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -2735,6 +3777,10 @@
    "name": "The Remote Trading Post of Wulfgang zax'Ak",
    "links": [
     2144
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -2744,6 +3790,10 @@
    "name": "The Cellar Rooms",
    "links": [
     2144
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -2753,6 +3803,9 @@
    "name": "A dark, humid cavern",
    "links": [
     2111
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -2763,6 +3816,11 @@
    "links": [
     2112,
     2121
+   ],
+   "terrain": [
+    "TERRAIN_BEACH",
+    "TERRAIN_MOUNTAIN",
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2774,6 +3832,9 @@
     2111,
     2113,
     2121
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2785,6 +3846,11 @@
     2100,
     2112,
     2114
+   ],
+   "terrain": [
+    "TERRAIN_BEACH",
+    "TERRAIN_MOUNTAIN",
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2795,6 +3861,9 @@
    "links": [
     2113,
     2115
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2807,6 +3876,10 @@
     2114,
     2124,
     2125
+   ],
+   "terrain": [
+    "TERRAIN_MOUNTAIN",
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2819,6 +3892,11 @@
     2112,
     2122,
     2131
+   ],
+   "terrain": [
+    "TERRAIN_BEACH",
+    "TERRAIN_MOUNTAIN",
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2830,6 +3908,9 @@
     2121,
     2123,
     2132
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2842,6 +3923,9 @@
     2124,
     2132,
     2133
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2853,6 +3937,9 @@
     2115,
     2123,
     2133
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2863,6 +3950,9 @@
    "links": [
     2115,
     2135
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2873,6 +3963,11 @@
    "links": [
     2121,
     2141
+   ],
+   "terrain": [
+    "TERRAIN_BEACH",
+    "TERRAIN_MOUNTAIN",
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2884,6 +3979,9 @@
     2122,
     2123,
     2133
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2898,6 +3996,9 @@
     2134,
     2142,
     2143
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2908,6 +4009,9 @@
    "links": [
     2133,
     2135
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2919,6 +4023,9 @@
     2125,
     2134,
     2136
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2928,6 +4035,9 @@
    "name": "Hut of the Mad Scientist",
    "links": [
     2135
+   ],
+   "terrain": [
+    "TERRAIN_RESIDENCE"
    ]
   },
   {
@@ -2937,6 +4047,11 @@
    "name": "Lair of the Bone Priestess",
    "links": [
     2131
+   ],
+   "terrain": [
+    "TERRAIN_BEACH",
+    "TERRAIN_MOUNTAIN",
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2949,6 +4064,9 @@
     2143,
     2151,
     2152
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2960,6 +4078,9 @@
     2133,
     2142,
     2144
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2972,6 +4093,9 @@
     2102,
     2143,
     2154
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -2982,6 +4106,13 @@
    "links": [
     2142,
     2152
+   ],
+   "terrain": [
+    "TERRAIN_TEMPLE",
+    "TERRAIN_BEACH",
+    "TERRAIN_MOUNTAIN",
+    "TERRAIN_JUNGLE",
+    "TERRAIN_MYSTICAL"
    ]
   },
   {
@@ -2992,6 +4123,9 @@
    "links": [
     2142,
     2151
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -3001,6 +4135,9 @@
    "name": "Avar Village",
    "links": [
     2144
+   ],
+   "terrain": [
+    "TERRAIN_JUNGLE"
    ]
   },
   {
@@ -3012,6 +4149,9 @@
     27,
     2501,
     2509
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -3023,6 +4163,9 @@
     2500,
     2502,
     2508
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -3034,6 +4177,9 @@
     2501,
     2503,
     2507
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -3044,6 +4190,10 @@
    "links": [
     2502,
     2504
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -3055,6 +4205,9 @@
     2503,
     2505,
     2510
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -3065,6 +4218,9 @@
    "links": [
     2000,
     2504
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -3077,6 +4233,10 @@
     2508,
     2509,
     2510
+   ],
+   "terrain": [
+    "TERRAIN_CAVES",
+    "TERRAIN_LAIR"
    ]
   },
   {
@@ -3087,6 +4247,9 @@
    "links": [
     2502,
     2506
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -3097,6 +4260,9 @@
    "links": [
     2501,
     2506
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -3107,6 +4273,9 @@
    "links": [
     2500,
     2506
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -3117,6 +4286,9 @@
    "links": [
     2504,
     2506
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -3127,6 +4299,10 @@
    "links": [
     200,
     2601
+   ],
+   "terrain": [
+    "TERRAIN_CAVES",
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -3137,6 +4313,10 @@
    "links": [
     2600,
     2602
+   ],
+   "terrain": [
+    "TERRAIN_CAVES",
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -3147,6 +4327,10 @@
    "links": [
     2601,
     2603
+   ],
+   "terrain": [
+    "TERRAIN_CAVES",
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -3156,6 +4340,10 @@
    "name": "The Laboratory of the Mad Brothers",
    "links": [
     2602
+   ],
+   "terrain": [
+    "TERRAIN_CAVES",
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -3173,6 +4361,11 @@
     2807,
     2808,
     2960
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_ROAD",
+    "TERRAIN_BERG"
    ]
   },
   {
@@ -3182,6 +4375,10 @@
    "name": "Golden Crocodile Vault",
    "links": [
     2800
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -3191,6 +4388,10 @@
    "name": "The Smoldering Forge",
    "links": [
     2800
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -3200,6 +4401,10 @@
    "name": "The Adventurer's Hall of Berg",
    "links": [
     2800
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -3209,6 +4414,10 @@
    "name": "Runes and Relics",
    "links": [
     2800
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -3218,6 +4427,10 @@
    "name": "Murky Fork Bar",
    "links": [
     2800
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -3227,6 +4440,10 @@
    "name": "Berg Treasury",
    "links": [
     2800
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -3236,6 +4453,10 @@
    "name": "The Gilded Gavel",
    "links": [
     2800
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -3247,6 +4468,11 @@
     2800,
     2809,
     2813
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_ROAD",
+    "TERRAIN_BERG"
    ]
   },
   {
@@ -3258,6 +4484,11 @@
     720,
     2808,
     2810
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_ROAD",
+    "TERRAIN_BERG"
    ]
   },
   {
@@ -3269,6 +4500,11 @@
     2809,
     2811,
     2960
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_ROAD",
+    "TERRAIN_BERG"
    ]
   },
   {
@@ -3280,6 +4516,11 @@
     2810,
     2812,
     2815
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_ROAD",
+    "TERRAIN_BERG"
    ]
   },
   {
@@ -3291,6 +4532,9 @@
     2811,
     2813,
     2816
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -3302,6 +4546,11 @@
     2808,
     2812,
     2814
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_ROAD",
+    "TERRAIN_BERG"
    ]
   },
   {
@@ -3311,6 +4560,10 @@
    "name": "The Temple of Jala",
    "links": [
     2813
+   ],
+   "terrain": [
+    "TERRAIN_TEMPLE",
+    "TERRAIN_BERG"
    ]
   },
   {
@@ -3323,6 +4576,10 @@
     2816,
     2818,
     2904
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -3334,6 +4591,10 @@
     2812,
     2815,
     2817
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -3345,6 +4606,10 @@
     2816,
     2850,
     2954
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -3358,6 +4623,10 @@
     2821,
     2822,
     2961
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -3368,6 +4637,10 @@
    "links": [
     851,
     2820
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -3380,6 +4653,10 @@
     2818,
     2819,
     2821
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -3390,6 +4667,9 @@
    "links": [
     2818,
     2820
+   ],
+   "terrain": [
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -3399,6 +4679,9 @@
    "name": "Caverns of Ancient Rock",
    "links": [
     2818
+   ],
+   "terrain": [
+    "TERRAIN_LAVA"
    ]
   },
   {
@@ -3410,6 +4693,11 @@
     2800,
     2824,
     2826
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_ROAD",
+    "TERRAIN_BERG"
    ]
   },
   {
@@ -3420,6 +4708,9 @@
    "links": [
     2823,
     2825
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -3429,6 +4720,10 @@
    "name": "Clandestine Tombs",
    "links": [
     2824
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE",
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -3438,6 +4733,9 @@
    "name": "Bouldergate Prison",
    "links": [
     2823
+   ],
+   "terrain": [
+    "TERRAIN_CITY"
    ]
   },
   {
@@ -3447,6 +4745,9 @@
    "name": "The Hall of Developers",
    "links": [
     2823
+   ],
+   "terrain": [
+    "TERRAIN_CASTLE"
    ]
   },
   {
@@ -3457,6 +4758,10 @@
    "links": [
     2817,
     2851
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -3467,6 +4772,10 @@
    "links": [
     2850,
     2852
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -3477,6 +4786,10 @@
    "links": [
     2851,
     2853
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -3487,6 +4800,10 @@
    "links": [
     2852,
     2854
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -3497,6 +4814,10 @@
    "links": [
     2853,
     2855
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -3507,6 +4828,9 @@
    "links": [
     2854,
     2856
+   ],
+   "terrain": [
+    "TERRAIN_NECROPOLIS"
    ]
   },
   {
@@ -3516,6 +4840,10 @@
    "name": "Pantheon of the Arcane Arts",
    "links": [
     2855
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -3527,6 +4855,11 @@
     585,
     950,
     2901
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -3538,6 +4871,11 @@
     45,
     2900,
     2902
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -3548,6 +4886,11 @@
    "links": [
     2901,
     2903
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -3563,6 +4906,10 @@
     2907,
     2908,
     2952
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_FOREST"
    ]
   },
   {
@@ -3574,6 +4921,11 @@
     2815,
     2903,
     2954
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -3583,6 +4935,10 @@
    "name": "The Wandering Fiddler Pub",
    "links": [
     2903
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -3592,6 +4948,10 @@
    "name": "The Rainbow Forge",
    "links": [
     2903
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -3601,6 +4961,10 @@
    "name": "The Adventurer's Hall of Jixa",
    "links": [
     2903
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -3610,6 +4974,10 @@
    "name": "Between Hammer and Anvil",
    "links": [
     2903
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   },
   {
@@ -3621,6 +4989,11 @@
     61,
     596,
     2951
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST",
+    "TERRAIN_FIELDS"
    ]
   },
   {
@@ -3632,6 +5005,11 @@
     2950,
     2952,
     2953
+   ],
+   "terrain": [
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST",
+    "TERRAIN_FIELDS"
    ]
   },
   {
@@ -3643,6 +5021,12 @@
     2903,
     2951,
     2953
+   ],
+   "terrain": [
+    "TERRAIN_RIVER",
+    "TERRAIN_ROAD",
+    "TERRAIN_FOREST",
+    "TERRAIN_FIELDS"
    ]
   },
   {
@@ -3655,6 +5039,9 @@
     2951,
     2952,
     2954
+   ],
+   "terrain": [
+    "TERRAIN_SWAMP"
    ]
   },
   {
@@ -3666,6 +5053,9 @@
     2817,
     2904,
     2953
+   ],
+   "terrain": [
+    "TERRAIN_SWAMP"
    ]
   },
   {
@@ -3677,6 +5067,9 @@
     2800,
     2810,
     2961
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -3688,6 +5081,10 @@
     2818,
     2960,
     2962
+   ],
+   "terrain": [
+    "TERRAIN_FOREST",
+    "TERRAIN_HILLS"
    ]
   },
   {
@@ -3697,6 +5094,9 @@
    "name": "Hideout of the Eastern Bandits",
    "links": [
     2961
+   ],
+   "terrain": [
+    "TERRAIN_CAVES"
    ]
   },
   {
@@ -3708,7 +5108,8 @@
     3001,
     3011,
     3018
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3001,
@@ -3719,7 +5120,8 @@
     3000,
     3002,
     3021
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3002,
@@ -3730,7 +5132,8 @@
     3001,
     3006,
     3008
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3003,
@@ -3740,7 +5143,8 @@
    "links": [
     3002,
     3004
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3004,
@@ -3751,7 +5155,8 @@
     3003,
     3005,
     3031
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3005,
@@ -3760,7 +5165,8 @@
    "name": "Death Realm",
    "links": [
     3004
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3006,
@@ -3770,7 +5176,8 @@
    "links": [
     3002,
     3007
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3007,
@@ -3779,7 +5186,8 @@
    "name": "Death Realm",
    "links": [
     3006
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3008,
@@ -3789,7 +5197,8 @@
    "links": [
     3002,
     3009
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3009,
@@ -3799,14 +5208,16 @@
    "links": [
     3008,
     3010
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3010,
    "class": "DeathRealmK5",
    "roo": "k5.roo",
    "name": "Death Realm",
-   "links": []
+   "links": [],
+   "terrain": []
   },
   {
    "rid": 3011,
@@ -3816,7 +5227,8 @@
    "links": [
     3000,
     3012
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3012,
@@ -3827,7 +5239,8 @@
     3011,
     3044,
     3048
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3013,
@@ -3839,7 +5252,8 @@
     3014,
     3015,
     3017
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3015,
@@ -3849,7 +5263,8 @@
    "links": [
     3013,
     3016
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3016,
@@ -3858,7 +5273,8 @@
    "name": "Death Realm",
    "links": [
     3015
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3017,
@@ -3867,7 +5283,8 @@
    "name": "Death Realm",
    "links": [
     3013
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3018,
@@ -3878,7 +5295,8 @@
     3000,
     3020,
     3021
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3019,
@@ -3888,7 +5306,8 @@
    "links": [
     3018,
     3045
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3020,
@@ -3899,7 +5318,8 @@
     3018,
     3021,
     3022
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3021,
@@ -3909,7 +5329,8 @@
    "links": [
     3001,
     3020
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3022,
@@ -3920,7 +5341,8 @@
     3020,
     3023,
     3024
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3023,
@@ -3932,7 +5354,8 @@
     3024,
     3025,
     3033
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3024,
@@ -3944,7 +5367,8 @@
     3023,
     3027,
     3029
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3025,
@@ -3955,14 +5379,16 @@
     3023,
     3026,
     3032
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3026,
    "class": "DeathRealmMarion",
    "roo": "marion.roo",
    "name": "Death Realm",
-   "links": []
+   "links": [],
+   "terrain": []
   },
   {
    "rid": 3027,
@@ -3971,7 +5397,8 @@
    "name": "Death Realm",
    "links": [
     3024
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3028,
@@ -3980,7 +5407,8 @@
    "name": "Death Realm",
    "links": [
     3027
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3029,
@@ -3990,7 +5418,8 @@
    "links": [
     3024,
     3030
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3030,
@@ -4000,7 +5429,8 @@
    "links": [
     3029,
     3031
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3031,
@@ -4009,7 +5439,8 @@
    "name": "Death Realm",
    "links": [
     3030
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3032,
@@ -4020,7 +5451,8 @@
     3025,
     3033,
     3036
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3033,
@@ -4034,7 +5466,8 @@
     3035,
     3037,
     3038
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3034,
@@ -4043,7 +5476,8 @@
    "name": "Death Realm",
    "links": [
     3033
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3035,
@@ -4052,7 +5486,8 @@
    "name": "Death Realm",
    "links": [
     3033
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3036,
@@ -4062,7 +5497,8 @@
    "links": [
     3032,
     3037
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3037,
@@ -4074,7 +5510,8 @@
     3036,
     3038,
     3039
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3038,
@@ -4085,7 +5522,8 @@
     3033,
     3037,
     3039
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3039,
@@ -4096,7 +5534,8 @@
     3037,
     3038,
     3040
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3040,
@@ -4106,7 +5545,8 @@
    "links": [
     3039,
     3041
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3041,
@@ -4117,7 +5557,8 @@
     3040,
     3042,
     3046
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3042,
@@ -4128,7 +5569,8 @@
     3041,
     3043,
     3053
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3043,
@@ -4140,7 +5582,8 @@
     3044,
     3045,
     3047
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3044,
@@ -4151,7 +5594,8 @@
     3012,
     3043,
     3049
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3045,
@@ -4161,7 +5605,8 @@
    "links": [
     3019,
     3043
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3046,
@@ -4171,7 +5616,8 @@
    "links": [
     3041,
     3047
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3047,
@@ -4181,7 +5627,8 @@
    "links": [
     3043,
     3046
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3048,
@@ -4192,7 +5639,8 @@
     3012,
     3014,
     3049
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3049,
@@ -4203,7 +5651,8 @@
     3044,
     3048,
     3050
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3050,
@@ -4213,7 +5662,8 @@
    "links": [
     3049,
     3051
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3052,
@@ -4223,7 +5673,8 @@
    "links": [
     3051,
     3053
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3053,
@@ -4234,7 +5685,8 @@
     3042,
     3052,
     3054
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3054,
@@ -4243,7 +5695,8 @@
    "name": "Death Realm",
    "links": [
     3053
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3055,
@@ -4252,7 +5705,8 @@
    "name": "Death Realm",
    "links": [
     3051
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3056,
@@ -4264,7 +5718,8 @@
     3058,
     3059,
     3060
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3057,
@@ -4273,7 +5728,8 @@
    "name": "Death Realm",
    "links": [
     3056
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3059,
@@ -4282,7 +5738,8 @@
    "name": "Death Realm",
    "links": [
     3056
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3060,
@@ -4291,7 +5748,8 @@
    "name": "Death Realm",
    "links": [
     3056
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 3061,
@@ -4300,35 +5758,48 @@
    "name": "Death Realm",
    "links": [
     3060
-   ]
+   ],
+   "terrain": []
   },
   {
    "rid": 9000,
    "class": "OldJasper",
    "roo": "ojas.roo",
    "name": "Historic Jasper",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_CITY"
+   ]
   },
   {
    "rid": 9001,
    "class": "OldMarion",
    "roo": "omar.roo",
    "name": "Historic Marion",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_CITY"
+   ]
   },
   {
    "rid": 9002,
    "class": "OldBarloqueNorth",
    "roo": "obarln.roo",
    "name": "Historic North Barloque",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_CITY"
+   ]
   },
   {
    "rid": 9003,
    "class": "OldBarloqueSouth",
    "roo": "obarls.roo",
    "name": "Historic South Barloque",
-   "links": []
+   "links": [],
+   "terrain": [
+    "TERRAIN_CITY"
+   ]
   },
   {
    "rid": 9004,
@@ -4337,6 +5808,11 @@
    "name": "Historic Cor Noth",
    "links": [
     9005
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_LAKE",
+    "TERRAIN_ROAD"
    ]
   },
   {
@@ -4346,6 +5822,10 @@
    "name": "The Historic Hall of Genealogy",
    "links": [
     9004
+   ],
+   "terrain": [
+    "TERRAIN_CITY",
+    "TERRAIN_SHOP"
    ]
   }
  ]

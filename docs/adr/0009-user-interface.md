@@ -190,6 +190,7 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
 - **The Options window** (`SMROptions`; the Escape menu's Options, or the "password" and "suicide" commands). Every change is kept at once.
   - **Graphics** (the engine's `UGameUserSettings`):
     - quality, view distance, window mode, screen size, vertical sync, a frame limit and the field of view (`mr.Camera.FOV`);
+    - since 2026-10-13 the field of view defaults to the original's (Original, `mr.Camera.FOV 0`), in both views: 50° x 32.1° (`d3drender.c` `FovHorizontal` = PI / 3.6, `FovVertical` = PI / 5.6), keeping 32.1° high and widening for wide screens (54° across at 16:9), never under 50° across, as Meridian Shards does (`AMRCharacter::OriginalHorizontalFov`). The old 90° across (58.7° high at 16:9) drew everything half size and showed the floor from 2.9 m ahead instead of 5.7 m, so running felt faster than the original's same speed. The slider sets 40–110° across;
     - since 2026-10-10 (`docs/performance.md`), also lighting (global illumination and reflections together), shadows, effects and textures (Low to Epic);
     - grass (Off, Low, High: `mr.Grass.*`, kept with the other `mr.*` settings);
     - a resolution scale (Auto, 50–100%);

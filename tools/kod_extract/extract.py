@@ -34,6 +34,18 @@ DEMO_RIDS = [300, 301, 302, 303, 304, 305, 306, 307, 308, 330, 331, 332, 333, 52
              350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364,
              370, 371, 372, 373, 374, 375, 376, 377, 378, 379, 380, 382, 384, 557, 568,
              703, 704, 710]  # pass 3: Jasper
+# The world remaster's batch builds (tools/world/overnight.py) list their rooms in
+# data/world/build_rids.json ({"passes": {"<pass>": [rid, ...]}}) instead of here.
+BUILD_RIDS = Path(__file__).resolve().parents[2] / "data" / "world" / "build_rids.json"
+
+
+def build_rids() -> list[int]:
+    """DEMO_RIDS, then the batch builds' rooms (data/world/build_rids.json), each once."""
+    out = list(DEMO_RIDS)
+    if BUILD_RIDS.exists():
+        for rids in json.loads(BUILD_RIDS.read_text(encoding="utf-8")).get("passes", {}).values():
+            out += [r for r in rids if r not in out]
+    return out
 
 # Kod angles: 0..4096 (MAX_ANGLE), 0 = east, increasing toward south, i.e. measured from
 # ROO +X toward ROO +Y (rows grow southward).  yaw_deg = angle * 360 / 4096.
@@ -295,10 +307,38 @@ class Extractor:
                 names += re.findall(r"RID_\w+", text[start: matching(text, start) + 1])
         return {v for v in (self.idx.consts.value(n) for n in names) if isinstance(v, int)}
 
+    def number(self, v):
+        """A Kod value as a number: a constant expression ("(LIGHT_VERY_DARK + LIGHT_MIN)/2",
+        sewking.kod) evaluated with the constants; anything else as it is."""
+        if not isinstance(v, str):
+            return v
+        n = self.idx.consts.eval(v)
+        if n is None:  # ConstEval reads ")/" as one operator; substitute the names and try again
+            names = re.sub(r"[A-Za-z_]\w*", lambda m: str(self.idx.consts.value(m.group(0))), v)
+            if re.fullmatch(r"[\d\s+\-*/()]+", names):
+                n = self.idx.consts.eval(re.sub(r"\s+", "", names).replace(")/", ") /"))
+                if n is None:
+                    try:
+                        n = int(eval(names, {"__builtins__": {}}))  # digits and + - * / ( ) only
+                    except (SyntaxError, ZeroDivisionError):
+                        n = None
+        return v if n is None else n
+
+    def const_name(self, v, prefix: str):
+        """A constant's name without its prefix (WEATHER_MASK_DEFAULT_NS -> DEFAULT_NS); a number
+        is named by the first constant with that prefix and value."""
+        if isinstance(v, str):
+            return v.removeprefix(prefix)
+        if isinstance(v, int):
+            for name in self.idx.consts.raw:
+                if name.startswith(prefix) and self.idx.consts.value(name) == v:
+                    return name.removeprefix(prefix)
+        return v
+
     def zones(self) -> list[dict]:
         out = []
         flag_rids = self.flag_rids()
-        for rid in DEMO_RIDS:
+        for rid in build_rids():
             cls = self.room_class_for(rid)
             if not cls:
                 print(f"warning: no room class for RID {rid}", file=sys.stderr)
@@ -328,8 +368,11 @@ class Extractor:
                 "terrain": self.idx.flag_names(r["viTerrain_type"], "TERRAIN_") if isinstance(r.get("viTerrain_type"), int) else None,
                 "teleport": {"row": r.get("viTeleport_row"), "col": r.get("viTeleport_col"),
                              "angle": r.get("viTeleport_angle")},
-                "base_light": r.get("piBaseLight"),
-                "outside_factor": r.get("piOutside_factor"),
+                "base_light": self.number(r.get("piBaseLight")),
+                "outside_factor": self.number(r.get("piOutside_factor")),
+                # the original's weather zone and mask (room.kod viWeatherZone / viWeatherMask; 0 = none)
+                "weather_zone": self.number(r.get("viWeatherZone")),
+                "weather_mask": self.const_name(r.get("viWeatherMask"), "WEATHER_MASK_"),
                 "info": r.get("vrInfo"),
                 "exits": exits,
                 "edge_exits": edges,
@@ -374,8 +417,11 @@ class Extractor:
             links = sorted({e["dest_rid"] for e in exits + edges
                             if isinstance(e.get("dest_rid"), int) and e["dest_rid"] != rid})
             name = r.get("vrName")
+            terrain = r.get("viTerrain_type")
             out.append({"rid": rid, "class": cls, "roo": roo, "name": name if isinstance(name, str) else None,
-                        "links": links})
+                        "links": links,
+                        # the original's terrain flags (blakston.khd TERRAIN_*): what kind of place it is
+                        "terrain": self.idx.flag_names(terrain, "TERRAIN_") if isinstance(terrain, int) else []})
         return out
 
     # monsters / npcs -----------------------------------------------------------
@@ -658,8 +704,8 @@ def main() -> None:
                                             "converts them (docs/adr/0012-client-parity-and-world-coverage.md M2b).",
                                     **ex.equipment()})
     (a.out / "net").mkdir(exist_ok=True)
-    dump("net/rooms.json", {"_doc": "Every Kod room (tools/kod_extract): rid, class, roo file, name, and the rooms its "
-                                    "exits lead to. The online client uses it for rooms it builds at runtime "
+    dump("net/rooms.json", {"_doc": "Every Kod room (tools/kod_extract): rid, class, roo file, name, the rooms its "
+                                    "exits lead to and its terrain flags (TERRAIN_*). The online client uses it for rooms it builds at runtime "
                                     "(docs/adr/0012-client-parity-and-world-coverage.md).",
                             "rooms": ex.rooms()})
     dump("net/npcs.json", {"_doc": "Every NPC that buys, sells, banks or keeps a vault (tools/kod_extract, from Kod's "

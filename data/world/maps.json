@@ -5,7 +5,7 @@
    "roo": "a1",
    "pass": 4,
    "region": "Fey Forest",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 511,
@@ -15,19 +15,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 511,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_a1",
+     "out_a1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "a5",
    "pass": 4,
    "region": "Ilerian Woods",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 515,
@@ -37,19 +43,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 515,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_a5",
+     "out_a5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "a6",
    "pass": 4,
    "region": "Ilerian Woods",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 516,
@@ -59,19 +71,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 516,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_a6",
+     "out_a6_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "asshq",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 110,
@@ -81,19 +99,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 110,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_asshq",
+     "int_asshq_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "b1",
    "pass": 4,
    "region": "Fey Forest",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 521,
@@ -103,19 +127,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 521,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_b1",
+     "out_b1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "b2",
    "pass": 4,
    "region": "Fey Forest",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 522,
@@ -125,13 +155,19 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 522,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_b2",
+     "out_b2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "b6",
@@ -158,13 +194,14 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "badland1",
    "pass": 4,
    "region": "The Queen's Way and the Badlands",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 45,
@@ -180,19 +217,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 45,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_badland1",
+     "out_badland1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "badland2",
    "pass": 4,
    "region": "The Queen's Way and the Badlands",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 49,
@@ -208,19 +251,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 49,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_badland2",
+     "int_badland2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "banditcamp",
    "pass": 5,
    "region": "Caves",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2961,
@@ -230,19 +279,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2961,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_banditcamp",
+     "out_banditcamp_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "banditcave",
    "pass": 5,
    "region": "Caves",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2962,
@@ -252,19 +307,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2962,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_banditcave",
+     "int_banditcave_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barapoth",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 104,
@@ -274,19 +335,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 104,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_barapoth",
+     "int_barapoth_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barcourt",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 115,
@@ -296,19 +363,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 115,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_barcourt",
+     "int_barcourt_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barhall",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 105,
@@ -318,19 +391,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 105,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_barhall",
+     "int_barhall_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barinn",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 106,
@@ -340,19 +419,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 106,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_barinn",
+     "int_barinn_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barjail",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 116,
@@ -362,19 +447,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 116,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_barjail",
+     "int_barjail_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barlbar1",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 103,
@@ -384,19 +475,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 103,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_barlbar1",
+     "int_barlbar1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barlmarket",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 117,
@@ -406,19 +503,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 117,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_barlmarket",
+     "int_barlmarket_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barln",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 101,
@@ -434,19 +537,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 101,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_barln",
+     "out_barln_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barlport",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 107,
@@ -462,19 +571,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 107,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_barlport",
+     "out_barlport_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barls",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 102,
@@ -490,19 +605,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 102,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_barls",
+     "out_barls_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barlsew",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 108,
@@ -512,19 +633,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 108,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_barlsew",
+     "int_barlsew_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barlsew2",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 111,
@@ -534,19 +661,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 111,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_barlsew2",
+     "int_barlsew2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barlsew3",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 112,
@@ -556,19 +689,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 112,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_barlsew3",
+     "int_barlsew3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barmerch",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 109,
@@ -578,13 +717,19 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 109,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_barmerch",
+     "int_barmerch_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barrent",
@@ -594,18 +739,19 @@
    "rooms": [],
    "on_disk": true,
    "built": null,
-   "approved": null,
+   "approved": "2026-10-12",
    "to_do": [
     "build",
     "approval"
    ],
-   "note": "A rentable room (Kod rentroom/): each renter gets a copy made at runtime, so it has no fixed RID"
+   "note": "A rentable room (Kod rentroom/): each renter gets a copy made at runtime, so it has no fixed RID",
+   "keep": ""
   },
   {
    "roo": "barsmith",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 113,
@@ -615,19 +761,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 113,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_barsmith",
+     "int_barsmith_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "barvault",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 114,
@@ -637,34 +789,38 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 114,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_barvault",
+     "int_barvault_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "bay1",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "berg1",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2809,
@@ -674,19 +830,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2809,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_berg1",
+     "out_berg1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berg2",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2810,
@@ -696,19 +858,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2810,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_berg2",
+     "out_berg2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berg3",
    "pass": 4,
    "region": "Kardde's Pass and the Valley of Death",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2811,
@@ -718,19 +886,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2811,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_berg3",
+     "out_berg3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berg3_cave",
    "pass": 5,
    "region": "Caves",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2812,
@@ -740,19 +914,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2812,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_berg3_cave",
+     "int_berg3_cave_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berg4",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2813,
@@ -762,19 +942,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2813,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_berg4",
+     "out_berg4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berg5",
    "pass": 4,
    "region": "Kardde's Pass and the Valley of Death",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2815,
@@ -784,19 +970,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2815,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_berg5",
+     "out_berg5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berg6",
    "pass": 4,
    "region": "Kardde's Pass and the Valley of Death",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2816,
@@ -806,19 +998,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2816,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_berg6",
+     "out_berg6_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berg7",
    "pass": 4,
    "region": "Kardde's Pass and the Valley of Death",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2817,
@@ -828,19 +1026,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2817,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_berg7",
+     "out_berg7_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berg8",
    "pass": 4,
    "region": "Kardde's Pass and the Valley of Death",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2818,
@@ -850,19 +1054,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2818,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_berg8",
+     "out_berg8_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berg_devroom",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2827,
@@ -872,19 +1082,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2827,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_berg_devroom",
+     "int_berg_devroom_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berg_grave",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2825,
@@ -894,19 +1110,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2825,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_berg_grave",
+     "int_berg_grave_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berg_jail",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2826,
@@ -916,19 +1138,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2826,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_berg_jail",
+     "int_berg_jail_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berg_jala",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2814,
@@ -938,19 +1166,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2814,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_berg_jala",
+     "int_berg_jala_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "bergauc",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2807,
@@ -960,19 +1194,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2807,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_bergauc",
+     "int_bergauc_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "bergbank",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2806,
@@ -982,19 +1222,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2806,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_bergbank",
+     "int_bergbank_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "bergcity",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2800,
@@ -1004,19 +1250,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2800,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_bergcity",
+     "out_bergcity_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berghall",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2803,
@@ -1026,19 +1278,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2803,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_berghall",
+     "int_berghall_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "berginn",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2805,
@@ -1048,19 +1306,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2805,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_berginn",
+     "int_berginn_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "bergleader",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2823,
@@ -1070,19 +1334,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2823,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_bergleader",
+     "out_bergleader_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "bergleader_hall",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2824,
@@ -1092,19 +1362,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2824,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_bergleader_hall",
+     "out_bergleader_hall_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "bergmg",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2808,
@@ -1114,19 +1390,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2808,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_bergmg",
+     "out_bergmg_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "bergmine",
    "pass": 5,
    "region": "Caves",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2960,
@@ -1136,19 +1418,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2960,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_bergmine",
+     "int_bergmine_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "bergsmith",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2802,
@@ -1158,19 +1446,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2802,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_bergsmith",
+     "int_bergsmith_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "bergstore",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2804,
@@ -1180,19 +1474,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2804,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_bergstore",
+     "int_bergstore_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "bergvault",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2801,
@@ -1202,19 +1502,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2801,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_bergvault",
+     "int_bergvault_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "bizmans",
    "pass": 5,
    "region": "The Bourgeois Castle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 855,
@@ -1230,19 +1536,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 855,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_bizmans",
+     "int_bizmans_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "bowmaker",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2100,
@@ -1252,19 +1564,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2100,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_bowmaker",
+     "int_bowmaker_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "c1",
    "pass": 4,
    "region": "Fey Forest",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 531,
@@ -1274,19 +1592,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 531,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_c1",
+     "out_c1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "c2",
    "pass": 4,
    "region": "Fey Forest",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 532,
@@ -1296,19 +1620,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 532,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_c2",
+     "out_c2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "c3",
    "pass": 4,
    "region": "Fey Forest",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 533,
@@ -1318,19 +1648,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 533,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_c3",
+     "out_c3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "c4",
    "pass": 4,
    "region": "Ilerian Woods",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 534,
@@ -1346,13 +1682,19 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 534,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_c4",
+     "out_c4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "c5",
@@ -1385,7 +1727,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "c6",
@@ -1418,7 +1761,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "c7",
@@ -1451,13 +1795,14 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "canyons",
    "pass": 8,
-   "region": "Not linked from anywhere",
-   "status": "runtime",
+   "region": "Reached by teleport",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 32,
@@ -1467,19 +1812,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No exit leads here: reached only by teleport, if at all"
+   "built": {
+    "zone": 32,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_canyons",
+     "out_canyons_2"
+    ]
+   },
+   "approved": "2026-10-13",
+   "to_do": [],
+   "note": "Reached by the original's scripted teleports from the Forests of Meridian (forest3)",
+   "keep": ""
   },
   {
    "roo": "canyons2",
    "pass": 8,
-   "region": "Not linked from anywhere",
-   "status": "runtime",
+   "region": "Reached by teleport",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 47,
@@ -1489,19 +1840,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No exit leads here: reached only by teleport, if at all"
+   "built": {
+    "zone": 47,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_canyons2",
+     "int_canyons2_2"
+    ]
+   },
+   "approved": "2026-10-13",
+   "to_do": [],
+   "note": "Martyr's Battleground: reached through the Nexus portal in I9",
+   "keep": ""
   },
   {
    "roo": "castle1",
    "pass": 5,
    "region": "Castle Victoria",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 38,
@@ -1517,19 +1874,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 38,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_castle1",
+     "int_castle1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "castle1b",
    "pass": 5,
    "region": "Castle Victoria",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 39,
@@ -1545,19 +1908,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 39,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_castle1b",
+     "int_castle1b_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "castle1c",
    "pass": 5,
    "region": "Castle Victoria",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2,
@@ -1567,19 +1936,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_castle1c",
+     "out_castle1c_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "castle1d",
    "pass": 5,
    "region": "Castle Victoria",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 37,
@@ -1589,19 +1964,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 37,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_castle1d",
+     "int_castle1d_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "castle2a",
    "pass": 5,
    "region": "The Bourgeois Castle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 850,
@@ -1611,19 +1992,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 850,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_castle2a",
+     "int_castle2a_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "castle2b",
    "pass": 5,
    "region": "The Bourgeois Castle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 851,
@@ -1639,19 +2026,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 851,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_castle2b",
+     "int_castle2b_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "castle2c",
    "pass": 5,
    "region": "The Bourgeois Castle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 852,
@@ -1661,19 +2054,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 852,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_castle2c",
+     "int_castle2c_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "castle2d",
    "pass": 5,
    "region": "The Bourgeois Castle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 853,
@@ -1683,19 +2082,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 853,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_castle2d",
+     "int_castle2d_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "castle2e",
    "pass": 5,
    "region": "The Bourgeois Castle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 856,
@@ -1705,19 +2110,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 856,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_castle2e",
+     "int_castle2e_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "cave2",
    "pass": 5,
    "region": "Caves",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 27,
@@ -1727,19 +2138,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 27,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_cave2",
+     "int_cave2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "cave3",
    "pass": 5,
    "region": "Caves",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 5,
@@ -1749,34 +2166,38 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 5,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_cave3",
+     "int_cave3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "cave4",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "corgenhall",
    "pass": 3,
    "region": "Cor Noth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 156,
@@ -1786,19 +2207,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 156,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_corgenhall",
+     "int_corgenhall_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "corgroc",
    "pass": 3,
    "region": "Cor Noth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 151,
@@ -1808,19 +2235,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 151,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_corgroc",
+     "int_corgroc_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "corhall",
    "pass": 3,
    "region": "Cor Noth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 152,
@@ -1830,19 +2263,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 152,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_corhall",
+     "int_corhall_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "corinn",
    "pass": 3,
    "region": "Cor Noth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 153,
@@ -1852,19 +2291,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 153,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_corinn",
+     "int_corinn_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "cormuseum",
    "pass": 3,
    "region": "Cor Noth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 158,
@@ -1874,19 +2319,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 158,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_cormuseum",
+     "int_cormuseum_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "cornoth",
    "pass": 3,
    "region": "Cor Noth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 150,
@@ -1902,19 +2353,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 150,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_cornoth",
+     "out_cornoth_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "cortail",
    "pass": 3,
    "region": "Cor Noth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 155,
@@ -1924,19 +2381,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 155,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_cortail",
+     "int_cortail_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "coruniv",
    "pass": 3,
    "region": "Cor Noth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 157,
@@ -1946,19 +2409,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 157,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_coruniv",
+     "int_coruniv_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "d1",
    "pass": 4,
    "region": "Fey Forest",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 541,
@@ -1968,19 +2437,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 541,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_d1",
+     "out_d1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "d2",
    "pass": 4,
    "region": "Fey Forest",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 542,
@@ -1990,19 +2465,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 542,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_d2",
+     "out_d2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "d4",
    "pass": 4,
    "region": "Ilerian Woods",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 544,
@@ -2018,19 +2499,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 544,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_d4",
+     "out_d4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "d5",
    "pass": 4,
    "region": "Ilerian Woods",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 545,
@@ -2046,19 +2533,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 545,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_d5",
+     "out_d5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "d6",
    "pass": 4,
    "region": "Forest of Farol",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 546,
@@ -2068,19 +2561,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 546,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_d6",
+     "out_d6_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "d6e6",
    "pass": 4,
    "region": "Forest of Farol",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 550,
@@ -2096,19 +2595,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 550,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_d6e6",
+     "out_d6e6_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "d6e6ulake",
    "pass": 5,
    "region": "Caves",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 551,
@@ -2124,34 +2629,38 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 551,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_d6e6ulake",
+     "int_d6e6ulake_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "d6e7ulake",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "d7",
    "pass": 4,
    "region": "Forest of Farol",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 547,
@@ -2167,19 +2676,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 547,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_d7",
+     "out_d7_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "dbarlsew",
    "pass": 8,
    "region": "Death Realm",
-   "status": "runtime",
+   "status": "later",
    "rooms": [
     {
      "rid": 3031,
@@ -2195,13 +2710,14 @@
     "build",
     "approval"
    ],
-   "note": ""
+   "note": "Waits for the Death Realm plan (its 59 rooms mostly reuse remastered maps)",
+   "keep": "later"
   },
   {
    "roo": "dcastle",
    "pass": 8,
    "region": "Death Realm",
-   "status": "runtime",
+   "status": "later",
    "rooms": [
     {
      "rid": 3055,
@@ -2217,13 +2733,14 @@
     "build",
     "approval"
    ],
-   "note": ""
+   "note": "Waits for the Death Realm plan (its 59 rooms mostly reuse remastered maps)",
+   "keep": "later"
   },
   {
    "roo": "desertbridge",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1512,
@@ -2233,19 +2750,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1512,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_desertbridge",
+     "out_desertbridge_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertcliffaccess",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1502,
@@ -2255,19 +2778,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1502,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_desertcliffaccess",
+     "out_desertcliffaccess_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertcliffnoaccess1",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1503,
@@ -2277,19 +2806,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1503,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_desertcliffnoaccess1",
+     "out_desertcliffnoaccess1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertcliffnoaccess2",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1504,
@@ -2299,19 +2834,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1504,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_desertcliffnoaccess2",
+     "out_desertcliffnoaccess2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertcliffnoaccess3",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1505,
@@ -2321,19 +2862,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1505,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_desertcliffnoaccess3",
+     "out_desertcliffnoaccess3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertdunes",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1506,
@@ -2409,19 +2956,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1506,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_desertdunes",
+     "int_desertdunes_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertmazeentrance",
    "pass": 5,
    "region": "Labyrinth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1526,
@@ -2431,19 +2984,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1526,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_desertmazeentrance",
+     "out_desertmazeentrance_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertoasis",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1525,
@@ -2453,19 +3012,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1525,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_desertoasis",
+     "out_desertoasis_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertpath1",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1501,
@@ -2475,19 +3040,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1501,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_desertpath1",
+     "int_desertpath1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertriver1",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1510,
@@ -2497,19 +3068,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1510,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_desertriver1",
+     "int_desertriver1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertriver2",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1511,
@@ -2519,19 +3096,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1511,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_desertriver2",
+     "int_desertriver2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertshore1",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1507,
@@ -2541,19 +3124,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1507,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_desertshore1",
+     "out_desertshore1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertshore2",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1508,
@@ -2563,19 +3152,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1508,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_desertshore2",
+     "out_desertshore2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertshore3",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1509,
@@ -2585,19 +3180,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1509,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_desertshore3",
+     "out_desertshore3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "desertshore4",
    "pass": 4,
    "region": "Black Desert",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1524,
@@ -2607,19 +3208,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1524,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_desertshore4",
+     "out_desertshore4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "duke1",
    "pass": 5,
    "region": "Blackstone Keep",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 950,
@@ -2635,19 +3242,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 950,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_duke1",
+     "out_duke1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "duke2",
    "pass": 5,
    "region": "Blackstone Keep",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 951,
@@ -2657,19 +3270,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 951,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_duke2",
+     "int_duke2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "duke3",
    "pass": 5,
    "region": "Blackstone Keep",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 952,
@@ -2679,19 +3298,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 952,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_duke3",
+     "out_duke3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "duke4",
    "pass": 5,
    "region": "Blackstone Keep",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 953,
@@ -2701,19 +3326,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 953,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_duke4",
+     "int_duke4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "duke5",
    "pass": 5,
    "region": "Blackstone Keep",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 954,
@@ -2723,19 +3354,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 954,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_duke5",
+     "int_duke5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "dvalley1",
    "pass": 4,
    "region": "Kardde's Pass and the Valley of Death",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2850,
@@ -2745,19 +3382,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2850,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_dvalley1",
+     "out_dvalley1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "dvalley2",
    "pass": 4,
    "region": "Kardde's Pass and the Valley of Death",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2851,
@@ -2767,19 +3410,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2851,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_dvalley2",
+     "out_dvalley2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "dvalley3",
    "pass": 4,
    "region": "Kardde's Pass and the Valley of Death",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2852,
@@ -2789,19 +3438,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2852,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_dvalley3",
+     "out_dvalley3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "dvalley4",
    "pass": 4,
    "region": "Kardde's Pass and the Valley of Death",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2853,
@@ -2811,19 +3466,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2853,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_dvalley4",
+     "out_dvalley4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "dvalley5",
    "pass": 4,
    "region": "Kardde's Pass and the Valley of Death",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2854,
@@ -2833,19 +3494,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2854,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_dvalley5",
+     "out_dvalley5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "dvalley5b",
    "pass": 5,
    "region": "The Valley's temples",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2855,
@@ -2855,19 +3522,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2855,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_dvalley5b",
+     "int_dvalley5b_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "dvalley_temple",
    "pass": 5,
    "region": "The Valley's temples",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2856,
@@ -2877,19 +3550,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2856,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_dvalley_temple",
+     "int_dvalley_temple_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "e2",
    "pass": 4,
    "region": "Ilerian Woods",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 552,
@@ -2905,19 +3584,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 552,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_e2",
+     "out_e2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "e4",
    "pass": 4,
    "region": "Ilerian Woods",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 554,
@@ -2933,19 +3618,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 554,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_e4",
+     "out_e4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "e5",
    "pass": 4,
    "region": "Forest of Farol",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 555,
@@ -2961,19 +3652,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 555,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_e5",
+     "out_e5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "e6",
    "pass": 4,
    "region": "Forest of Farol",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 556,
@@ -2983,19 +3680,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 556,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_e6",
+     "out_e6_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "e7",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 557,
@@ -3011,19 +3714,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 557,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_prairies",
+     "out_prairies_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "emgtoswamp",
    "pass": 4,
    "region": "The Duke's Way and the marshes",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2951,
@@ -3033,19 +3742,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2951,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_emgtoswamp",
+     "out_emgtoswamp_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "f2",
    "pass": 4,
    "region": "Ilerian Woods",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 562,
@@ -3061,19 +3776,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 562,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_f2",
+     "out_f2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "f3",
    "pass": 4,
    "region": "Ilerian Woods",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 563,
@@ -3089,19 +3810,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 563,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_f3",
+     "out_f3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "f4",
    "pass": 4,
    "region": "Ilerian Woods",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 564,
@@ -3117,19 +3844,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 564,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_f4",
+     "out_f4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "f6",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 566,
@@ -3145,19 +3878,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 566,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_f6",
+     "out_f6_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "f7",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 567,
@@ -3173,19 +3912,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 567,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_f7",
+     "out_f7_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "f8",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 568,
@@ -3201,13 +3946,19 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 568,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_jalalake",
+     "out_jalalake_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "farolwest",
@@ -3234,13 +3985,14 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "field1",
    "pass": 8,
-   "region": "Not linked from anywhere",
-   "status": "runtime",
+   "region": "Reached by teleport",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 3,
@@ -3250,19 +4002,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No exit leads here: reached only by teleport, if at all"
+   "built": {
+    "zone": 3,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_field1",
+     "out_field1_2"
+    ]
+   },
+   "approved": "2026-10-13",
+   "to_do": [],
+   "note": "The Fields: reached by teleport (the original's survival and faction events)",
+   "keep": ""
   },
   {
    "roo": "forest1",
    "pass": 8,
-   "region": "Not linked from anywhere",
-   "status": "runtime",
+   "region": "Reached by teleport",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 24,
@@ -3272,19 +4030,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No exit leads here: reached only by teleport, if at all"
+   "built": {
+    "zone": 24,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_forest1",
+     "out_forest1_2"
+    ]
+   },
+   "approved": "2026-10-13",
+   "to_do": [],
+   "note": "Reached by teleport: the faction council's home room",
+   "keep": ""
   },
   {
    "roo": "forest2",
    "pass": 8,
-   "region": "Not linked from anywhere",
-   "status": "runtime",
+   "region": "Reached by teleport",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 26,
@@ -3294,19 +4058,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No exit leads here: reached only by teleport, if at all"
+   "built": {
+    "zone": 26,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_forest2",
+     "out_forest2_2"
+    ]
+   },
+   "approved": "2026-10-13",
+   "to_do": [],
+   "note": "The Forests of Meridian: walking teleports you between the forest rooms",
+   "keep": ""
   },
   {
    "roo": "forest3",
    "pass": 8,
-   "region": "Not linked from anywhere",
-   "status": "runtime",
+   "region": "Reached by teleport",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 28,
@@ -3316,19 +4086,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No exit leads here: reached only by teleport, if at all"
+   "built": {
+    "zone": 28,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_forest3",
+     "out_forest3_2"
+    ]
+   },
+   "approved": "2026-10-13",
+   "to_do": [],
+   "note": "The Forests of Meridian: walking teleports you between the forest rooms",
+   "keep": ""
   },
   {
    "roo": "forest4",
    "pass": 8,
-   "region": "Not linked from anywhere",
-   "status": "runtime",
+   "region": "Reached by teleport",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 4,
@@ -3338,19 +4114,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No exit leads here: reached only by teleport, if at all"
+   "built": {
+    "zone": 4,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_forest4",
+     "out_forest4_2"
+    ]
+   },
+   "approved": "2026-10-13",
+   "to_do": [],
+   "note": "The Deep Dark Woods of Tos: walking teleports you between the forest rooms",
+   "keep": ""
   },
   {
    "roo": "forest5",
    "pass": 8,
-   "region": "Not linked from anywhere",
-   "status": "runtime",
+   "region": "Reached by teleport",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 6,
@@ -3360,19 +4142,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No exit leads here: reached only by teleport, if at all"
+   "built": {
+    "zone": 6,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_forest5",
+     "out_forest5_2"
+    ]
+   },
+   "approved": "2026-10-13",
+   "to_do": [],
+   "note": "The Deep Dark Woods of Marion: walking teleports you between the forest rooms",
+   "keep": ""
   },
   {
    "roo": "g4",
    "pass": 3,
    "region": "Cor Noth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 574,
@@ -3388,19 +4176,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 574,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_g4",
+     "out_g4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "g5",
    "pass": 3,
    "region": "Cor Noth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 575,
@@ -3416,19 +4210,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 575,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_g5",
+     "out_g5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "g6",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 576,
@@ -3444,19 +4244,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 576,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_g6",
+     "out_g6_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "g8",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 578,
@@ -3472,19 +4278,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 578,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_g8",
+     "out_g8_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "g9",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 579,
@@ -3500,19 +4312,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 579,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_g9",
+     "out_g9_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "gmhall",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 700,
@@ -3522,19 +4340,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 700,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_gmhall",
+     "int_gmhall_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "golem_dungeon",
    "pass": 5,
    "region": "Caves",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2822,
@@ -3544,13 +4368,19 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2822,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_golem_dungeon",
+     "int_golem_dungeon_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "greenplantation",
@@ -3577,13 +4407,14 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "greeny",
    "pass": 5,
    "region": "Castle Victoria",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 42,
@@ -3599,19 +4430,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 42,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_greeny",
+     "int_greeny_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh1",
    "pass": 3,
    "region": "Cor Noth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 701,
@@ -3621,19 +4458,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 701,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh1",
+     "int_guildh1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh10",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 710,
@@ -3643,19 +4486,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 710,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jaarba",
+     "int_jaarba_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh11",
    "pass": 4,
    "region": "Ilerian Woods",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 712,
@@ -3665,19 +4514,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 712,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh11",
+     "int_guildh11_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh12",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 705,
@@ -3687,19 +4542,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 705,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh12",
+     "int_guildh12_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh13",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 713,
@@ -3709,19 +4570,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 713,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh13",
+     "int_guildh13_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh14",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 714,
@@ -3731,19 +4598,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 714,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh14",
+     "int_guildh14_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh15",
    "pass": 6,
    "region": "Brax",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 715,
@@ -3759,19 +4632,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 715,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh15",
+     "int_guildh15_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh16",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 716,
@@ -3781,13 +4660,19 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 716,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh16",
+     "int_guildh16_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh17",
@@ -3813,13 +4698,14 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh19",
    "pass": 4,
    "region": "The Duke's Way and the marshes",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 719,
@@ -3829,19 +4715,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 719,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh19",
+     "int_guildh19_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh2",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 702,
@@ -3851,19 +4743,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 702,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh2",
+     "int_guildh2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh20",
    "pass": 3,
    "region": "Berg",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 720,
@@ -3873,19 +4771,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 720,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh20",
+     "int_guildh20_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh3",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 703,
@@ -3895,19 +4799,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 703,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_denofshadows",
+     "int_denofshadows_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh4",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 704,
@@ -3917,19 +4827,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 704,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_wrynskeep",
+     "int_wrynskeep_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh5",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 707,
@@ -3939,19 +4855,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 707,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh5",
+     "int_guildh5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh6",
    "pass": 3,
    "region": "Cor Noth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 711,
@@ -3961,13 +4883,19 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 711,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh6",
+     "int_guildh6_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh7",
@@ -3995,13 +4923,14 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh8",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 708,
@@ -4011,19 +4940,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 708,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh8",
+     "int_guildh8_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "guildh9",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 709,
@@ -4033,19 +4968,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 709,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_guildh9",
+     "int_guildh9_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "h3",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 583,
@@ -4061,19 +5002,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 583,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_h3",
+     "out_h3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "h4",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 584,
@@ -4089,19 +5036,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 584,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_h4",
+     "out_h4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "h5",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 585,
@@ -4117,19 +5070,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 585,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_h5",
+     "out_h5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "h6",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 586,
@@ -4145,19 +5104,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 586,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_h6",
+     "out_h6_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "h7",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 587,
@@ -4173,19 +5138,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 587,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_h7",
+     "out_h7_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "h9",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 589,
@@ -4201,19 +5172,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 589,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_h9",
+     "out_h9_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "hermhut",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 36,
@@ -4223,19 +5200,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 36,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_hermhut",
+     "int_hermhut_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "i3",
    "pass": 3,
    "region": "Barloque",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 593,
@@ -4251,19 +5234,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 593,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_i3",
+     "out_i3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "i6",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 596,
@@ -4279,19 +5268,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 596,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_i6",
+     "out_i6_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "i7",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 597,
@@ -4307,19 +5302,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 597,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_i7",
+     "out_i7_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "i8",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 598,
@@ -4335,19 +5336,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 598,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_i8",
+     "out_i8_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "i9",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 599,
@@ -4357,19 +5364,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 599,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_i9",
+     "out_i9_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "icecave1",
    "pass": 5,
    "region": "Caves",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 750,
@@ -4379,19 +5392,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 750,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_icecave1",
+     "int_icecave1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "j3",
    "pass": 4,
    "region": "The Queen's Way and the Badlands",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 603,
@@ -4407,19 +5426,24 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 603,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_j3"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "j3_1",
    "pass": 4,
    "region": "The Queen's Way and the Badlands",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2819,
@@ -4429,19 +5453,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2819,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_j3_1",
+     "out_j3_1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "j3_2",
    "pass": 4,
    "region": "The Queen's Way and the Badlands",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2820,
@@ -4451,19 +5481,24 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2820,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_j3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab1",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 351,
@@ -4473,19 +5508,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 351,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab1",
+     "int_jasab1_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab10",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 360,
@@ -4495,19 +5536,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 360,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab10",
+     "int_jasab10_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab11",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 361,
@@ -4517,19 +5564,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 361,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab11",
+     "int_jasab11_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab12",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 362,
@@ -4539,19 +5592,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 362,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab12",
+     "int_jasab12_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab13",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 363,
@@ -4561,19 +5620,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 363,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab13",
+     "int_jasab13_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab14",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 364,
@@ -4583,19 +5648,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 364,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab14",
+     "int_jasab14_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab2",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 352,
@@ -4605,19 +5676,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 352,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab2",
+     "int_jasab2_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab3",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 353,
@@ -4627,19 +5704,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 353,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab3",
+     "int_jasab3_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab4",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 354,
@@ -4649,19 +5732,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 354,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab4",
+     "int_jasab4_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab5",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 355,
@@ -4671,19 +5760,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 355,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab5",
+     "int_jasab5_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab6",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 356,
@@ -4693,19 +5788,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 356,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab6",
+     "int_jasab6_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab7",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 357,
@@ -4715,19 +5816,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 357,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab7",
+     "int_jasab7_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab8",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 358,
@@ -4737,19 +5844,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 358,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab8",
+     "int_jasab8_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasab9",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 359,
@@ -4759,19 +5872,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 359,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasab9",
+     "int_jasab9_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasbank",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 376,
@@ -4781,19 +5900,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 376,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasbank",
+     "int_jasbank_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jaseast",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 350,
@@ -4809,19 +5934,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 350,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_jaseast",
+     "out_jaseast_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jaselder",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 375,
@@ -4831,19 +5962,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 375,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jaselder",
+     "int_jaselder_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jashall",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 372,
@@ -4853,19 +5990,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 372,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jashall",
+     "int_jashall_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasinn",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 370,
@@ -4875,19 +6018,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 370,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasinn",
+     "int_jasinn_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jassew1",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 377,
@@ -4897,19 +6046,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 377,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jassewer1",
+     "int_jassewer1_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jassew2",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 378,
@@ -4919,19 +6074,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 378,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jassewer2",
+     "int_jassewer2_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jassew3",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 379,
@@ -4941,19 +6102,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 379,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jassewer3",
+     "int_jassewer3_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jassmith",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 374,
@@ -4963,19 +6130,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 374,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jassmith",
+     "int_jassmith_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasstore",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 373,
@@ -4985,19 +6158,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 373,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasstore",
+     "int_jasstore_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jastavrn",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 371,
@@ -5007,19 +6186,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 371,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jastavern",
+     "int_jastavern_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jasvault",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 384,
@@ -5029,19 +6214,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 384,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jasvault",
+     "int_jasvault_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "jaswest",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 382,
@@ -5057,19 +6248,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 382,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_jaswest",
+     "out_jaswest_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ji1",
    "pass": 4,
    "region": "The Duke's Way and the marshes",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2900,
@@ -5079,19 +6276,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2900,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_ji1",
+     "out_ji1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ji2",
    "pass": 4,
    "region": "The Duke's Way and the marshes",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2901,
@@ -5101,19 +6304,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2901,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_ji2",
+     "out_ji2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ji3",
    "pass": 3,
    "region": "Jixa",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2902,
@@ -5123,19 +6332,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2902,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_ji3",
+     "out_ji3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "Jixa is a fan-made area (Server 104), less polished than the original world: left for a later pass (docs/parity.md)",
+   "keep": ""
   },
   {
    "roo": "ji4",
    "pass": 3,
    "region": "Jixa",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2904,
@@ -5145,19 +6360,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2904,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_ji4",
+     "out_ji4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "Jixa is a fan-made area (Server 104), less polished than the original world: left for a later pass (docs/parity.md)",
+   "keep": ""
   },
   {
    "roo": "jixa",
    "pass": 3,
    "region": "Jixa",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2903,
@@ -5167,19 +6388,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2903,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_jixa",
+     "out_jixa_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "Jixa is a fan-made area (Server 104), less polished than the original world: left for a later pass (docs/parity.md)",
+   "keep": ""
   },
   {
    "roo": "jixa_dye",
    "pass": 3,
    "region": "Jixa",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2906,
@@ -5189,19 +6416,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2906,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jixa_dye",
+     "int_jixa_dye_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "Jixa is a fan-made area (Server 104), less polished than the original world: left for a later pass (docs/parity.md)",
+   "keep": ""
   },
   {
    "roo": "jixa_hall",
    "pass": 3,
    "region": "Jixa",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2907,
@@ -5211,19 +6444,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2907,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jixa_hall",
+     "int_jixa_hall_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "Jixa is a fan-made area (Server 104), less polished than the original world: left for a later pass (docs/parity.md)",
+   "keep": ""
   },
   {
    "roo": "jixa_inn",
    "pass": 3,
    "region": "Jixa",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2905,
@@ -5233,19 +6472,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2905,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jixa_inn",
+     "int_jixa_inn_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "Jixa is a fan-made area (Server 104), less polished than the original world: left for a later pass (docs/parity.md)",
+   "keep": ""
   },
   {
    "roo": "jixa_smith",
    "pass": 3,
    "region": "Jixa",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2908,
@@ -5255,19 +6500,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2908,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_jixa_smith",
+     "int_jixa_smith_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "Jixa is a fan-made area (Server 104), less polished than the original world: left for a later pass (docs/parity.md)",
+   "keep": ""
   },
   {
    "roo": "k5",
    "pass": 4,
    "region": "The Queen's Way and the Badlands",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 615,
@@ -5283,19 +6534,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 615,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_k5",
+     "out_k5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ka0",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2110,
@@ -5305,19 +6562,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2110,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_ka0",
+     "int_ka0_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ka1",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2111,
@@ -5327,19 +6590,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2111,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_ka1",
+     "out_ka1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ka2",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2112,
@@ -5349,19 +6618,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2112,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_ka2",
+     "out_ka2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ka3",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2113,
@@ -5371,19 +6646,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2113,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_ka3",
+     "out_ka3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ka4",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2114,
@@ -5393,19 +6674,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2114,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_ka4",
+     "out_ka4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ka5",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2115,
@@ -5415,19 +6702,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2115,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_ka5",
+     "out_ka5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kb1",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2121,
@@ -5437,19 +6730,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2121,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_kb1",
+     "out_kb1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kb2",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2122,
@@ -5459,19 +6758,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2122,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kb2",
+     "int_kb2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kb3",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2123,
@@ -5481,19 +6786,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2123,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kb3",
+     "int_kb3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kb4",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2124,
@@ -5503,19 +6814,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2124,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kb4",
+     "int_kb4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kb5",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2125,
@@ -5525,19 +6842,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2125,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kb5",
+     "int_kb5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kc1",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2131,
@@ -5547,19 +6870,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2131,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_kc1",
+     "out_kc1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kc2",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2132,
@@ -5569,19 +6898,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2132,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kc2",
+     "int_kc2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kc3",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2133,
@@ -5591,19 +6926,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2133,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kc3",
+     "int_kc3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kc4",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2134,
@@ -5613,19 +6954,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2134,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kc4",
+     "int_kc4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kc5",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2135,
@@ -5635,19 +6982,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2135,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_kc5",
+     "out_kc5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kc5a",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2136,
@@ -5657,19 +7010,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2136,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kc5a",
+     "int_kc5a_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kd1",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2141,
@@ -5679,19 +7038,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2141,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_kd1",
+     "out_kd1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kd2",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2142,
@@ -5701,19 +7066,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2142,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_kd2",
+     "out_kd2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kd3",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2143,
@@ -5723,19 +7094,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2143,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kd3",
+     "int_kd3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kd4",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2144,
@@ -5745,19 +7122,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2144,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_kd4",
+     "out_kd4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ke1",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2151,
@@ -5767,19 +7150,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2151,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_ke1",
+     "int_ke1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ke2",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2152,
@@ -5789,19 +7178,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2152,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_ke2",
+     "out_ke2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ke4",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2154,
@@ -5811,19 +7206,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2154,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_ke4",
+     "out_ke4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kocapoth",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2002,
@@ -5833,19 +7234,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2002,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kocapoth",
+     "int_kocapoth_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kocbank",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2005,
@@ -5855,19 +7262,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2005,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kocbank",
+     "int_kocbank_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kocblack",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2003,
@@ -5877,19 +7290,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2003,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kocblack",
+     "int_kocblack_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kochoh",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 59,
@@ -5905,19 +7324,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 59,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kochoh",
+     "int_kochoh_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kochoha",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2014,
@@ -5927,19 +7352,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2014,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kochoha",
+     "int_kochoha_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kochohb",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2015,
@@ -5949,19 +7380,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2015,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kochohb",
+     "int_kochohb_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kocinn",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2001,
@@ -5971,13 +7408,19 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2001,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kocinn",
+     "int_kocinn_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kocrent",
@@ -5987,18 +7430,19 @@
    "rooms": [],
    "on_disk": true,
    "built": null,
-   "approved": null,
+   "approved": "2026-10-12",
    "to_do": [
     "build",
     "approval"
    ],
-   "note": "A rentable room (Kod rentroom/): each renter gets a copy made at runtime, so it has no fixed RID"
+   "note": "A rentable room (Kod rentroom/): each renter gets a copy made at runtime, so it has no fixed RID",
+   "keep": ""
   },
   {
    "roo": "kocsew1",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2010,
@@ -6008,19 +7452,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2010,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kocsew1",
+     "int_kocsew1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kocsew2",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2012,
@@ -6030,19 +7480,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2012,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kocsew2",
+     "int_kocsew2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "kocstore",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2004,
@@ -6052,19 +7508,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2004,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_kocstore",
+     "int_kocstore_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "koctail",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2006,
@@ -6074,19 +7536,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2006,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_koctail",
+     "int_koctail_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "koctav",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2008,
@@ -6096,19 +7564,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2008,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_koctav",
+     "int_koctav_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "koctower",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2013,
@@ -6118,34 +7592,38 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2013,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_koctower",
+     "int_koctower_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "labyrinth",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "lichmaze",
    "pass": 6,
    "region": "Brax",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 825,
@@ -6155,13 +7633,19 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 825,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_lichmaze",
+     "int_lichmaze_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "marcrypt4",
@@ -6188,7 +7672,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "mardun01",
@@ -6215,7 +7700,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "mardun02",
@@ -6242,7 +7728,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "mardun03",
@@ -6269,7 +7756,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "marelder",
@@ -6296,7 +7784,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "marhall",
@@ -6323,7 +7812,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "marheal",
@@ -6350,7 +7840,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "marinn",
@@ -6377,7 +7868,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "marion",
@@ -6410,7 +7902,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "marrent",
@@ -6425,7 +7918,8 @@
     "build",
     "approval"
    ],
-   "note": "A rentable room (Kod rentroom/): each renter gets a copy made at runtime, so it has no fixed RID"
+   "note": "A rentable room (Kod rentroom/): each renter gets a copy made at runtime, so it has no fixed RID",
+   "keep": ""
   },
   {
    "roo": "marsmith",
@@ -6452,13 +7946,14 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "mazefoyer",
    "pass": 5,
    "region": "Labyrinth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1601,
@@ -6468,19 +7963,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1601,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_mazefoyer",
+     "int_mazefoyer_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "mazefoyer2",
    "pass": 5,
    "region": "Labyrinth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1602,
@@ -6490,19 +7991,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1602,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_mazefoyer2",
+     "int_mazefoyer2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "mockers",
    "pass": 5,
    "region": "The Bourgeois Castle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 854,
@@ -6512,19 +8019,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 854,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_mockers",
+     "int_mockers_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "nec3a",
    "pass": 6,
    "region": "Brax",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 831,
@@ -6534,19 +8047,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 831,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_nec3a",
+     "int_nec3a_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "nec3b",
    "pass": 6,
    "region": "Brax",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 832,
@@ -6556,19 +8075,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 832,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_nec3b",
+     "int_nec3b_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "necarea1",
    "pass": 6,
    "region": "Brax",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 826,
@@ -6578,19 +8103,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 826,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_necarea1",
+     "int_necarea1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "necarea2",
    "pass": 6,
    "region": "Brax",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 827,
@@ -6600,19 +8131,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 827,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_necarea2",
+     "int_necarea2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "necarea3",
    "pass": 6,
    "region": "Brax",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 828,
@@ -6622,19 +8159,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 828,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_necarea3",
+     "int_necarea3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "necarea4",
    "pass": 6,
    "region": "Brax",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 829,
@@ -6644,19 +8187,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 829,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_necarea4",
+     "int_necarea4_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "necarea5",
    "pass": 6,
    "region": "Brax",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 830,
@@ -6666,19 +8215,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 830,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_necarea5",
+     "int_necarea5_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "necarea6",
    "pass": 6,
    "region": "Brax",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 834,
@@ -6688,19 +8243,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 834,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_necarea6",
+     "int_necarea6_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "necarena",
    "pass": 6,
    "region": "Brax",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 833,
@@ -6710,19 +8271,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 833,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_necarena",
+     "int_necarena_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "nest1",
    "pass": 5,
    "region": "Caves",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 35,
@@ -6732,34 +8299,38 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 35,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_nest1",
+     "int_nest1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "newroom",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "obarln",
    "pass": 8,
    "region": "Historic towns",
-   "status": "runtime",
+   "status": "kept original",
    "rooms": [
     {
      "rid": 9002,
@@ -6771,17 +8342,15 @@
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "to_do": [],
+   "note": "Kept as the original for history: drawn from its .roo at runtime, never remastered",
+   "keep": "original"
   },
   {
    "roo": "obarls",
    "pass": 8,
    "region": "Historic towns",
-   "status": "runtime",
+   "status": "kept original",
    "rooms": [
     {
      "rid": 9003,
@@ -6793,17 +8362,15 @@
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "to_do": [],
+   "note": "Kept as the original for history: drawn from its .roo at runtime, never remastered",
+   "keep": "original"
   },
   {
    "roo": "oc01",
    "pass": 5,
    "region": "Ugol's Warren (the orc caves)",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2500,
@@ -6813,19 +8380,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2500,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_oc01",
+     "int_oc01_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "oc02",
    "pass": 5,
    "region": "Ugol's Warren (the orc caves)",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2501,
@@ -6835,19 +8408,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2501,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_oc02",
+     "int_oc02_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "oc03",
    "pass": 5,
    "region": "Ugol's Warren (the orc caves)",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2502,
@@ -6857,19 +8436,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2502,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_oc03",
+     "int_oc03_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "oc04",
    "pass": 5,
    "region": "Ugol's Warren (the orc caves)",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2503,
@@ -6879,19 +8464,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2503,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_oc04",
+     "int_oc04_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "oc05",
    "pass": 5,
    "region": "Ugol's Warren (the orc caves)",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2504,
@@ -6901,19 +8492,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2504,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_oc05",
+     "int_oc05_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "oc06",
    "pass": 5,
    "region": "Ugol's Warren (the orc caves)",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2505,
@@ -6923,34 +8520,38 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2505,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_oc06",
+     "int_oc06_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "oc07",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "oc1a",
    "pass": 5,
    "region": "Ugol's Warren (the orc caves)",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2509,
@@ -6960,19 +8561,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2509,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_oc1a",
+     "int_oc1a_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "oc5b",
    "pass": 5,
    "region": "Ugol's Warren (the orc caves)",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2510,
@@ -6982,19 +8589,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2510,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_oc5b",
+     "int_oc5b_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ocornoth",
    "pass": 8,
    "region": "Historic towns",
-   "status": "runtime",
+   "status": "kept original",
    "rooms": [
     {
      "rid": 9004,
@@ -7006,17 +8619,15 @@
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "to_do": [],
+   "note": "Kept as the original for history: drawn from its .roo at runtime, never remastered",
+   "keep": "original"
   },
   {
    "roo": "ocoruniv",
    "pass": 8,
    "region": "Historic towns",
-   "status": "runtime",
+   "status": "kept original",
    "rooms": [
     {
      "rid": 9005,
@@ -7028,17 +8639,15 @@
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "to_do": [],
+   "note": "Kept as the original for history: drawn from its .roo at runtime, never remastered",
+   "keep": "original"
   },
   {
    "roo": "ocp1",
    "pass": 5,
    "region": "Ugol's Warren (the orc caves)",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2506,
@@ -7048,19 +8657,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2506,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_ocp1",
+     "int_ocp1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ocpa",
    "pass": 5,
    "region": "Ugol's Warren (the orc caves)",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2507,
@@ -7070,19 +8685,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2507,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_ocpa",
+     "int_ocpa_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ocpb",
    "pass": 5,
    "region": "Ugol's Warren (the orc caves)",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2508,
@@ -7092,94 +8713,90 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2508,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_ocpb",
+     "int_ocpb_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ocw1",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "ogrecave1",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "ogrecave2",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "ogretown1",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "ogretown1-broken",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "ojas",
    "pass": 8,
    "region": "Historic towns",
-   "status": "runtime",
+   "status": "kept original",
    "rooms": [
     {
      "rid": 9000,
@@ -7191,17 +8808,15 @@
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "to_do": [],
+   "note": "Kept as the original for history: drawn from its .roo at runtime, never remastered",
+   "keep": "original"
   },
   {
    "roo": "omar",
    "pass": 8,
    "region": "Historic towns",
-   "status": "runtime",
+   "status": "kept original",
    "rooms": [
     {
      "rid": 9001,
@@ -7213,17 +8828,15 @@
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "to_do": [],
+   "note": "Kept as the original for history: drawn from its .roo at runtime, never remastered",
+   "keep": "original"
   },
   {
    "roo": "outgrace",
    "pass": 8,
    "region": "Gods, tests and the Underworld",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 43,
@@ -7233,13 +8846,19 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 43,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_outgrace",
+     "out_outgrace_2"
+    ]
+   },
+   "approved": "2026-10-13",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "plantationhouse",
@@ -7266,28 +8885,27 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "qhollow",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "ratcave1",
    "pass": 5,
    "region": "Caves",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 858,
@@ -7297,19 +8915,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 858,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_ratcave1",
+     "int_ratcave1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ratcave2",
    "pass": 5,
    "region": "Caves",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 859,
@@ -7319,19 +8943,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 859,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_ratcave2",
+     "int_ratcave2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "ratcave3",
    "pass": 5,
    "region": "Caves",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 860,
@@ -7341,13 +8971,19 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 860,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_ratcave3",
+     "int_ratcave3_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "raza",
@@ -7433,7 +9069,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": "Raza town: the reference look (ADR 0003)"
+   "note": "Raza town: the reference look (ADR 0003)",
+   "keep": ""
   },
   {
    "roo": "razaapoth",
@@ -7460,7 +9097,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "razabank",
@@ -7487,7 +9125,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "razabar",
@@ -7515,7 +9154,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "razacrypt",
@@ -7546,7 +9186,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "razaforest",
@@ -7632,7 +9273,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": "Shares Raza town's level and zone_300.json"
+   "note": "Shares Raza town's level and zone_300.json",
+   "keep": ""
   },
   {
    "roo": "razahall",
@@ -7659,7 +9301,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "razahut",
@@ -7686,7 +9329,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "razainn",
@@ -7720,7 +9364,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "razamuseum",
@@ -7752,7 +9397,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "razasmith",
@@ -7779,7 +9425,8 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "razavault",
@@ -7806,88 +9453,79 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "roogen1",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "roogen2",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "roogen3",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "roogen4",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "roogen5",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "settle1",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2000,
@@ -7897,19 +9535,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2000,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_settle1",
+     "out_settle1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "settle2",
    "pass": 7,
    "region": "Ko'catan",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2009,
@@ -7919,19 +9563,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2009,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_settle2",
+     "out_settle2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "sewking",
    "pass": 3,
    "region": "Jasper",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 380,
@@ -7941,19 +9591,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 380,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_sewking",
+     "int_sewking_2"
+    ]
+   },
+   "approved": "2026-10-10",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "survival_ex",
    "pass": 4,
    "region": "The Queen's Way and the Badlands",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2821,
@@ -7963,19 +9619,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2821,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_survival_ex",
+     "out_survival_ex_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "swamp1",
    "pass": 4,
    "region": "The Duke's Way and the marshes",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2953,
@@ -7985,19 +9647,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2953,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_swamp1",
+     "int_swamp1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "swamp2",
    "pass": 4,
    "region": "The Duke's Way and the marshes",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2954,
@@ -8007,19 +9675,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2954,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_swamp2",
+     "int_swamp2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "swamptojixa",
    "pass": 4,
    "region": "The Duke's Way and the marshes",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2952,
@@ -8029,19 +9703,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2952,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_swamptojixa",
+     "out_swamptojixa_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tempkra",
    "pass": 4,
    "region": "The King's Way and the Cragged Mountains",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 801,
@@ -8057,19 +9737,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 801,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tempkra",
+     "int_tempkra_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "temple",
    "pass": 4,
    "region": "Ilerian Woods",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 48,
@@ -8085,19 +9771,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 48,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_temple",
+     "int_temple_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tempqor",
    "pass": 8,
-   "region": "Not linked from anywhere",
-   "status": "runtime",
+   "region": "Reached by teleport",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 802,
@@ -8107,19 +9799,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No exit leads here: reached only by teleport, if at all"
+   "built": {
+    "zone": 802,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tempqor",
+     "int_tempqor_2"
+    ]
+   },
+   "approved": "2026-10-13",
+   "to_do": [],
+   "note": "Reached through a hidden entrance in H9 and I8",
+   "keep": ""
   },
   {
    "roo": "throne1",
    "pass": 5,
    "region": "Castle Victoria",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 40,
@@ -8135,19 +9833,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 40,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_throne1",
+     "int_throne1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "throne2",
    "pass": 5,
    "region": "Castle Victoria",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 41,
@@ -8163,19 +9867,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 41,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_throne2",
+     "int_throne2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tos",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 15,
@@ -8203,19 +9913,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "Also the profile and new-room test rooms (15, 904)"
+   "built": {
+    "zone": 15,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_tos",
+     "out_tos_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "Also the profile and new-room test rooms (15, 904)",
+   "keep": ""
   },
   {
    "roo": "tosapoth",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 53,
@@ -8225,19 +9941,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 53,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tosapoth",
+     "int_tosapoth_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tosaren2",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 73,
@@ -8247,19 +9969,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 73,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tosaren2",
+     "int_tosaren2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tosarena",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 60,
@@ -8269,19 +9997,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 60,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tosarena",
+     "int_tosarena_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tosarena_death",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 79,
@@ -8291,19 +10025,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 79,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tosarena_death",
+     "int_tosarena_death_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tosbank",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 54,
@@ -8313,19 +10053,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 54,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tosbank",
+     "int_tosbank_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "toscellar",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 74,
@@ -8335,19 +10081,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 74,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_toscellar",
+     "int_toscellar_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "toscrypt",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 71,
@@ -8363,34 +10115,38 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 71,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_toscrypt",
+     "int_toscrypt_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "toscrypt2",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "toseast",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 61,
@@ -8400,19 +10156,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 61,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_toseast",
+     "out_toseast_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "toseast_mg",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2950,
@@ -8422,19 +10184,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2950,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_toseast_mg",
+     "out_toseast_mg_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tosforgt",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 58,
@@ -8444,19 +10212,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 58,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tosforgt",
+     "int_tosforgt_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tosgrave",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 70,
@@ -8472,19 +10246,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 70,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_tosgrave",
+     "out_tosgrave_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tosgrey",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 57,
@@ -8494,19 +10274,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 57,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tosgrey",
+     "int_tosgrey_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "toshall",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 72,
@@ -8516,19 +10302,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 72,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_toshall",
+     "int_toshall_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "toshidden",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 75,
@@ -8538,19 +10330,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 75,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_toshidden",
+     "int_toshidden_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tosinn",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 52,
@@ -8560,34 +10358,38 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 52,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tosinn",
+     "int_tosinn_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tosmalevals",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "tossecret",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 78,
@@ -8597,19 +10399,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 78,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tossecret",
+     "int_tossecret_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tossmith",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 51,
@@ -8619,19 +10427,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 51,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tossmith",
+     "int_tossmith_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tosstorage",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 77,
@@ -8641,19 +10455,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 77,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tosstorage",
+     "int_tosstorage_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tostan",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 56,
@@ -8663,19 +10483,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 56,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tostan",
+     "int_tostan_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tostavern",
    "pass": 3,
    "region": "Tos",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 76,
@@ -8685,34 +10511,38 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 76,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tostavern",
+     "int_tostavern_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tostraining",
    "pass": 8,
    "region": "Not used by any Kod room",
-   "status": "runtime",
+   "status": "not remastered",
    "rooms": [],
    "on_disk": true,
    "built": null,
    "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": "No Kod room uses it: a test, unfinished or retired map"
+   "to_do": [],
+   "note": "No Kod room uses it: a test, unfinished or retired map",
+   "keep": "unused"
   },
   {
    "roo": "tpost1",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2101,
@@ -8722,19 +10552,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2101,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tpost1",
+     "int_tpost1_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "tpost2",
    "pass": 7,
    "region": "Ko'catan jungle",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 2102,
@@ -8744,19 +10580,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 2102,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_tpost2",
+     "int_tpost2_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "univ",
    "pass": 8,
    "region": "Gods, tests and the Underworld",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 902,
@@ -8772,19 +10614,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 902,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_univ",
+     "int_univ_2"
+    ]
+   },
+   "approved": "2026-10-13",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "uworld",
    "pass": 8,
    "region": "Gods, tests and the Underworld",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1,
@@ -8794,19 +10642,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_uworld",
+     "int_uworld_2"
+    ]
+   },
+   "approved": "2026-10-13",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "waylayoasis",
    "pass": 4,
    "region": "The Queen's Way and the Badlands",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 1500,
@@ -8816,19 +10670,25 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 1500,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_waylayoasis",
+     "int_waylayoasis_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "weaponsm",
    "pass": 3,
    "region": "Cor Noth",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 154,
@@ -8838,13 +10698,19 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 154,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "int_weaponsm",
+     "int_weaponsm_2"
+    ]
+   },
+   "approved": "2026-10-12",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "workerhome1",
@@ -8870,13 +10736,14 @@
    },
    "approved": "2026-10-10",
    "to_do": [],
-   "note": ""
+   "note": "",
+   "keep": ""
   },
   {
    "roo": "zndramas",
    "pass": 8,
    "region": "Gods, tests and the Underworld",
-   "status": "runtime",
+   "status": "remastered",
    "rooms": [
     {
      "rid": 901,
@@ -8886,13 +10753,19 @@
     }
    ],
    "on_disk": true,
-   "built": null,
-   "approved": null,
-   "to_do": [
-    "build",
-    "approval"
-   ],
-   "note": ""
+   "built": {
+    "zone": 901,
+    "art": true,
+    "lighting": true,
+    "cameras": [
+     "out_zndramas",
+     "out_zndramas_2"
+    ]
+   },
+   "approved": "2026-10-13",
+   "to_do": [],
+   "note": "",
+   "keep": ""
   }
  ]
 }

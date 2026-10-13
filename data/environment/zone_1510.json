@@ -1,0 +1,38 @@
+{
+  "_doc": "Zone art for Cliffbound River (rid 1510), the world remaster's batch recipe (tools/world/zone_configs.py, 2026-10-10): outdoors, no buildings rebuilt yet. Cut-outs become solids; grime at the walls' feet.",
+  "rid": 1510,
+  "rebuild": [
+    "cutouts"
+  ],
+  "buildings": [
+    {
+      "name": "Water",
+      "kind": "water",
+      "region_m": [
+        -205.6,
+        -119.8,
+        298.0,
+        199.0
+      ],
+      "materials": [
+        "grd01807",
+        "grd08968"
+      ],
+      "bed_texture": "grd09629",
+      "bed_depth_m": 0.9,
+      "_doc": "rivers and lakes: a water surface over a shelving bed"
+    },
+    {
+      "name": "Cutouts",
+      "kind": "cutouts",
+      "region_m": [
+        -205.6,
+        -119.8,
+        298.0,
+        199.0
+      ],
+      "displacement": "none",
+      "_doc": "every cut-out, rebuilt as a solid"
+    }
+  ]
+}

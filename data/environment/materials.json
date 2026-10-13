@@ -95,6 +95,180 @@
  },
  "ground": {
   "_doc": "Floors drawn with the world-aligned ground master instead of the blockout UVs: the original texture at two scales blended by macro noise (breaks up tiling), tinted by the macro noise. tile_m = the original repeat size (floors tile once per 2.2 m grid square in the original client, whatever the texture's size). normal_strength: the normal map's strength on that floor (default M_Ground's 0.8). large_normal_scale: extra strength for the large-scale layer, whose relief is stretched 2.73x and comes out flatter (default 1.5; 2.73 makes the big stones as steep as the small).",
+  "grd09075": {
+   "tile_m": 2.2
+  },
+  "grd09088": {
+   "tile_m": 2.2
+  },
+  "grd09076": {
+   "tile_m": 2.2
+  },
+  "grd09109": {
+   "tile_m": 2.2
+  },
+  "grd09281": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd09149": {
+   "tile_m": 2.2
+  },
+  "grd09395": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd09693": {
+   "tile_m": 2.2
+  },
+  "grd09697": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd02121": {
+   "tile_m": 2.2
+  },
+  "grd55071": {
+   "tile_m": 2.2
+  },
+  "grd55095": {
+   "tile_m": 2.2
+  },
+  "grd09082": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd55082": {
+   "tile_m": 2.2
+  },
+  "grd09215": {
+   "tile_m": 2.2
+  },
+  "grd09080": {
+   "tile_m": 2.2
+  },
+  "grd11033": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd06002": {
+   "tile_m": 2.2
+  },
+  "grd09081": {
+   "tile_m": 2.2
+  },
+  "grd55089": {
+   "tile_m": 2.2
+  },
+  "grd55093": {
+   "tile_m": 2.2
+  },
+  "grd55087": {
+   "tile_m": 2.2
+  },
+  "grd01605": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd09566": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd09570": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd02201": {
+   "tile_m": 2.2
+  },
+  "grd01604": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd02123": {
+   "tile_m": 2.2
+  },
+  "grd02303": {
+   "tile_m": 2.2
+  },
+  "grd01601": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd00002": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd03803": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd02124": {
+   "tile_m": 2.2
+  },
+  "grd02125": {
+   "tile_m": 2.2
+  },
+  "grd06601": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd02126": {
+   "tile_m": 2.2
+  },
+  "grd01603": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd04304": {
+   "tile_m": 2.2
+  },
+  "grd02103": {
+   "tile_m": 2.2
+  },
+  "grd02104": {
+   "tile_m": 2.2
+  },
+  "grd55072": {
+   "tile_m": 2.2
+  },
+  "grd55020": {
+   "tile_m": 2.2
+  },
+  "grd55090": {
+   "tile_m": 2.2
+  },
+  "grd55068": {
+   "tile_m": 2.2
+  },
+  "grd55084": {
+   "tile_m": 2.2
+  },
+  "grd20201": {
+   "tile_m": 2.2
+  },
+  "grd20202": {
+   "tile_m": 2.2
+  },
+  "grd55019": {
+   "tile_m": 2.2
+  },
+  "grd55065": {
+   "tile_m": 2.2
+  },
+  "grd55069": {
+   "tile_m": 2.2
+  },
+  "grd01607": {
+   "tile_m": 2.2,
+   "normal_strength": 1.0
+  },
+  "grd02129": {
+   "tile_m": 2.2
+  },
+  "grd55067": {
+   "tile_m": 2.2
+  },
   "grd02306": {
    "tile_m": 2.2
   },
