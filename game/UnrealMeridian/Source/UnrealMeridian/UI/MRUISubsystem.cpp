@@ -631,11 +631,8 @@ void UMRUISubsystem::OnNetDescription()
 				return;
 			}
 			const int32 Bitmap = Bgf.Groups.IsValidIndex(Group) && Bgf.Groups[Group].Num() > 0 ? Bgf.Groups[Group][0] : 0;
-			if (UTexture2D* Tex = Bgf.MakeTexture(Bgf.Bitmaps.IsValidIndex(Bitmap) ? Bitmap : 0, false))
+			if (UTexture2D* Tex = Bgf.MakeTexture(Bgf.Bitmaps.IsValidIndex(Bitmap) ? Bitmap : 0, false, true))
 			{
-				Tex->AddressX = TA_Clamp;
-				Tex->AddressY = TA_Clamp;
-				Tex->UpdateResource();
 				Self->LookPicture = Tex;
 				// fit the box, keeping its shape (the box is square)
 				const float Side = FMath::Max(Tex->GetSizeX(), Tex->GetSizeY());

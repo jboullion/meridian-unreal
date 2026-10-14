@@ -28,8 +28,13 @@ public:
 
 	/** The file if it is cached and matches the manifest; never downloads. */
 	bool Load(const FString& Name, TArray<uint8>& Out);
-	/** The file, downloaded first if needed. Done runs on the game thread, maybe before this returns. */
+	/**
+	 * The file, downloaded first if needed. Done runs on the game thread, a frame or more later: a cached file is
+	 * read and checked on a worker thread (a cold read took 25-44 ms of a frame).
+	 */
 	void Fetch(const FString& Name, FDone Done);
+	/** Download the file if it isn't on disk yet; nothing is read (UMRRuntimeRooms::Prefetch). */
+	void Prefetch(const FString& Name);
 	/** Drop queued downloads and their callbacks (logged off, another server). */
 	void CancelAll();
 	int32 NumPending() const { return Queue.Num() + Active.Num(); }
@@ -48,6 +53,10 @@ private:
 	void Pump();
 	void OnDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bOk, FString Name);
 	void Finish(const FString& Name, bool bOk, const TArray<uint8>& Bytes);
+	/** Queue a download (Fetch, once the file isn't cached or doesn't match). */
+	void Download(const FString& Name, FDone Done);
+	/** Bumped by CancelAll: a cached read finishing after it is dropped. */
+	int32 Generation = 0;
 
 	FString BaseUrl;
 	FString Dir;

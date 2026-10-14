@@ -1,5 +1,7 @@
 #include "Net/MRAssetCache.h"
+#include "Misc/ScopeExit.h"
 
+#include "Async/Async.h"
 #include "Dom/JsonObject.h"
 #include "HAL/FileManager.h"
 #include "HttpModule.h"
@@ -55,6 +57,15 @@ bool FMRAssetCache::Load(const FString& InName, TArray<uint8>& Out)
 {
 	const FString Name = InName.ToLower();
 	const FString* Hash = Hashes.Find(Name);
+	const double Start = FPlatformTime::Seconds();
+	ON_SCOPE_EXIT
+	{
+		const double Ms = (FPlatformTime::Seconds() - Start) * 1000.0;
+		if (Ms > 2.0)
+		{
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: read %s from the cache in %.1f ms (%d bytes)"), *Name, Ms, Out.Num());
+		}
+	};
 	if (!Hash || Dir.IsEmpty() || !FFileHelper::LoadFileToArray(Out, *PathOf(Name), FILEREAD_Silent))
 	{
 		Out.Reset();
@@ -75,12 +86,58 @@ bool FMRAssetCache::Load(const FString& InName, TArray<uint8>& Out)
 void FMRAssetCache::Fetch(const FString& InName, FDone Done)
 {
 	const FString Name = InName.ToLower();
-	TArray<uint8> Bytes;
-	if (Load(Name, Bytes))
+	const FString* Hash = Hashes.Find(Name);
+	const FString Path = Dir.IsEmpty() ? FString() : PathOf(Name);
+	if (Hash && !Path.IsEmpty() && IFileManager::Get().FileExists(*Path))
 	{
-		Done(true, Bytes);
+		// read (and the first time, check) it on a worker; answer on the game thread
+		const bool bVerify = !Verified.Contains(Name);
+		const FString Expected = *Hash;
+		const int32 Gen = Generation;
+		TWeakPtr<FMRAssetCache> Weak = AsShared();
+		Async(EAsyncExecution::ThreadPool, [Weak, Name, Path, Expected, bVerify, Gen, Done = MoveTemp(Done)]() mutable
+		{
+			TSharedRef<TArray<uint8>> Bytes = MakeShared<TArray<uint8>>();
+			const bool bRead = FFileHelper::LoadFileToArray(*Bytes, *Path, FILEREAD_Silent);
+			const bool bOk = bRead && (!bVerify || HashBytes(*Bytes) == Expected);
+			AsyncTask(ENamedThreads::GameThread, [Weak, Name, bOk, bVerify, Gen, Bytes, Done = MoveTemp(Done)]() mutable
+			{
+				TSharedPtr<FMRAssetCache> Self = Weak.Pin();
+				if (!Self || Self->Generation != Gen)
+				{
+					return;  // gone, or cancelled meanwhile
+				}
+				if (bOk)
+				{
+					if (bVerify)
+					{
+						Self->Verified.Add(Name);
+					}
+					Done(true, *Bytes);
+				}
+				else
+				{
+					Self->Download(Name, MoveTemp(Done));  // an older version: download it again
+				}
+			});
+		});
 		return;
 	}
+	Download(Name, MoveTemp(Done));
+}
+
+void FMRAssetCache::Prefetch(const FString& InName)
+{
+	const FString Name = InName.ToLower();
+	if (!Hashes.Contains(Name) || Dir.IsEmpty() || IFileManager::Get().FileExists(*PathOf(Name)))
+	{
+		return;
+	}
+	Download(Name, [](bool, const TArray<uint8>&) {});
+}
+
+void FMRAssetCache::Download(const FString& Name, FDone Done)
+{
 	if (!Hashes.Contains(Name) || BaseUrl.IsEmpty())
 	{
 		UE_LOG(LogMeridian, Warning, TEXT("MRNet: %s isn't among the server's game files"), *Name);
@@ -174,6 +231,7 @@ void FMRAssetCache::Finish(const FString& Name, bool bOk, const TArray<uint8>& B
 
 void FMRAssetCache::CancelAll()
 {
+	++Generation;
 	Queue.Reset();
 	Active.Reset();
 	for (const FHttpRequestPtr& Req : Requests)

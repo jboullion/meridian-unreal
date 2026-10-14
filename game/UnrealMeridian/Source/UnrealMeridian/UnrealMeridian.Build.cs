@@ -38,7 +38,9 @@ public class UnrealMeridian : ModuleRules
 			"VorbisAudioDecoder",
 			"AudioExtensions",
 			// the release's version on the login screen (UGeneralProjectSettings::ProjectVersion)
-			"EngineSettings"
+			"EngineSettings",
+			// the warm-up lists the interface's art and icons to preload (Core/MRWarmup)
+			"AssetRegistry"
 		});
 
 		// FSoundQualityInfo (the decoder's interface) is declared there; header only, as the Engine module uses it

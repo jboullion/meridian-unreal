@@ -71,6 +71,44 @@ bool UMRNetTest::IsRequested()
 void UMRNetTest::Start(APlayerController* InController)
 {
 	Controller = InController;
+	// every frame's time, by the step it fell in (logged at the end: MRNetTest: frames ...)
+	LastFrameTime = FPlatformTime::Seconds();
+	TWeakObjectPtr<UMRNetTest> WeakThis(this);
+	FScreenshotRequest::OnScreenshotRequestProcessed().AddWeakLambda(this, [WeakThis]()
+	{
+		if (UMRNetTest* Self = WeakThis.Get())
+		{
+			Self->ShotFrame = GFrameCounter;
+		}
+	});
+	FrameTicker = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([WeakThis](float)
+	{
+		UMRNetTest* Self = WeakThis.Get();
+		if (!Self || Self->Step == EStep::Done)
+		{
+			return false;
+		}
+		const double Now = FPlatformTime::Seconds();
+		const float Ms = float((Now - Self->LastFrameTime) * 1000.0);
+		Self->LastFrameTime = Now;
+		FFrameStats& F = Self->FrameStats[static_cast<int32>(Self->Step)];
+		// a screenshot (-Render) stops a frame or two for 250 ms: counted apart
+		if (FScreenshotRequest::IsScreenshotRequested() || GFrameCounter - Self->ShotFrame <= 2)
+		{
+			++F.Shots;
+			return true;
+		}
+		++F.Frames;
+		F.Over33 += Ms > 33.f;
+		F.Over100 += Ms > 100.f;
+		F.WorstMs = FMath::Max(F.WorstMs, Ms);
+		if (Ms > 100.f)
+		{
+			// with the log around it, what took the frame (a screenshot, a room's spawn...)
+			UE_LOG(LogMeridian, Display, TEXT("MRNetTest: long frame %.0f ms (step %d)"), Ms, static_cast<int32>(Self->Step));
+		}
+		return true;
+	}));
 	UMRNetSubsystem* Net = NetOf(InController);
 	FString ServerPart = TEXT("Local"), User, Pass;
 	FParse::Value(FCommandLine::Get(), TEXT("MRServer="), ServerPart);
@@ -199,8 +237,33 @@ void UMRNetTest::Fail(const FString& What)
 	UE_LOG(LogMeridian, Display, TEXT("MRNetTest: FAIL %s"), *What);
 }
 
+void UMRNetTest::LogFrameStats() const
+{
+	static const TCHAR* Names[] = {TEXT("Login"), TEXT("Enter"), TEXT("Say"), TEXT("Hold"), TEXT("Admin"), TEXT("Exit"), TEXT("Assets"),
+		TEXT("Reload"), TEXT("Look"), TEXT("Social"), TEXT("Settings"), TEXT("Pair"), TEXT("Items"), TEXT("Spells"), TEXT("Trade"),
+		TEXT("Combat"), TEXT("Travel"), TEXT("Death"), TEXT("Relog"), TEXT("Delete"), TEXT("Logoff"), TEXT("Done")};
+	static_assert(UE_ARRAY_COUNT(Names) == static_cast<int32>(EStep::Done) + 1, "a name per step");
+	FFrameStats All;
+	for (int32 i = 0; i < UE_ARRAY_COUNT(FrameStats); ++i)
+	{
+		const FFrameStats& F = FrameStats[i];
+		if (F.Frames == 0 && F.Shots == 0)
+		{
+			continue;
+		}
+		All.Frames += F.Frames;
+		All.Over33 += F.Over33;
+		All.Over100 += F.Over100;
+		All.WorstMs = FMath::Max(All.WorstMs, F.WorstMs);
+		UE_LOG(LogMeridian, Display, TEXT("MRNetTest: frames %-8s %6d  >33ms %3d  >100ms %3d  worst %6.1f ms  (%d with screenshots)"), Names[i], F.Frames,
+			F.Over33, F.Over100, F.WorstMs, F.Shots);
+	}
+	UE_LOG(LogMeridian, Display, TEXT("MRNetTest: frames all %d, >33ms %d, >100ms %d, worst %.1f ms"), All.Frames, All.Over33, All.Over100, All.WorstMs);
+}
+
 void UMRNetTest::Finish()
 {
+	LogFrameStats();
 	Step = EStep::Done;
 	UE_LOG(LogMeridian, Display, TEXT("MRNetTest: DONE %d/%d"), Passed, Steps);
 	if (APlayerController* PC = Controller.Get())
@@ -1151,19 +1214,20 @@ void UMRNetTest::Tick()
 		}
 		else if (LookStage == 5)
 		{
-			// an object drawn by a prop of the world build (the Inn's sign): turn to it; the
-			// aim must take it, so Look can (its sight line used to end in the prop itself)
+			// the Inn's sign: turn to it; the aim must take it, so Look can. Drawn by a prop of the world build
+			// (its sight line used to end in the prop itself), or, without the sign's mesh (props.json
+			// "mesh_keep"), by the server's bitmap
 			const APawn* Pawn = PC->GetPawn();
 			for (const TPair<uint32, TWeakObjectPtr<AMRNetObject>>& Pair : NetWorld->GetActors())
 			{
 				const AMRNetObject* A = Pair.Value.Get();
 				// the Inn's sign ("Welcome"), in the open (a stool behind the counter is really hidden)
-				if (A && A->IsShownByProp() && A->GetObjectName() == TEXT("Welcome") && Pawn && PC->PlayerCameraManager)
+				if (A && A->GetObjectName() == TEXT("Welcome") && Pawn && PC->PlayerCameraManager)
 				{
 					const FVector Middle = (A->GetActorLocation() - FVector(0.0, 0.0, 80.0) + A->GetNameAnchor()) * 0.5;
 					PC->SetControlRotation((Middle - PC->PlayerCameraManager->GetCameraLocation()).Rotation());
 					PropAimId = Pair.Key;
-					PropAimName = A->GetObjectName();
+					PropAimName = A->GetObjectName() + (A->IsShownByProp() ? TEXT(", drawn by a prop of the world build") : TEXT(", drawn by its bitmap"));
 					break;
 				}
 			}
@@ -1179,7 +1243,7 @@ void UMRNetTest::Tick()
 		{
 			if (NetWorld->GetAimId() == PropAimId || NetWorld->ObjectsAtAim().Contains(PropAimId))
 			{
-				Pass(FString::Printf(TEXT("aimed at the %s, drawn by a prop of the world build (so Look can take it)"), *PropAimName));
+				Pass(FString::Printf(TEXT("aimed at the %s (so Look can take it)"), *PropAimName));
 			}
 			else
 			{
@@ -1199,7 +1263,7 @@ void UMRNetTest::Tick()
 						*Middle.ToCompactString(), *Cam.ToCompactString(), H.GetActor() ? *H.GetActor()->GetActorNameOrLabel() : TEXT("nothing"),
 						H.GetActor() ? H.GetActor()->Tags.Num() : 0, H.Distance);
 				}
-				Fail(FString::Printf(TEXT("aim: the %s, drawn by a prop, can't be aimed at (aim on %u)%s"), *PropAimName, NetWorld->GetAimId(), *Seen));
+				Fail(FString::Printf(TEXT("aim: the %s, can't be aimed at (aim on %u)%s"), *PropAimName, NetWorld->GetAimId(), *Seen));
 			}
 			Advance(EStep::Social);
 		}

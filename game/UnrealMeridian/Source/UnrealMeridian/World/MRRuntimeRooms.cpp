@@ -491,7 +491,7 @@ void UMRRuntimeRooms::Prefetch(const FString& RoomFile)
 			{
 				if (C->IsListed(TextureFile(T)))
 				{
-					C->Fetch(TextureFile(T), [](bool, const TArray<uint8>&) {});
+					C->Prefetch(TextureFile(T));  // only downloaded if missing: a cached one isn't read now
 				}
 			}
 			UE_LOG(LogMeridian, Verbose, TEXT("World: prefetched %s"), *Roo);

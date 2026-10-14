@@ -39,7 +39,10 @@ param(
     [switch]$Admin,
     [string]$User = "uenettest",
     [string]$Pass = "uenettest-local",
-    [int]$TimeoutSeconds = 240
+    [int]$TimeoutSeconds = 240,
+    # a packaged Development game instead of the editor's (tools/ue/package.ps1 -Config Development -OutName Win64-dev):
+    # its frame times are the players' ("MRNetTest: frames ...", screenshots counted apart)
+    [string]$Packaged = ""
 )
 $TimeoutSeconds += $Hold
 if ($Admin) {
@@ -79,7 +82,11 @@ if ($Pair) {
         -ArgumentList "`"$(Join-Path $repo 'tools\ue\second_player.ts')`" --stay $TimeoutSeconds"
     $common += " -MRNetPal=Unrealpal"
 }
-if ($Render) {
+if ($Packaged) {
+    $exe = Join-Path (Resolve-Path $Packaged) "UnrealMeridian.exe"
+    $view = if ($Render) { "-windowed -resx=1600 -resy=900" } else { "-nullrhi -windowed" }
+    $game = Start-Process -FilePath $exe -PassThru -ArgumentList "$view -nosound -unattended -MRGameHour=13 -MRWeather=clear $common"
+} elseif ($Render) {
     $exe = Join-Path (Split-Path -Parent $Engine) "UnrealEditor.exe"
     $game = Start-Process -FilePath $exe -PassThru -ArgumentList `
         "`"$proj`" /Game/Generated/Maps/L_World -game -windowed -resx=1600 -resy=900 -nosound -unattended -MRGameHour=13 -MRWeather=clear $common"

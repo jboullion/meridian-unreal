@@ -21,6 +21,8 @@ More detail, loaded when needed:
 
 **Per city (2026-10-10):** each city of the world remaster (docs/world-maps.md, pass 3) gets a batch for its objects without a mesh (ADR 0007 "Marion batch": 19 props, 855 credits). Find them by checking the city's `zone_layout.json` objects against `props.json` the way `build_world.prop_config` does, not from `inventory_world.json` alone: crops (`FoodDispenser/<food>`, by the food's `*_disp_icon`), the `Tree` class (`"Tree/bottom=<n>"`) and icon-only ornaments (`"icons"`) aren't in it. Check first whether a mesh already serves the class elsewhere; props.json is shared by every room. Leafy trees go to the Blender kit, leafless ones to Tripo (the user's rule).
 
+**Fewer props (2026-10-13), the user's call:** the game places only the lights', flames' and trees' meshes, to see how it looks without the others before deciding to remove them (`props.json` `"mesh_keep"`; ADR 0007 "Fewer props"). Every other object shows the server's bitmap online, and offline its original sprite (`python tools/environment/object_sprites.py` before the world build; ADR 0007 "Offline sprites"). A new model reaches the game only if its entry is in `"keep"` (or is a `SM_Tree_*` tree). The prop gallery still shows every mesh, but packages leave it out. Don't start new prop batches while this stands.
+
 ## Current defaults
 
 | Step | Default | Why (ADR 0007) |

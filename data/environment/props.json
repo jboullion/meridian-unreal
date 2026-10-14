@@ -266,6 +266,18 @@
   "placed": {
     "_doc": "Per placed object, by actor label: any entry setting (facing, yaw_offset, blocks, mesh_custom, ...). Empty until a sign or prop needs its own."
   },
+  "mesh_keep": {
+    "_doc": "Which entries' 3D meshes the world build places (tools/environment/props_lookup.py mesh_kept; docs/adr/0007 \"Fewer props\"). With `enabled`, only the entries in `keep` (a `classes` key, \"OO<type>\" for a `types` one, or an `icons` bgf) and, with `trees`, every entry whose meshes are the procedural tree kit (SM_Tree_*) keep their mesh and its collision; every other object keeps its light and flame but no mesh: online the server's own bitmap shows in its place (UMRNetWorldSubsystem::FindPropAt), offline nothing. 2026-10-13 (user's call): the lights, flames and trees only, to see the game without the other props before deciding to remove them; their meshes stay in build/environment/kit and the prop gallery. `enabled: false` places every mesh again.",
+    "enabled": true,
+    "trees": true,
+    "keep": [
+      "Lamp", "KocatanLamp", "TableLamp", "OO151", "OO160",
+      "Brazier", "KocatanBrazier", "SkullBrazier",
+      "Candle", "Candelabra", "Chandelier",
+      "Firepit", "FirePit", "OrcTorch",
+      "FeyTree", "GlowTree", "SingleTree", "SpiderTree", "OO91", "OO92", "OO94", "OO192", "OO198"
+    ]
+  },
   "smoke": {
     "_doc": "Chimney smoke (docs/adr/0005 phase 5): tools/environment/chimneys.py finds every chimney the blockout draws with these wall textures, and build_world.py stands a plume (SM_Puffs with M_Smoke, materials.json \"smoke\") on each top. How much smoke: moods.json \"atmosphere\" \"smoke\". A class's \"moths\": moths circle its light at night, offset_m above the object (SM_Puffs with M_Moth).",
     "textures": ["grd09621"]

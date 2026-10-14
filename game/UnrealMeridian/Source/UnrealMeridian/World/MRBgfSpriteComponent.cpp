@@ -1,4 +1,5 @@
 #include "World/MRBgfSpriteComponent.h"
+#include "World/MRBgfTextures.h"
 
 #include "Camera/PlayerCameraManager.h"
 #include "Engine/Texture2D.h"
@@ -187,12 +188,11 @@ UTexture2D* UMRBgfSpriteComponent::TextureOf(int32 Bitmap)
 	{
 		return *Found;
 	}
-	UTexture2D* Tex = Bgf ? Bgf->MakeTexture(Bitmap, false) : nullptr;
+	// shared by every sprite of this bgf in the world (UMRBgfTextures)
+	UMRBgfTextures* Shared = GetWorld() ? GetWorld()->GetSubsystem<UMRBgfTextures>() : nullptr;
+	UTexture2D* Tex = Shared ? Shared->Get(Bgf, Bitmap) : (Bgf ? Bgf->MakeTexture(Bitmap, false, true) : nullptr);
 	if (Tex)
 	{
-		Tex->AddressX = TA_Clamp;
-		Tex->AddressY = TA_Clamp;
-		Tex->UpdateResource();
 		Textures.Add(Bitmap, Tex);
 	}
 	return Tex;

@@ -534,7 +534,66 @@ The user wanted every prop without a model made overnight, so the level passes o
 - The 10 earlier 4-view tests of Raza props (`build/aigen/overnight/2026-10-10/museum_upgrades.png`): better for the ant, fungus beast, lupogg, spider and museum throne; the helmet's broke.
 - Spent: 3,360 overnight, 340 on the settings tests, 240 on reruns; 1,060 credits left.
 
+## Fewer props (2026-10-13)
+**The user's call:** try the game with only a few 3D props, before deciding whether to remove the rest. There are two reasons:
+- **Performance.** Every AI prop carries three 4096² textures (colour, normal, ORM), and the kit is 4.0 GB of the 8.5 GB of generated content.
+- **Edge cases.** Getting every model to face the right way is a long fight.
+
+The models stay (`build/environment/kit`, `art_src/`, the prop gallery), so this is reversible.
+
+**What changed:**
+- **The switch:** `props.json` `"mesh_keep"` (`props_lookup.mesh_kept`, applied by `build_world.zone_props`). With `"enabled"`, the world build places only these meshes:
+  - the lights and flames: lamps (also the Kocatan, table and jasper lamps), braziers (also the Kocatan and skull braziers), candles, the candelabra and chandelier, firepits and the orc torch;
+  - with `"trees"`, every tree: the procedural kit (`SM_Tree_*`) and the AI trees (fey, glow, spider and necropolis trees, `OO192`, `OO198`).
+- **What's kept:** the wall torches are the `fires` presets' meshes, not this switch, so they stay. Every other object keeps its light and flame (signs and news boards carry the original's Kod light), but no mesh and no collision.
+- **The count:** 1,574 placements keep their mesh and 1,341 lose it (tables, pillars, stools, chests, signs, flagpoles, crops, the museum pieces...).
+- **Online:** the server's own bitmap draws a dropped object, as it does in rooms built at runtime (`UMRNetWorldSubsystem::FindPropAt` finds no prop on its square).
+- **Offline:** its original sprite stands in its place (below, "Offline sprites").
+- **The prop gallery** places every mesh, so its level moved to `/Game/Generated/Gallery/Maps` (`build_world.py` `GALLERY_LEVEL_DIR`; the game finds levels by short name). `Config/DefaultGame.ini` `DirectoriesToNeverCook` leaves that folder out of packages, which therefore hold only the meshes the zones place. `-MRGallery` still works in the editor.
+- **The online test's aim check** turns to the Inn's sign whether a prop or its bitmap draws it.
+
+- **The props' instances moved.** `MI_AIProp_<mesh>` used to be made in `Environment/Materials`, which packaging always cooks (the game loads a few materials there by path). That took every prop's textures into the package, placed or not. The instances are now made beside their mesh (`environment_materials.ai_prop_material`), and the gallery's sprite instances in `/Game/Generated/Gallery/Materials`. `build_world.rehome_prop_materials` moved the 471 left in the old folder.
+
+`"enabled": false` brings every mesh back (then a world build).
+
+**Results** (packaged Development build, `build/lookdev/compare_props_before_props_keep.png`):
+
+| | Before | After |
+|---|---:|---:|
+| Package game data (`UnrealMeridian-Windows.ucas`) | 5.52 GB | 3.46 GB |
+| Package folder | 6.0 GB | 4.1 GB |
+| Video memory, peak | 5,392 MB | 3,885 MB |
+| Video memory, median | 4,082 MB | 3,790 MB |
+
+- Frame times are unchanged (p95 11.5 ms, 7 frames over 33 ms): the props' geometry was never the cost.
+- The video memory "before" is the morning's profile, also before that day's sprite fixes (docs/performance.md "Packaged game").
+- **Checks:**
+  - The online test passes 62/62 with a new character (`-Create -Render`); the Inn's sign and Farol West's flagpole are their bitmaps.
+  - The step survey is unchanged (the known 41 failures; 28 more crossings have room to start).
+
+### Offline sprites (2026-10-13)
+Offline there is no server to draw the dropped objects, so the world build stands their original sprites in their place.
+- **The generator:** `python tools/environment/object_sprites.py` (pure Python; run it before `build_world.ps1` whenever `mesh_keep` or the zones change). For each dropped object it finds the bgf the original draws it with:
+  - its own `rIcon`;
+  - an OrnamentalObject's type icon (`inventory.oo_table`);
+  - else the sprite its entry was modelled from (`prop_gallery.sprite_sources`).
+- **What it writes:**
+  - `data/environment/object_sprites.json`: each object's sprite by its world-build label;
+  - per bgf, the first view (first group, first bitmap) as an upright quad with its feet where the original puts them (`UMRBgfSpriteComponent::Show`'s offsets, 16/shrink fine units a pixel), `build/environment/sprites/SM_ObjSprite_<bgf>.glb`;
+  - its picture, `T_ObjSprite_<bgf>.png`.
+  - 1,341 objects, 155 sprites.
+- **How it draws** (`build_world.import_object_sprite`, `M_ObjectSprite`): like the online bitmaps.
+  - Unlit at the bitmap's colours, nearest-filtered original pixels, cut out on its alpha, two-sided, no shadow.
+  - Turned to the camera about its feet in the vertex shader (`OBJECT_SPRITE_WPO`), so no actor ticks. The mesh's bounds are extended by its width, since it turns outside them.
+  - Instances live beside each quad in `Environment/ObjectSprites/`, so a package holds only the sprites the zones place.
+- **A switch:** `mr.World.OfflineSprites 0` (or `-MRNoOfflineSprites`) hides them. They cost nothing measurable (docs/performance.md "Online").
+- **Online it hides:** the world build places them as `AMROfflineSprite` (`World/MROfflineSprite`, tagged `ZoneSprite`, not `ZoneProp`), which hides itself at `BeginPlay` when the game plays online (`UMRNetSubsystem::WantsOnline`). The server's own bitmap draws the object there, as before.
+- **Checks:**
+  - Look-dev, `build/lookdev/compare_props_before_props_sprites.png`: the bar's stools, the Inn's table, the museum's pieces as the original's pictures. One close to a camera reads as big pixels: the original's resolution, as online.
+  - The online test passes 62/62 with the Inn as before: no sprite drawn twice.
+
 ## Open
+- **Offline sprites for objects that never had a prop:** forges, portals, smoke columns and the like (`inventory_world.json` `"mapped": false`). The same generator could cover them, as long as it leaves out the creatures that `UMRMonsterSubsystem` spawns.
 - `necglobe` (TargetGlobe, ViewpointGlobe): a sphere with our own swirling glass material instead of the Tripo model.
 - World batch: the user's picks of reruns (the plant, the orb, maybe `necvase` at 2000, multi-view where a back was invented), then a world build and look-dev for the props that authored zones place.
 - World batch: multi-frame "state" props (42; `inventory_world.json` kind prop, not static), from their resting frames.

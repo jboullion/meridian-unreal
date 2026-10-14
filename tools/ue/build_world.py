@@ -67,17 +67,19 @@ import chimneys  # noqa: E402
 import fires  # noqa: E402
 import scatter  # noqa: E402
 from build_cache import file_digest, source  # noqa: E402
-from environment_materials import ENV as ENVIRONMENT_DIR, ZoneMaterials, ai_prop_material, assign_materials, build_runtime_room_material, gallery_sprite_material, tree_materials  # noqa: E402
+from environment_materials import ENV as ENVIRONMENT_DIR, ZoneMaterials, ai_prop_material, assign_materials, build_runtime_room_material, gallery_sprite_material, object_sprite_material, tree_materials  # noqa: E402
 from zone_mood import MOODS, apply_level_mood  # noqa: E402
 
 LAYOUT = os.path.join(REPO, "data", "zone_layout.json")
 GALLERY = os.path.join(REPO, "data", "environment", "prop_gallery.json")  # tools/environment/prop_gallery.py
 PROPS = os.path.join(REPO, "data", "environment", "props.json")
+OBJECT_SPRITES = os.path.join(REPO, "data", "environment", "object_sprites.json")  # tools/environment/object_sprites.py
 GENERATED = "/Game/Generated"
 WORLD_PATH = GENERATED + "/Maps/L_World"
 # L_World is saved after every this many rebuilt zone levels, not only at the end (main save_progress)
 SAVE_WORLD_EVERY = 10
 ZONE_LEVEL_DIR = GENERATED + "/Maps/Zones"
+GALLERY_LEVEL_DIR = GENERATED + "/Gallery/Maps"
 
 asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
 eal = unreal.EditorAssetLibrary
@@ -93,8 +95,10 @@ def log(msg):
 def zone_level_path(zone):
     """Must match UMRZoneSubsystem's naming: L_Zone_<rid>_<Kod class> of the zone owning the geometry,
     e.g. L_Zone_307_RazaBar (the original's room id and room class, so the Levels window says what
-    each one is)."""
-    return "%s/L_Zone_%d_%s" % (ZONE_LEVEL_DIR, zone["rid"], zone["class"])
+    each one is). The game finds a level by that short name, so the prop gallery's lives apart, in
+    GALLERY_LEVEL_DIR, which packaged builds leave out (Config/DefaultGame.ini DirectoriesToNeverCook: it
+    places every prop mesh, which would ship them all)."""
+    return "%s/L_Zone_%d_%s" % (zone.get("level_dir", ZONE_LEVEL_DIR), zone["rid"], zone["class"])
 
 
 def remove_stale_levels(zone_levels):
@@ -549,6 +553,43 @@ def hanging_y(mesh, scale, obj, y, label):
     return float(obj["ceiling_y"]) - top_m
 
 
+_object_sprites = {}
+
+
+def object_sprites():
+    """data/environment/object_sprites.json (tools/environment/object_sprites.py): the original sprite of each
+    placed object props.json "mesh_keep" leaves without its prop, by label; {} without the file."""
+    if "data" not in _object_sprites:
+        _object_sprites["data"] = json.load(open(OBJECT_SPRITES, encoding="utf-8")) if os.path.exists(OBJECT_SPRITES) else {}
+    return _object_sprites["data"]
+
+
+def import_object_sprite(bgf):
+    """-> StaticMesh path of an object's sprite quad (build/environment/sprites/SM_ObjSprite_<bgf>.glb) with its
+    MI on M_ObjectSprite beside it, or None. Its bounds take the quad's width every way: the material turns it
+    about its feet to face the camera, outside the flat quad's own bounds."""
+    if bgf in _kit:
+        return _kit[bgf]
+    sprite = object_sprites().get("sprites", {}).get(bgf)
+    glb = os.path.join(REPO, "build", "environment", "sprites", sprite["mesh"] + ".glb") if sprite else None
+    if not glb or not os.path.exists(glb):
+        _kit[bgf] = None
+        return None
+    mesh = import_zone_mesh(glb, "%s/ObjectSprites/%s" % (ENVIRONMENT_DIR, sprite["mesh"]), collision=False)
+    mi = object_sprite_material(sprite["texture"], mesh.rsplit("/", 1)[0])
+    if mi:
+        assign_materials(mesh, lambda slot: (mi, 1))
+    half = float(sprite["w_m"]) * 50.0
+    sm = eal.load_asset(mesh)
+    ext = unreal.Vector(half, half, 0.0)
+    if sm.get_editor_property("positive_bounds_extension") != ext or sm.get_editor_property("negative_bounds_extension") != ext:
+        sm.set_editor_property("positive_bounds_extension", ext)
+        sm.set_editor_property("negative_bounds_extension", ext)
+        eal.save_loaded_asset(sm)
+    _kit[bgf] = mesh
+    return mesh
+
+
 def zone_props(zone, materials, prop_materials):
     """-> [(label, mesh path or None, [x, y, z] cm, light config or None, fire or None, yaw deg, scale,
     sector light, blocks)] for the
@@ -566,7 +607,7 @@ def zone_props(zone, materials, prop_materials):
     ordinals = {}
     anchors = []  # where the lights of hanging props (the chandelier's candles) are, cm
     for i, obj in enumerate(zone.get("objects", [])):
-        cfg = prop_config(props, obj)
+        key, cfg = props_lookup.prop_entry(props, obj)
         if not cfg:
             continue
         x, y, z = obj["pos"]
@@ -575,6 +616,13 @@ def zone_props(zone, materials, prop_materials):
         # one placed object's own settings (props.json "placed", by its actor label), over its entry's
         placed = props.get("placed", {}).get(label, {})
         cfg = dict(cfg, **{k: v for k, v in placed.items() if k != "facing"})
+        sprite = None
+        if not obj.get("gallery") and not props_lookup.mesh_kept(props, key, cfg):
+            # props.json "mesh_keep": its light and flame, and offline its original sprite (AMROfflineSprite);
+            # online the server's bitmap shows in its place
+            cfg = dict(cfg, mesh=None, mesh_custom=None, mesh_options=None, blocks=False, hanging=False)
+            bgf = object_sprites().get("objects", {}).get(label)
+            sprite = import_object_sprite(bgf) if bgf else None
         if obj.get("gallery"):
             # the prop gallery (tools/environment/prop_gallery.py) names the exact mesh to show, facing south
             g = obj["gallery"]
@@ -606,6 +654,9 @@ def zone_props(zone, materials, prop_materials):
                 # (glTF +X, +Z, +Y), the first one carrying the light; turned with the prop (fire_points)
                 half = entry.get("flame_m", [0, 0])[1] / 2
                 fire["points"] = [(r * 100.0, f * 100.0, (u + half) * 100.0) for r, f, u in cfg["fire"]["at_m"]]
+        if sprite:
+            out.append((label, sprite, [x * 100.0, z * 100.0, y * 100.0], light, fire, 0.0, 1.0, 1.0, False, "sprite"))
+            continue
         if not (mesh or light or fire):
             continue
         if not mesh:
@@ -879,7 +930,7 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
     cache = build_cache.CACHE
     recipe = {"origin": zone["world_origin_cm"], "sharers": sharers, "parts": parts, "scatter": scatter_inputs,
               "props": props, "light_scale": light_scale(), "code": source(build_zone_level, spawn_fire, spawn_blocker),
-              "fire_actor": hasattr(unreal, "MRFireActor"),
+              "fire_actor": hasattr(unreal, "MRFireActor"), "offline_sprite": hasattr(unreal, "MROfflineSprite"),
               "effects": list(effects), "effect_scale": EFFECT_SCALE, "effect_bounds": EFFECT_BOUNDS,
               "atmosphere": {k: v for k, v in (atmosphere or {}).items() if k != "ambient"},
               "gallery": gallery, "gallery_code": source(spawn_gallery) if gallery else None}
@@ -932,7 +983,17 @@ def build_zone_level(zone, parts, sharers, scatter_inputs, compute_scatter, prop
             else:
                 spawn_fire(label, loc, light, fire, zone["rid"])
             light = None  # the fire actor has it
-        if mesh:
+        if mesh and len(rest) > 3 and rest[3] == "sprite":
+            # an object's original sprite, offline (object_sprites.py; AMROfflineSprite hides it online), unturned:
+            # M_ObjectSprite turns it to the camera. Not a ZoneProp: online the server's bitmap draws the object
+            if hasattr(unreal, "MROfflineSprite"):
+                a = actors.spawn_actor_from_class(unreal.MROfflineSprite, loc, unreal.Rotator(0, 0, 0))
+                a.set_actor_label(label)
+                comp = a.get_component_by_class(unreal.StaticMeshComponent)
+                comp.set_static_mesh(eal.load_asset(mesh))
+                comp.set_mobility(unreal.ComponentMobility.STATIC)
+                a.tags = [unreal.Name("ZoneSprite"), unreal.Name("Zone%d" % zone["rid"])]
+        elif mesh:
             a = actors.spawn_actor_from_object(eal.load_asset(mesh), loc, unreal.Rotator(0, 0, 0))
             a.set_actor_rotation(unreal.Rotator(roll=0.0, pitch=0.0, yaw=yaw), False)
             if rest and rest[0] != 1.0:
@@ -1232,6 +1293,7 @@ def main(args):
         gallery_level = build_gallery(materials, prop_materials, maps)
         if gallery_level:
             zone_levels.append(gallery_level)
+        rehome_prop_materials(materials, prop_materials)
         build_persistent_level(zone_levels, maps, materials.night_sky)
         remove_stale_levels(zone_levels)
     finally:
@@ -1249,7 +1311,7 @@ def build_gallery(materials, prop_materials, maps):
     runs with -MRGallery (UMRZoneSubsystem). Returns the level path, or None without the file."""
     if not os.path.exists(GALLERY):
         return None
-    zone = json.load(open(GALLERY, encoding="utf-8"))
+    zone = dict(json.load(open(GALLERY, encoding="utf-8")), level_dir=GALLERY_LEVEL_DIR)
     parts, _ = import_zone_parts(zone, materials)
     props = zone_props(zone, materials, prop_materials)
     sprites = []
@@ -1268,6 +1330,27 @@ def build_gallery(materials, prop_materials, maps):
     if rebuilt:
         log("prop gallery: level rebuilt (%d props, %d sprites)" % (len(props), len(sprites)))
     return path
+
+
+def rehome_prop_materials(materials, prop_materials):
+    """Until 2026-10-13 the AI props' MI_AIProp_<mesh> and the gallery's sprite instances were made in the
+    materials folder, which packaging always cooks (materials loaded by path): every prop's 4K textures went into
+    the package, placed or not. They're made beside their mesh now (environment_materials.ai_prop_material);
+    this moves what's left there: a kit mesh no zone or the gallery imported gets its instance made in its own
+    folder, then the old instance goes."""
+    mat_dir = ENVIRONMENT_DIR + "/Materials"
+    registry = unreal.AssetRegistryHelpers.get_asset_registry()
+    old = [str(d.package_name) for d in registry.get_assets_by_path(mat_dir, recursive=False)
+           if str(d.asset_name).startswith(("MI_AIProp_", "MI_T_GallerySprite_"))]
+    for path in old:
+        name = path.rsplit("/", 1)[-1]
+        if name.startswith("MI_AIProp_"):
+            mesh = name[len("MI_AIProp_"):]
+            if os.path.exists(os.path.join(KIT_DIR, mesh + ".glb")):
+                import_kit_mesh(mesh, materials, prop_materials)
+        eal.delete_asset(path)
+    if old:
+        log("moved %d prop and gallery material instances out of %s" % (len(old), mat_dir))
 
 
 def _launched_for_this_script():

@@ -107,6 +107,16 @@ private:
 	void ResolveServer(const FString& File, bool bLoop, TFunction<void(USoundBase*)> Done);
 	/** Quietly: an imported sound, or null (no warning). */
 	USoundBase* FindImported(const FString& File);
+	/**
+	 * FindImported in the background: Done gets the imported sound, or null, on the game thread (at once when it's
+	 * loaded or known missing). The server names its music and sounds as it likes; a music track loaded at once
+	 * stalled a frame 100-160 ms on a zone change.
+	 */
+	void FindImportedAsync(const FString& File, TFunction<void(USoundBase*)> Done);
+	/** ResolveServer once no imported sound has the name: the server's own file, fetched and decoded once. */
+	void DecodeServer(const FString& File, bool bLoop, TFunction<void(USoundBase*)> Done);
+	TMap<FString, TArray<TFunction<void(USoundBase*)>>> ImportWaiting;
+	TArray<TSharedPtr<struct FStreamableHandle>> ImportLoads;
 	void StartLoops(int32 Zone);
 	void StopLoops();
 	void TickPeriodic(double Now);

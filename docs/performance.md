@@ -192,6 +192,41 @@ RTX 3070, 1920x1080, uncapped, the project's defaults (`-CleanConfig`):
   - Both only show online, so they wait for an online hitch test.
 - **The sprites' per-pose redraw** (three canvas passes per sprite, each a render graph of its own) is the GPU's steady cost with many sprites in view.
 
+**Fewer props (later the same day, ADR 0007 "Fewer props"):**
+- The world places only the lights', flames' and trees' meshes (`props.json` `"mesh_keep"`).
+- The props' material instances moved out of the always-cooked materials folder.
+- The package went from 5.52 to 3.46 GB of game data.
+- Video memory peaked at 3.9 GB instead of 5.4 GB (budget 5.9).
+- Frame times stayed the same (`pkg_props`: p95 11.5 ms, 7 frames over 33 ms, 1 over 100).
+
+## Online (2026-10-13)
+
+**The online test now times frames** (`run_net_test.ps1`; `-Packaged build/package/Win64-dev` for a packaged game):
+- **What it logs:** `MRNetTest: frames <step> ...` per step, and `long frame <ms> (step <n>)` for every frame over 100 ms, so the log around it says what took it.
+- **Screenshots apart:** frames taken by the test's own screenshots (`-Render`: 25 of them, 240–300 ms each) are counted separately.
+
+**What it measured, and the fixes:**
+
+| Cost (uncooked, `-Create -Render`) | Before | Fix |
+|---|---|---|
+| Entering Raza: its 81 objects spawned in one frame | 41–57 ms | Spawned nearest first, `mr.Net.SpawnBudgetMs` (4) a frame (`UMRNetWorldSubsystem::SpawnPending`) |
+| A cached sprite or room file read and hashed on the game thread | 25–44 ms, now and then | Read and hashed on a worker; the answer comes on the game thread a frame later (`FMRAssetCache::Fetch`). Prefetching downloads only what's missing (`Prefetch`) |
+| The server's music and sounds mapped to imported originals, loaded at once | 100–160 ms on a zone change (a music track) | Loaded in the background (`UMRAudioSubsystem::FindImportedAsync`) |
+| The interface's art and icons loaded the first time a window painted (inventory, quests, shop) | ~100 ms each | Preloaded with the sprite atlases behind the loading screen (`UMRWarmup`). Not in the test modes, which skip the warm-up: a load in play behind 900 queued packages waited 2.5 s for all of them |
+| Each server bitmap made its own textures, created twice (wrapping, then clamped) | a texture per bitmap per object | One texture per bgf bitmap for the world, made once (`UMRBgfTextures`, `FMRBgf::MakeTexture` `bClamp`) |
+
+**Results:**
+- **Packaged online** (`-Create -Render -Packaged`, two runs, screenshots apart): 23–39 frames over 33 ms and 1–4 over 100 ms in the whole session (login, chat, items, spells, trades, combat, travel). The over-100 ms ones are mostly at login.
+- **Packaged offline, capped at 60** (`-Extra -MRHitchMaxFPS=60`, as players run): p50 16.7 ms, p99 17.5–18.8 ms, 5–15 frames over 33 ms, 0–1 over 100 ms.
+- **Uncapped runs vary much more** (7 to 54 frames over 33 ms across runs of the same build). In their slow frames neither the GPU nor the game or render thread accounts for the time: the waiting is outside the engine. Judge by capped runs and repeat them.
+
+- **The offline sprites cost nothing measurable.** Same build, capped at 60, twice each, on and off (`-MRNoOfflineSprites`; `mr.World.OfflineSprites 0` hides them as zones load): on, p99 17.6–17.7 ms and 7–10 frames over 33 ms; off, 17.5–17.7 ms and 7.
+
+**Not worth doing:**
+- **Server sounds' Ogg decode:** 1.3 ms.
+- **The sprites' redraw:** our sprite ticking is 0.27 ms a frame and the drawing 0.03 ms.
+- **Draw calls:** 282 a frame; the render thread mostly waits.
+
 ## Follow-ups
 
 - **The sky light now takes the skybox's colour.** The day is bluer, the dusk violet. The user likes it for now (2026-10-10); revisit if it should go: tint the dome only outside the sky light's capture, or lower `SkyboxBrightness` and lift the moods' ambient.

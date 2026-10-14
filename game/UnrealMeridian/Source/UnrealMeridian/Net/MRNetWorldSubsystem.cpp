@@ -38,6 +38,7 @@
 #include "UI/MRUISubsystem.h"
 #include "Zones/MRZoneSubsystem.h"
 #include "Character/MRCharacterMovementComponent.h"
+#include "HAL/IConsoleManager.h"
 
 namespace
 {
@@ -51,6 +52,8 @@ namespace
 	constexpr double CloseDistanceCm = 5.0 * MRUnits::CmPerSquare;  // gameuser.h CLOSE_DISTANCE
 	/** A room's weather sent this soon after entering it was already falling there. */
 	constexpr double WeatherOnEntrySeconds = 3.0;
+	TAutoConsoleVariable<float> CVarSpawnBudgetMs(TEXT("mr.Net.SpawnBudgetMs"), 4.f,
+		TEXT("How long (ms) a frame may spend spawning a room's objects as we enter it, the nearest first (at least one a frame). 0: all at once."));
 
 	int32 YawToKod(double Yaw)
 	{
@@ -409,10 +412,26 @@ void UMRNetWorldSubsystem::FinishEnterRoom(int32 PrevRid)
 	UpdateFrozen();
 	ApplySelfLook();
 	GatherProps();
+	// the room's objects, nearest first, a few milliseconds a frame (SpawnPending, from Tick)
+	PendingSpawns.Reset();
+	const APawn* Pawn = GetPC() ? GetPC()->GetPawn() : nullptr;
+	const FVector From = Pawn ? Pawn->GetActorLocation() : FVector::ZeroVector;
+	UMRZoneSubsystem* SpawnZones = GetWorld()->GetSubsystem<UMRZoneSubsystem>();
+	TArray<TPair<double, uint32>> Order;
 	for (const TPair<uint32, FMRNetObject>& Pair : Net->GetObjects())
 	{
-		SpawnObject(Pair.Value);
+		const FVector At = SpawnZones ? SpawnZones->KodToWorld(Rid, Pair.Value.KodRow, Pair.Value.KodCol, false) : FVector::ZeroVector;
+		Order.Emplace(FVector::DistSquared2D(At, From), Pair.Key);
 	}
+	Order.Sort([](const TPair<double, uint32>& A, const TPair<double, uint32>& B) { return A.Key < B.Key; });
+	for (const TPair<double, uint32>& O : Order)
+	{
+		PendingSpawns.Add(O.Value);
+	}
+	const double SpawnStart = FPlatformTime::Seconds();
+	SpawnPending(CVarSpawnBudgetMs.GetValueOnGameThread() / 1000.0);
+	UE_LOG(LogMeridian, Log, TEXT("MRNet: entered zone %d: %d objects, %d spawned at once (%.1f ms), the rest over the next frames"), Rid,
+		Net->GetObjects().Num(), Net->GetObjects().Num() - PendingSpawns.Num(), (FPlatformTime::Seconds() - SpawnStart) * 1000.0);
 	LastSentKod = FIntPoint(-1, -1);
 	LastSentAngle = -1;
 	UpdateScreens();
@@ -572,6 +591,28 @@ void UMRNetWorldSubsystem::SpawnObject(const FMRNetObject& Object)
 	Actor->SetDrawEffect(Object.DrawEffect);
 	Actor->Place(Floor, Object.Angle);
 	Actors.Add(Object.Id, Actor);
+}
+
+void UMRNetWorldSubsystem::SpawnPending(double BudgetSeconds)
+{
+	UMRNetSubsystem* Net = GetNet();
+	if (!Net || PendingSpawns.IsEmpty())
+	{
+		return;
+	}
+	const double Start = FPlatformTime::Seconds();
+	int32 Done = 0;
+	// at least one a frame; a budget of 0 or less: all at once
+	while (PendingSpawns.Num() > 0 && (BudgetSeconds <= 0.0 || Done == 0 || FPlatformTime::Seconds() - Start < BudgetSeconds))
+	{
+		const uint32 Id = PendingSpawns[0];
+		PendingSpawns.RemoveAt(0, EAllowShrinking::No);
+		if (const FMRNetObject* O = Net->FindObject(Id))
+		{
+			SpawnObject(*O);
+			++Done;
+		}
+	}
 }
 
 void UMRNetWorldSubsystem::GatherProps()
@@ -747,6 +788,7 @@ void UMRNetWorldSubsystem::ClearObjects()
 		}
 	}
 	Actors.Reset();
+	PendingSpawns.Reset();
 }
 
 void UMRNetWorldSubsystem::OnObjectAdded(uint32 Id)
@@ -878,6 +920,7 @@ void UMRNetWorldSubsystem::OnObjectRemoved(uint32 Id)
 		A->Destroy();
 	}
 	Actors.Remove(Id);
+	PendingSpawns.Remove(Id);
 }
 
 void UMRNetWorldSubsystem::OnObjectMoved(uint32 Id)
@@ -1135,6 +1178,7 @@ void UMRNetWorldSubsystem::Tick(float DeltaTime)
 	}
 	if (Net && Net->GetPhase() == EMRNetPhase::InGame && Rid)
 	{
+		SpawnPending(CVarSpawnBudgetMs.GetValueOnGameThread() / 1000.0);
 		UpdateAim();
 	}
 }

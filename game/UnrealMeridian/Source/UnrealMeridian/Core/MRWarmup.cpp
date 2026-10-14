@@ -1,4 +1,6 @@
 #include "Core/MRWarmup.h"
+#include "AssetRegistry/IAssetRegistry.h"
+#include "AssetRegistry/AssetData.h"
 
 #include "Character/MRSpriteData.h"
 #include "ContentStreaming.h"
@@ -73,6 +75,7 @@ void UMRWarmup::OnWorldBeginPlay(UWorld& InWorld)
 	bStarted = true;
 	if (!IsWanted())
 	{
+		// (not preloaded either: a load in play behind hundreds of queued packages waited for all of them, 2.5 s)
 		Finish(TEXT("skipped"));
 		return;
 	}
@@ -96,6 +99,24 @@ void UMRWarmup::PreloadSprites()
 			}
 		}
 	}
+	// and the interface's art and icons (UMRUIStyle: the inventory, quest and shop windows loaded theirs on the
+	// frame they first painted, 100 ms and more; ~6 MB of art, ~30 MB of icons), the sprites' materials and the
+	// rooms built at runtime's (loaded by path when the first one shows)
+	IAssetRegistry& Registry = IAssetRegistry::GetChecked();
+	for (const TCHAR* Folder : {TEXT("/Game/Generated/UI/Art"), TEXT("/Game/Generated/UI/Icons")})
+	{
+		TArray<FAssetData> Assets;
+		Registry.GetAssetsByPath(FName(Folder), Assets, false);
+		for (const FAssetData& A : Assets)
+		{
+			Paths.AddUnique(A.GetSoftObjectPath());
+		}
+	}
+	for (const FString& Name : {FString(TEXT("M_SpriteBody")), FString(TEXT("M_SpriteBodyUnlit"))})
+	{
+		Paths.AddUnique(FSoftObjectPath(FString::Printf(TEXT("%s/%s.%s"), *Lib.TextureDir, *Name, *Name)));
+	}
+	Paths.AddUnique(FSoftObjectPath(TEXT("/Game/Generated/Runtime/M_RuntimeRoom.M_RuntimeRoom")));
 	if (Paths.Num() > 0)
 	{
 		SpriteHandle = UAssetManager::GetStreamableManager().RequestAsyncLoad(Paths, FStreamableDelegate(),

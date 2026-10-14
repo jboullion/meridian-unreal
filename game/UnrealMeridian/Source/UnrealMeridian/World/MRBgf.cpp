@@ -146,7 +146,7 @@ const TArray<FColor>& FMRBgf::Palette()
 	return Colors;
 }
 
-UTexture2D* FMRBgf::MakeTexture(int32 Bitmap, bool bTransposed) const
+UTexture2D* FMRBgf::MakeTexture(int32 Bitmap, bool bTransposed, bool bClamp) const
 {
 	const TArray<FColor>& Pal = Palette();
 	if (!Bitmaps.IsValidIndex(Bitmap) || Pal.Num() != 256)
@@ -175,8 +175,8 @@ UTexture2D* FMRBgf::MakeTexture(int32 Bitmap, bool bTransposed) const
 	Mip.BulkData.Unlock();
 	Tex->Filter = TF_Nearest;
 	Tex->SRGB = true;
-	Tex->AddressX = TA_Wrap;
-	Tex->AddressY = TA_Wrap;
+	Tex->AddressX = bClamp ? TA_Clamp : TA_Wrap;
+	Tex->AddressY = bClamp ? TA_Clamp : TA_Wrap;
 	Tex->NeverStream = true;
 	Tex->UpdateResource();
 	return Tex;

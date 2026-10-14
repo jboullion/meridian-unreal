@@ -53,7 +53,8 @@ struct UNREALMERIDIAN_API FMRBgf
 
 	/**
 	 * A transient texture of one bitmap through the palette (index 254 transparent), nearest
-	 * filtered and wrapping. bTransposed: as a wall or floor texture (stored transposed).
+	 * filtered, wrapping or with bClamp clamped (its resource made once, with its final settings).
+	 * bTransposed: as a wall or floor texture (stored transposed).
 	 */
-	UTexture2D* MakeTexture(int32 Bitmap, bool bTransposed) const;
+	UTexture2D* MakeTexture(int32 Bitmap, bool bTransposed, bool bClamp = false) const;
 };

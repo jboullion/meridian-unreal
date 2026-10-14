@@ -89,15 +89,16 @@ def _master(name, builder, *args):
     return cache.get_or_build("%s/%s" % (MAT_DIR, name), key, "masters", lambda: builder(name, *args))
 
 
-def _instance(name, parent, textures=None, scalars=None, vectors=None):
-    """-> path of material instance <name> on `parent` (textures and parent are asset paths); rebuilt
-    in place when the parent or a value changed."""
+def _instance(name, parent, textures=None, scalars=None, vectors=None, directory=None):
+    """-> path of material instance <name> on `parent` (textures and parent are asset paths) in `directory`
+    (MAT_DIR by default); rebuilt in place when the parent or a value changed."""
     textures, scalars, vectors = textures or {}, scalars or {}, vectors or {}
-    path = "%s/%s" % (MAT_DIR, name)
+    directory = directory or MAT_DIR
+    path = "%s/%s" % (directory, name)
 
     def build():
         mi = eal.load_asset(path) if eal.does_asset_exist(path) else asset_tools.create_asset(
-            name, MAT_DIR, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+            name, directory, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
         mel.clear_all_material_instance_parameters(mi)
         mel.set_material_instance_parent(mi, eal.load_asset(parent))
         for k, v in sorted(textures.items()):
@@ -1438,7 +1439,10 @@ def ai_prop_material(mesh_path, slot_material, ambient_scale=1.0, albedo=1.0, gl
         if glow.get("lum"):
             vectors["GlowLum"] = list(glow["lum"])
         scalars["GlowNightOnly"] = 1.0 if glow.get("night_only", True) else 0.0
-    return _instance("MI_AIProp_" + mesh_path.rsplit("/", 1)[-1], master, textures=found, scalars=scalars, vectors=vectors)
+    # beside its mesh and textures, not in MAT_DIR: packaging always cooks MAT_DIR (materials loaded by path), and
+    # an instance there took every prop's textures into the package, placed or not (props.json "mesh_keep")
+    folder, mesh_name = mesh_path.rsplit("/", 1)
+    return _instance("MI_AIProp_" + mesh_name, master, textures=found, scalars=scalars, vectors=vectors, directory=folder)
 
 
 TREE_WIND_HLSL = """
@@ -1583,7 +1587,65 @@ def gallery_sprite_material(texture_file):
     if texture_file not in tex:
         return None
     master = _master("M_GallerySprite", build_gallery_sprite_master)
-    return _instance("MI_" + os.path.splitext(texture_file)[0], master, textures={"Sprite": tex[texture_file]})
+    # in the gallery's folder, which packages leave out (Config/DefaultGame.ini DirectoriesToNeverCook)
+    return _instance("MI_" + os.path.splitext(texture_file)[0], master, textures={"Sprite": tex[texture_file]},
+                     directory="/Game/Generated/Gallery/Materials")
+
+
+OBJECT_SPRITE_WPO = """
+// An object's sprite (tools/environment/object_sprites.py): an upright quad facing +Y about its actor's
+// origin (the feet), turned about Z so it faces the camera, as the original drew objects (UMRBgfSpriteComponent
+// turns its quad to the camera the same way online). The actor is placed unturned and unscaled.
+float3 local = WP - Obj;
+float2 d = Cam.xy - Obj.xy;
+float len = length(d);
+d = len > 0.01 ? d / len : float2(0.0, 1.0);
+float2 xy = local.x * float2(d.y, -d.x) + local.y * d;
+return float3(xy - local.xy, 0.0);
+"""
+
+
+def build_object_sprite_master(name, wpo_code):
+    """M_ObjectSprite: the original sprite of an object whose prop props.json "mesh_keep" leaves out, offline
+    (AMROfflineSprite; online the server's own bitmap draws it). As the online bitmaps (M_RuntimeRoom with
+    vertex alpha 0): unlit at the bitmap's own colours, cut out on its alpha, two-sided; turned to the camera
+    by OBJECT_SPRITE_WPO."""
+    mat = _new_material(name)
+    mat.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+    mat.set_editor_property("two_sided", True)
+    tex = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -600, 0, parameter_name="Sprite",
+                sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR,
+                texture=eal.load_asset("/Engine/EngineResources/DefaultTexture"))
+    bright = _expr(mat, unreal.MaterialExpressionScalarParameter, -600, 250, parameter_name="Brightness", default_value=1.0)
+    out = _expr(mat, unreal.MaterialExpressionMultiply, -300, 50)
+    mel.connect_material_expressions(tex, "RGB", out, "A")
+    mel.connect_material_expressions(bright, "", out, "B")
+    mel.connect_material_property(out, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    mel.connect_material_property(tex, "A", unreal.MaterialProperty.MP_OPACITY_MASK)
+    wpo = _custom(mat, -300, 400, wpo_code, unreal.CustomMaterialOutputType.CMOT_FLOAT3,
+                  [("WP", _expr(mat, unreal.MaterialExpressionWorldPosition, -700, 400), ""),
+                   ("Obj", _expr(mat, unreal.MaterialExpressionObjectPositionWS, -700, 500), ""),
+                   ("Cam", _expr(mat, unreal.MaterialExpressionCameraPositionWS, -700, 600), "")], "FaceCamera")
+    mel.connect_material_property(wpo, "", unreal.MaterialProperty.MP_WORLD_POSITION_OFFSET)
+    mel.recompile_material(mat)
+    eal.save_loaded_asset(mat)
+
+
+def object_sprite_material(texture_file, directory):
+    """-> MI for one object sprite: T_ObjSprite_<bgf>.png from build/textures_placeholder/ on M_ObjectSprite, in
+    `directory` (beside its quad: only the sprites the zones place go into a package). The texture filtered
+    nearest, as the online bitmaps (MRBgf: the original's pixels)."""
+    tex = ensure_textures([(texture_file, True, False, True)])
+    if texture_file not in tex:
+        return None
+    t = eal.load_asset(tex[texture_file])
+    if t.get_editor_property("filter") != unreal.TextureFilter.TF_NEAREST:
+        t.set_editor_property("filter", unreal.TextureFilter.TF_NEAREST)
+        eal.save_loaded_asset(t)
+    master = _master("M_ObjectSprite", build_object_sprite_master, OBJECT_SPRITE_WPO)
+    return _instance("MI_" + os.path.splitext(texture_file)[0], master, textures={"Sprite": tex[texture_file]},
+                     directory=directory)
 
 
 SKYBOX_HLSL = """

@@ -201,6 +201,13 @@ private:
 	/** Bumped per room: a runtime room finishing after the server moved us on is ignored. */
 	int32 RoomTicket = 0;
 	TMap<uint32, TWeakObjectPtr<AMRNetObject>> Actors;
+	/**
+	 * A room's objects still to spawn (FinishEnterRoom): Raza's 81 took 40-57 ms in one frame, so they come a few
+	 * milliseconds a frame (mr.Net.SpawnBudgetMs), the nearest first. A message for one before it's spawned only
+	 * updates its data, which SpawnObject reads.
+	 */
+	TArray<uint32> PendingSpawns;
+	void SpawnPending(double BudgetSeconds);
 
 	FIntPoint LastSentKod = FIntPoint(-1, -1);
 	double LastMoveTime = 0.0;

@@ -1,4 +1,5 @@
 #include "Audio/MRAudioSubsystem.h"
+#include "Misc/PackageName.h"
 
 #include "AudioDevice.h"
 #include "Camera/PlayerCameraManager.h"
@@ -228,6 +229,66 @@ USoundBase* UMRAudioSubsystem::FindImported(const FString& File)
 		Missing.Add(Key);
 	}
 	return S;
+}
+
+void UMRAudioSubsystem::FindImportedAsync(const FString& File, TFunction<void(USoundBase*)> Done)
+{
+	const FString Key = File.ToLower();
+	if (const TObjectPtr<USoundBase>* Cached = Sounds.Find(Key); Cached && *Cached)
+	{
+		Done(*Cached);
+		return;
+	}
+	if (Missing.Contains(Key))
+	{
+		Done(nullptr);
+		return;
+	}
+	const FString Name = AssetName(File);
+	const FString Package = FString(SoundDir) + Name;
+	const FString Path = FString::Printf(TEXT("%s.%s"), *Package, *Name);
+	if (USoundBase* S = FindObject<USoundBase>(nullptr, *Path))
+	{
+		Sounds.Add(Key, S);
+		Done(S);
+		return;
+	}
+	if (!UAssetManager::IsInitialized() || !FPackageName::DoesPackageExist(Package))
+	{
+		Missing.Add(Key);
+		Done(nullptr);
+		return;
+	}
+	TArray<TFunction<void(USoundBase*)>>& Queue = ImportWaiting.FindOrAdd(Key);
+	Queue.Add(MoveTemp(Done));
+	if (Queue.Num() > 1)
+	{
+		return;  // already loading
+	}
+	TWeakObjectPtr<UMRAudioSubsystem> Weak(this);
+	ImportLoads.Add(UAssetManager::GetStreamableManager().RequestAsyncLoad(FSoftObjectPath(Path), FStreamableDelegate::CreateLambda([Weak, Key, Path]()
+	{
+		UMRAudioSubsystem* Self = Weak.Get();
+		if (!Self)
+		{
+			return;
+		}
+		USoundBase* S = FindObject<USoundBase>(nullptr, *Path);
+		if (S)
+		{
+			Self->Sounds.Add(Key, S);
+		}
+		else
+		{
+			Self->Missing.Add(Key);
+		}
+		TArray<TFunction<void(USoundBase*)>> Waiters;
+		Self->ImportWaiting.RemoveAndCopyValue(Key, Waiters);
+		for (TFunction<void(USoundBase*)>& W : Waiters)
+		{
+			W(S);
+		}
+	}), FStreamableManager::AsyncLoadHighPriority));
 }
 
 USoundBase* UMRAudioSubsystem::FindSound(const FString& File)
@@ -504,24 +565,51 @@ void UMRAudioSubsystem::ResolveServer(const FString& InFile, bool bLoop, TFuncti
 {
 	// imported (the zones' sounds and music), else the server's file decoded once; the rsc may name
 	// a .wav the server serves as .ogg
-	FString File = InFile.ToLower();
-	if (USoundBase* S = FindImported(File))
+	const FString File = InFile.ToLower();
+	TWeakObjectPtr<UMRAudioSubsystem> Weak(this);
+	FindImportedAsync(File, [Weak, File, bLoop, Done](USoundBase* S) mutable
 	{
-		Done(S);
-		return;
-	}
-	const UGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance() : nullptr;
-	UMRNetSubsystem* Net = GI ? GI->GetSubsystem<UMRNetSubsystem>() : nullptr;
-	FMRAssetCache* Cache = Net ? Net->GetAssets() : nullptr;
-	if (Cache && !Cache->IsListed(File) && File.EndsWith(TEXT(".wav")))
-	{
-		File = FPaths::ChangeExtension(File, TEXT("ogg"));
-		if (USoundBase* S = FindImported(File))
+		UMRAudioSubsystem* Self = Weak.Get();
+		if (!Self)
+		{
+			return;
+		}
+		if (S)
 		{
 			Done(S);
 			return;
 		}
-	}
+		const UGameInstance* GI = Self->GetWorld() ? Self->GetWorld()->GetGameInstance() : nullptr;
+		UMRNetSubsystem* Net = GI ? GI->GetSubsystem<UMRNetSubsystem>() : nullptr;
+		FMRAssetCache* Cache = Net ? Net->GetAssets() : nullptr;
+		if (Cache && !Cache->IsListed(File) && File.EndsWith(TEXT(".wav")))
+		{
+			const FString Ogg = FPaths::ChangeExtension(File, TEXT("ogg"));
+			Self->FindImportedAsync(Ogg, [Weak, Ogg, bLoop, Done](USoundBase* S2) mutable
+			{
+				if (UMRAudioSubsystem* Me = Weak.Get())
+				{
+					if (S2)
+					{
+						Done(S2);
+					}
+					else
+					{
+						Me->DecodeServer(Ogg, bLoop, MoveTemp(Done));
+					}
+				}
+			});
+			return;
+		}
+		Self->DecodeServer(File, bLoop, MoveTemp(Done));
+	});
+}
+
+void UMRAudioSubsystem::DecodeServer(const FString& File, bool bLoop, TFunction<void(USoundBase*)> Done)
+{
+	const UGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance() : nullptr;
+	UMRNetSubsystem* Net = GI ? GI->GetSubsystem<UMRNetSubsystem>() : nullptr;
+	FMRAssetCache* Cache = Net ? Net->GetAssets() : nullptr;
 	TWeakObjectPtr<UMRAudioSubsystem> Weak(this);
 	auto Make = [Weak, bLoop, Done](TSharedPtr<const FMRPcmSound> Pcm)
 	{
@@ -562,11 +650,13 @@ void UMRAudioSubsystem::ResolveServer(const FString& InFile, bool bLoop, TFuncti
 			return;
 		}
 		FString Error;
+		const double DecodeStart = FPlatformTime::Seconds();
 		TSharedPtr<const FMRPcmSound> Pcm = bOk ? MRServerSound::Decode(Bytes, Error) : nullptr;
 		if (Pcm.IsValid())
 		{
 			Self->Decoded.Add(File, Pcm);
-			UE_LOG(LogMeridian, Log, TEXT("MRAudio: decoded the server's %s (%.1f s)"), *File, Pcm->DurationSeconds());
+			UE_LOG(LogMeridian, Log, TEXT("MRAudio: decoded the server's %s (%.1f s) in %.1f ms"), *File, Pcm->DurationSeconds(),
+				(FPlatformTime::Seconds() - DecodeStart) * 1000.0);
 		}
 		else
 		{

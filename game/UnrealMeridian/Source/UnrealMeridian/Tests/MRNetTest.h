@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Containers/Ticker.h"
 #include "UObject/Object.h"
 #include "MRNetTest.generated.h"
 
@@ -91,6 +92,21 @@ private:
 	void LogCreatures() const;
 
 	TWeakObjectPtr<APlayerController> Controller;
+	/** Frame times per step (every frame, not the test's own timer): long frames online (docs/performance.md). */
+	struct FFrameStats
+	{
+		int32 Frames = 0;
+		int32 Over33 = 0;
+		int32 Over100 = 0;
+		float WorstMs = 0.f;
+		/** Frames that took (or followed) one of the test's screenshots, left out of the above. */
+		int32 Shots = 0;
+	};
+	uint64 ShotFrame = 0;
+	FFrameStats FrameStats[static_cast<int32>(EStep::Done) + 1];
+	FTSTicker::FDelegateHandle FrameTicker;
+	double LastFrameTime = 0.0;
+	void LogFrameStats() const;
 	EStep Step = EStep::Login;
 	double StepStart = 0.0;
 	int32 Passed = 0;
