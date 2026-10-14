@@ -1,4 +1,6 @@
 #include "Player/MRPlayerController.h"
+
+#include "Ambient/MRAmbientSubsystem.h"
 #include "Core/MRSettings.h"
 
 #include "Camera/PlayerCameraManager.h"
@@ -118,16 +120,14 @@ void AMRPlayerController::BuildUIInput()
 		return A;
 	};
 	UIContext = NewObject<UInputMappingContext>(this, TEXT("IMC_UI"));
-	for (int32 i = 0; i < 9; ++i)
+	for (int32 i = 0; i < FMRQuickSlot::Num; ++i)
 	{
-		HotbarActions.Add(MakeAction(FString::Printf(TEXT("IA_Hotbar%d"), i + 1), EInputActionValueType::Boolean));
-		SpellActions.Add(MakeAction(FString::Printf(TEXT("IA_Spell%d"), i + 1), EInputActionValueType::Boolean));
+		QuickSlotActions.Add(MakeAction(FString::Printf(TEXT("IA_QuickSlot%d"), i + 1), EInputActionValueType::Boolean));
 	}
 	for (int32 i = 0; i < 12; ++i)
 	{
 		QuickChatActions.Add(MakeAction(FString::Printf(TEXT("IA_QuickChat%d"), i + 1), EInputActionValueType::Boolean));
 	}
-	HotbarScrollAction = MakeAction(TEXT("IA_HotbarScroll"), EInputActionValueType::Axis1D);
 	InventoryAction = MakeAction(TEXT("IA_Inventory"), EInputActionValueType::Boolean);
 	ChatAction = MakeAction(TEXT("IA_Chat"), EInputActionValueType::Boolean);
 	MapZoomAction = MakeAction(TEXT("IA_MapZoom"), EInputActionValueType::Axis1D);
@@ -146,6 +146,7 @@ void AMRPlayerController::BuildUIInput()
 	GuildAction = MakeAction(TEXT("IA_Guild"), EInputActionValueType::Boolean);
 	MapWindowAction = MakeAction(TEXT("IA_MapWindow"), EInputActionValueType::Boolean);
 	HideInterfaceAction = MakeAction(TEXT("IA_HideInterface"), EInputActionValueType::Boolean);
+	QuickEmotesAction = MakeAction(TEXT("IA_QuickEmotes"), EInputActionValueType::Boolean);
 	MapUIKeys();
 }
 
@@ -160,13 +161,14 @@ void AMRPlayerController::MapUIKeys()
 		const FKey Key = MRKeys::Get(Binding);
 		return Key.IsValid() ? &Ctx->MapKey(Action, Key) : nullptr;
 	};
-	const FKey Numbers[] = {EKeys::One, EKeys::Two, EKeys::Three, EKeys::Four, EKeys::Five, EKeys::Six, EKeys::Seven, EKeys::Eight, EKeys::Nine};
-	const FKey NumPad[] = {EKeys::NumPadOne, EKeys::NumPadTwo, EKeys::NumPadThree, EKeys::NumPadFour, EKeys::NumPadFive,
-		EKeys::NumPadSix, EKeys::NumPadSeven, EKeys::NumPadEight, EKeys::NumPadNine};
-	for (int32 i = 0; i < 9; ++i)
+	// the quick slots (Shards' Quick Slot 1-20): 1-9 and 0, the numpad's 1-9 and 0
+	const FKey Keys[] = {EKeys::One, EKeys::Two, EKeys::Three, EKeys::Four, EKeys::Five, EKeys::Six, EKeys::Seven, EKeys::Eight, EKeys::Nine,
+		EKeys::Zero, EKeys::NumPadOne, EKeys::NumPadTwo, EKeys::NumPadThree, EKeys::NumPadFour, EKeys::NumPadFive, EKeys::NumPadSix,
+		EKeys::NumPadSeven, EKeys::NumPadEight, EKeys::NumPadNine, EKeys::NumPadZero};
+	static_assert(UE_ARRAY_COUNT(Keys) == FMRQuickSlot::Num, "a key per quick slot");
+	for (int32 i = 0; i < FMRQuickSlot::Num; ++i)
 	{
-		Ctx->MapKey(HotbarActions[i], Numbers[i]);
-		Ctx->MapKey(SpellActions[i], NumPad[i]);
+		Ctx->MapKey(QuickSlotActions[i], Keys[i]);
 	}
 	// the quick chat (the original's F-key aliases; F10 stays the menu's)
 	const FKey FKeys[] = {EKeys::F1, EKeys::F2, EKeys::F3, EKeys::F4, EKeys::F5, EKeys::F6, EKeys::F7, EKeys::F8, EKeys::F9,
@@ -178,7 +180,6 @@ void AMRPlayerController::MapUIKeys()
 			Ctx->MapKey(QuickChatActions[i], FKeys[i]);
 		}
 	}
-	Ctx->MapKey(HotbarScrollAction, EKeys::MouseWheelAxis);
 	Map(InventoryAction, TEXT("Inventory"));
 	Ctx->MapKey(InventoryAction, MRKeys::Get(TEXT("Inventory")) == EKeys::I ? EKeys::E : EKeys::I);
 	Map(ChatAction, TEXT("Chat"));
@@ -206,6 +207,7 @@ void AMRPlayerController::MapUIKeys()
 	Map(GuildAction, TEXT("Guild"));
 	Map(MapWindowAction, TEXT("Map"));
 	Map(HideInterfaceAction, TEXT("HideInterface"));
+	Map(QuickEmotesAction, TEXT("QuickEmotes"));
 }
 
 void AMRPlayerController::RemapKeysIfChanged()
@@ -232,6 +234,10 @@ void AMRPlayerController::OnQuickChatKey(int32 Index)
 	{
 		UI->RunQuickChat(Index);
 	}
+	else if (UI && Index == 0)
+	{
+		UI->ToggleWindow(EMRWindow::Help);  // offline F1 is Help (online it's the quick chat's "help", the server's)
+	}
 }
 
 void AMRPlayerController::SetupInputComponent()
@@ -243,12 +249,10 @@ void AMRPlayerController::SetupInputComponent()
 		return;
 	}
 	BuildUIInput();
-	for (int32 i = 0; i < HotbarActions.Num(); ++i)
+	for (int32 i = 0; i < QuickSlotActions.Num(); ++i)
 	{
-		Input->BindAction(HotbarActions[i], ETriggerEvent::Started, this, &AMRPlayerController::OnHotbarKey, i);
-		Input->BindAction(SpellActions[i], ETriggerEvent::Started, this, &AMRPlayerController::OnSpellKey, i);
+		Input->BindAction(QuickSlotActions[i], ETriggerEvent::Started, this, &AMRPlayerController::OnQuickSlotKey, i);
 	}
-	Input->BindAction(HotbarScrollAction, ETriggerEvent::Triggered, this, &AMRPlayerController::OnHotbarScroll);
 	Input->BindAction(InventoryAction, ETriggerEvent::Started, this, &AMRPlayerController::OnInventoryKey);
 	Input->BindAction(ChatAction, ETriggerEvent::Started, this, &AMRPlayerController::OnChatKey);
 	Input->BindAction(MapZoomAction, ETriggerEvent::Started, this, &AMRPlayerController::OnMapZoom);
@@ -272,6 +276,7 @@ void AMRPlayerController::SetupInputComponent()
 	Input->BindAction(GuildAction, ETriggerEvent::Started, this, &AMRPlayerController::OnWindowKey, EMRWindow::Guild);
 	Input->BindAction(MapWindowAction, ETriggerEvent::Started, this, &AMRPlayerController::OnWindowKey, EMRWindow::Map);
 	Input->BindAction(HideInterfaceAction, ETriggerEvent::Started, this, &AMRPlayerController::OnHideInterfaceKey);
+	Input->BindAction(QuickEmotesAction, ETriggerEvent::Started, this, &AMRPlayerController::OnQuickEmotesKey);
 }
 
 UMRUISubsystem* AMRPlayerController::GetUI() const
@@ -279,32 +284,11 @@ UMRUISubsystem* AMRPlayerController::GetUI() const
 	return GetLocalPlayer() ? GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
 }
 
-void AMRPlayerController::OnHotbarKey(int32 Index)
+void AMRPlayerController::OnQuickSlotKey(int32 Index)
 {
 	if (UMRUISubsystem* UI = GetUI())
 	{
-		UI->OnHotbarKey(Index);
-	}
-}
-
-void AMRPlayerController::OnHotbarScroll(const FInputActionValue& Value)
-{
-	// Ctrl + wheel zooms the camera (AMRCharacter::OnZoom)
-	if (IsInputKeyDown(EKeys::LeftControl) || IsInputKeyDown(EKeys::RightControl))
-	{
-		return;
-	}
-	if (UMRUISubsystem* UI = GetUI())
-	{
-		UI->OnHotbarScroll(Value.Get<float>());
-	}
-}
-
-void AMRPlayerController::OnSpellKey(int32 Index)
-{
-	if (UMRUISubsystem* UI = GetUI())
-	{
-		UI->OnSpellKey(Index);
+		UI->UseQuickSlot(Index);
 	}
 }
 
@@ -348,6 +332,17 @@ void AMRPlayerController::OnMenuKey()
 	// target (intrface.c A_TARGETCLEAR), then the menu
 	UMRNetWorldSubsystem* NetWorld = GetNetWorld();
 	UMRUISubsystem* UI = GetUI();
+	// (ours first: the quick slot picker and the quick emotes close)
+	if (UI && UI->GetQuickSlotPicker() != INDEX_NONE)
+	{
+		UI->CloseQuickSlotPicker();
+		return;
+	}
+	if (UI && UI->IsQuickEmotesOpen())
+	{
+		UI->SetQuickEmotesOpen(false);
+		return;
+	}
 	if (NetWorld && NetWorld->IsChoosingTarget() && !(UI && UI->IsGameMenuOpen()))
 	{
 		NetWorld->CancelChoosing();
@@ -445,22 +440,42 @@ void AMRPlayerController::OnLookReleased()
 
 void AMRPlayerController::LookAtAim(bool bCursorFirst)
 {
-	UMRNetWorldSubsystem* NetWorld = GetNetWorld();
-	if (!NetWorld)
+	if (UMRNetWorldSubsystem* NetWorld = GetNetWorld())
 	{
-		return;
-	}
-	// several things under the crosshair (a pile of items): let the player pick (UMRUISubsystem)
-	const TArray<uint32> Stack = NetWorld->ObjectsAtAim();
-	if (!NetWorld->GetTargetId() && Stack.Num() > 1)
-	{
-		if (UMRUISubsystem* UI = GetUI())
+		// several things under the crosshair (a pile of items): let the player pick (UMRUISubsystem)
+		const TArray<uint32> Stack = NetWorld->ObjectsAtAim();
+		if (!NetWorld->GetTargetId() && Stack.Num() > 1)
 		{
-			UI->ShowLookPicker(Stack);
+			if (UMRUISubsystem* UI = GetUI())
+			{
+				UI->ShowLookPicker(Stack);
+				return;
+			}
+		}
+		if (NetWorld->LookAtTarget(bCursorFirst))
+		{
 			return;
 		}
 	}
-	NetWorld->LookAtTarget(bCursorFirst);
+	// nothing real there: someone of the ambient crowd (docs/adr/0013; Shards' Examine on them)
+	UMRAmbientSubsystem* Ambient = GetWorld()->GetSubsystem<UMRAmbientSubsystem>();
+	UMRUISubsystem* UI = GetUI();
+	FVector Start, Dir;
+	if (!Ambient || !UI || !((bCursorFirst && bShowMouseCursor && DeprojectMousePositionToWorld(Start, Dir)) || PlayerCameraManager))
+	{
+		return;
+	}
+	if (!(bCursorFirst && bShowMouseCursor && DeprojectMousePositionToWorld(Start, Dir)))
+	{
+		Start = PlayerCameraManager->GetCameraLocation();
+		Dir = PlayerCameraManager->GetCameraRotation().Vector();
+	}
+	FString Name, Text;
+	FMRSpriteAppearance Look;
+	if (const uint32 Id = Ambient->FigureNear(Start, Dir); Id && Ambient->Inspect(Id, Name, Text, Look))
+	{
+		UI->ShowAmbientPerson(Name, Text, Look);
+	}
 }
 
 void AMRPlayerController::OnRestKey()
@@ -490,6 +505,14 @@ void AMRPlayerController::OnHideInterfaceKey()
 	if (UMRUISubsystem* UI = GetUI())
 	{
 		UI->ToggleHudHidden();
+	}
+}
+
+void AMRPlayerController::OnQuickEmotesKey()
+{
+	if (UMRUISubsystem* UI = GetUI())
+	{
+		UI->ToggleQuickEmotes();
 	}
 }
 

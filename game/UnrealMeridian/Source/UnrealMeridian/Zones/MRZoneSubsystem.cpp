@@ -509,6 +509,37 @@ bool UMRZoneSubsystem::LoadData()
 				}
 			}
 		}
+		// water floors, the same way (zone_layout.json "water_areas")
+		const TArray<TSharedPtr<FJsonValue>>* Waters = nullptr;
+		if (!Info.SharesGeometryWith && L->TryGetArrayField(TEXT("water_areas"), Waters))
+		{
+			for (const TSharedPtr<FJsonValue>& WV : *Waters)
+			{
+				const TSharedPtr<FJsonObject> D = WV->AsObject();
+				FMRDepthArea Area;
+				Area.Depth = IntField(D, TEXT("depth"));
+				Area.SinkCm = DepthSinkCm(Area.Depth);
+				for (const TSharedPtr<FJsonValue>& PV : D->GetArrayField(TEXT("points")))
+				{
+					const TArray<TSharedPtr<FJsonValue>>& XZ = PV->AsArray();
+					const FVector W = Info.Origin + MRUnits::LayoutToLocal(XZ[0]->AsNumber(), 0.0, XZ[1]->AsNumber());
+					Area.Points.Add(FVector2D(W.X, W.Y));
+					Area.Bounds += Area.Points.Last();
+				}
+				if (Area.Points.Num() >= 3)
+				{
+					const int32 Index = WaterAreas.Add(MoveTemp(Area));
+					const FBox2D& B = WaterAreas[Index].Bounds;
+					for (int32 X = FMath::FloorToInt(B.Min.X / WaterCellCm); X <= FMath::FloorToInt(B.Max.X / WaterCellCm); ++X)
+					{
+						for (int32 Y = FMath::FloorToInt(B.Min.Y / WaterCellCm); Y <= FMath::FloorToInt(B.Max.Y / WaterCellCm); ++Y)
+						{
+							WaterGrid.Add(FIntPoint(X, Y), Index);
+						}
+					}
+				}
+			}
+		}
 		// the original's step rule at each wall where the floors differ: [x0, z0, x1, z1, into x, into z,
 		// lower texture, z1 height, far sink] in layout metres (roo2gltf step_walls)
 		const TArray<TSharedPtr<FJsonValue>>* Steps = nullptr;
@@ -545,6 +576,13 @@ bool UMRZoneSubsystem::LoadData()
 				for (const TSharedPtr<FJsonValue>& F : *FlagArr)
 				{
 					Info.Flags.Add(F->AsString());
+				}
+			}
+			if (K->TryGetArrayField(TEXT("terrain"), FlagArr))
+			{
+				for (const TSharedPtr<FJsonValue>& T : *FlagArr)
+				{
+					Info.Terrain.Add(T->AsString().Replace(TEXT("TERRAIN_"), TEXT("")));
 				}
 			}
 			Info.bNoCombat = Info.Flags.Contains(TEXT("ROOM_NO_COMBAT"));
@@ -825,29 +863,53 @@ float UMRZoneSubsystem::DepthSinkAt(const FVector& World) const
 	return Area ? Area->SinkCm : 0.f;
 }
 
+bool UMRZoneSubsystem::IsWaterAt(const FVector& World) const
+{
+	const FVector2D P(World.X, World.Y);
+	TArray<int32, TInlineAllocator<16>> Cell;
+	WaterGrid.MultiFind(FIntPoint(FMath::FloorToInt(P.X / WaterCellCm), FMath::FloorToInt(P.Y / WaterCellCm)), Cell);
+	for (const int32 Index : Cell)
+	{
+		if (InsideArea(WaterAreas[Index], P))
+		{
+			return true;
+		}
+	}
+	// a room built at runtime knows only its depth areas (as Meridian Shards takes them)
+	const FMRDepthArea* Depth = DepthAreaAt(World);
+	return Depth && Depth->RuntimeRid > 0;
+}
+
+bool UMRZoneSubsystem::InsideArea(const FMRDepthArea& Area, const FVector2D& P)
+{
+	if (!Area.Bounds.IsInside(P))
+	{
+		return false;
+	}
+	// convex (a BSP leaf): inside when on the same side of every edge
+	int32 Sign = 0;
+	for (int32 i = 0, n = Area.Points.Num(); i < n; ++i)
+	{
+		const double C = FVector2D::CrossProduct(Area.Points[(i + 1) % n] - Area.Points[i], P - Area.Points[i]);
+		const int32 S = C > 0.0 ? 1 : (C < 0.0 ? -1 : 0);
+		if (S != 0)
+		{
+			if (Sign != 0 && S != Sign)
+			{
+				return false;
+			}
+			Sign = S;
+		}
+	}
+	return true;
+}
+
 const FMRDepthArea* UMRZoneSubsystem::DepthAreaAt(const FVector& World) const
 {
 	const FVector2D P(World.X, World.Y);
 	for (const FMRDepthArea& Area : DepthAreas)
 	{
-		if (!Area.Bounds.IsInside(P))
-		{
-			continue;
-		}
-		// convex (a BSP leaf): inside when on the same side of every edge
-		int32 Sign = 0;
-		bool bInside = true;
-		for (int32 i = 0, n = Area.Points.Num(); i < n && bInside; ++i)
-		{
-			const double C = FVector2D::CrossProduct(Area.Points[(i + 1) % n] - Area.Points[i], P - Area.Points[i]);
-			const int32 S = C > 0.0 ? 1 : (C < 0.0 ? -1 : 0);
-			if (S != 0)
-			{
-				bInside = Sign == 0 || S == Sign;
-				Sign = Sign == 0 ? S : Sign;
-			}
-		}
-		if (bInside)
+		if (InsideArea(Area, P))
 		{
 			return &Area;
 		}
@@ -1123,6 +1185,27 @@ FVector UMRZoneSubsystem::KodToWorld(int32 Rid, int32 KodRow, int32 KodCol, bool
 		TraceFloor(P);
 	}
 	return P;
+}
+
+FVector UMRZoneSubsystem::RooToWorld(int32 Rid, const FVector2D& Roo, bool bTraceFloor) const
+{
+	const FMRZoneInfo* Z = Zones.Find(Rid);
+	if (!Z)
+	{
+		return FVector::ZeroVector;
+	}
+	FVector P = Z->Origin + MRUnits::RooToLocal(Roo);
+	if (bTraceFloor)
+	{
+		TraceFloor(P);
+	}
+	return P;
+}
+
+FVector2D UMRZoneSubsystem::WorldToRoo(int32 Rid, const FVector& World) const
+{
+	const FMRZoneInfo* Z = Zones.Find(Rid);
+	return Z ? MRUnits::LocalToRoo(World - Z->Origin) : FVector2D::ZeroVector;
 }
 
 FIntPoint UMRZoneSubsystem::WorldToKod(int32 Rid, const FVector& World) const

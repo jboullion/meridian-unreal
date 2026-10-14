@@ -359,6 +359,15 @@ void UMRSpriteBodyComponent::SetForceUnlit(bool bInForceUnlit)
 	}
 }
 
+void UMRSpriteBodyComponent::SetUnlitBrightness(float InBrightness)
+{
+	UnlitBrightness = FMath::Max(InBrightness, 0.f);
+	if (Material)
+	{
+		Material->SetScalarParameterValue(TEXT("Brightness"), UnlitBrightness);
+	}
+}
+
 void UMRSpriteBodyComponent::SetHeightScale(float InScale)
 {
 	HeightScale = FMath::Clamp(InScale, 0.5f, 1.5f);
@@ -449,6 +458,7 @@ void UMRSpriteBodyComponent::ApplyMaterial()
 	}
 	Material = UMaterialInstanceDynamic::Create(Base, this);
 	Material->SetScalarParameterValue(TEXT("Opacity"), Opacity);
+	Material->SetScalarParameterValue(TEXT("Brightness"), UnlitBrightness);  // (M_SpriteBodyUnlit only)
 	Material->SetTextureParameterValue(TEXT("Sprite"), Target);
 	Material->SetTextureParameterValue(TEXT("SpriteCode"), CodeTarget);
 	Material->SetTextureParameterValue(TEXT("SpriteRamp"), RampTarget);

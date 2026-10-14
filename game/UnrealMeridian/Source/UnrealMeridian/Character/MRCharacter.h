@@ -77,6 +77,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Camera")
 	EMRViewMode GetViewMode() const { return ViewMode; }
 
+	/** The view's camera (first person: in the head; the HUD hangs the lit first-person hands on it). */
+	UCameraComponent* GetCamera() const { return Camera; }
+
 	/** The original's view as a horizontal field of view for a viewport this wide (width / height):
 	 *  32.1 degrees high, widened for wide screens, never under 50 across (as Meridian Shards). */
 	static float OriginalHorizontalFov(float Aspect);
@@ -96,6 +99,9 @@ public:
 	 * pixels; 0 = sharp) and the colours inverted.
 	 */
 	void SetViewEffects(const FVector& EyeOffset, float Roll, float BlurPixels, bool bInvert);
+
+	/** Squish an ambient critter: under the cursor, else the nearest ahead in reach (attacking with nothing real there). */
+	void SquishCritter();
 
 	/**
 	 * Placeholder Vigor regeneration. The original regenerates through

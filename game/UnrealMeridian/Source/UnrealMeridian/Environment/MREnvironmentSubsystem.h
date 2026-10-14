@@ -100,6 +100,9 @@ public:
 	 * of building up; None clears it.
 	 */
 	void SetServerWeather(EMRWeatherKind Kind, bool bAlready);
+	/** The weather where the view is: its kind and how strong (0..1; UpdateWeather). */
+	EMRWeatherKind GetWeatherKind() const { return WeatherKind; }
+	float GetStormAmount() const { return StormAmount; }
 
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;

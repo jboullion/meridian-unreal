@@ -172,27 +172,11 @@ private:
 	TWeakObjectPtr<UMRUISubsystem> UI;
 };
 
-/** The selected item's name, above the hotbar for a moment after the selection changes (as Minecraft). */
-class UNREALMERIDIAN_API SMRItemName : public SLeafWidget
-{
-public:
-	SLATE_BEGIN_ARGS(SMRItemName) {}
-	SLATE_END_ARGS()
-
-	void Construct(const FArguments& InArgs, UMRUISubsystem* InUI);
-	virtual FVector2D ComputeDesiredSize(float) const override;
-	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
-		int32 Layer, const FWidgetStyle& Style, bool bParentEnabled) const override;
-
-private:
-	TWeakObjectPtr<UMRUISubsystem> UI;
-};
-
 /**
  * The whole UI of one player: the HUD over the view, laid out as Meridian Shards' Modern interface
- * (SMRHUDFrames.h: our face top left, the target top centre, the round map top right, the action
- * bar with the bars, the spell row and the item hotbar bottom centre, the chat down the left), the
- * inventory dialog and the other windows, and the carried stack.
+ * (SMRHUDFrames.h: our face and bars top left, the target top centre, the round map top right, the
+ * quick slots bottom centre, the chat down the left), the inventory dialog and the other windows, and
+ * the carried stack.
  */
 class UNREALMERIDIAN_API SMRHUDRoot : public SCompoundWidget
 {
@@ -224,6 +208,15 @@ public:
 	TSharedPtr<class SMRSocialWindow> GetWindow(int32 Index) const { return Windows.IsValidIndex(Index) ? Windows[Index] : nullptr; }
 	void SetWindowOpen(int32 Index, bool bOpen);
 	TSharedPtr<class SMRChatLog> GetChatLog() const { return ChatLog; }
+	/** A part of the HUD the Help's HUD page points at: what it's called, what it does, and its widget. */
+	struct FHudPart
+	{
+		FText Title;
+		FText Text;
+		TWeakPtr<SWidget> Widget;
+	};
+	/** The HUD's parts as they show now (Shards' HelpDialog.tsx HUD_PARTS, for our keys). */
+	void GetHudParts(TArray<FHudPart>& Out) const;
 
 private:
 	TWeakObjectPtr<UMRUISubsystem> UI;
@@ -235,6 +228,9 @@ private:
 	TArray<TSharedPtr<class SMRSocialWindow>> Windows;
 	TSharedPtr<SMRChatLog> ChatLog;
 	TSharedPtr<class SMRActionBar> ActionBar;
+	TSharedPtr<class SMRUnitFrame> UnitFrame;
+	TSharedPtr<class SMRTargetFrame> TargetFrame;
+	TSharedPtr<class SMRMapCluster> MapCluster;
 	/** Our size last frame (the target frame may take 40 % of it). */
 	FVector2f LastSize = FVector2f(1920.f, 1080.f);
 

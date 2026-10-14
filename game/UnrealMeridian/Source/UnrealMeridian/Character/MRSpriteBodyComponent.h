@@ -86,6 +86,8 @@ public:
 
 	/** Always use the unlit material (the inventory avatar), whatever mr.Sprite.Unlit says. */
 	void SetForceUnlit(bool bInForceUnlit);
+	/** Unlit (M_SpriteBodyUnlit): its colours times this (the HUD portrait and previews are dimmed). */
+	void SetUnlitBrightness(float InBrightness);
 
 	/** The first-person hand / weapon to draw now (AMRHUD): false if none. Offset and size in original pixels. */
 	bool GetFirstPersonFrame(UTexture2D*& OutTexture, FBox2f& OutUV, FIntPoint& OutSize, FIntPoint& OutOffset);
@@ -165,6 +167,7 @@ private:
 	float LastMovingSpeed = 0.f;
 	bool bUnlit = false;
 	bool bForceUnlit = false;
+	float UnlitBrightness = 1.f;
 	TWeakObjectPtr<USceneComponent> Viewer;
 	bool WantsUnlit() const;
 	float SunYaw = 0.f;

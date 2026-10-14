@@ -350,6 +350,25 @@ Rooms built at runtime from the server's files (ADR 0012) are drawn with the ori
   - Bright enough to read in the dark interiors (candela scale 3); outdoors by day it hardly shows, as in the original.
 - **Sheets:** `build/lookdev/compare_torch_before_13_torch_v4_13.png` (midday) and `compare_torch_before_23_torch_v4_23.png` (night); the sign's three tries in `compare_torch_before_13_torch_v2_13_torch_v3_13.png`.
 
+## The original's colours inside (2026-10-14)
+
+The user saw the Inn's sign, its tables, our face and a worn helmet read orange beside Meridian Shards. Both clients draw the same bitmaps from the same palette, so the colour came from our rendering. Measured on the Inn at 1600 x 900 (`build/ui/shots/grade_zz_*`, the variants pinned with `-MRMood`):
+
+| | sign (hue, saturation) | wall | |
+|---|---|---|---|
+| the bitmap (`razsign1.bgf`) | 20°, 0.63 | | |
+| Meridian Shards | 21°, 0.60 | 35°, 0.38 | |
+| ours until now | 16°, 0.83 | 35°, 0.60 | blue crushed to ~0 in the darks |
+| grading neutral | 18°, 0.76 | 35°, 0.50 | |
+| + no tone curve | 22°, 0.67 | 36°, 0.44 | |
+| + neutral ambient tint (chosen) | 22°, 0.61 | 39°, 0.36 | |
+
+- **The cause:** UE's filmic tone curve works per channel, and its toe crushes the smallest channel of a dim colour. A dim brown lost its blue and turned orange, and the interiors are mostly dim browns. The warm ambient floor (`AmbientTint` [1, 0.86, 0.7]), skylight leak and lower sky, and the afternoon's grading inherited inside (saturation and contrast 1.08) added to it.
+- **Chosen:** `raza_interior_day` (and `raza_interior_night`, which inherits it) set `tone_curve_amount` and `expand_gamut` 0, the grading neutral, and the ambient floor, leak and lower sky neutral (`moods.json` "_colour_doc"). The lamps, torches and window daylight keep their own colours. `raza_crypt` (and the Underworld after it) sets its old curve back: its cold grading was chosen with it.
+- **Outdoors keep the curve:** without it the afternoon and night read flat and grey, and nobody saw orange there (`build/lookdev/colour/outdoor.png`, from `tone_zz_f..i`).
+- **The previews:** the HUD portrait, the creator's face and the Look dialog's face are scene captures of the final colour, and the global post-process volume reaches captures too, so they took the room's curve and grading (a skin-3 cheek (166, 111, 69) in the bitmap came out (148, 56, 1)). Their capture now turns the tone mapper and grading off (`AMRAvatarPreview`; ADR 0009).
+- Sheets: `build/lookdev/colour/inn.png` (before, after, Shards).
+
 ## Phase 4 built (2026-10-05): weather
 - **The original's rules** (`MRWeather`, unit-tested in `Meridian.Environment.Weather`):
   - Every game day each of the 15 weather zones rolls a storm at 15% (kod `RecalcWeatherConditions`, `piStormChance`).

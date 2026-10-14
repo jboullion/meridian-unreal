@@ -48,6 +48,9 @@ public class UnrealMeridian : ModuleRules
 
 		PublicIncludePaths.Add(ModuleDirectory);
 
+		// the relay's signed hello (Net/MRSocialClient: ECDSA P-256, as Meridian Shards' WebCrypto keys)
+		AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");
+
 		SetupIrisSupport(Target);
 	}
 }

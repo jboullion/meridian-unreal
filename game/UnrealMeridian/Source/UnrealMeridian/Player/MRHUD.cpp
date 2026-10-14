@@ -15,14 +15,36 @@
 #include "UI/MRUISubsystem.h"
 #include "Character/MRCharacterMovementComponent.h"
 #include "Core/MRUnits.h"
+#include "Camera/CameraComponent.h"
+#include "Camera/PlayerCameraManager.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "ProceduralMeshComponent.h"
+#include "World/MRRuntimeRooms.h"
 
 namespace
 {
 	TAutoConsoleVariable<float> CVarHandScale(TEXT("mr.Sprite.HandScale"), 1.f,
-		TEXT("First-person hand / weapon size relative to the original client's (viewport width / 452 * 0.5)."));
+		TEXT("First-person hand / weapon size relative to the original D3D client's (and Meridian Shards'): a bitmap pixel 1.75/800 of the view's 4:3 width across, 2.25/600 of its height down."));
 	TAutoConsoleVariable<float> CVarHandBob(TEXT("mr.Sprite.HandBob"), 1.f,
 		TEXT("First-person hand bob while walking (0 off, as the original)."));
-	constexpr float ClassicWidth = 452.f;  // clientd3d/drawdefs.h CLASSIC_WIDTH
+	TAutoConsoleVariable<int32> CVarHandsLit(TEXT("mr.Sprite.HandsLit"), 1,
+		TEXT("1: the first-person hands are quads just in front of the camera, lit by the world like the other sprites (M_BgfSpriteLit), ")
+		TEXT("as the original and Meridian Shards light them by the player's light; 0: drawn on the screen at the bitmaps' full brightness, as until 2026-10-14."));
+	TAutoConsoleVariable<float> CVarHandDistance(TEXT("mr.Sprite.HandDistance"), 15.f,
+		TEXT("How far in front of the eye the lit first-person hands hang, cm: past the near clip plane (10), inside the capsule so no wall comes between."));
+	TAutoConsoleVariable<float> CVarHandBrightness(TEXT("mr.Sprite.HandBrightness"), 0.45f,
+		TEXT("The lit first-person hands' colour multiplier (M_BgfSpriteLit Brightness, on linear light: 0.45 shows as about 0.7). Lit as a sprite ")
+		TEXT("beside the player, the hand read brighter than Meridian Shards' (the Inn's bar: 63 against 45); 0.45 matches it (2026-10-14)."));
+	const TCHAR* HandMaterialPath = TEXT("/Game/Generated/Runtime/M_BgfSpriteLit.M_BgfSpriteLit");
+	/**
+	 * d3drender.c D3DComputePlayerOverlayArea: the D3D client draws into an 800 x 600 back buffer stretched
+	 * over the view, an overlay pixel 1.75 back-buffer pixels wide and 2.25 tall. As Meridian Shards does
+	 * (screenOverlays.ts), measured on the largest 4:3 area that fits the view, so the hands keep their
+	 * 800 x 600 shape in a wide window. (Until 2026-10-14: the view's width / CLASSIC_WIDTH 452 * 0.5 both
+	 * ways, about 1.5 times narrower and 1.9 times shorter than the original's.)
+	 */
+	constexpr float OverlayPixelX = 1.75f / 800.f;
+	constexpr float OverlayPixelY = 2.25f / 600.f;
 
 	/**
 	 * The colour a screen translation flashes or tints the view with (d3drender.c's XLAT_BLEND*
@@ -98,6 +120,7 @@ void AMRHUD::DrawHUD()
 	UMRSpriteBodyComponent* Sprite = Character ? Character->GetSpriteBody() : nullptr;
 	if (!Canvas || !Sprite)
 	{
+		HideWorldHands();
 		return;
 	}
 	DrawScreenEffects(Character, true);
@@ -105,7 +128,20 @@ void AMRHUD::DrawHUD()
 	{
 		DrawHands(Character, Sprite);
 	}
+	else
+	{
+		HideWorldHands();
+	}
 	DrawScreenEffects(Character, false);
+}
+
+void AMRHUD::PostRender()
+{
+	Super::PostRender();
+	if (!bShowHUD)
+	{
+		HideWorldHands();  // the photo (AMRCharacter::TakePhoto) has no hands
+	}
 }
 
 void AMRHUD::DrawHands(AMRCharacter* Character, UMRSpriteBodyComponent* Sprite)
@@ -118,17 +154,23 @@ void AMRHUD::DrawHands(AMRCharacter* Character, UMRSpriteBodyComponent* Sprite)
 	BobPhase += Dt * FMath::Clamp(Speed / UMRCharacterMovementComponent::RunCms(), 0.f, 2.f) * UE_TWO_PI * 1.2f;
 	const float BobAmount = FMath::Clamp(Speed / UMRCharacterMovementComponent::WalkCms(), 0.f, 1.f) * CVarHandBob.GetValueOnGameThread();
 
-	const float Scale = Canvas->ClipX / ClassicWidth * 0.5f * CVarHandScale.GetValueOnGameThread();
-	const FVector2D Bob(FMath::Cos(BobPhase) * 6.f * Scale * BobAmount, FMath::Abs(FMath::Sin(BobPhase)) * 8.f * Scale * BobAmount);
+	const float W43 = FMath::Min(Canvas->ClipX, Canvas->ClipY * 4.f / 3.f);
+	const FVector2D Scale = FVector2D(OverlayPixelX * W43, OverlayPixelY * W43 * 0.75f) * CVarHandScale.GetValueOnGameThread();
+	const FVector2D Bob(FMath::Cos(BobPhase) * 6.f * Scale.X * BobAmount, FMath::Abs(FMath::Sin(BobPhase)) * 8.f * Scale.Y * BobAmount);
 	UTexture2D* Tex = nullptr;
 	FBox2f UV;
 	FIntPoint Size, Offset;
+	TArray<FHand> Hands;
+	bool bLit = CVarHandsLit.GetValueOnGameThread() != 0;
 	const UMRNetWorldSubsystem* NetWorld = GetWorld()->GetSubsystem<UMRNetWorldSubsystem>();
 	const UMRNetSubsystem* Net = GetGameInstance() ? GetGameInstance()->GetSubsystem<UMRNetSubsystem>() : nullptr;
 	if (NetWorld && NetWorld->IsActive() && Net)
 	{
 		// online: what the server says is held (clientd3d overlay.c DrawPlayerOverlays)
 		const FMRNetWorld& W = Net->GetNetWorld();
+		// a room built at runtime keeps the original's light model, its sprites at their bitmaps' brightness;
+		// blind draws no world, only the hands (d3drender.c): on the screen in both
+		bLit = bLit && NetWorld->GetRid() > 0 && NetWorld->GetRid() < UMRRuntimeRooms::RuntimeRidBase && !Net->GetEffects().bBlind;
 		for (auto It = SlotTracks.CreateIterator(); It; ++It)
 		{
 			if (!W.PlayerOverlays.Contains(It.Key()))
@@ -164,15 +206,119 @@ void AMRHUD::DrawHands(AMRCharacter* Character, UMRSpriteBodyComponent* Sprite)
 			const FString Bgf = FPaths::GetBaseFilename(P.Object.Icon).ToLower();
 			if (Sprite->GetBgfFrame(Bgf, T.Track.Group - 1, Tex, UV, Size, Offset) && Tex->GetResource())
 			{
-				DrawFirstPerson(Tex, UV, Size, Offset, P.Hotspot, Bob, Scale);
+				Hands.Add(PlaceFirstPerson(Tex, UV, Size, Offset, P.Hotspot, Bob, Scale));
 			}
 		}
-		return;  // the swing too is the server's (BP_PLAYER_OVERLAY, docs/adr/0012 M4)
+		// the swing too is the server's (BP_PLAYER_OVERLAY, docs/adr/0012 M4)
 	}
 	// offline: the hand or weapon, and the local swing
-	if (Sprite->GetFirstPersonFrame(Tex, UV, Size, Offset) && Tex->GetResource())
+	else if (Sprite->GetFirstPersonFrame(Tex, UV, Size, Offset) && Tex->GetResource())
 	{
-		DrawFirstPerson(Tex, UV, Size, Offset, MRMsg::HS_SE, Bob, Scale);
+		Hands.Add(PlaceFirstPerson(Tex, UV, Size, Offset, MRMsg::HS_SE, Bob, Scale));
+	}
+	if (bLit && ShowWorldHands(Character, Hands))
+	{
+		return;
+	}
+	HideWorldHands();
+	for (const FHand& H : Hands)
+	{
+		FCanvasTileItem Item(H.Pos, H.Tex->GetResource(), H.Size, FVector2D(H.UV.Min.X, H.UV.Min.Y), FVector2D(H.UV.Max.X, H.UV.Max.Y), FLinearColor::White);
+		Item.BlendMode = SE_BLEND_Translucent;
+		Canvas->DrawItem(Item);
+	}
+}
+
+bool AMRHUD::ShowWorldHands(AMRCharacter* Character, const TArray<FHand>& Hands)
+{
+	UCameraComponent* Camera = Character->GetCamera();
+	static UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, HandMaterialPath);
+	if (!Camera || !Base || Canvas->ClipX <= 0.f || Canvas->ClipY <= 0.f)
+	{
+		return false;
+	}
+	// a screen pixel -> the camera's frame, on a plane Depth in front of the eye (the horizontal field of
+	// view across the view's width, as the local player keeps it)
+	const APlayerController* PC = GetOwningPlayerController();
+	const float Fov = PC && PC->PlayerCameraManager ? PC->PlayerCameraManager->GetFOVAngle() : Camera->FieldOfView;
+	const double TanX = FMath::Tan(FMath::DegreesToRadians(Fov * 0.5));
+	const double W = Canvas->ClipX, H = Canvas->ClipY;
+	const auto Local = [W, H, TanX](double X, double Y, double Depth)
+	{
+		return FVector(Depth, (2.0 * X / W - 1.0) * Depth * TanX, (1.0 - 2.0 * Y / H) * Depth * TanX * H / W);
+	};
+	// the character's own components (the HUD actor is hidden in game, and so would they be): new ones for a new pawn
+	if (HandsOwner.Get() != Character)
+	{
+		for (UProceduralMeshComponent* Old : HandQuads)
+		{
+			if (IsValid(Old))
+			{
+				Old->DestroyComponent();
+			}
+		}
+		HandQuads.Reset();
+		HandMaterials.Reset();
+		HandsOwner = Character;
+	}
+	for (int32 i = 0; i < Hands.Num(); i++)
+	{
+		const FHand& Hand = Hands[i];
+		if (!HandQuads.IsValidIndex(i))
+		{
+			UProceduralMeshComponent* NewQuad = NewObject<UProceduralMeshComponent>(Character);
+			NewQuad->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			NewQuad->SetGenerateOverlapEvents(false);
+			NewQuad->SetCastShadow(false);
+			NewQuad->bAffectDistanceFieldLighting = false;
+			NewQuad->bAffectDynamicIndirectLighting = false;
+			NewQuad->bReceivesDecals = false;
+			NewQuad->bUseAsOccluder = false;
+			NewQuad->SetVisibleInRayTracing(false);
+			NewQuad->RegisterComponent();
+			UMaterialInstanceDynamic* Material = UMaterialInstanceDynamic::Create(Base, this);
+			NewQuad->SetMaterial(0, Material);
+			HandQuads.Add(NewQuad);
+			HandMaterials.Add(Material);
+		}
+		UProceduralMeshComponent* Quad = HandQuads[i];
+		if (Quad->GetAttachParent() != Camera)
+		{
+			Quad->AttachToComponent(Camera, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		}
+		// each later one a little nearer, over the earlier as the canvas drew them
+		const double Depth = CVarHandDistance.GetValueOnGameThread() * (1.0 - 0.02 * i);
+		const FVector2D& P = Hand.Pos;
+		const FVector2D& S = Hand.Size;
+		const TArray<FVector> Pos = {Local(P.X, P.Y, Depth), Local(P.X + S.X, P.Y, Depth), Local(P.X + S.X, P.Y + S.Y, Depth), Local(P.X, P.Y + S.Y, Depth)};
+		const TArray<FVector2D> UV = {FVector2D(Hand.UV.Min.X, Hand.UV.Min.Y), FVector2D(Hand.UV.Max.X, Hand.UV.Min.Y),
+			FVector2D(Hand.UV.Max.X, Hand.UV.Max.Y), FVector2D(Hand.UV.Min.X, Hand.UV.Max.Y)};
+		const TArray<FVector> Normals = {FVector(-1.0, 0.0, 0.0), FVector(-1.0, 0.0, 0.0), FVector(-1.0, 0.0, 0.0), FVector(-1.0, 0.0, 0.0)};
+		const TArray<FLinearColor> Colors = {FLinearColor::White, FLinearColor::White, FLinearColor::White, FLinearColor::White};
+		if (Quad->GetNumSections() == 0)
+		{
+			Quad->CreateMeshSection_LinearColor(0, Pos, {0, 1, 2, 0, 2, 3}, Normals, UV, Colors, TArray<FProcMeshTangent>(), false);
+		}
+		else
+		{
+			Quad->UpdateMeshSection_LinearColor(0, Pos, Normals, UV, Colors, TArray<FProcMeshTangent>());
+		}
+		HandMaterials[i]->SetTextureParameterValue(TEXT("Tex"), Hand.Tex);
+		HandMaterials[i]->SetScalarParameterValue(TEXT("Brightness"), CVarHandBrightness.GetValueOnGameThread());
+		Quad->SetVisibility(true);
+	}
+	HideWorldHands(Hands.Num());
+	return true;
+}
+
+void AMRHUD::HideWorldHands(int32 First)
+{
+	for (int32 i = First; i < HandQuads.Num(); i++)
+	{
+		if (IsValid(HandQuads[i]) && HandQuads[i]->IsVisible())
+		{
+			HandQuads[i]->SetVisibility(false);
+		}
 	}
 }
 
@@ -239,16 +385,18 @@ void AMRHUD::DrawScreenEffects(AMRCharacter* Character, bool bBeforeHands)
 	}
 }
 
-void AMRHUD::DrawFirstPerson(UTexture2D* Tex, const FBox2f& UV, FIntPoint Size, FIntPoint Offset, int32 Hotspot, const FVector2D& Bob, float Scale)
+AMRHUD::FHand AMRHUD::PlaceFirstPerson(UTexture2D* Tex, const FBox2f& UV, FIntPoint Size, FIntPoint Offset, int32 Hotspot, const FVector2D& Bob, const FVector2D& Scale) const
 {
 	// clientd3d overlay.c ComputePlayerOverlayArea: a corner, an edge's middle or the centre
-	const FVector2D DrawSize(Size.X * Scale, Size.Y * Scale);
+	const FVector2D DrawSize(Size.X * Scale.X, Size.Y * Scale.Y);
 	const int32 Col = (Hotspot == 1 || Hotspot == 8 || Hotspot == 7) ? 0 : (Hotspot == 3 || Hotspot == 4 || Hotspot == 5) ? 2 : 1;
 	const int32 Row = (Hotspot == 1 || Hotspot == 2 || Hotspot == 3) ? 0 : (Hotspot == 7 || Hotspot == 6 || Hotspot == 5) ? 2 : 1;
 	const double X = Col == 0 ? 0.0 : Col == 2 ? Canvas->ClipX - DrawSize.X : (Canvas->ClipX - DrawSize.X) * 0.5;
 	const double Y = Row == 0 ? 0.0 : Row == 2 ? Canvas->ClipY - DrawSize.Y : (Canvas->ClipY - DrawSize.Y) * 0.5;
-	const FVector2D Pos = FVector2D(X + Offset.X * Scale, Y + Offset.Y * Scale) + Bob;
-	FCanvasTileItem Item(Pos, Tex->GetResource(), DrawSize, FVector2D(UV.Min.X, UV.Min.Y), FVector2D(UV.Max.X, UV.Max.Y), FLinearColor::White);
-	Item.BlendMode = SE_BLEND_Translucent;
-	Canvas->DrawItem(Item);
+	FHand Hand;
+	Hand.Tex = Tex;
+	Hand.UV = UV;
+	Hand.Pos = FVector2D(X + Offset.X * Scale.X, Y + Offset.Y * Scale.Y) + Bob;
+	Hand.Size = DrawSize;
+	return Hand;
 }

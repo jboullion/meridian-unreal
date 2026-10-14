@@ -197,6 +197,10 @@ private:
 	bool bDeath = false;
 	/** -MRNetAdmin: an admin account; after saying hello, only the admin console's checks (the Admin step), then log off. */
 	bool bAdmin = false;
+	/** -MRNetArena: after the admin steps, the Arena of Kraanan and the relay's fights (docs/adr/0013) */
+	bool bArena = false;
+	int32 ArenaStage = 0;
+	double ArenaTime = 0.0;
 	int32 AdminStage = 0;
 	double AdminStageTime = 0.0;
 	int32 AdminTargetRid = 0;

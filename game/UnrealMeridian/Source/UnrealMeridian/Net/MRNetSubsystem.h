@@ -28,6 +28,13 @@ struct FMRServerEntry
 	FString Origin;
 	/** Which rules it runs ("server104"): how the UI lays out what it sends (data/ui/stat_layout.json). */
 	FString Ruleset;
+	/**
+	 * Meridian Shards' relay (its gateway's /social, docs/adr/0013): the arena's fights. Social: its WebSocket
+	 * URL; SocialServer: the game server as Shards' clients name it there (their game socket URL), so we
+	 * watch the same arena as they do. Empty: no relay.
+	 */
+	FString Social;
+	FString SocialServer;
 };
 
 /** A character on the account (BP_CHARACTERS). */
@@ -87,7 +94,9 @@ struct FMRSocial
 	 */
 	FString QuickChat[12];
 	bool QuickRun[12] = {};
-	/** The hotbar (each slot's item as "icon|name") and the spell bar (spell names), kept between sessions. */
+	/** The quick slots (FMRQuickSlot::ToString each: 1-0, then the numpad), kept between sessions. */
+	TArray<FString> QuickSlots;
+	/** Kept before 2026-10-14: the hotbar (each slot's item as "icon|name") and the spell bar (spell names); read once into QuickSlots. */
 	TArray<FString> Hotbar;
 	TArray<FString> SpellBar;
 	/** Notes on the large map, by room file (lower case). */

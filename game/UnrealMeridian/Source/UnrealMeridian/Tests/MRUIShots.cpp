@@ -19,6 +19,7 @@
 #include "UI/MRInventorySource.h"
 #include "UI/MRUISubsystem.h"
 #include "UI/SMROptions.h"
+#include "UI/SMRHelpDialog.h"
 #include "UI/SMRCharCreator.h"
 #include "UnrealClient.h"
 #include "Widgets/SViewport.h"
@@ -28,6 +29,16 @@ namespace
 	UMRUISubsystem* UIOf(APlayerController* PC)
 	{
 		return PC && PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+	}
+
+	/** The Help window's page (it's open). */
+	void HelpPage(APlayerController* PC, const TCHAR* Page)
+	{
+		UMRUISubsystem* UI = UIOf(PC);
+		if (TSharedPtr<SMRSocialWindow> W = UI ? UI->GetWindow(EMRWindow::Help) : nullptr)
+		{
+			StaticCastSharedPtr<SMRHelpDialog>(W)->SetPage(Page);
+		}
 	}
 
 	UMRNetSubsystem* NetOf(APlayerController* PC)
@@ -138,20 +149,23 @@ void UMRUIShots::Start(APlayerController* InController)
 	const int32 Bag = static_cast<int32>(EMRSlotArea::Bag);
 	Steps = {
 		{TEXT("hud"), [](APlayerController* PC) {}, 1.f},
-		{TEXT("hud_select"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->OnHotbarKey(3); }, 0.4f},
-		// selecting doesn't wield; a click on the hotbar item does (the sword in the first slot)
+		// quick slot 1 names the long sword: using it wields it (its slot then shows it in use)
 		{TEXT("hud_use_sword"), [](APlayerController* PC)
 			{
 				if (UMRUISubsystem* UI = UIOf(PC))
 				{
-					UE_LOG(LogMeridian, Display, TEXT("MRUIShots: right hand after selecting slot 4: %s"),
-						*UI->GetSource()->Get(FMRSlotRef::Equip(EMREquipSlot::RightHand)).Id.ToString());
-					UI->UseHotbarSlot(0);
-					UE_LOG(LogMeridian, Display, TEXT("MRUIShots: right hand after clicking slot 1: %s"),
+					UI->UseQuickSlot(0);
+					UE_LOG(LogMeridian, Display, TEXT("MRUIShots: right hand after quick slot 1: %s"),
 						*UI->GetSource()->Get(FMRSlotRef::Equip(EMREquipSlot::RightHand)).Id.ToString());
 				}
 			}, 0.5f},
-		{TEXT("hud_cast"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->OnSpellKey(1); }, 0.4f},
+		// numpad 2 casts the second row's second spell: its cooldown sweep
+		{TEXT("hud_cast"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->UseQuickSlot(FMRQuickSlot::PerRow + 1); }, 0.4f},
+		// an empty quick slot's picker, and the quick emotes
+		{TEXT("hud_picker"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->OpenQuickSlotPicker(5); }, 0.8f},
+		{TEXT(""), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->CloseQuickSlotPicker(); }, 0.3f},
+		{TEXT("hud_emotes"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->SetQuickEmotesOpen(true); }, 0.5f},
+		{TEXT(""), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->SetQuickEmotesOpen(false); }, 0.3f},
 		{TEXT("hud_low_health"), [](APlayerController* PC) { SetHealth(PC, 6.f); }, 1.5f},
 		{TEXT(""), [](APlayerController* PC) { SetHealth(PC, 20.f); }, 0.5f},
 		// HUD Size (Options > Game) at its ends, not saved; Hide Interface (H) and its note
@@ -211,6 +225,11 @@ void UMRUIShots::Start(APlayerController* InController)
 				}
 			}, 0.8f},
 		{TEXT(""), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->SetWindowOpen(EMRWindow::Options, false); }, 0.3f},
+		// Help: its three pages (the HUD page outlines the HUD where it stands)
+		{TEXT("help_controls"), [](APlayerController* PC) { if (UMRUISubsystem* UI = UIOf(PC)) UI->SetWindowOpen(EMRWindow::Help, true); }, 0.8f},
+		{TEXT("help_hud"), [](APlayerController* PC) { HelpPage(PC, TEXT("HUD")); }, 0.8f},
+		{TEXT("help_interface"), [](APlayerController* PC) { HelpPage(PC, TEXT("Interface")); }, 0.8f},
+		{TEXT(""), [](APlayerController* PC) { HelpPage(PC, TEXT("Controls")); if (UMRUISubsystem* UI = UIOf(PC)) UI->SetWindowOpen(EMRWindow::Help, false); }, 0.3f},
 		// retraining (a town elder's BP_STAT_CHANGE): the dialog with an offer, as the server would send it
 		{TEXT("stat_change"), [](APlayerController* PC)
 			{

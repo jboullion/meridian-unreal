@@ -19,6 +19,7 @@
 #include "UI/SMRSocial.h"
 #include "UI/SMROptions.h"
 #include "UI/SMRAdminConsole.h"
+#include "UI/SMRHelpDialog.h"
 #include "UI/SMRInventoryScreen.h"
 #include "UI/SMRMinimap.h"
 #include "UI/SMRSlot.h"
@@ -30,6 +31,8 @@
 #include "Widgets/Input/SEditableText.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/Text/STextBlock.h"
+
+#define LOCTEXT_NAMESPACE "MRHUD"
 
 // ------------------------------------------------------------------------------ MRUI
 
@@ -391,46 +394,6 @@ int32 SMRCursorStack::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, cons
 	return Layer + 3;
 }
 
-// ------------------------------------------------------------------------------ SMRItemName
-
-void SMRItemName::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
-{
-	UI = InUI;
-	SetVisibility(EVisibility::HitTestInvisible);
-}
-
-FVector2D SMRItemName::ComputeDesiredSize(float) const
-{
-	const float Px = UI.IsValid() && UI->GetStyle() ? UI->GetStyle()->Px() : 2.f;
-	return FVector2D(200.f * Px, 12.f * Px);
-}
-
-int32 SMRItemName::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
-	int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const
-{
-	UMRUISubsystem* Ui = UI.Get();
-	UMRUIStyle* Style = Ui ? Ui->GetStyle() : nullptr;
-	if (!Style || !Ui->GetSource())
-	{
-		return Layer;
-	}
-	const double Age = Ui->Now() - Ui->LastSelectionTime();
-	const float Hold = Style->Number(TEXT("item_name_seconds"), 2.f);
-	const float Alpha = FMath::Clamp(1.f - static_cast<float>(Age - Hold) / 0.5f, 0.f, 1.f);
-	const FMRSlotContent C = Ui->GetSource()->Get(FMRSlotRef(EMRSlotArea::Hotbar, Ui->GetSource()->GetSelectedHotbar()));
-	if (Alpha <= 0.f || C.IsEmpty())
-	{
-		return Layer;
-	}
-	const FString Name = Ui->NameFor(C).ToString();
-	const FSlateFontInfo Font = Style->Font(11.f, true);
-	const FVector2f M = MRPaint::MeasureText(Name, Font);
-	const FVector2f Size(Geo.GetLocalSize());
-	MRPaint::Text(Out, Layer, Geo, Name, Font, FVector2f((Size.X - M.X) * 0.5f, Size.Y - M.Y),
-		Style->Color(TEXT("text"), FLinearColor(1.f, 0.93f, 0.7f)) * FLinearColor(1.f, 1.f, 1.f, Alpha) * WStyle.GetColorAndOpacityTint(), Style->Px() * 0.6f);
-	return Layer + 2;
-}
-
 // ------------------------------------------------------------------------------ SMRHUDRoot
 
 void SMRHUDRoot::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
@@ -462,7 +425,7 @@ void SMRHUDRoot::Rebuild()
 	Inventory = SNew(SMRInventoryScreen, Ui);
 	Inventory->SetVisibility(Ui->IsInventoryOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 	// the chat stays left of the action bar (Shards: max-width calc(50% - 265px)), in its scaled units
-	const float BarHalf = (9.f * Style->HudNumber(TEXT("slot"), 44.f) + 8.f * Style->HudNumber(TEXT("slot_gap"), 4.f)
+	const float BarHalf = (FMRQuickSlot::PerRow * Style->HudNumber(TEXT("slot"), 44.f) + (FMRQuickSlot::PerRow - 1) * Style->HudNumber(TEXT("slot_gap"), 4.f)
 		+ 2.f * Style->HudNumber(TEXT("action_pad"), 6.f)) * 0.5f * Hp;
 	ChatLog = SNew(SMRChatLog, Ui).MaxWidth_Lambda([this, BarHalf, Margin]()
 	{
@@ -477,7 +440,13 @@ void SMRHUDRoot::Rebuild()
 	TradeDialog->SetVisibility(Ui->IsTradeOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 	GameMenu->SetVisibility(Ui->IsGameMenuOpen() ? EVisibility::Visible : EVisibility::Collapsed);
 	Windows = {SNew(SMRWhoDialog, Ui), SNew(SMRMailDialog, Ui), SNew(SMRNewsDialog, Ui), SNew(SMRGuildDialog, Ui), SNew(SMROptionsDialog, Ui), SNew(SMRMapWindow, Ui),
-		SNew(SMRAdminConsole, Ui)};
+		SNew(SMRAdminConsole, Ui), SNew(SMRHelpDialog, Ui)};
+	UnitFrame = SNew(SMRUnitFrame, Ui);
+	TargetFrame = SNew(SMRTargetFrame, Ui).MaxWidth_Lambda([this, Ui]()
+	{
+		return LastSize.X * Ui->GetStyle()->HudNumber(TEXT("target_max_share"), 0.4f) / UMRUISubsystem::GetHudScale();
+	});
+	MapCluster = SNew(SMRMapCluster, Ui);
 	TSharedRef<SOverlay> WindowLayer = SNew(SOverlay);
 	for (int32 i = 0; i < Windows.Num(); ++i)
 	{
@@ -493,8 +462,8 @@ void SMRHUDRoot::Rebuild()
 		[
 			SNew(SMRWorldOverlay, Ui)
 		]
-		// the inventory dialog under the HUD: items are dragged from it straight onto the action bar's
-		// hotbar and spell row (its own clicks outside the window drop what's carried)
+		// the inventory dialog under the HUD: items and spells are dragged from it straight onto the
+		// quick slots (its own clicks outside the window drop what's carried)
 		+ SOverlay::Slot()
 		[
 			Inventory.ToSharedRef()
@@ -502,30 +471,27 @@ void SMRHUDRoot::Rebuild()
 		// the HUD (Shards' Modern interface): each cluster grown by HUD Size where it stands
 		+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(Margin, Margin, 0.f, 0.f)
 		[
-			Cluster(SNew(SMRUnitFrame, Ui))
+			Cluster(UnitFrame.ToSharedRef())
 		]
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Top).Padding(0.f, Margin, 0.f, 0.f)
 		[
-			Cluster(SNew(SMRTargetFrame, Ui).MaxWidth_Lambda([this, Ui]()
-			{
-				return LastSize.X * Ui->GetStyle()->HudNumber(TEXT("target_max_share"), 0.4f) / UMRUISubsystem::GetHudScale();
-			}))
+			Cluster(TargetFrame.ToSharedRef())
+		]
+		// the quick emotes under the target (Shards: top 78 px)
+		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Top)
+		[
+			Cluster(SNew(SBox).Padding(0.f, Style->HudNumber(TEXT("emote_top"), 78.f) * Hp, 0.f, 0.f)
+			[
+				SNew(SMRQuickEmotes, Ui)
+			])
 		]
 		+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0.f, Margin, Margin, 0.f)
 		[
-			Cluster(SNew(SMRMapCluster, Ui))
+			Cluster(MapCluster.ToSharedRef())
 		]
 		+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Bottom).Padding(0.f, 0.f, 0.f, Style->HudNumber(TEXT("action_bottom"), 8.f) * Hp)
 		[
-			Cluster(SNew(SVerticalBox)
-				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 0.f, 0.f, 4.f * Hp)
-				[
-					SNew(SMRItemName, Ui)
-				]
-				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
-				[
-					ActionBar.ToSharedRef()
-				])
+			Cluster(ActionBar.ToSharedRef())
 		]
 		// the chat down the left side under the unit frame, grown by HUD Size with its place (Shards'
 		// zoom); it fades and hides itself (SMRChatLog)
@@ -543,6 +509,14 @@ void SMRHUDRoot::Rebuild()
 		+ SOverlay::Slot()
 		[
 			SNew(SMRViewNote, Ui)
+		]
+		// a quick slot's spell or item to choose (over the HUD, under the dialogs)
+		+ SOverlay::Slot()
+		[
+			SNew(SDPIScaler).DPIScale_Lambda([]() { return UMRUISubsystem::GetHudScale(); })
+			[
+				SNew(SMRQuickSlotPicker, Ui)
+			]
 		]
 		+ SOverlay::Slot()
 		[
@@ -574,6 +548,42 @@ void SMRHUDRoot::Rebuild()
 			GameMenu.ToSharedRef()
 		]
 	];
+}
+
+void SMRHUDRoot::GetHudParts(TArray<FHudPart>& Out) const
+{
+	// Shards' HelpDialog.tsx HUD_PARTS, for our keys; only the parts showing now
+	Out.Reset();
+	auto Add = [&Out](const TSharedPtr<SWidget>& W, const FText& Title, const FText& Text)
+	{
+		if (W.IsValid() && W->GetVisibility().IsVisible() && W->GetTickSpaceGeometry().GetLocalSize().X > 0.f)
+		{
+			Out.Add({Title, Text, W});
+		}
+	};
+	if (UnitFrame.IsValid())
+	{
+		Add(UnitFrame->GetFace(), LOCTEXT("PartYou", "You"),
+			LOCTEXT("PartYouText", "Your face. Click it for the emotes (Q), or to cast a waiting spell on yourself; right click to look at yourself."));
+		Add(UnitFrame->GetBars(), LOCTEXT("PartBars", "Health, mana and vigor"),
+			LOCTEXT("PartBarsText", "Vigor runs down as you run and fight; rest (R) to get it back. Dark red is how far a bar can fill now."));
+		Add(UnitFrame->GetEnchantments(), LOCTEXT("PartEnchant", "Your enchantments"), LOCTEXT("PartEnchantText", "Spells on you. Right click one to read about it."));
+	}
+	Add(TargetFrame, LOCTEXT("PartTarget", "Your target"),
+		LOCTEXT("PartTargetText", "Who you've targeted: red if you can attack them. Tab picks the next; Esc lets go; the x clears it."));
+	if (MapCluster.IsValid())
+	{
+		Add(MapCluster->GetMap(), LOCTEXT("PartMap", "The map"),
+			LOCTEXT("PartMapText", "You're the arrow. Click it for the large map (M); + and - zoom (= and -)."));
+		Add(MapCluster->GetTools(), LOCTEXT("PartTools", "Rest and mail"),
+			LOCTEXT("PartToolsText", "Rest or stand (resting brings back health, mana and vigor faster), and your mail (L)."));
+		Add(MapCluster->GetRoomName(), LOCTEXT("PartRoom", "Room name"), LOCTEXT("PartRoomText", "Where you are."));
+		Add(MapCluster->GetEnchantments(), LOCTEXT("PartRoomEnchant", "Room enchantments"), LOCTEXT("PartRoomEnchantText", "Spells on the room you're in."));
+	}
+	Add(ActionBar, LOCTEXT("PartHotbar", "Quick slots"),
+		LOCTEXT("PartHotbarText", "1 to 0 use the bottom row, the numpad the top one. Drag spells or items onto them; right click one to change it."));
+	Add(ChatLog, LOCTEXT("PartChat", "Chat"),
+		LOCTEXT("PartChatText", "What's said and what happens; it fades until you point at it. Enter starts a line: talk, or a command (tell, yell, who, help...)."));
 }
 
 FString SMRHUDRoot::LoadingText() const
@@ -678,3 +688,5 @@ void SMRHUDRoot::SetInventoryOpen(bool bOpen)
 	}
 
 }
+
+#undef LOCTEXT_NAMESPACE

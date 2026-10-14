@@ -371,7 +371,7 @@ void UMRLookDevTour::ApplyUISteps(APlayerController* PC, const FShot& Shot)
 	}
 	if (WieldSlot >= 0)
 	{
-		UI->UseHotbarSlot(WieldSlot);  // once: using the slot again would put the weapon away
+		UI->UseQuickSlot(WieldSlot);  // once: using the slot again would put the weapon away
 		WieldSlot = -1;
 	}
 	UI->SetInventoryOpen(Shot.Steps.Contains(TEXT("inventory")));

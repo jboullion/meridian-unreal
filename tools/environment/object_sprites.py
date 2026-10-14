@@ -80,11 +80,21 @@ def write_sprite(bgf):
     return {"mesh": mesh, "texture": texture, "w_m": round(w * m, 3), "h_m": round(h * m, 3)}
 
 
+# Constructors that pick their own icon from another parameter (Server 104 Kod): sign.kod draws a newbie sign
+# (newbie = TRUE: the tutorial's signs, the Inn's "Welcome") with sign_icon_newbie_rsc, razsign1.bgf
+FLAG_ICONS = {"Sign": [("newbie", "razsign1.bgf")]}
+
+
 def object_bgf(obj, key, cfg, by_mesh, by_key, oo):
     """The bgf (lower case, no extension) the original draws an object with: its own icon when it was made
-    with one, an OrnamentalObject's type's icon, else the sprite its props.json entry was modelled from."""
+    with one (the constructor's "icon", or "rIcon"; until 2026-10-14 only "rIcon" was read, so signs, levers,
+    decorations and a portal made with an icon showed their class's default), the icon a flag picks
+    (FLAG_ICONS), an OrnamentalObject's type's icon, else the sprite its props.json entry was modelled from."""
     params = obj.get("params") or {}
-    icon = params.get("rIcon") if isinstance(params.get("rIcon"), str) else None
+    icon = next((params[k] for k in ("icon", "rIcon") if isinstance(params.get(k), str)), None)
+    for flag, flag_icon in FLAG_ICONS.get(obj["class"], []):
+        if params.get(flag):
+            icon = flag_icon  # (after the icon, as sign.kod's Constructor sets them)
     if not icon and obj["class"] == "OrnamentalObject":
         icon = (oo.get(params.get("type")) or {}).get("icon")
     if icon:

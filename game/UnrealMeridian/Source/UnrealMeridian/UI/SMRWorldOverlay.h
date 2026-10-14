@@ -11,7 +11,8 @@ class UMRUISubsystem;
  *   in their name colour (black for the black drawing effect), signs at any distance, the target
  *   always; not through walls;
  * - the target (UMRNetWorldSubsystem::GetTargetId) in brackets, red when it can be attacked;
- * - what the crosshair is on, in fainter corners, and the crosshair itself while the mouse looks.
+ * - what the crosshair is on, in fainter corners, and the crosshair itself while the mouse looks;
+ * - what the ambient crowd says, over their heads (UMRAmbientSubsystem; offline too).
  */
 class UNREALMERIDIAN_API SMRWorldOverlay : public SLeafWidget
 {
@@ -26,4 +27,5 @@ public:
 
 private:
 	TWeakObjectPtr<UMRUISubsystem> UI;
+	void PaintSpeech(const FGeometry& Geo, FSlateWindowElementList& Out, int32 Layer, class UMRUIStyle* S, class APlayerController* PC) const;
 };

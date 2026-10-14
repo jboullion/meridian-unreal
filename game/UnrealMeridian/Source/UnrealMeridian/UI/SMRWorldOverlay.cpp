@@ -1,5 +1,8 @@
 #include "UI/SMRWorldOverlay.h"
 
+#include "Ambient/MRAmbientSubsystem.h"
+#include "Core/MRUnits.h"
+
 #include "Character/MRCharacter.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
@@ -47,6 +50,41 @@ void SMRWorldOverlay::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 	SetVisibility(EVisibility::HitTestInvisible);
 }
 
+void SMRWorldOverlay::PaintSpeech(const FGeometry& Geo, FSlateWindowElementList& Out, int32 Layer, UMRUIStyle* S, APlayerController* PC) const
+{
+	// what the ambient crowd says (docs/adr/0013; Shards' speech bubbles): over their heads, never in the chat,
+	// hidden by walls as names are
+	const UMRAmbientSubsystem* Ambient = PC->GetWorld()->GetSubsystem<UMRAmbientSubsystem>();
+	if (!Ambient)
+	{
+		return;
+	}
+	const float Px = S->Px();
+	const float ToLocal = 1.f / FMath::Max(0.01f, Geo.Scale);
+	const FVector Camera = PC->PlayerCameraManager ? PC->PlayerCameraManager->GetCameraLocation() : PC->GetPawn()->GetActorLocation();
+	const FSlateFontInfo Font = S->Font(9.f, false);
+	for (const UMRAmbientSubsystem::FSpeech& Say : Ambient->GetSpeech())
+	{
+		FVector2D At;
+		if (FVector::Dist(Camera, Say.Anchor) > 22.0 * MRUnits::CmPerSquare || !PC->ProjectWorldLocationToScreen(Say.Anchor, At, true))
+		{
+			continue;
+		}
+		FCollisionQueryParams Params(SCENE_QUERY_STAT(MRSpeech), false, PC->GetPawn());
+		FHitResult Hit;
+		if (PC->GetWorld()->LineTraceSingleByChannel(Hit, Camera, Say.Anchor, ECC_WorldStatic, Params))
+		{
+			continue;
+		}
+		const FVector2f M = MRPaint::MeasureText(Say.Text, Font);
+		const FVector2f Pad(6.f * Px, 3.f * Px);
+		const FVector2f Size = M + Pad * 2.f;
+		const FVector2f Pos = FVector2f(At) * ToLocal - FVector2f(Size.X * 0.5f, Size.Y);
+		MRPaint::Rounded(Out, Layer, Geo, Pos, Size, FLinearColor(0.05f, 0.04f, 0.03f, 0.72f), 5.f * Px, FLinearColor(0.85f, 0.72f, 0.45f, 0.5f), 1.f * Px);
+		MRPaint::Text(Out, Layer + 1, Geo, Say.Text, Font, Pos + Pad, FLinearColor(0.96f, 0.93f, 0.85f), Px * 0.5f);
+	}
+}
+
 int32 SMRWorldOverlay::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
 	int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const
 {
@@ -58,9 +96,13 @@ int32 SMRWorldOverlay::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, con
 	const UMRNetWorldSubsystem* NetWorld = World ? World->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
 	const UGameInstance* GI = World ? World->GetGameInstance() : nullptr;
 	const UMRNetSubsystem* Net = GI ? GI->GetSubsystem<UMRNetSubsystem>() : nullptr;
+	if (S && World && PC->GetPawn() && !(Net && Net->GetEffects().bBlind))
+	{
+		PaintSpeech(Geo, Out, Layer, S, PC);
+	}
 	if (!S || !NetWorld || !Net || !NetWorld->IsActive() || !PC->GetPawn() || Net->GetEffects().bBlind)
 	{
-		return Layer;  // (blind: nothing of the world shows)
+		return Layer + 3;  // (blind: nothing of the world shows)
 	}
 	const float Px = S->Px();
 	// viewport pixels -> this widget (it covers the viewport)

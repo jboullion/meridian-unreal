@@ -583,7 +583,7 @@ Offline there is no server to draw the dropped objects, so the world build stand
   - its picture, `T_ObjSprite_<bgf>.png`.
   - 1,341 objects, 155 sprites.
 - **How it draws** (`build_world.import_object_sprite`, `M_ObjectSprite`): like the online bitmaps.
-  - Unlit at the bitmap's colours, nearest-filtered original pixels, cut out on its alpha, two-sided, no shadow.
+  - Nearest-filtered original pixels, cut out on its alpha, two-sided, no shadow. Unlit at the bitmap's colours until "Lit object sprites" below.
   - Turned to the camera about its feet in the vertex shader (`OBJECT_SPRITE_WPO`), so no actor ticks. The mesh's bounds are extended by its width, since it turns outside them.
   - Instances live beside each quad in `Environment/ObjectSprites/`, so a package holds only the sprites the zones place.
 - **A switch:** `mr.World.OfflineSprites 0` (or `-MRNoOfflineSprites`) hides them. They cost nothing measurable (docs/performance.md "Online").
@@ -591,6 +591,23 @@ Offline there is no server to draw the dropped objects, so the world build stand
 - **Checks:**
   - Look-dev, `build/lookdev/compare_props_before_props_sprites.png`: the bar's stools, the Inn's table, the museum's pieces as the original's pictures. One close to a camera reads as big pixels: the original's resolution, as online.
   - The online test passes 62/62 with the Inn as before: no sprite drawn twice.
+
+### The objects' own icons (2026-10-14)
+The Inn's welcome sign was the plain `sign.bgf`, where Shards (the server) draws the big three-plank board. `object_sprites.py` read only an object's `rIcon`. But Kod constructors take an `icon` (signs, levers, decorations, a portal), and `sign.kod` swaps in `razsign1.bgf` for a newbie sign (the tutorial's and the Inn's "Welcome"). It reads both now, plus the flags that pick an icon (`FLAG_ICONS`): 34 objects changed (25 newbie signs to `razsign1`, 9 levers to `neclever`). A table was always `table.bgf`'s one bitmap: it differs from Shards only in its light.
+
+### Lit object sprites (2026-10-13)
+**The problem:** unlit at the bitmap's own colours, the dropped objects' sprites (offline `M_ObjectSprite`, online the server's bitmaps on `M_RuntimeRoom`) read much brighter than the lit world around them, day or night, indoors or out. The characters didn't, because `M_SpriteBody` is lit.
+
+**What changed:** in the zones we built, the object sprites are lit by the world the way the characters are (`environment_materials._lit_sprite`).
+- **Base colour:** the bitmap times `Albedo` (0.64, `mr.Sprite.Albedo`'s default).
+- **Shading normal:** mostly up (`NormalUp` 0.6), leaning to the camera's side. A flat sprite is then lit about as the ground it stands on, and doesn't swing as the camera orbits it. Matte (roughness 0.85, specular 0.2).
+- **Indoors:** the ambient floor as emissive (`MPC_Environment.SectorAmbient * AmbientTint * SpriteAmbient`, 0.51), as the walls and `M_SpriteBody` get it.
+- **Offline:** `M_ObjectSprite` itself.
+- **Online:** a new `/Game/Generated/Runtime/M_BgfSpriteLit` (built with `M_RuntimeRoom`: `build_world.ps1 -Script build_runtime_materials.py`). `AMRNetObject::SetBgfSprite` picks it when the current zone is one we built (`UMRBgfSpriteComponent::SetLitByWorld`). Rooms built at runtime keep `M_RuntimeRoom`, the original's light model, like their walls. Projectiles stay unlit.
+
+**Reversible:** `mr.Sprite.ObjectsLit 0` draws them unlit again, for objects spawned after the change. Both materials take `Lit` 0 for that.
+
+**The portrait:** the character previews (the HUD portrait, the inventory avatar, the creator) are unlit captures, and the face read pale beside the HUD. `mr.UI.AvatarBrightness` (0.75) dims them through `M_SpriteBodyUnlit`'s `Brightness`.
 
 ## Open
 - **Offline sprites for objects that never had a prop:** forges, portals, smoke columns and the like (`inventory_world.json` `"mapped": false`). The same generator could cover them, as long as it leaves out the creatures that `UMRMonsterSubsystem` spawns.

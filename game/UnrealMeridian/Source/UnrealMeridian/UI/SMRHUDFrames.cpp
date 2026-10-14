@@ -1,7 +1,7 @@
 #include "UI/SMRHUDFrames.h"
 
 #include "Engine/World.h"
-#include "Environment/MRGameTimeSubsystem.h"
+#include "Framework/Application/SlateApplication.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Net/MRNetSubsystem.h"
@@ -9,6 +9,7 @@
 #include "Net/MRProtocol.h"
 #include "Player/MRPlayerState.h"
 #include "Rendering/DrawElements.h"
+#include "UI/MRGameData.h"
 #include "UI/MRInventorySource.h"
 #include "UI/MRUIStyle.h"
 #include "UI/MRUISubsystem.h"
@@ -16,6 +17,7 @@
 #include "UI/SMRMinimap.h"
 #include "UI/SMRSlot.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SOverlay.h"
 #include "Widgets/Text/STextBlock.h"
@@ -57,45 +59,72 @@ namespace
 		}
 		return Cut.TrimEnd() + TEXT("...");
 	}
+
+	// Shards' .hud-bars (Sidebar.tsx HudBars, styles.css .main-stat, .stat-icon, .stat-bar): padding 3,
+	// rows 15 px a gap of 2 apart, the 17 x 15 icon, a gap of 3, the 13 px bar
+	constexpr float BarsPad = 3.f, RowH = 15.f, RowGap = 2.f, IconW = 17.f, IconH = 15.f, IconGap = 3.f, BarH = 13.f;
+	constexpr int32 NumVitals = 3;
+
+	// Shards' quick emotes: the command, the label; a null command is the divider
+	struct FEmote
+	{
+		const TCHAR* Command;
+		FText Label;
+	};
+	const TArray<FEmote>& Emotes()
+	{
+		static const TArray<FEmote> List = {
+			{TEXT("wave"), LOCTEXT("Wave", "Wave")}, {TEXT("point"), LOCTEXT("Point", "Point")}, {TEXT("dance"), LOCTEXT("Dance", "Dance")},
+			{nullptr, FText::GetEmpty()},
+			{TEXT("happy"), LOCTEXT("Happy", "Happy")}, {TEXT("sad"), LOCTEXT("Sad", "Sad")}, {TEXT("neutral"), LOCTEXT("Neutral", "Neutral")},
+			{TEXT("wry"), LOCTEXT("Wry", "Wry")}};
+		return List;
+	}
+	// .quick-emotes: padding 5 6, gap 4; its buttons 13 px text, padding 3 9; the divider 1 px with 3 px either side
+	constexpr float EmPadX = 6.f, EmPadY = 5.f, EmGap = 4.f, EmBtnPadX = 9.f, EmBtnPadY = 3.f, EmText = 13.f, EmDivider = 7.f;
 }
 
-// ------------------------------------------------------------------------------ SMRHudBar
+// ------------------------------------------------------------------------------ SMRVitalBars
 
-void SMRHudBar::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+void SMRVitalBars::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 {
 	UI = InUI;
-	Vital = InArgs._Vital;
-	Kind = InArgs._Kind;
-	Height = InArgs._Height;
-	TextSize = InArgs._TextSize;
-	bText = InArgs._bText;
-	if (!bText)
+	SetToolTipText(TAttribute<FText>::CreateLambda([this]()
 	{
-		// the experience line has no text: its numbers on hover (with the cursor free)
-		SetToolTipText(TAttribute<FText>::CreateLambda([this]()
+		// the numbers, and the cap health and mana run to (the bars show the value only)
+		TArray<FString> Lines;
+		const FText Names[] = {LOCTEXT("Health", "Health"), LOCTEXT("Mana", "Mana"), LOCTEXT("Vigor", "Vigor")};
+		for (int32 i = 0; i < NumVitals && UI.IsValid(); ++i)
 		{
 			float Value = 0.f, Max = 0.f, Limit = 0.f;
-			return UI.IsValid() && UI->GetVitalBar(Vital, Value, Max, Limit)
-				? FText::Format(LOCTEXT("XP", "{0} / {1} XP"), FText::AsNumber(FMath::RoundToInt(Value)), FText::AsNumber(FMath::RoundToInt(Max)))
-				: FText::GetEmpty();
-		}));
+			if (UI->GetVitalBar(i, Value, Max, Limit))
+			{
+				Lines.Add(FString::Printf(TEXT("%s %d / %d"), *Names[i].ToString(), FMath::RoundToInt(Value), FMath::RoundToInt(i == 2 ? Max : Limit)));
+			}
+		}
+		return FText::FromString(FString::Join(Lines, TEXT("\n")));
+	}));
+}
+
+FVector2D SMRVitalBars::ComputeDesiredSize(float) const
+{
+	const UMRUIStyle* S = UI.IsValid() ? UI->GetStyle() : nullptr;
+	const float Px = S ? S->HudPx() : 1.f;
+	const float W = S ? S->HudNumber(TEXT("bars_w"), 200.f) : 200.f;
+	return FVector2D(W, BarsPad * 2.f + RowH * NumVitals + RowGap * (NumVitals - 1)) * Px;
+}
+
+void SMRVitalBars::Tick(const FGeometry& Geo, const double Time, const float Dt)
+{
+	for (int32 i = 0; i < NumVitals; ++i)
+	{
+		float Value = 0.f, Max = 0.f, Limit = 0.f;
+		const float Target = UI.IsValid() && UI->GetVitalBar(i, Value, Max, Limit) && Max > 0.f ? FMath::Clamp(Value / Max, 0.f, 1.f) : 0.f;
+		Shown[i] = Shown[i] < 0.f ? Target : FMath::FInterpTo(Shown[i], Target, Dt, 12.f);
 	}
 }
 
-FVector2D SMRHudBar::ComputeDesiredSize(float) const
-{
-	const UMRUIStyle* S = UI.IsValid() ? UI->GetStyle() : nullptr;
-	return FVector2D(40.f, Height) * (S ? S->HudPx() : 1.f);
-}
-
-void SMRHudBar::Tick(const FGeometry& Geo, const double Time, const float Dt)
-{
-	float Value = 0.f, Max = 0.f, Limit = 0.f;
-	const float Target = UI.IsValid() && UI->GetVitalBar(Vital, Value, Max, Limit) && Max > 0.f ? FMath::Clamp(Value / Max, 0.f, 1.f) : 0.f;
-	Shown = Shown < 0.f ? Target : FMath::FInterpTo(Shown, Target, Dt, 12.f);
-}
-
-int32 SMRHudBar::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
+int32 SMRVitalBars::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
 	int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const
 {
 	UMRUISubsystem* Ui = UI.Get();
@@ -107,48 +136,87 @@ int32 SMRHudBar::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSl
 	const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
 	const FVector2f Size(Geo.GetLocalSize());
 	const float Px = S->HudPx();
-	const float Radius = (bText ? 3.f : 2.f) * Px;
-	float Value = 0.f, Max = 0.f, Limit = 0.f;
-	const bool bHas = Ui->GetVitalBar(Vital, Value, Max, Limit) && Max > 0.f;
+	const FSlateBrush* W = S->White();
+	// the faint box (rgba(0, 0, 0, 0.35), its corners rounded 3 px)
+	MRPaint::Rounded(Out, Layer, Geo, FVector2f::ZeroVector, Size, S->HudColor(TEXT("bars_bg"), FLinearColor(0.f, 0.f, 0.f, 0.35f)) * Tint, 3.f * Px);
 
-	// the gold ring outside (box-shadow 0 0 0 1px), the dark bar with its black edge
-	MRPaint::Rounded(Out, Layer, Geo, FVector2f(-Px, -Px), Size + FVector2f(2.f * Px, 2.f * Px), FLinearColor::Transparent, Radius + Px,
-		S->HudColor(TEXT("edge"), FLinearColor(0.67f, 0.46f, 0.1f, 0.55f)) * Tint, Px);
-	MRPaint::Rounded(Out, Layer + 1, Geo, FVector2f::ZeroVector, Size, S->HudColor(TEXT("bar_bg"), FLinearColor(0.015f, 0.004f, 0.004f)) * Tint, Radius);
-	if (bHas)
+	// the original's bar frame (InterfaceDrawBarBorder): its 5 x 17 ends, 2 px above and below and 5 px
+	// out either side, and its top and bottom strips across the bar
+	const float ArtToHud = Px / FMath::Max(0.01f, S->Px());  // a piece's size is in the dialogs' units: in HUD pixels
+	const FVector2f CapL = S->PieceSize(TEXT("bar_left")) * ArtToHud, CapR = S->PieceSize(TEXT("bar_right")) * ArtToHud;
+	const float TopH = S->PieceSize(TEXT("bar_top")).Y * ArtToHud, BottomH = S->PieceSize(TEXT("bar_bottom")).Y * ArtToHud;
+	const FSlateBrush* Top = S->Brush(TEXT("bar_top"), true, ArtToHud);
+	const FSlateBrush* Bottom = S->Brush(TEXT("bar_bottom"), true, ArtToHud);
+	const FSlateBrush* Left = S->Brush(TEXT("bar_left"), false, ArtToHud);
+	const FSlateBrush* Right = S->Brush(TEXT("bar_right"), false, ArtToHud);
+
+	const FLinearColor FillColor = S->HudColor(TEXT("stat_fill"), FLinearColor(0.f, 0.216f, 0.f));
+	const FLinearColor LowColor = S->HudColor(TEXT("stat_low"), FLinearColor(1.f, 0.f, 0.f));
+	const FLinearColor LimitColor = S->HudColor(TEXT("stat_limit"), FLinearColor(0.216f, 0.f, 0.f));
+	const FLinearColor EmptyColor = S->HudColor(TEXT("stat_bg"), FLinearColor(0.03f, 0.f, 0.f));
+	const FSlateFontInfo Font = S->HudFont(S->HudNumber(TEXT("stat_text_size"), 10.f), true);
+	for (int32 i = 0; i < NumVitals; ++i)
 	{
-		const FVector2f In(Px, Px);
-		const FVector2f InSize = Size - 2.f * In;
-		const float Fill = InSize.X * FMath::Max(0.f, Shown);
-		const float LimitFrac = FMath::Clamp(Limit / Max, 0.f, 1.f);
-		if (LimitFrac * InSize.X > Fill + 0.5f)
+		const float Y = (BarsPad + i * (RowH + RowGap)) * Px;
+		// the stat's icon (user.kod user_stat_health / _mana / _vigor)
+		if (const FSlateBrush* Icon = Ui->VitalIcon(i))
 		{
-			MRPaint::Box(Out, Layer + 2, Geo, S->White(), In + FVector2f(Fill, 0.f), FVector2f(LimitFrac * InSize.X - Fill, InSize.Y),
-				S->HudColor(TEXT("bar_limit"), FLinearColor(1.f, 1.f, 1.f, 0.12f)) * Tint);
+			const FVector2f Box(IconW * Px, IconH * Px);
+			const FVector2f Tex(Icon->ImageSize);
+			const float K = FMath::Min(Box.X / FMath::Max(1.f, Tex.X), Box.Y / FMath::Max(1.f, Tex.Y));
+			const FVector2f Fit = Tex * K;
+			MRPaint::Box(Out, Layer + 1, Geo, Icon, FVector2f(BarsPad * Px, Y) + (Box - Fit) * 0.5f, Fit, Tint);
 		}
-		if (Fill > 0.5f)
+		const FVector2f BarPos((BarsPad + IconW + IconGap) * Px, Y + (RowH - BarH) * 0.5f * Px);
+		const FVector2f BarSize(Size.X - BarPos.X - BarsPad * Px, BarH * Px);
+		MRPaint::Box(Out, Layer + 1, Geo, W, BarPos, BarSize, EmptyColor * Tint);
+		float Value = 0.f, Max = 0.f, Limit = 0.f;
+		if (Ui->GetVitalBar(i, Value, Max, Limit) && Max > 0.f)
 		{
-			// statmain.c: below MIN_VIGOR you can't run, and the bar turns red
-			const bool bLow = Vital == 2 && Value < S->HudNumber(TEXT("min_vigor"), 10.f);
-			const FString Key = bLow ? TEXT("health") : Kind;
-			const FLinearColor Top = S->HudColor(*(Key + TEXT("_top")), FLinearColor::White);
-			const FLinearColor Bottom = S->HudColor(*(Key + TEXT("_bottom")), FLinearColor::Gray);
-			// rounded where the bar is (its left end; the right too once it's full)
-			const float R = FMath::Max(0.f, Radius - Px);
-			const bool bFull = Fill >= InSize.X - 0.5f;
-			TArray<FSlateGradientStop> Stops = {FSlateGradientStop(FVector2f(0.f, 0.f), Top * Tint), FSlateGradientStop(FVector2f(0.f, InSize.Y), Bottom * Tint)};
-			FSlateDrawElement::MakeGradient(Out, Layer + 3, Geo.ToPaintGeometry(FVector2f(Fill, InSize.Y), FSlateLayoutTransform(In)), MoveTemp(Stops),
-				Orient_Horizontal, ESlateDrawEffect::None, FVector4f(R, bFull ? R : 0.f, bFull ? R : 0.f, R));
-		}
-		if (bText)
-		{
-			const FString Text = FString::Printf(TEXT("%d / %d"), FMath::RoundToInt(Value), FMath::RoundToInt(Max));
-			const FSlateFontInfo Font = S->HudFont(TextSize, true);
+			// graphctl.c: the value in green (red while vigor is under MIN_VIGOR: no running), what it could fill to in dark red
+			const float Fill = BarSize.X * FMath::Max(0.f, Shown[i]);
+			const float LimitW = BarSize.X * FMath::Clamp(Limit / Max, 0.f, 1.f);
+			if (LimitW > Fill + 0.5f)
+			{
+				MRPaint::Box(Out, Layer + 2, Geo, W, BarPos + FVector2f(Fill, 0.f), FVector2f(LimitW - Fill, BarSize.Y), LimitColor * Tint);
+			}
+			const bool bLow = i == 2 && Value < S->HudNumber(TEXT("min_vigor"), 10.f);
+			if (Fill > 0.f)
+			{
+				MRPaint::Box(Out, Layer + 3, Geo, W, BarPos, FVector2f(Fill, BarSize.Y), (bLow ? LowColor : FillColor) * Tint);
+			}
+			// the number: inside at the left once the bar is over 70 % full, else just past the fill
+			const FString Text = FString::FromInt(FMath::RoundToInt(Value));
 			const FVector2f M = MRPaint::MeasureText(Text, Font);
-			MRPaint::Text(Out, Layer + 4, Geo, Text, Font, (Size - M) * 0.5f, FLinearColor::White * Tint, Px);
+			const float TX = Shown[i] > 0.7f ? 2.f * Px : Fill + 2.f * Px;
+			MRPaint::Text(Out, Layer + 6, Geo, Text, Font, BarPos + FVector2f(TX, (BarSize.Y - M.Y) * 0.5f), FLinearColor::White * Tint, 0.f);
 		}
+		MRPaint::Tile(Out, Layer + 4, Geo, Top, BarPos + FVector2f(0.f, -2.f * Px), FVector2f(BarSize.X, TopH), Tint);
+		MRPaint::Tile(Out, Layer + 4, Geo, Bottom, BarPos + FVector2f(0.f, BarSize.Y + 2.f * Px - BottomH), FVector2f(BarSize.X, BottomH), Tint);
+		MRPaint::Box(Out, Layer + 5, Geo, Left, BarPos + FVector2f(-CapL.X, -2.f * Px), CapL, Tint);
+		MRPaint::Box(Out, Layer + 5, Geo, Right, BarPos + FVector2f(BarSize.X, -2.f * Px), CapR, Tint);
 	}
-	return Layer + 6;
+	const UMRNetWorldSubsystem* NetWorld = NetWorldOf(Ui);
+	if (NetWorld && NetWorld->IsChoosingTarget())
+	{
+		// picking a spell's target: a click here picks us (Shards' .hud-bars.selecting outline)
+		MRPaint::Rounded(Out, Layer + 7, Geo, FVector2f(-2.f * Px, -2.f * Px), Size + FVector2f(4.f * Px, 4.f * Px), FLinearColor::Transparent, 4.f * Px,
+			S->HudColor(TEXT("gold"), FLinearColor(0.87f, 0.63f, 0.01f)) * Tint, Px);
+	}
+	return Layer + 8;
+}
+
+FReply SMRVitalBars::OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event)
+{
+	UMRUISubsystem* Ui = UI.Get();
+	UMRNetWorldSubsystem* NetWorld = NetWorldOf(Ui);
+	const UMRNetSubsystem* Net = Ui ? Ui->GetNet() : nullptr;
+	if (Event.GetEffectingButton() == EKeys::LeftMouseButton && NetWorld && Net && NetWorld->IsChoosingTarget())
+	{
+		NetWorld->ChooseTarget(Net->GetPlayer().Id);
+		return FReply::Handled();
+	}
+	return FReply::Unhandled();
 }
 
 // ------------------------------------------------------------------------------ SMRToolButton
@@ -239,6 +307,8 @@ void SMRRoundButton::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 {
 	UI = InUI;
 	Label = InArgs._Label;
+	Piece = InArgs._Piece;
+	bPressed = InArgs._bPressed;
 	Size = InArgs._Size;
 	OnClicked = InArgs._OnClicked;
 	SetToolTipText(InArgs._ToolTip);
@@ -260,13 +330,31 @@ int32 SMRRoundButton::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, cons
 	}
 	const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
 	const FVector2f Box(Geo.GetLocalSize());
+	const float Px = S->HudPx();
 	const FLinearColor Gold = S->HudColor(TEXT("gold"), FLinearColor(0.87f, 0.63f, 0.01f));
-	const FLinearColor Edge = IsHovered() ? Gold : S->HudColor(TEXT("edge"), FLinearColor(0.67f, 0.46f, 0.1f, 0.55f));
+	const bool bOn = bPressed.Get(false);
+	const FLinearColor Edge = IsHovered() || bOn ? Gold : S->HudColor(TEXT("edge"), FLinearColor(0.67f, 0.46f, 0.1f, 0.55f));
 	MRPaint::HudPanel(Out, Layer, Geo, S, FVector2f::ZeroVector, Box, Box.X * 0.5f, Tint.A, &Edge);
+	if (bOn)
+	{
+		// Shards' .map-tool[aria-pressed]: box-shadow 0 0 6px gold
+		MRPaint::Rounded(Out, Layer + 2, Geo, FVector2f(-2.f * Px, -2.f * Px), Box + FVector2f(4.f * Px, 4.f * Px), FLinearColor::Transparent,
+			Box.X * 0.5f + 2.f * Px, Gold * FLinearColor(1.f, 1.f, 1.f, 0.45f) * Tint, 2.f * Px);
+	}
+	if (!Piece.IsNone())
+	{
+		// the toolbar's art (its up half), 20 x 17 in the middle (Shards: background-size 20px 17px, pixelated)
+		if (const FSlateBrush* B = S->Brush(FName(*(Piece.ToString() + TEXT("_up")))))
+		{
+			const FVector2f Art(S->HudNumber(TEXT("map_tool_art_w"), 20.f) * Px, S->HudNumber(TEXT("map_tool_art_h"), 17.f) * Px);
+			MRPaint::Box(Out, Layer + 3, Geo, B, (Box - Art) * 0.5f, Art, Tint);
+		}
+		return Layer + 5;
+	}
 	const FSlateFontInfo Font = S->HudFont(16.f, true);
 	const FVector2f M = MRPaint::MeasureText(Label, Font);
 	MRPaint::Text(Out, Layer + 3, Geo, Label, Font, (Box - M) * 0.5f, (IsHovered() ? Gold : S->HudColor(TEXT("text"), FLinearColor(0.8f, 0.8f, 0.8f))) * Tint,
-		S->HudPx());
+		Px);
 	return Layer + 5;
 }
 
@@ -291,6 +379,7 @@ void SMRPortrait::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 {
 	UI = InUI;
 	Face.DrawAs = ESlateBrushDrawType::NoDrawType;
+	SetToolTipText(LOCTEXT("FaceTip", "You. Click for the emotes (Q); right click to look at yourself."));
 }
 
 FVector2D SMRPortrait::ComputeDesiredSize(float) const
@@ -329,7 +418,9 @@ int32 SMRPortrait::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const F
 	const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
 	const FVector2f Size(Geo.GetLocalSize());
 	const float Px = S->HudPx();
-	MRPaint::HudPanel(Out, Layer, Geo, S, FVector2f::ZeroVector, Size, 4.f * Px, Tint.A);
+	const FLinearColor Gold = S->HudColor(TEXT("gold"), FLinearColor(0.87f, 0.63f, 0.01f));
+	const FLinearColor* Edge = IsHovered() || Ui->IsQuickEmotesOpen() ? &Gold : nullptr;
+	MRPaint::HudPanel(Out, Layer, Geo, S, FVector2f::ZeroVector, Size, 4.f * Px, Tint.A, Edge);
 	if (Face.GetResourceObject())
 	{
 		// the face, 52 x 78 in the middle: the square portrait's middle two thirds across
@@ -344,107 +435,83 @@ int32 SMRPortrait::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const F
 	{
 		// picking a spell's target: a click here picks us (Shards' dashed outline)
 		MRPaint::Rounded(Out, Layer + 4, Geo, FVector2f(-3.f * Px, -3.f * Px), Size + FVector2f(6.f * Px, 6.f * Px), FLinearColor::Transparent, 6.f * Px,
-			S->HudColor(TEXT("gold"), FLinearColor(0.87f, 0.63f, 0.01f)) * Tint, Px);
+			Gold * Tint, Px);
 	}
 	return Layer + 5;
 }
 
 FReply SMRPortrait::OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event)
 {
-	// userarea.c UserAreaProc: a click picks us as a spell's target; a right click looks at us
+	// userarea.c UserAreaProc: a click picks us as a spell's target; a right click looks at us.
+	// Ours (Shards): otherwise a click shows the emotes
 	UMRUISubsystem* Ui = UI.Get();
-	UMRNetWorldSubsystem* NetWorld = NetWorldOf(Ui);
-	const UMRNetSubsystem* Net = Ui ? Ui->GetNet() : nullptr;
-	if (!NetWorld || !Net)
+	if (!Ui)
 	{
 		return FReply::Unhandled();
 	}
-	const uint32 Self = Net->GetPlayer().Id;
+	UMRNetWorldSubsystem* NetWorld = NetWorldOf(Ui);
+	const UMRNetSubsystem* Net = Ui->GetNet();
 	if (Event.GetEffectingButton() == EKeys::RightMouseButton)
 	{
-		Ui->LookAt(Self);
+		if (NetWorld && Net)
+		{
+			Ui->LookAt(Net->GetPlayer().Id);
+		}
 		return FReply::Handled();
 	}
-	if (Event.GetEffectingButton() == EKeys::LeftMouseButton && NetWorld->IsChoosingTarget())
+	if (Event.GetEffectingButton() != EKeys::LeftMouseButton)
 	{
-		NetWorld->ChooseTarget(Self);
+		return FReply::Unhandled();
+	}
+	if (NetWorld && Net && NetWorld->IsChoosingTarget())
+	{
+		NetWorld->ChooseTarget(Net->GetPlayer().Id);
 		return FReply::Handled();
 	}
-	return FReply::Unhandled();
+	Ui->ToggleQuickEmotes();
+	return FReply::Handled();
+}
+
+FCursorReply SMRPortrait::OnCursorQuery(const FGeometry& Geo, const FPointerEvent& Event) const
+{
+	return FCursorReply::Cursor(EMouseCursor::Hand);
 }
 
 // ------------------------------------------------------------------------------ SMRUnitFrame
 
 void SMRUnitFrame::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 {
+	// Shards' .unit-frame: the face, 8 px, a 200 px column of the bars and our enchantments under them (6 px apart)
 	UI = InUI;
 	UMRUIStyle* S = InUI->GetStyle();
 	const float Px = S->HudPx();
-	auto Online = [this]() { return NetWorldOf(UI.Get()) ? EVisibility::Visible : EVisibility::Collapsed; };
+	const float SideW = S->HudNumber(TEXT("bars_w"), 200.f);
+	Face = SNew(SMRPortrait, InUI);
+	Bars = SNew(SMRVitalBars, InUI);
+	Enchantments = SNew(SMREnchantments, InUI).bHud(true).IconPx(S->HudNumber(TEXT("enchant_px"), 26.f)).WrapWidth(SideW);
 	ChildSlot
 	[
-		SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight()
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top)
 		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot().AutoWidth()
-			[
-				SNew(SMRPortrait, InUI)
-			]
-			+ SHorizontalBox::Slot().AutoWidth().Padding(8.f * Px, 4.f * Px, 0.f, 0.f)
+			Face.ToSharedRef()
+		]
+		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Top).Padding(8.f * Px, 0.f, 0.f, 0.f)
+		[
+			SNew(SBox).WidthOverride(SideW * Px)
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot().AutoHeight()
 				[
-					HudLabel(S, TAttribute<FText>::CreateSP(this, &SMRUnitFrame::Name), S->TitleFont(S->HudNumber(TEXT("name_size"), 20.f)),
-						S->HudColor(TEXT("gold"), FLinearColor(0.87f, 0.63f, 0.01f)))
+					Bars.ToSharedRef()
 				]
-				+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 6.f * Px, 0.f, 0.f)
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Left).Padding(0.f, 6.f * Px, 0.f, 0.f)
 				[
-					SNew(SHorizontalBox).Visibility_Lambda(Online)
-					+ SHorizontalBox::Slot().AutoWidth().Padding(0.f, 0.f, 4.f * Px, 0.f)
-					[
-						// command.c CommandRest / CommandStand: the button stays in while resting
-						SNew(SMRToolButton, InUI).Piece(TEXT("btn_rest")).ToolTip(LOCTEXT("RestStand", "Rest / Stand (R)"))
-							.bPressed_Lambda([this]() { const UMRNetWorldSubsystem* W = NetWorldOf(UI.Get()); return W && W->IsResting(); })
-							.OnClicked_Lambda([this]()
-							{
-								if (UMRNetWorldSubsystem* W = NetWorldOf(UI.Get()))
-								{
-									W->SetResting(!W->IsResting());
-								}
-							})
-					]
-					+ SHorizontalBox::Slot().AutoWidth()
-					[
-						SNew(SMRToolButton, InUI).Piece(TEXT("btn_mailbox")).ToolTip(LOCTEXT("Mail", "Read mail (L)"))
-							.OnClicked_Lambda([this]()
-							{
-								if (UI.IsValid())
-								{
-									UI->SetWindowOpen(EMRWindow::Mail, true);
-								}
-							})
-					]
+					Enchantments.ToSharedRef()
 				]
 			]
 		]
-		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Left).Padding(0.f, 6.f * Px, 0.f, 0.f)
-		[
-			SNew(SMREnchantments, InUI).bHud(true).IconPx(S->HudNumber(TEXT("enchant_px"), 26.f)).WrapWidth(300.f)
-		]
 	];
-}
-
-FText SMRUnitFrame::Name() const
-{
-	const UMRUISubsystem* Ui = UI.Get();
-	const UMRNetSubsystem* Net = Ui ? Ui->GetNet() : nullptr;
-	if (NetWorldOf(Ui) && Net && Net->GetSelf())
-	{
-		return FText::FromString(Net->GetSelf()->Name);
-	}
-	return NetWorldOf(Ui) ? FText::GetEmpty() : LOCTEXT("Offline", "Adventurer");
 }
 
 // ------------------------------------------------------------------------------ SMRTargetFrame
@@ -574,6 +641,134 @@ FReply SMRTargetFrame::OnMouseButtonDown(const FGeometry& Geo, const FPointerEve
 	return FReply::Unhandled();
 }
 
+// ------------------------------------------------------------------------------ SMRQuickEmotes
+
+void SMRQuickEmotes::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+{
+	UI = InUI;
+	SetVisibility(TAttribute<EVisibility>::CreateLambda([this]()
+	{
+		return UI.IsValid() && UI->IsQuickEmotesOpen() ? EVisibility::Visible : EVisibility::Collapsed;
+	}));
+}
+
+void SMRQuickEmotes::Layout(TArray<FBox2f>& Out) const
+{
+	const UMRUIStyle* S = UI.IsValid() ? UI->GetStyle() : nullptr;
+	Out.Reset();
+	if (!S)
+	{
+		return;
+	}
+	const float Px = S->HudPx();
+	const FSlateFontInfo Font = S->HudFont(EmText);
+	float X = EmPadX * Px;
+	const float H = MRPaint::MeasureText(TEXT("Wg"), Font).Y + 2.f * EmBtnPadY * Px;
+	for (const FEmote& E : Emotes())
+	{
+		const float W = E.Command ? MRPaint::MeasureText(E.Label.ToString(), Font).X + 2.f * EmBtnPadX * Px : EmDivider * Px;
+		Out.Add(FBox2f(FVector2f(X, EmPadY * Px), FVector2f(X + W, EmPadY * Px + H)));
+		X += W + EmGap * Px;
+	}
+}
+
+FVector2D SMRQuickEmotes::ComputeDesiredSize(float) const
+{
+	TArray<FBox2f> Boxes;
+	Layout(Boxes);
+	const UMRUIStyle* S = UI.IsValid() ? UI->GetStyle() : nullptr;
+	if (Boxes.IsEmpty() || !S)
+	{
+		return FVector2D::ZeroVector;
+	}
+	return FVector2D(Boxes.Last().Max.X + EmPadX * S->HudPx(), Boxes.Last().Max.Y + EmPadY * S->HudPx());
+}
+
+int32 SMRQuickEmotes::ButtonAt(const FVector2f& Local) const
+{
+	TArray<FBox2f> Boxes;
+	Layout(Boxes);
+	for (int32 i = 0; i < Boxes.Num(); ++i)
+	{
+		if (Emotes()[i].Command && Boxes[i].IsInside(Local))
+		{
+			return i;
+		}
+	}
+	return INDEX_NONE;
+}
+
+int32 SMRQuickEmotes::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
+	int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const
+{
+	UMRUIStyle* S = UI.IsValid() ? UI->GetStyle() : nullptr;
+	if (!S)
+	{
+		return Layer;
+	}
+	const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
+	const float Px = S->HudPx();
+	const FVector2f Size(Geo.GetLocalSize());
+	const FLinearColor Edge = S->HudColor(TEXT("edge"), FLinearColor(0.67f, 0.46f, 0.1f, 0.55f));
+	const FLinearColor Gold = S->HudColor(TEXT("gold"), FLinearColor(0.87f, 0.63f, 0.01f));
+	MRPaint::SoftShadow(Out, Layer, Geo, FVector2f::ZeroVector, Size, 4.f * Px, 2.f * Px, 8.f * Px, FLinearColor(0.f, 0.f, 0.f, 0.6f) * Tint);
+	MRPaint::Rounded(Out, Layer + 1, Geo, FVector2f::ZeroVector, Size, S->HudColor(TEXT("emote_panel"), FLinearColor(0.011f, 0.0075f, 0.006f, 0.88f)) * Tint,
+		4.f * Px, Edge * Tint, Px);
+	TArray<FBox2f> Boxes;
+	Layout(Boxes);
+	const FSlateFontInfo Font = S->HudFont(EmText);
+	for (int32 i = 0; i < Boxes.Num(); ++i)
+	{
+		const FEmote& E = Emotes()[i];
+		const FBox2f& B = Boxes[i];
+		if (!E.Command)
+		{
+			// the divider: a 1 px line, 2 px in from the top and bottom
+			MRPaint::Box(Out, Layer + 2, Geo, S->White(), FVector2f(B.GetCenter().X - 0.5f * Px, B.Min.Y + 2.f * Px), FVector2f(Px, B.GetSize().Y - 4.f * Px), Edge * Tint);
+			continue;
+		}
+		const bool bHot = i == Hovered;
+		MRPaint::Rounded(Out, Layer + 2, Geo, B.Min, B.GetSize(), S->HudColor(TEXT("emote_button"), FLinearColor(0.023f, 0.015f, 0.009f)) * Tint, 3.f * Px,
+			(bHot ? Gold : Edge) * Tint, Px);
+		const FString Label = E.Label.ToString();
+		const FVector2f M = MRPaint::MeasureText(Label, Font);
+		MRPaint::Text(Out, Layer + 3, Geo, Label, Font, B.Min + (B.GetSize() - M) * 0.5f,
+			(bHot ? Gold : S->HudColor(TEXT("text"), FLinearColor(0.8f, 0.8f, 0.8f))) * Tint, 0.f);
+	}
+	return Layer + 4;
+}
+
+FReply SMRQuickEmotes::OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event)
+{
+	if (Event.GetEffectingButton() != EKeys::LeftMouseButton || !UI.IsValid())
+	{
+		return FReply::Handled();
+	}
+	const int32 I = ButtonAt(Geo.AbsoluteToLocal(Event.GetScreenSpacePosition()));
+	if (I != INDEX_NONE)
+	{
+		UI->RunEmote(FName(Emotes()[I].Command));
+	}
+	return FReply::Handled();
+}
+
+FReply SMRQuickEmotes::OnMouseMove(const FGeometry& Geo, const FPointerEvent& Event)
+{
+	Hovered = ButtonAt(Geo.AbsoluteToLocal(Event.GetScreenSpacePosition()));
+	return FReply::Unhandled();
+}
+
+void SMRQuickEmotes::OnMouseLeave(const FPointerEvent& Event)
+{
+	SLeafWidget::OnMouseLeave(Event);
+	Hovered = INDEX_NONE;
+}
+
+FCursorReply SMRQuickEmotes::OnCursorQuery(const FGeometry& Geo, const FPointerEvent& Event) const
+{
+	return Hovered != INDEX_NONE ? FCursorReply::Cursor(EMouseCursor::Hand) : FCursorReply::Unhandled();
+}
+
 // ------------------------------------------------------------------------------ SMRMapCluster
 
 void SMRMapCluster::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
@@ -583,8 +778,28 @@ void SMRMapCluster::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 	const float Px = S->HudPx();
 	const float Side = S->HudNumber(TEXT("map_side"), 172.f);
 	const float Button = S->HudNumber(TEXT("map_button"), 26.f);
+	const float Tool = S->HudNumber(TEXT("map_tool"), 30.f);
 	const FLinearColor Gold = S->HudColor(TEXT("gold"), FLinearColor(0.87f, 0.63f, 0.01f));
 	TWeakObjectPtr<UMRUISubsystem> WeakUI(InUI);
+	auto Online = [WeakUI]() { return NetWorldOf(WeakUI.Get()) ? EVisibility::Visible : EVisibility::Collapsed; };
+	// a click on the map opens the large map (and M); the large map closes itself
+	Map = SNew(SMRMinimap, InUI).bRound(true).Side(Side)
+		.OnClicked_Lambda([WeakUI](FVector2D) { if (WeakUI.IsValid()) WeakUI->ToggleWindow(EMRWindow::Map); });
+	// the toolbar's Rest/Stand (command.c CommandRest / CommandStand: in while resting) and the mailbox, at the map's top corners
+	TSharedRef<SWidget> Rest = SNew(SMRRoundButton, InUI).Piece(TEXT("btn_rest")).Size(Tool).ToolTip(LOCTEXT("RestStand", "Rest / Stand (R)"))
+		.Visibility_Lambda(Online)
+		.bPressed_Lambda([WeakUI]() { const UMRNetWorldSubsystem* W = NetWorldOf(WeakUI.Get()); return W && W->IsResting(); })
+		.OnClicked_Lambda([WeakUI]()
+		{
+			if (UMRNetWorldSubsystem* W = NetWorldOf(WeakUI.Get()))
+			{
+				W->SetResting(!W->IsResting());
+			}
+		});
+	Tools = Rest;
+	RoomLabel = HudLabel(S, TAttribute<FText>::CreateSP(this, &SMRMapCluster::RoomName), S->TitleFont(S->HudNumber(TEXT("room_name_size"), 16.f)), Gold);
+	Enchantments = SNew(SMREnchantments, InUI).bRoom(true).bHud(true).IconPx(S->HudNumber(TEXT("enchant_px"), 26.f))
+		.WrapWidth(S->HudNumber(TEXT("map_width"), 184.f)).bCentre(true);
 	ChildSlot
 	[
 		SNew(SBox).WidthOverride(S->HudNumber(TEXT("map_width"), 184.f) * Px)
@@ -595,9 +810,7 @@ void SMRMapCluster::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 				SNew(SOverlay)
 				+ SOverlay::Slot()
 				[
-					// a click on the map opens the large map (and M); the large map closes itself
-					SNew(SMRMinimap, InUI).bRound(true).Side(Side)
-						.OnClicked_Lambda([WeakUI](FVector2D) { if (WeakUI.IsValid()) WeakUI->ToggleWindow(EMRWindow::Map); })
+					Map.ToSharedRef()
 				]
 				+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Bottom).Padding(-2.f * Px, 0.f, 0.f, -2.f * Px)
 				[
@@ -609,21 +822,24 @@ void SMRMapCluster::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 					SNew(SMRRoundButton, InUI).Label(TEXT("+")).Size(Button).ToolTip(LOCTEXT("ZoomIn", "Zoom in (=)"))
 						.OnClicked_Lambda([WeakUI]() { if (WeakUI.IsValid()) WeakUI->OnMapZoom(1.f); })
 				]
+				+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top).Padding(-2.f * Px, -2.f * Px, 0.f, 0.f)
+				[
+					Rest
+				]
+				+ SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Top).Padding(0.f, -2.f * Px, -2.f * Px, 0.f)
+				[
+					SNew(SMRRoundButton, InUI).Piece(TEXT("btn_mailbox")).Size(Tool).ToolTip(LOCTEXT("Mail", "Read mail (L)"))
+						.Visibility_Lambda(Online)
+						.OnClicked_Lambda([WeakUI]() { if (WeakUI.IsValid()) WeakUI->SetWindowOpen(EMRWindow::Mail, true); })
+				]
 			]
 			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 6.f * Px, 0.f, 0.f)
 			[
-				HudLabel(S, TAttribute<FText>::CreateSP(this, &SMRMapCluster::RoomName), S->TitleFont(S->HudNumber(TEXT("room_name_size"), 16.f)), Gold)
-			]
-			// ours: the Meridian time, as the old map showed it
-			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
-			[
-				HudLabel(S, TAttribute<FText>::CreateSP(this, &SMRMapCluster::Clock), S->HudFont(S->HudNumber(TEXT("time_size"), 12.f)),
-					S->HudColor(TEXT("text"), FLinearColor(0.8f, 0.8f, 0.8f)))
+				RoomLabel.ToSharedRef()
 			]
 			+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 6.f * Px, 0.f, 0.f)
 			[
-				SNew(SMREnchantments, InUI).bRoom(true).bHud(true).IconPx(S->HudNumber(TEXT("enchant_px"), 26.f))
-					.WrapWidth(S->HudNumber(TEXT("map_width"), 184.f)).bCentre(true)
+				Enchantments.ToSharedRef()
 			]
 		]
 	];
@@ -656,21 +872,6 @@ FText SMRMapCluster::RoomName() const
 	return Zone ? FText::FromString(Zone->Name) : FText::GetEmpty();
 }
 
-FText SMRMapCluster::Clock() const
-{
-	const UMRUISubsystem* Ui = UI.Get();
-	const APlayerController* PC = Ui ? Ui->GetPlayerController() : nullptr;
-	const UMRGameTimeSubsystem* Time = PC && PC->GetWorld() ? PC->GetWorld()->GetSubsystem<UMRGameTimeSubsystem>() : nullptr;
-	if (!Time)
-	{
-		return FText::GetEmpty();
-	}
-	const double H = Time->GetGameHour();
-	const int32 Hour = FMath::FloorToInt(H) % 24;
-	const int32 Min = FMath::FloorToInt(FMath::Frac(H) * 60.0);
-	return FText::FromString(FString::Printf(TEXT("%d:%02d %s"), Hour % 12 == 0 ? 12 : Hour % 12, Min, Hour < 12 ? TEXT("AM") : TEXT("PM")));
-}
-
 // ------------------------------------------------------------------------------ SMRActionBar
 
 void SMRActionBar::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
@@ -682,57 +883,36 @@ void SMRActionBar::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 	const float Gap = S->HudNumber(TEXT("action_gap"), 4.f) * Px;
 	const float SlotPx = S->HudNumber(TEXT("slot"), 44.f);
 	const float SlotGap = S->HudNumber(TEXT("slot_gap"), 4.f) * Px;
-	const float BarText = S->HudNumber(TEXT("bar_text_size"), 11.f);
 
-	auto Row = [&](EMRSlotArea Area, bool bNumPad)
+	auto Row = [&](int32 RowIndex)
 	{
 		TSharedRef<SHorizontalBox> Box = SNew(SHorizontalBox);
-		for (int32 i = 0; i < 9; ++i)
+		for (int32 i = 0; i < FMRQuickSlot::PerRow; ++i)
 		{
+			const int32 Index = RowIndex * FMRQuickSlot::PerRow + i;
 			Box->AddSlot().AutoWidth().Padding(i > 0 ? SlotGap : 0.f, 0.f, 0.f, 0.f)
 			[
-				SNew(SMRSlot, InUI, FMRSlotRef(Area, i)).bHud(true).Size(SlotPx)
-					.KeyLabel(bNumPad ? FString::Printf(TEXT("N%d"), i + 1) : FString::FromInt(i + 1)).bSelectable(!bNumPad)
+				SNew(SMRSlot, InUI, FMRSlotRef(EMRSlotArea::QuickSlot, Index)).bHud(true).Size(SlotPx).KeyLabel(UMRUISubsystem::QuickSlotKeyLabel(Index))
 			];
 		}
 		return Box;
 	};
-	TSharedRef<SWidget> SpellRow = Row(EMRSlotArea::SpellBar, true);
-	TSharedRef<SWidget> Items = Row(EMRSlotArea::Hotbar, false);
-	const bool bSpellsFirst = S->HudNumber(TEXT("spell_row_first"), 1.f) > 0.f;
-
-	TSharedRef<SVerticalBox> Box = SNew(SVerticalBox)
-		// health and mana side by side, vigor under them (Shards' .hud-bar-row)
+	// the second row (the numpad's) over the first, as Shards' Second Hotbar (Options > Game)
+	ChildSlot.Padding(Pad)
+	[
+		SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, 0.f, 0.f, Gap)
+		[
+			SNew(SBox).Visibility_Lambda([]() { return UMRUISubsystem::ShowsSecondHotbar() ? EVisibility::Visible : EVisibility::Collapsed; })
+			[
+				Row(1)
+			]
+		]
 		+ SVerticalBox::Slot().AutoHeight()
 		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot().FillWidth(1.f).Padding(0.f, 0.f, Gap * 0.5f, 0.f)
-			[
-				SNew(SMRHudBar, InUI).Vital(0).Kind(TEXT("health")).Height(S->HudNumber(TEXT("bar_h"), 18.f)).TextSize(BarText)
-			]
-			+ SHorizontalBox::Slot().FillWidth(1.f).Padding(Gap * 0.5f, 0.f, 0.f, 0.f)
-			[
-				SNew(SMRHudBar, InUI).Vital(1).Kind(TEXT("mana")).Height(S->HudNumber(TEXT("bar_h"), 18.f)).TextSize(BarText)
-			]
+			Row(0)
 		]
-		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, Gap, 0.f, 0.f)
-		[
-			SNew(SMRHudBar, InUI).Vital(2).Kind(TEXT("vigor")).Height(S->HudNumber(TEXT("vigor_h"), 12.f))
-				.TextSize(S->HudNumber(TEXT("vigor_text_size"), 9.f))
-		]
-		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, Gap, 0.f, 0.f)
-		[
-			bSpellsFirst ? SpellRow : Items
-		]
-		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, Gap, 0.f, 0.f)
-		[
-			bSpellsFirst ? Items : SpellRow
-		]
-		+ SVerticalBox::Slot().AutoHeight().Padding(0.f, Gap, 0.f, 0.f)
-		[
-			SNew(SMRHudBar, InUI).Vital(3).Kind(TEXT("xp")).Height(S->HudNumber(TEXT("xp_h"), 6.f)).bText(false)
-		];
-	ChildSlot.Padding(Pad)[Box];
+	];
 }
 
 int32 SMRActionBar::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
@@ -744,6 +924,279 @@ int32 SMRActionBar::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const 
 		MRPaint::HudPanel(Out, Layer, Geo, S, FVector2f::ZeroVector, FVector2f(Geo.GetLocalSize()), 5.f * S->HudPx(), WStyle.GetColorAndOpacityTint().A);
 	}
 	return SCompoundWidget::OnPaint(Args, Geo, Culling, Out, Layer + 3, WStyle, bParentEnabled);
+}
+
+// ------------------------------------------------------------------------------ SMRQuickSlotPicker
+
+namespace
+{
+	/** A row of the picker: an icon and a name; a click picks it. */
+	class SPickerRow : public SLeafWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SPickerRow) : _Icon(nullptr), _bChosen(false) {}
+			SLATE_ARGUMENT(const FSlateBrush*, Icon)
+			SLATE_ARGUMENT(FString, Text)
+			SLATE_ARGUMENT(bool, bChosen)
+			SLATE_EVENT(FSimpleDelegate, OnClicked)
+		SLATE_END_ARGS()
+
+		void Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+		{
+			UI = InUI;
+			Icon = InArgs._Icon;
+			Text = InArgs._Text;
+			bChosen = InArgs._bChosen;
+			OnClicked = InArgs._OnClicked;
+		}
+		virtual FVector2D ComputeDesiredSize(float) const override
+		{
+			const UMRUIStyle* S = UI.IsValid() ? UI->GetStyle() : nullptr;
+			return FVector2D(260.f, 30.f) * (S ? S->HudPx() : 1.f);
+		}
+		virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
+			int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const override
+		{
+			UMRUIStyle* S = UI.IsValid() ? UI->GetStyle() : nullptr;
+			if (!S)
+			{
+				return Layer;
+			}
+			const FLinearColor Tint = WStyle.GetColorAndOpacityTint();
+			const FVector2f Size(Geo.GetLocalSize());
+			const float Px = S->HudPx();
+			const FLinearColor Gold = S->HudColor(TEXT("gold"), FLinearColor(0.87f, 0.63f, 0.01f));
+			if (IsHovered() || bChosen)
+			{
+				MRPaint::Rounded(Out, Layer, Geo, FVector2f::ZeroVector, Size, Gold * FLinearColor(1.f, 1.f, 1.f, bChosen ? 0.22f : 0.12f) * Tint, 3.f * Px);
+			}
+			const float IconSide = 24.f * Px;
+			if (Icon)
+			{
+				MRPaint::Box(Out, Layer + 1, Geo, Icon, FVector2f(3.f * Px, (Size.Y - IconSide) * 0.5f), FVector2f(IconSide, IconSide), Tint);
+			}
+			const FSlateFontInfo Font = S->HudFont(13.f);
+			const FVector2f M = MRPaint::MeasureText(Text, Font);
+			MRPaint::Text(Out, Layer + 1, Geo, Text, Font, FVector2f(IconSide + 10.f * Px, (Size.Y - M.Y) * 0.5f),
+				(IsHovered() || bChosen ? Gold : S->HudColor(TEXT("text"), FLinearColor(0.8f, 0.8f, 0.8f))) * Tint, Px);
+			return Layer + 2;
+		}
+		virtual FReply OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event) override
+		{
+			if (Event.GetEffectingButton() == EKeys::LeftMouseButton)
+			{
+				OnClicked.ExecuteIfBound();
+			}
+			return FReply::Handled();
+		}
+		virtual FCursorReply OnCursorQuery(const FGeometry& Geo, const FPointerEvent& Event) const override
+		{
+			return FCursorReply::Cursor(EMouseCursor::Hand);
+		}
+
+	private:
+		TWeakObjectPtr<UMRUISubsystem> UI;
+		const FSlateBrush* Icon = nullptr;
+		FString Text;
+		bool bChosen = false;
+		FSimpleDelegate OnClicked;
+	};
+}
+
+namespace
+{
+	/** The HUD's panel (MRPaint::HudPanel) behind its content, where the content stands. */
+	class SHudPanelBox : public SCompoundWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SHudPanelBox) {}
+			SLATE_DEFAULT_SLOT(FArguments, Content)
+		SLATE_END_ARGS()
+
+		void Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+		{
+			UI = InUI;
+			ChildSlot[InArgs._Content.Widget];
+		}
+		virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
+			int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const override
+		{
+			if (UMRUIStyle* S = UI.IsValid() ? UI->GetStyle() : nullptr)
+			{
+				MRPaint::HudPanel(Out, Layer, Geo, S, FVector2f::ZeroVector, FVector2f(Geo.GetLocalSize()), 5.f * S->HudPx(), WStyle.GetColorAndOpacityTint().A);
+			}
+			return SCompoundWidget::OnPaint(Args, Geo, Culling, Out, Layer + 3, WStyle, bParentEnabled);
+		}
+
+	private:
+		TWeakObjectPtr<UMRUISubsystem> UI;
+	};
+}
+
+void SMRQuickSlotPicker::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
+{
+	UI = InUI;
+	SetVisibility(TAttribute<EVisibility>::CreateLambda([this]()
+	{
+		return UI.IsValid() && UI->GetQuickSlotPicker() != INDEX_NONE ? EVisibility::Visible : EVisibility::Collapsed;
+	}));
+	UMRUIStyle* S = InUI->GetStyle();
+	const float Px = S->HudPx();
+	TSharedRef<SScrollBox> Scroll = SNew(SScrollBox);
+	List = SNew(SVerticalBox);
+	Scroll->AddSlot()[List.ToSharedRef()];
+	Panel = SNew(SHudPanelBox, InUI)
+		[
+			SNew(SBox).Padding(10.f * Px).MaxDesiredHeight(380.f * Px)
+			[
+				Scroll
+			]
+		];
+	ChildSlot.HAlign(HAlign_Center).VAlign(VAlign_Center)
+	[
+		Panel.ToSharedRef()
+	];
+}
+
+void SMRQuickSlotPicker::Tick(const FGeometry& Geo, const double Time, const float Dt)
+{
+	const int32 Want = UI.IsValid() ? UI->GetQuickSlotPicker() : INDEX_NONE;
+	if (Want != BuiltFor)
+	{
+		BuiltFor = Want;
+		if (Want != INDEX_NONE)
+		{
+			Rebuild();
+			FSlateApplication::Get().SetKeyboardFocus(SharedThis(this), EFocusCause::SetDirectly);
+		}
+	}
+}
+
+void SMRQuickSlotPicker::Rebuild()
+{
+	UMRUISubsystem* Ui = UI.Get();
+	UMRUIStyle* S = Ui ? Ui->GetStyle() : nullptr;
+	UMRInventorySource* Source = Ui ? Ui->GetSource() : nullptr;
+	if (!S || !Source || !List.IsValid())
+	{
+		return;
+	}
+	List->ClearChildren();
+	const float Px = S->HudPx();
+	const int32 Index = BuiltFor;
+	const FMRQuickSlot Current = Source->GetQuickSlot(Index);
+	TWeakObjectPtr<UMRUISubsystem> WeakUI(Ui);
+	auto Pick = [WeakUI, Index](const FMRQuickSlot& Q)
+	{
+		return FSimpleDelegate::CreateLambda([WeakUI, Index, Q]()
+		{
+			if (UMRUISubsystem* U = WeakUI.Get(); U && U->GetSource())
+			{
+				U->GetSource()->SetQuickSlot(Index, Q);
+				U->CloseQuickSlotPicker();
+			}
+		});
+	};
+	auto Heading = [&](const FText& Text)
+	{
+		List->AddSlot().AutoHeight().Padding(0.f, 6.f * Px, 0.f, 2.f * Px)
+		[
+			HudLabel(S, Text, S->TitleFont(16.f), S->HudColor(TEXT("gold"), FLinearColor(0.87f, 0.63f, 0.01f)))
+		];
+	};
+	List->AddSlot().AutoHeight()
+	[
+		HudLabel(S, FText::Format(LOCTEXT("PickerTitle", "Quick slot {0}"), FText::FromString(UMRUISubsystem::QuickSlotKeyLabel(Index))),
+			S->TitleFont(18.f), S->HudColor(TEXT("text"), FLinearColor(0.8f, 0.8f, 0.8f)))
+	];
+	// the spells we know, by name
+	TArray<TPair<FString, FMRSlotContent>> Spells;
+	for (const FName& Spell : Source->GetKnownSpells())
+	{
+		const FMRSlotContent C = FMRSlotContent::Spell(Spell);
+		Spells.Emplace(Ui->NameFor(C).ToString(), C);
+	}
+	Spells.Sort([](const TPair<FString, FMRSlotContent>& A, const TPair<FString, FMRSlotContent>& B) { return A.Key < B.Key; });
+	if (Spells.Num() > 0)
+	{
+		Heading(LOCTEXT("Spells", "Spells"));
+	}
+	for (const TPair<FString, FMRSlotContent>& P : Spells)
+	{
+		const FMRQuickSlot Q = Source->QuickSlotFor(P.Value);
+		List->AddSlot().AutoHeight()
+		[
+			SNew(SPickerRow, Ui).Icon(Ui->IconFor(P.Value)).Text(P.Key).bChosen(Q == Current).OnClicked(Pick(Q))
+		];
+	}
+	// the items we carry (worn or in the bag), one row a kind; the shillings left out
+	TArray<FMRQuickSlot> Seen;
+	TArray<TPair<FString, FMRSlotContent>> Items;
+	auto AddItem = [&](const FMRSlotContent& C)
+	{
+		if (C.IsEmpty() || C.bSpell)
+		{
+			return;
+		}
+		const FMRQuickSlot Q = Source->QuickSlotFor(C);
+		if (Seen.Contains(Q) || Q.Name.Contains(TEXT("shilling"), ESearchCase::IgnoreCase))
+		{
+			return;
+		}
+		Seen.Add(Q);
+		Items.Emplace(Q.Name.IsEmpty() ? Ui->NameFor(C).ToString() : Q.Name, C);
+	};
+	for (int32 i = 0; i < static_cast<int32>(EMREquipSlot::Count); ++i)
+	{
+		AddItem(Source->Get(FMRSlotRef::Equip(static_cast<EMREquipSlot>(i))));
+	}
+	const int32 BagSlots = Source->NumSlots(EMRSlotArea::Bag);
+	for (int32 i = 0; i < BagSlots; ++i)
+	{
+		AddItem(Source->Get(FMRSlotRef(EMRSlotArea::Bag, i)));
+	}
+	if (Items.Num() > 0)
+	{
+		Heading(LOCTEXT("Items", "Items"));
+	}
+	for (const TPair<FString, FMRSlotContent>& P : Items)
+	{
+		const FMRQuickSlot Q = Source->QuickSlotFor(P.Value);
+		List->AddSlot().AutoHeight()
+		[
+			SNew(SPickerRow, Ui).Icon(Ui->IconFor(P.Value)).Text(P.Key).bChosen(Q == Current).OnClicked(Pick(Q))
+		];
+	}
+	List->AddSlot().AutoHeight().Padding(0.f, 6.f * Px, 0.f, 0.f)
+	[
+		SNew(SPickerRow, Ui).Text(LOCTEXT("Empty", "Empty").ToString()).bChosen(Current.IsEmpty()).OnClicked(Pick(FMRQuickSlot()))
+	];
+}
+
+int32 SMRQuickSlotPicker::OnPaint(const FPaintArgs& Args, const FGeometry& Geo, const FSlateRect& Culling, FSlateWindowElementList& Out,
+	int32 Layer, const FWidgetStyle& WStyle, bool bParentEnabled) const
+{
+	return SCompoundWidget::OnPaint(Args, Geo, Culling, Out, Layer, WStyle, bParentEnabled);
+}
+
+FReply SMRQuickSlotPicker::OnKeyDown(const FGeometry& Geo, const FKeyEvent& Event)
+{
+	if (Event.GetKey() == EKeys::Escape && UI.IsValid())
+	{
+		UI->CloseQuickSlotPicker();
+		return FReply::Handled();
+	}
+	return FReply::Unhandled();
+}
+
+FReply SMRQuickSlotPicker::OnMouseButtonDown(const FGeometry& Geo, const FPointerEvent& Event)
+{
+	// a click outside the list closes it (its rows take their own clicks)
+	if (UI.IsValid())
+	{
+		UI->CloseQuickSlotPicker();
+	}
+	return FReply::Handled();
 }
 
 // ------------------------------------------------------------------------------ SMRViewNote

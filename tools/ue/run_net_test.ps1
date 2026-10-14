@@ -23,6 +23,9 @@
 #                                                               # console's server and DM commands and a teleport
 #                                                               # (DONE 9/9; 10/10 with -Render, which opens the
 #                                                               # console and photographs it: admin.png)
+#   powershell -File tools/ue/run_net_test.ps1 -Arena           # -Admin, then the Arena of Kraanan (room 60):
+#                                                               # watches the relay's fights (docs/adr/0013),
+#                                                               # arena.png with -Render
 #
 # The default account is a test account that only exists on the local dev server. Exit code 0 on success.
 param(
@@ -37,6 +40,8 @@ param(
     # the admin console (docs/admin-console.md) as the local admin account, made on the maintenance port with
     # "create account admin ueadmin ueadmin none" and "create admin <account id>"
     [switch]$Admin,
+    # -Admin, then the arena: teleported there, the relay's fights must show (docs/adr/0013-ambient-life.md)
+    [switch]$Arena,
     [string]$User = "uenettest",
     [string]$Pass = "uenettest-local",
     [int]$TimeoutSeconds = 240,
@@ -45,6 +50,7 @@ param(
     [string]$Packaged = ""
 )
 $TimeoutSeconds += $Hold
+if ($Arena) { $Admin = $true; $TimeoutSeconds += 60 }
 if ($Admin) {
     $User = "ueadmin"
     $Pass = "ueadmin"
@@ -75,6 +81,7 @@ if ($Server -eq "Local") {
 $common = "-MRNetTest -MRServer=$Server -MRNetUser=$User -MRNetPass=$Pass -MRNetHold=$Hold -abslog=`"$log`""
 if ($Death) { $common += " -MRNetDeath" }
 if ($Admin) { $common += " -MRNetAdmin" }
+if ($Arena) { $common += " -MRNetArena" }
 $pal = $null
 if ($Pair) {
     $palLog = Join-Path $logs "pal-$stamp.log"

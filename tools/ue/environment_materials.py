@@ -187,6 +187,93 @@ def build_runtime_room_material():
 
     cache = build_cache.CACHE
     key = cache.key(build_cache.source(build_runtime_room_material, _expr, _custom), RUNTIME_LIGHT, sorted(MPC_SCALARS))
+    built = cache.get_or_build(path, key, "masters", build)
+    build_bgf_sprite_material()
+    build_nature_material()
+    return built
+
+
+def build_nature_material():
+    """/Game/Generated/Runtime/M_Nature: ambient life's butterflies, fish, birds and bats (AMRNatureActor,
+    docs/adr/0013): quads cut from T_NatureAtlas (tools/textures/make_nature_atlas.py, Shards' shapes) by their
+    UVs, tinted by their vertex colour (alpha: how visible), lit by the world as the sprites are (_lit_sprite);
+    masked, two-sided."""
+    name, path = "M_Nature", RUNTIME_DIR + "/M_Nature"
+    atlas_file = "T_NatureAtlas.png"
+    if not os.path.exists(os.path.join(PLACEHOLDERS, atlas_file)):
+        log("WARNING: no %s (python tools/textures/make_nature_atlas.py): no M_Nature" % atlas_file)
+        return None
+    atlas = ensure_textures([(atlas_file, True, False)]).get(atlas_file)
+
+    def build():
+        if eal.does_asset_exist(path):
+            mat = eal.load_asset(path)
+            mel.delete_all_material_expressions(mat)
+        else:
+            mat = asset_tools.create_asset(name, RUNTIME_DIR, unreal.Material, unreal.MaterialFactoryNew())
+        mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+        mat.set_editor_property("two_sided", True)
+        mat.set_editor_property("opacity_mask_clip_value", 0.3)
+        tex = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -1000, 0, parameter_name="Atlas",
+                    sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR, texture=eal.load_asset(atlas))
+        vc = _expr(mat, unreal.MaterialExpressionVertexColor, -1000, 300)
+        col = _expr(mat, unreal.MaterialExpressionMultiply, -750, 50)
+        mel.connect_material_expressions(tex, "RGB", col, "A")
+        mel.connect_material_expressions(vc, "", col, "B")
+        _lit_sprite(mat, col, -650, 400)
+        mask = _expr(mat, unreal.MaterialExpressionMultiply, -300, 1100)
+        mel.connect_material_expressions(tex, "A", mask, "A")
+        mel.connect_material_expressions(vc, "A", mask, "B")
+        mel.connect_material_property(mask, "", unreal.MaterialProperty.MP_OPACITY_MASK)
+        mel.recompile_material(mat)
+        eal.save_loaded_asset(mat)
+        log("built " + path)
+
+    cache = build_cache.CACHE
+    key = cache.key(build_cache.source(build_nature_material, _lit_sprite, _expr, _custom), LIT_SPRITE_NORMAL, LIT_SPRITE_EMISSIVE,
+                    sorted(MPC_SCALARS), build_cache.file_digest(os.path.join(PLACEHOLDERS, atlas_file)))
+    return cache.get_or_build(path, key, "masters", build)
+
+
+def build_bgf_sprite_material():
+    """/Game/Generated/Runtime/M_BgfSpriteLit: objects drawn from their own bitmaps (UMRBgfSpriteComponent) in
+    the zones we built, lit by the world as the character sprites are (_lit_sprite) instead of at the bitmap's
+    full brightness. Parameters as M_RuntimeRoom's for them: "Tex", "Brightness" (0: the original's black
+    drawing effect), "Opacity" < 1 dithers it away; masked on the texture's alpha, two-sided. In rooms built at
+    runtime the bitmaps keep M_RuntimeRoom (the original's light model, as their walls)."""
+    name, path = "M_BgfSpriteLit", RUNTIME_DIR + "/M_BgfSpriteLit"
+
+    def build():
+        if eal.does_asset_exist(path):
+            mat = eal.load_asset(path)
+            mel.delete_all_material_expressions(mat)
+        else:
+            mat = asset_tools.create_asset(name, RUNTIME_DIR, unreal.Material, unreal.MaterialFactoryNew())
+        mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+        mat.set_editor_property("two_sided", True)
+        tex = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -1000, 0, parameter_name="Tex",
+                    sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR,
+                    texture=eal.load_asset("/Engine/EngineResources/DefaultTexture"))
+        bright = _expr(mat, unreal.MaterialExpressionScalarParameter, -1000, 250, parameter_name="Brightness", default_value=1.0)
+        col = _expr(mat, unreal.MaterialExpressionMultiply, -750, 50)
+        mel.connect_material_expressions(tex, "RGB", col, "A")
+        mel.connect_material_expressions(bright, "", col, "B")
+        _lit_sprite(mat, col, -650, 300)
+        opacity = _expr(mat, unreal.MaterialExpressionScalarParameter, -700, 1100, parameter_name="Opacity", default_value=1.0)
+        dither = _expr(mat, unreal.MaterialExpressionMaterialFunctionCall, -450, 1100)
+        dither.set_editor_property("material_function", eal.load_asset("/Engine/Functions/Engine_MaterialFunctions02/Utility/DitherTemporalAA"))
+        mel.connect_material_expressions(opacity, "", dither, "Alpha Threshold")
+        mask = _expr(mat, unreal.MaterialExpressionMultiply, -200, 1100)
+        mel.connect_material_expressions(tex, "A", mask, "A")
+        mel.connect_material_expressions(dither, "Result", mask, "B")
+        mel.connect_material_property(mask, "", unreal.MaterialProperty.MP_OPACITY_MASK)
+        mel.recompile_material(mat)
+        eal.save_loaded_asset(mat)
+        log("built " + path)
+
+    cache = build_cache.CACHE
+    key = cache.key(build_cache.source(build_bgf_sprite_material, _lit_sprite, _expr, _custom), LIT_SPRITE_NORMAL,
+                    LIT_SPRITE_EMISSIVE, sorted(MPC_SCALARS))
     return cache.get_or_build(path, key, "masters", build)
 
 
@@ -1605,23 +1692,70 @@ return float3(xy - local.xy, 0.0);
 """
 
 
-def build_object_sprite_master(name, wpo_code):
+LIT_SPRITE_NORMAL = """
+// A flat sprite has no shape of its own: a shading normal mostly up (NormalUp), leaning to the camera's side, so
+// it is lit about as the ground it stands on and doesn't swing as the camera orbits it
+float3 c = float3(C.xy, 0.0);
+c = dot(c, c) > 1e-4 ? normalize(c) : float3(0.0, 0.0, 1.0);
+return normalize(lerp(c, float3(0.0, 0.0, 1.0), W));
+"""
+
+LIT_SPRITE_EMISSIVE = """
+// Lit 1: indoors the environment's ambient floor (MPC_Environment.SectorAmbient * AmbientTint, 0 outdoors), as
+// the zone materials and the sprite bodies (M_SpriteBody) add it. Lit 0: the bitmap's own colours, unlit
+return C * lerp(float3(1.0, 1.0, 1.0), A * T.rgb * K, L);
+"""
+
+
+def _lit_sprite(mat, colour, x, y):
+    """Light a sprite's colour (an RGB expression) by the world, as M_SpriteBody lights the characters: base
+    colour = colour * Albedo, a mostly-up world-space normal (NormalUp), matte (roughness 0.85, specular 0.2),
+    and indoors the ambient floor as emissive (SpriteAmbient). "Lit" 0 draws it unlit at its own colours (the
+    look before 2026-10-13: sprites read much brighter than the lit world around them)."""
+    mat.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_DEFAULT_LIT)
+    mat.set_editor_property("tangent_space_normal", False)
+    lit = _expr(mat, unreal.MaterialExpressionScalarParameter, x, y, parameter_name="Lit", default_value=1.0)
+    albedo = _expr(mat, unreal.MaterialExpressionScalarParameter, x, y + 80, parameter_name="Albedo", default_value=0.64)
+    base = _expr(mat, unreal.MaterialExpressionMultiply, x + 250, y)
+    mel.connect_material_expressions(colour, "", base, "A")
+    mel.connect_material_expressions(albedo, "", base, "B")
+    base_lit = _expr(mat, unreal.MaterialExpressionMultiply, x + 450, y)
+    mel.connect_material_expressions(base, "", base_lit, "A")
+    mel.connect_material_expressions(lit, "", base_lit, "B")
+    mel.connect_material_property(base_lit, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    for i, (prop, value) in enumerate(((unreal.MaterialProperty.MP_ROUGHNESS, 0.85), (unreal.MaterialProperty.MP_SPECULAR, 0.2))):
+        c = _expr(mat, unreal.MaterialExpressionConstant, x + 250, y + 160 + i * 70, r=value)
+        mel.connect_material_property(c, "", prop)
+    cam = _expr(mat, unreal.MaterialExpressionCameraVectorWS, x, y + 320)
+    up = _expr(mat, unreal.MaterialExpressionScalarParameter, x, y + 400, parameter_name="NormalUp", default_value=0.6)
+    normal = _custom(mat, x + 250, y + 320, LIT_SPRITE_NORMAL, unreal.CustomMaterialOutputType.CMOT_FLOAT3,
+                     [("C", cam, ""), ("W", up, "")], "SpriteNormal")
+    mel.connect_material_property(normal, "", unreal.MaterialProperty.MP_NORMAL)
+    coll = eal.load_asset(ensure_mpc())
+    amb = _expr(mat, unreal.MaterialExpressionCollectionParameter, x, y + 500, collection=coll, parameter_name="SectorAmbient")
+    tint = _expr(mat, unreal.MaterialExpressionCollectionParameter, x, y + 580, collection=coll, parameter_name="AmbientTint")
+    k = _expr(mat, unreal.MaterialExpressionScalarParameter, x, y + 660, parameter_name="SpriteAmbient", default_value=0.51)
+    emissive = _custom(mat, x + 250, y + 500, LIT_SPRITE_EMISSIVE, unreal.CustomMaterialOutputType.CMOT_FLOAT3,
+                       [("C", colour, ""), ("A", amb, ""), ("T", tint, ""), ("K", k, ""), ("L", lit, "")], "SpriteAmbientFloor")
+    mel.connect_material_property(emissive, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+
+
+def build_object_sprite_master(name, wpo_code, *_lit_sprite_key):
     """M_ObjectSprite: the original sprite of an object whose prop props.json "mesh_keep" leaves out, offline
-    (AMROfflineSprite; online the server's own bitmap draws it). As the online bitmaps (M_RuntimeRoom with
-    vertex alpha 0): unlit at the bitmap's own colours, cut out on its alpha, two-sided; turned to the camera
-    by OBJECT_SPRITE_WPO."""
+    (AMROfflineSprite; online the server's own bitmap draws it, M_BgfSpriteLit). Lit by the world like the
+    character sprites (_lit_sprite; "Lit" 0: unlit at the bitmap's own colours, as until 2026-10-13), cut out on
+    its alpha, two-sided; turned to the camera by OBJECT_SPRITE_WPO."""
     mat = _new_material(name)
-    mat.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
     mat.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
     mat.set_editor_property("two_sided", True)
-    tex = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -600, 0, parameter_name="Sprite",
+    tex = _expr(mat, unreal.MaterialExpressionTextureSampleParameter2D, -900, 0, parameter_name="Sprite",
                 sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_COLOR,
                 texture=eal.load_asset("/Engine/EngineResources/DefaultTexture"))
-    bright = _expr(mat, unreal.MaterialExpressionScalarParameter, -600, 250, parameter_name="Brightness", default_value=1.0)
-    out = _expr(mat, unreal.MaterialExpressionMultiply, -300, 50)
-    mel.connect_material_expressions(tex, "RGB", out, "A")
-    mel.connect_material_expressions(bright, "", out, "B")
-    mel.connect_material_property(out, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    bright = _expr(mat, unreal.MaterialExpressionScalarParameter, -900, 250, parameter_name="Brightness", default_value=1.0)
+    col = _expr(mat, unreal.MaterialExpressionMultiply, -700, 50)
+    mel.connect_material_expressions(tex, "RGB", col, "A")
+    mel.connect_material_expressions(bright, "", col, "B")
+    _lit_sprite(mat, col, -650, 300)
     mel.connect_material_property(tex, "A", unreal.MaterialProperty.MP_OPACITY_MASK)
     wpo = _custom(mat, -300, 400, wpo_code, unreal.CustomMaterialOutputType.CMOT_FLOAT3,
                   [("WP", _expr(mat, unreal.MaterialExpressionWorldPosition, -700, 400), ""),
@@ -1643,7 +1777,9 @@ def object_sprite_material(texture_file, directory):
     if t.get_editor_property("filter") != unreal.TextureFilter.TF_NEAREST:
         t.set_editor_property("filter", unreal.TextureFilter.TF_NEAREST)
         eal.save_loaded_asset(t)
-    master = _master("M_ObjectSprite", build_object_sprite_master, OBJECT_SPRITE_WPO)
+    # (_lit_sprite's source and code in the key: _master's key doesn't list it)
+    master = _master("M_ObjectSprite", build_object_sprite_master, OBJECT_SPRITE_WPO,
+                     build_cache.source(_lit_sprite), LIT_SPRITE_NORMAL, LIT_SPRITE_EMISSIVE)
     return _instance("MI_" + os.path.splitext(texture_file)[0], master, textures={"Sprite": tex[texture_file]},
                      directory=directory)
 

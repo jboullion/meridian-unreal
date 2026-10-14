@@ -1,0 +1,160 @@
+"""
+Ambient life's data, from Meridian Shards (docs/adr/0013-ambient-life.md). Shards is ours (GPLv2), so its
+tables are read straight from its sources and asset build, and the game's C++ (Source/.../Ambient/) runs
+the same rules:
+
+    python tools/world/ambient_data.py [--shards E:/2026_Experiments/meridian-browser]
+
+Reads, from the Shards checkout:
+- packages/world/src/ambient/ambientRooms.ts: which rooms get a crowd and how many (AMBIENT_ROOMS), the
+  busy-by-hour tables, the errand rooms;
+- chatter.ts and names.ts: what people say and what they're called;
+- dist/assets (its `npm run assets`): nav/<room>.nav, roomexits.json and roomterrain.json.
+
+Writes:
+- data/ambient/ambient.json: the tables;
+- data/ambient/nav/<room>.nav and data/ambient/exits.json: the nav grids and doors of the rooms we built,
+  for offline play (online the server's asset cache has every room's).
+
+Rerun after Shards changes those files or rebuilds its assets.
+"""
+import argparse
+import json
+import os
+import re
+import shutil
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+OUT = os.path.join(ROOT, "data", "ambient")
+DEFAULT_SHARDS = os.path.abspath(os.path.join(ROOT, "..", "meridian-browser"))
+
+# townsfolk.ts C (blakston.khd XLAT_TO_*)
+COLOURS = {"RED": 0, "SKIN1": 1, "SKIN2": 2, "SKIN4": 3, "ORANGE": 4, "GREEN": 5, "BLUE": 6, "PURPLE": 7, "YELLOW": 8,
+           "GRAY": 9, "SKY": 10, "DGREEN": 11, "BLACK": 12}
+
+
+def read(path):
+    return open(path, encoding="utf-8").read()
+
+
+def strings(block):
+    return re.findall(r'"((?:[^"\\]|\\.)*)"', block)
+
+
+def const_array(src, name):
+    m = re.search(r"const %s\s*(?::[^=]+)?=\s*\[(.*?)\](?:\s*as const)?;" % re.escape(name), src, re.S)
+    if not m:
+        raise SystemExit("no %s" % name)
+    return m.group(1)
+
+
+def record_of_lists(src, name):
+    m = re.search(r"const %s[^=]*=\s*\{(.*?)\n\};" % re.escape(name), src, re.S)
+    if not m:
+        raise SystemExit("no %s" % name)
+    out = {}
+    for key, body in re.findall(r"(\w+):\s*\[(.*?)\]", m.group(1), re.S):
+        out[key] = strings(body)
+    return out
+
+
+def rooms(src):
+    out = {}
+    for file, call in re.findall(r'"([\w.]+\.roo)":\s*(.+?),\n', src):
+        call = call.strip()
+        if call.startswith("{"):
+            spec = {"kind": re.search(r'kind:\s*"(\w+)"', call).group(1), "count": int(re.search(r"count:\s*(\d+)", call).group(1))}
+            place = re.search(r'place:\s*"(\w+)"', call)
+            if place:
+                spec["place"] = place.group(1)
+            if "arena: true" in call:
+                spec["arena"] = True
+        else:
+            m = re.match(r"(\w+)\((.*)\)$", call)
+            kind, args = m.group(1), [a.strip() for a in m.group(2).split(",")]
+            num = lambda a: COLOURS[a[2:]] if a.startswith("C.") else (2 if a == "BIG_ROOM" else int(a))
+            if kind == "town":
+                spec = {"kind": "town", "count": int(args[0]), "place": args[1].strip('"'), "guards": int(args[2]), "livery": num(args[3])}
+            elif kind == "inn":
+                spec = {"kind": "inn", "count": int(args[0]) * (num(args[2]) if len(args) > 2 else 1)}
+                if len(args) > 1:
+                    spec["place"] = args[1].strip('"')
+            elif kind == "castle":
+                faction = args[1].strip('"')
+                spec = {"kind": "castle", "count": int(args[0]), "faction": faction, "guards": int(args[2]),
+                        "place": "blackstone" if faction == "duke" else "castle"}
+            elif kind == "shop":
+                spec = {"kind": "shop", "count": int(args[0]), "place": args[1].strip('"')}
+            else:
+                raise SystemExit("unknown room kind %s" % kind)
+        out[file] = spec
+    return out
+
+
+def numbers(src, name):
+    return [float(v) for v in re.findall(r"[\d.]+", const_array(src, name))]
+
+
+def built_rooms():
+    """The .roo of every zone the world build has (data/zone_layout.json), by data/zones.json."""
+    zones = json.load(open(os.path.join(ROOT, "data", "zones.json"), encoding="utf-8"))
+    zones = zones["zones"] if isinstance(zones, dict) else zones
+    built = {z["rid"] for z in json.load(open(os.path.join(ROOT, "data", "zone_layout.json"), encoding="utf-8"))["zones"]}
+    return sorted({z["roo"].lower() for z in zones if z.get("roo") and z["rid"] in built})
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--shards", default=DEFAULT_SHARDS)
+    a = ap.parse_args()
+    src_dir = os.path.join(a.shards, "packages", "world", "src", "ambient")
+    assets = os.path.join(a.shards, "dist", "assets")
+    room_src = read(os.path.join(src_dir, "ambientRooms.ts"))
+    chat_src = read(os.path.join(src_dir, "chatter.ts"))
+    name_src = read(os.path.join(src_dir, "names.ts"))
+    errand = re.search(r"/\((.+?)\)\\\.roo\$/", room_src).group(1).split("|")
+
+    data = {
+        "_doc": "Generated by tools/world/ambient_data.py from Meridian Shards' ambient life (packages/world/src/ambient/: "
+                "ambientRooms.ts, chatter.ts, names.ts): which rooms get a crowd, how busy by the game hour, what people say "
+                "and their names. docs/adr/0013-ambient-life.md. Don't edit: change Shards' and rerun.",
+        "rooms": rooms(room_src),
+        "big_room": 2,
+        "busy_by_hour": {"town": numbers(room_src, "TOWN_BY_HOUR"), "inn": numbers(room_src, "INN_BY_HOUR"),
+                         "court": numbers(room_src, "COURT_BY_HOUR"), "arena": numbers(room_src, "ARENA_BY_HOUR")},
+        "errand_rooms": errand,
+        "chatter": {name.lower(): strings(const_array(chat_src, name))
+                    for name in ("ANY", "MORNING", "EVENING", "NIGHT", "RAIN", "SNOW", "GREET", "GREET_NIGHT", "WON", "LOST",
+                                 "IMPRESSED", "BLINDED", "WEBBED", "FAN_CHEER", "FAN_WON", "FAN_LOST", "SCATTER")},
+        "chatter_by_place": record_of_lists(chat_src, "BY_PLACE"),
+        "chatter_by_role": record_of_lists(chat_src, "BY_ROLE"),
+        "names": {name.lower(): strings(const_array(name_src, name))
+                  for name in ("MALE", "FEMALE", "SURNAMES", "FIGHTER_EPITHETS", "MAGE_EPITHETS")},
+    }
+    os.makedirs(os.path.join(OUT, "nav"), exist_ok=True)
+    with open(os.path.join(OUT, "ambient.json"), "w", encoding="utf-8", newline="\n") as f:
+        json.dump(data, f, indent=1, ensure_ascii=False)
+        f.write("\n")
+
+    # the rooms we built: their nav grids (crowd rooms only) and doors, for offline play
+    exits = json.load(open(os.path.join(assets, "roomexits.json"), encoding="utf-8"))
+    ours = built_rooms()
+    kept = {}
+    copied = []
+    for room in ours:
+        if room in exits:
+            kept[room] = exits[room]
+        nav = os.path.join(assets, "nav", room.replace(".roo", ".nav"))
+        if os.path.exists(nav):
+            shutil.copyfile(nav, os.path.join(OUT, "nav", os.path.basename(nav)))
+            copied.append(os.path.basename(nav))
+    with open(os.path.join(OUT, "exits.json"), "w", encoding="utf-8", newline="\n") as f:
+        json.dump({"_doc": "Generated by tools/world/ambient_data.py: Meridian Shards' roomexits.json (doors, edges and "
+                           "arrival squares, Kod squares) for the rooms we built.", "rooms": kept}, f, indent=1)
+        f.write("\n")
+    print("ambient: %d crowd rooms, %d chatter pools; %d built rooms' doors, nav grids: %s"
+          % (len(data["rooms"]), len(data["chatter"]), len(kept), ", ".join(copied) or "none"))
+
+
+if __name__ == "__main__":
+    main()

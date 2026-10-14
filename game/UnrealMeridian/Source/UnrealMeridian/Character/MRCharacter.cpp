@@ -1,5 +1,7 @@
 #include "Character/MRCharacter.h"
 
+#include "Ambient/MRAmbientSubsystem.h"
+
 #include "AbilitySystemComponent.h"
 #include "Abilities/MRAttributeSet.h"
 #include "Camera/CameraComponent.h"
@@ -266,6 +268,14 @@ void AMRCharacter::ApplyCommandLineAppearance()
 
 void AMRCharacter::PlaySpriteAction(FName Action)
 {
+	// offline, our wave: the ambient crowd waves back (online the server's UA_WAVE does: UMRNetSubsystem::DoAction)
+	if (Action == TEXT("wave") && IsLocallyControlled())
+	{
+		if (UMRAmbientSubsystem* Ambient = GetWorld() ? GetWorld()->GetSubsystem<UMRAmbientSubsystem>() : nullptr)
+		{
+			Ambient->OnPlayerWave();
+		}
+	}
 	if (SpriteBody)
 	{
 		if (Action.IsNone())
@@ -884,12 +894,8 @@ void AMRCharacter::OnZoom(const FInputActionValue& Value)
 	{
 		return;
 	}
-	// the wheel alone selects the hotbar slot (AMRPlayerController); Ctrl + wheel zooms
-	const APlayerController* PC = Cast<APlayerController>(GetController());
-	if (!PC || !(PC->IsInputKeyDown(EKeys::LeftControl) || PC->IsInputKeyDown(EKeys::RightControl)))
-	{
-		return;
-	}
+	// the wheel zooms (until 2026-10-14 the wheel alone selected the hotbar slot and Ctrl + wheel zoomed;
+	// the quick slots are used, not selected)
 	if (IsFirstPerson())
 	{
 		if (Wheel < 0.f) // scroll out of first person
@@ -920,7 +926,10 @@ void AMRCharacter::OnAttack()
 	// online the server decides: the attack goes up, the swing comes back (docs/adr/0012 M4)
 	if (UMRNetWorldSubsystem* NetWorld = GetWorld()->GetSubsystem<UMRNetWorldSubsystem>(); NetWorld && NetWorld->IsActive())
 	{
-		NetWorld->Attack();
+		if (!NetWorld->Attack())
+		{
+			SquishCritter();  // nothing real to hit: a critter (only we see them)
+		}
 		return;
 	}
 	const double Now = GetWorld()->GetTimeSeconds();
@@ -931,6 +940,25 @@ void AMRCharacter::OnAttack()
 	LastAttackTime = Now;
 	const FMRSpriteLook* Look = FMRSpriteLibrary::Get().Looks.Find(SpriteAppearance.Look);
 	PlaySpriteAction(Look && Look->Find(TEXT("weapon")) ? TEXT("weapon_attack") : TEXT("fist_attack"));
+	SquishCritter();
+}
+
+void AMRCharacter::SquishCritter()
+{
+	// ambient life's critters (docs/adr/0013): the one under the cursor, else the nearest ahead in reach
+	UMRAmbientSubsystem* Ambient = GetWorld()->GetSubsystem<UMRAmbientSubsystem>();
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!Ambient || !PC)
+	{
+		return;
+	}
+	FVector Start = FVector::ZeroVector, Dir = FVector::ZeroVector;
+	if (!(PC->bShowMouseCursor && PC->DeprojectMousePositionToWorld(Start, Dir)) && PC->PlayerCameraManager)
+	{
+		Start = PC->PlayerCameraManager->GetCameraLocation();
+		Dir = PC->PlayerCameraManager->GetCameraRotation().Vector();
+	}
+	Ambient->SquishCritter(Start, Dir);
 }
 
 void AMRCharacter::SetViewEffects(const FVector& EyeOffset, float Roll, float BlurPixels, bool bInvert)

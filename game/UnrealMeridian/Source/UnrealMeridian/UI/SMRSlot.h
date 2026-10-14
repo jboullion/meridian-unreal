@@ -7,20 +7,19 @@
 class UMRUISubsystem;
 
 /**
- * One inventory / hotbar / equipment / spell slot (docs/adr/0009-user-interface.md): the sunk
- * stone square, the icon, the count, the key, hover and selection, a cooldown sweep. Clicks go to
- * UMRUISubsystem, which applies Minecraft's rules through the inventory source.
+ * One inventory / equipment / spell / quick slot (docs/adr/0009-user-interface.md): the sunk stone
+ * square, the icon, the count, the key, hover, and on a quick slot what's in use and a cooldown
+ * sweep. Clicks go to UMRUISubsystem, which applies Minecraft's rules through the inventory source
+ * (a quick slot's own: use, swap, the picker).
  */
 class UNREALMERIDIAN_API SMRSlot : public SLeafWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SMRSlot) : _Size(22.f), _bSelectable(false), _bToolTip(true), _bHud(false) {}
+	SLATE_BEGIN_ARGS(SMRSlot) : _Size(22.f), _bToolTip(true), _bHud(false) {}
 		/** Size in original pixels. */
 		SLATE_ARGUMENT(float, Size)
 		/** Small key label in the corner ("1", "7"...). */
 		SLATE_ARGUMENT(FString, KeyLabel)
-		/** Draw the selection frame when this is the selected hotbar slot. */
-		SLATE_ARGUMENT(bool, bSelectable)
 		/** Faint icon of what goes here when empty (equipment). */
 		SLATE_ARGUMENT(FName, HintIcon)
 		/** Show the content's tooltip (off inside a list row, which shows it for the whole row). */
@@ -49,7 +48,6 @@ private:
 	FMRSlotRef SlotRef;
 	float SizePx = 22.f;
 	FString KeyLabel;
-	bool bSelectable = false;
 	bool bToolTip = true;
 	bool bHud = false;
 	FName HintIcon;

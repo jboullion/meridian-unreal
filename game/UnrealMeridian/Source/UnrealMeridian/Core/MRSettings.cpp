@@ -54,9 +54,11 @@ const TArray<const TCHAR*>& MRSettings::SavedCVars()
 		TEXT("mr.Audio.Loops"), TEXT("mr.Audio.Random"), TEXT("mr.UI.DamageNumbers"), TEXT("mr.Camera.FOV"),
 		TEXT("mr.Chat.OriginalTyping"),
 		// the HUD (Options > Game > HUD size; the chat's dragged width)
-		TEXT("mr.UI.HudSize"), TEXT("mr.UI.ChatWidth"),
+		TEXT("mr.UI.HudSize"), TEXT("mr.UI.ChatWidth"), TEXT("mr.UI.SecondHotbar"), TEXT("mr.UI.AvatarBrightness"),
 		// Options > Controls: the free cursor, or the mouse always turning the view
 		TEXT("mr.Input.FreeCursor"),
+		// Options > Game > Ambient life (UMRAmbientSubsystem)
+		TEXT("mr.Ambient.Level"), TEXT("mr.Ambient.Critters"), TEXT("mr.Ambient.Nature"), TEXT("mr.Ambient.Flyers"),
 		// Options > Graphics > Grass (AMRScatterActor)
 		TEXT("mr.Grass.Density"), TEXT("mr.Grass.Distance"), TEXT("mr.Grass.Shadows"),
 	};
@@ -135,6 +137,7 @@ const TArray<FMRKeyBinding>& MRKeys::All()
 		{TEXT("MapZoomIn"), LOCTEXT("MapZoomIn", "Map closer"), EKeys::Equals, EKeys::Add},
 		{TEXT("MapZoomOut"), LOCTEXT("MapZoomOut", "Map farther"), EKeys::Hyphen, EKeys::Subtract},
 		{TEXT("HideInterface"), LOCTEXT("HideInterface", "Hide the interface"), EKeys::H, EKeys::H},
+		{TEXT("QuickEmotes"), LOCTEXT("QuickEmotes", "Quick emotes"), EKeys::Q, EKeys::Q},
 	};
 	return Bindings;
 }

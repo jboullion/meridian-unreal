@@ -4,6 +4,7 @@
 #include "Components/SceneCaptureComponent2D.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "HAL/IConsoleManager.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UnrealMeridian.h"
 #include "Engine/TextureRenderTarget2D.h"
@@ -19,6 +20,9 @@ namespace
 	constexpr float PortraitFaceHeight = 0.925f;      // female (phkx)
 	constexpr float PortraitFaceHeightMale = 0.912f;  // phax has a longer neck: centre on the head
 	constexpr float PortraitTexelsPerPixel = 9.f;  // render target texels per torso pixel: ~2.6 per face pixel
+	TAutoConsoleVariable<float> CVarAvatarBrightness(TEXT("mr.UI.AvatarBrightness"), 0.75f,
+		TEXT("The unlit character previews (the HUD portrait, the inventory avatar, the creator): colour multiplier. ")
+		TEXT("At 1 (until 2026-10-13) the face read much brighter than the lit world. Taken at the next change of look."));
 }
 
 AMRAvatarPreview::AMRAvatarPreview()
@@ -40,6 +44,11 @@ AMRAvatarPreview::AMRAvatarPreview()
 	Capture->bCaptureOnMovement = false;
 	Capture->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList;
 	Capture->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+	// no tone curve and none of the room's grading (the global post-process volume reaches captures too): the
+	// palette's colours as the original and Meridian Shards draw them. Until 2026-10-14 the filmic curve and the
+	// Inn's grading turned the faces orange.
+	Capture->ShowFlags.SetTonemapper(false);
+	Capture->ShowFlags.SetColorGrading(false);
 	Capture->ShowFlags.SetFog(false);
 	Capture->ShowFlags.SetVolumetricFog(false);
 	Capture->ShowFlags.SetAtmosphere(false);
@@ -74,6 +83,7 @@ void AMRAvatarPreview::BeginPlay()
 	Body = NewObject<UMRSpriteBodyComponent>(this, TEXT("AvatarBody"));
 	Body->SetupAttachment(Root);
 	Body->SetForceUnlit(true);
+	Body->SetUnlitBrightness(CVarAvatarBrightness.GetValueOnGameThread());
 	Body->SetViewer(Capture);
 	Body->SetCastShadow(false);
 	Body->RegisterComponent();
@@ -162,6 +172,7 @@ bool AMRAvatarPreview::SetAppearance(const FMRSpriteAppearance& A)
 	{
 		return false;
 	}
+	Body->SetUnlitBrightness(CVarAvatarBrightness.GetValueOnGameThread());
 	Body->SetAppearance(A);
 	Body->SetHeightScale(A.HeightPct > 0 ? A.HeightPct / 100.f : 1.f);
 	Shown = A;

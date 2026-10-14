@@ -243,7 +243,10 @@ Notes:
 | `mr.Sprite.MaxTarget` | 2048 | The largest target side close up |
 | `mr.Sprite.WalkRefSpeed` | -1 | Ground speed for the original walk rate; -1 = the player's run speed; 0 = always the original rate |
 | `mr.Sprite.UV` | `1 0 1` | `SwapUV FlipU FlipV` for the engine plane |
-| `mr.Sprite.HandScale` | 1 | First-person hand size |
+| `mr.Sprite.HandScale` | 1 | First-person hand size, times the original D3D client's (`d3drender.c` D3DComputePlayerOverlayArea, as Meridian Shards draws it: a bitmap pixel 1.75/800 of the view's largest 4:3 area across and 2.25/600 of it down; until 2026-10-14 the view's width / 452 × 0.5 both ways, about half the size) |
+| `mr.Sprite.HandsLit` | 1 | The first-person hands as quads 15 cm in front of the eye, hung on the camera and lit by the world with the object sprites' material (`M_BgfSpriteLit`, `AMRHUD::ShowWorldHands`): darker in a dim room, warm by a lamp, as the original and Meridian Shards light them by the player's light (2026-10-14). In a room built at runtime (whose sprites keep their bitmaps' brightness) and when blind they're drawn on the screen as before; 0 draws them there always, at full brightness. Sheet: `build/lookdev/colour/hands.png` (the mace by the Inn's bar and in a dimmer corner, against Shards) |
+| `mr.Sprite.HandBrightness` | 0.45 | The lit hands' colour multiplier (on linear light: shows as about 0.7). Lit as a sprite beside the player, the mace read 63 by the Inn's bar against Shards' 45; at 0.45 it's 49, and 33 in a dimmer corner. Lowering the player's light (`moods.json` `"viewer_light"`) instead barely moved it (58 at a quarter) and darkened the crypts by half (2026-10-14; `build/lookdev/vl_*`, `vl_hand/`) |
+| `mr.Sprite.HandDistance` | 15 | How far in front of the eye the lit hands hang, cm: past the near clip plane (10 cm), inside the capsule so no wall comes between |
 | `mr.Sprite.HandBob` | 1 | First-person hand walk bob |
 | `mr.Sprite.Smooth.Tweens` | 1 | Show the in-betweens |
 | `mr.Sprite.Smooth.OnceWindow` | 0.35 | One-shot actions: in-betweens only in this last share of each pose |

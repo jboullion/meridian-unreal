@@ -79,6 +79,10 @@ void SMRGameMenu::Construct(const FArguments& InArgs, UMRUISubsystem* InUI)
 				]
 				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 				[
+					Button(LOCTEXT("Help", "Help"), [Weak]() { if (Weak.IsValid()) Weak->SetWindowOpen(EMRWindow::Help, true); })
+				]
+				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+				[
 					Options
 				]
 				+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)

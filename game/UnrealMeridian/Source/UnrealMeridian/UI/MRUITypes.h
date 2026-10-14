@@ -12,14 +12,13 @@ enum class EMRSlotArea : uint8
 {
 	None,
 	Bag,        // the scrollable inventory (grows: the original limits by weight and bulk, not slots)
-	Hotbar,     // the 9 item slots at the bottom (Minecraft-literal: real storage)
+	QuickSlot,  // the HUD's quick slots (FMRQuickSlot): 2 rows of 10, each naming a spell or an item, not holding it
 	Equipment,  // worn and wielded (EMREquipSlot)
-	SpellBar,   // the 9 numpad spell shortcuts
 	SpellBook,  // known spells (read only: picking one up copies it)
 	Cursor,     // the stack carried by the mouse
 };
 
-/** Equipment slots, around the avatar. The right hand is the selected hotbar slot (Minecraft's main hand). */
+/** Equipment slots, around the avatar. */
 enum class EMREquipSlot : uint8
 {
 	Head,
@@ -80,6 +79,33 @@ struct FMRSlotContent
 
 	bool IsEmpty() const { return Id.IsNone() || Count <= 0; }
 	bool SameThing(const FMRSlotContent& O) const { return ObjectId || O.ObjectId ? ObjectId == O.ObjectId : Id == O.Id && bSpell == O.bSpell; }
+};
+
+/**
+ * A quick slot (Meridian Shards' quickSlots.ts; docs/adr/0009 "The Shards layout, second pass"): a
+ * spell or an item to cast or use with one key, kept by name rather than by object (every save
+ * renumbers objects, and a stack of potions is a new object once one is drunk). Row 0 is keys 1-9
+ * and 0, row 1 the numpad's.
+ */
+struct FMRQuickSlot
+{
+	static constexpr int32 PerRow = 10;
+	static constexpr int32 Rows = 2;
+	static constexpr int32 Num = PerRow * Rows;
+
+	bool bSpell = false;
+	/** A spell's class; an item's class in data/items.json (else, online, its icon's stem). */
+	FName Id;
+	/** An item's name as the server gives it (matched first: an identified item's real name); empty for spells. */
+	FString Name;
+	/** An item's bitmap ("potion.bgf"), to draw the slot when nothing carried matches. */
+	FString Icon;
+
+	bool IsEmpty() const { return Id.IsNone(); }
+	bool operator==(const FMRQuickSlot& O) const { return bSpell == O.bSpell && Id == O.Id && Name == O.Name; }
+	/** "spell|<id>" or "item|<id>|<icon>|<name>" (kept per character). */
+	FString ToString() const;
+	static FMRQuickSlot FromString(const FString& Text);
 };
 
 /** An item class from data/items.json (tools/kod_extract). */

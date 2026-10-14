@@ -10,9 +10,11 @@
 #include "Misc/App.h"
 #include "Character/MRCharacterMovementComponent.h"
 #include "Net/MRNetWorld.h"
+#include "Net/MRNetWorldSubsystem.h"
 #include "Net/MRProtocol.h"
 #include "World/MRBgf.h"
 #include "World/MRBgfSpriteComponent.h"
+#include "World/MRRuntimeRooms.h"
 
 namespace
 {
@@ -104,6 +106,10 @@ void AMRNetObject::SetBgfSprite(const FString& InBgfName, TSharedPtr<const FMRBg
 		BgfSprite->SetRelativeLocation(FVector(0.0, 0.0, -GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight()));
 		BgfSprite->RegisterComponent();
 	}
+	// lit by the world in the zones we built; a room built at runtime keeps the original's light model
+	const UMRNetWorldSubsystem* NetWorld = GetWorld() ? GetWorld()->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
+	const int32 Rid = NetWorld ? NetWorld->GetRid() : 0;
+	BgfSprite->SetLitByWorld(Rid > 0 && Rid < UMRRuntimeRooms::RuntimeRidBase);
 	BgfSprite->SetBgf(Bgf);
 	SetDrawEffect(DrawEffect);
 }

@@ -147,6 +147,7 @@ Last survey: 2026-10-08. M0 to M9 done the same day; what they left over is in "
 | Server-kept game options (`CF_*`) | Done: Options > Game, and the commands | Done | M8, M9 |
 | Tooltips | Done for items, spells and skills; not for buttons | Missing | M3, M9 |
 | Admin and guide commands | Done: the Admin Console (Escape menu, admin and DM characters; ADR 0009) | Done | After M9 |
+| Ambient life (ours, from Meridian Shards): townsfolk, inn patrons, courtiers, shop customers, critters, butterflies, fish, birds, bats, the arena's fights | Done (2026-10-14, ADR 0013): online and offline, the arena from Shards' relay; not yet its recordings and pets | Done | — |
 
 ## World coverage
 

@@ -41,9 +41,7 @@ private:
 
 	// --- UI input (IMC_UI)
 	void BuildUIInput();
-	void OnHotbarKey(int32 Index);
-	void OnHotbarScroll(const FInputActionValue& Value);
-	void OnSpellKey(int32 Index);
+	void OnQuickSlotKey(int32 Index);
 	void OnInventoryKey();
 	/** O: who is on; L: mail; Y: the guild (online). */
 	void OnWindowKey(EMRWindow Window);
@@ -77,14 +75,14 @@ private:
 	void OnApplyKey();
 	/** H: the HUD away for pictures, and back (Shards' Hide Interface). */
 	void OnHideInterfaceKey();
+	void OnQuickEmotesKey();
 	class UMRNetWorldSubsystem* GetNetWorld() const;
 	void OnMapZoom(const FInputActionValue& Value);
 	class UMRUISubsystem* GetUI() const;
 
 	UPROPERTY(Transient) TObjectPtr<UInputMappingContext> UIContext;
-	UPROPERTY(Transient) TArray<TObjectPtr<UInputAction>> HotbarActions;
-	UPROPERTY(Transient) TArray<TObjectPtr<UInputAction>> SpellActions;
-	UPROPERTY(Transient) TObjectPtr<UInputAction> HotbarScrollAction;
+	/** The quick slots: 1-9 and 0, then the numpad's 1-9 and 0 (FMRQuickSlot). */
+	UPROPERTY(Transient) TArray<TObjectPtr<UInputAction>> QuickSlotActions;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> InventoryAction;
 	UPROPERTY(Transient) TArray<TObjectPtr<UInputAction>> QuickChatActions;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> WhoAction;
@@ -104,6 +102,7 @@ private:
 	UPROPERTY(Transient) TObjectPtr<UInputAction> RestAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> ApplyAction;
 	UPROPERTY(Transient) TObjectPtr<UInputAction> HideInterfaceAction;
+	UPROPERTY(Transient) TObjectPtr<UInputAction> QuickEmotesAction;
 
 	/** -MRScreenshots visual check. */
 	UPROPERTY()

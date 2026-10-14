@@ -500,7 +500,42 @@ def floor_at(room: Room, x: float, y: float) -> float:
     return 0.0
 
 
-def zone_layout(zone: dict, room: Room) -> dict:
+# Floor textures that are water wherever they're used: under a wading depth at least this often,
+# and more often than on dry floors (Meridian Shards' tools/assets/waterTextures.ts, ours). Raza's
+# pond is water painted on a dry floor; the wheat fields and the beaches' wet sand have a depth
+# but aren't water.
+MIN_WET = 8
+_water_textures: set[int] | None = None
+
+
+def water_textures(rooms_dir: Path) -> set[int]:
+    global _water_textures
+    if _water_textures is None:
+        wet, dry = {}, {}
+        for path in sorted(rooms_dir.glob("*.roo")):
+            for s in Room.load(str(path)).sectors:
+                if s.floor_type:
+                    m = wet if s.blak_flags & SF_MASK_DEPTH else dry
+                    m[s.floor_type] = m.get(s.floor_type, 0) + 1
+        _water_textures = {t for t, n in wet.items() if n >= MIN_WET and n > dry.get(t, 0)}
+    return _water_textures
+
+
+def water_areas(room: Room, water: set[int]) -> list[dict]:
+    """The floors that are water (a water texture: pools, rivers, the sea, Raza's painted pond) as
+    convex BSP-leaf polygons, [x, z] glTF metres in zone coordinates, with their wading depth. Where
+    ambient life's fish leap (docs/adr/0013); the depth areas alone take in fields and wet sand."""
+    out = []
+    for node in room.bsp.walk():
+        if node.type != BSP_LEAF or not node.sector or len(node.points) < 3:
+            continue
+        s = room.sectors[node.sector - 1]
+        if s.floor_type in water:
+            out.append({"depth": s.blak_flags & SF_MASK_DEPTH, "points": [[w[0], w[2]] for w in (world(p, 0) for p in node.points)]})
+    return out
+
+
+def zone_layout(zone: dict, room: Room, water: set[int]) -> dict:
     def at(row, col, fr=32, fc=32):
         xy = grid_to_roo(row, col, fr, fc)
         return world(xy, floor_at(room, *xy))
@@ -554,6 +589,7 @@ def zone_layout(zone: dict, room: Room) -> dict:
         "objects": objects,
         "generators": gens,
         "depth_areas": depth_areas(room),
+        "water_areas": water_areas(room, water),
         "step_walls": step_walls(room),
     }
 
@@ -690,6 +726,8 @@ def main():
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--walls-only", action="store_true",
                     help="only write build/zones/<rid>_<class>_walls.json (the minimap's walls); no meshes, no layout")
+    ap.add_argument("--layout-only", action="store_true",
+                    help="only rewrite data/zone_layout.json; no meshes, walls or previews")
     ap.add_argument("--rooms", type=Path, default=SERVER104 / "resource" / "rooms")
     ap.add_argument("--out", type=Path, default=ROOT / "build" / "zones")
     a = ap.parse_args()
@@ -706,13 +744,20 @@ def main():
             continue
         room = Room.load(str(roo))
         stem = f"{z['rid']}_{z['class']}"
+        if a.layout_only:
+            lay = zone_layout(z, room, water_textures(a.rooms))
+            lay["mesh"] = f"build/zones/{stem}.glb"
+            lay["roo"] = z["roo"]
+            lay["roo_security"] = roo_security(roo)
+            layouts.append(lay)
+            continue
         n_walls = write_walls(room, a.out / f"{stem}_walls.json")
         if a.walls_only:
             print(f"{stem:28s} {n_walls:5d} walls")
             continue
         stats = write_glb(build_room_mesh(room), a.out / f"{stem}.glb", stem)
         write_glb(build_room_mesh(room, collision=True), a.out / f"{stem}_collision.glb", stem)
-        lay = zone_layout(z, room)
+        lay = zone_layout(z, room, water_textures(a.rooms))
         lay["mesh"] = f"build/zones/{stem}.glb"
         lay["roo"] = z["roo"]
         lay["roo_security"] = roo_security(roo)

@@ -27,6 +27,14 @@ public:
 	UMRBgfSpriteComponent(const FObjectInitializer& ObjectInitializer);
 
 	void SetBgf(TSharedPtr<const FMRBgf> InBgf);
+	/**
+	 * Lit by the world (M_BgfSpriteLit, as the character sprites are) rather than drawn at the bitmap's own
+	 * level (M_RuntimeRoom): for an object in a zone we built, whose surfaces UE lights. Rooms built at runtime
+	 * keep the original's light model. mr.Sprite.ObjectsLit 0 turns it off. Overlays added later follow it.
+	 */
+	void SetLitByWorld(bool bLit);
+	/** mr.Sprite.ObjectsLit: object sprites in built zones lit by the world (also AMROfflineSprite). */
+	static bool ObjectsLit();
 	/** The server's animation records: standing, and while moving (its motion record; Type 0: the same). */
 	void SetAnimation(const FMRNetAnimation& Standing, const FMRNetAnimation& Moving);
 	/** Moving: show the motion record's animation. */
@@ -59,6 +67,8 @@ public:
 
 private:
 	void Restart();
+	/** The material for bLitByWorld (M_BgfSpriteLit, else M_RuntimeRoom), with the draw effect. */
+	void MakeMaterial();
 	/** Put each overlay at its hotspot on the bitmap shown. */
 	void PlaceOverlays();
 	UTexture2D* TextureOf(int32 Bitmap);
@@ -77,6 +87,9 @@ private:
 	FMRSpriteTrack Track;
 	int32 Shown = INDEX_NONE;
 	bool bBaseHidden = false;
+	bool bLitByWorld = false;
+	/** The draw effect last set (SetDrawEffect), kept for a material made again. */
+	uint8 DrawEffect = 0;
 	/** Drawn as another bitmap's overlay: its top left corner at its origin, turned with its parent. */
 	bool bIsOverlay = false;
 	/** The shown bitmap's scale and feet (Show), for the overlays' hotspots. */

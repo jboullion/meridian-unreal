@@ -1,5 +1,5 @@
 {
-  "_doc": "Meridian servers the login screen offers (docs/adr/0010-meridian-servers.md). ws: the gateway's WebSocket (bytes pass through to blakserv). assets: where the server serves its game files (manifest.json, rsc0000.rsb), which the client needs from that very server. secret_key: blakserv's [Login] SecretKey; not a secret, every client of the server ships it. origin: sent with the WebSocket upgrade, for the gateway's GATEWAY_ORIGINS allowlist. ruleset: which rules the server runs (server104), so the UI lays out what it sends (data/ui/stat_layout.json).",
+  "_doc": "Meridian servers the login screen offers (docs/adr/0010-meridian-servers.md). ws: the gateway's WebSocket (bytes pass through to blakserv). assets: where the server serves its game files (manifest.json, rsc0000.rsb), which the client needs from that very server. secret_key: blakserv's [Login] SecretKey; not a secret, every client of the server ships it. origin: sent with the WebSocket upgrade, for the gateway's GATEWAY_ORIGINS allowlist. ruleset: which rules the server runs (server104), so the UI lays out what it sends (data/ui/stat_layout.json). social: Meridian Shards' relay (the gateway's /social: the arena's fights, docs/adr/0013); social_server: the game server as Shards' clients name it there (their game socket URL: the browser's page on localhost:5173 locally), so we watch the same arena.",
   "origin": "app://unreal-meridian",
   "servers": [
     {
@@ -7,14 +7,18 @@
       "ws": "wss://35-206-75-121.sslip.io/ws",
       "assets": "https://35-206-75-121.sslip.io/assets",
       "secret_key": "6tGcjhaYftSBmSHQ",
-      "ruleset": "server104"
+      "ruleset": "server104",
+      "social": "wss://35-206-75-121.sslip.io/social",
+      "social_server": "wss://35-206-75-121.sslip.io/ws"
     },
     {
       "name": "Local (dev)",
       "ws": "ws://localhost:8059",
       "assets": "http://localhost:5173/assets",
       "secret_key": "6tGcjhaYftSBmSHQ",
-      "ruleset": "server104"
+      "ruleset": "server104",
+      "social": "ws://localhost:8059/social",
+      "social_server": "ws://localhost:5173/ws"
     }
   ]
 }

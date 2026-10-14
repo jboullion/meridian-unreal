@@ -3,8 +3,10 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "HAL/IConsoleManager.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/CommandLine.h"
 #include "Net/MRNetSubsystem.h"
+#include "World/MRBgfSpriteComponent.h"
 
 namespace
 {
@@ -32,5 +34,16 @@ void AMROfflineSprite::BeginPlay()
 		|| FParse::Param(FCommandLine::Get(), TEXT("MRNoOfflineSprites")))
 	{
 		SetActorHiddenInGame(true);
+		return;
+	}
+	// M_ObjectSprite is lit by the world; mr.Sprite.ObjectsLit 0 draws it at the bitmap's own colours
+	UStaticMeshComponent* Mesh = GetStaticMeshComponent();
+	if (!UMRBgfSpriteComponent::ObjectsLit() && Mesh && Mesh->GetMaterial(0))
+	{
+		UMaterialInstanceDynamic* M = Mesh->CreateDynamicMaterialInstance(0);
+		if (M)
+		{
+			M->SetScalarParameterValue(TEXT("Lit"), 0.f);
+		}
 	}
 }

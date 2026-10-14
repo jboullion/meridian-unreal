@@ -52,6 +52,8 @@ struct FMRZoneInfo
 	/** The geometry's footprint in world XY (UE cm), from zone_layout.json "bounds_m" (the minimap's capture). */
 	UPROPERTY(BlueprintReadOnly) FBox2D BoundsWorld = FBox2D(ForceInit);
 	UPROPERTY(BlueprintReadOnly) TArray<FString> Flags;
+	/** The room's TERRAIN_* (Kod viTerrain_type, without the prefix: "CITY", "FOREST"...): what ambient critters live there. */
+	UPROPERTY(BlueprintReadOnly) TArray<FString> Terrain;
 	UPROPERTY(BlueprintReadOnly) bool bNoCombat = false;
 	UPROPERTY(BlueprintReadOnly) bool bSanctuary = false;
 	UPROPERTY(BlueprintReadOnly) int32 TeleportRow = 0;
@@ -193,6 +195,12 @@ public:
 	int32 DepthAt(const FVector& World) const;
 	/** How far below its floor you stand at a world position, cm (0 out of every wading area). */
 	float DepthSinkAt(const FVector& World) const;
+	/**
+	 * Whether the floor at a world position is water: a floor with a water texture (zone_layout.json
+	 * "water_areas": pools, rivers, the sea, Raza's painted pond), not a wheat field or wet sand with a
+	 * depth. A room built at runtime has only its depth areas, taken for water. Ambient life's fish.
+	 */
+	bool IsWaterAt(const FVector& World) const;
 
 	/** How fast you move at a wading depth, as the original (clientd3d move.c): 1, 3/4, 1/2, 1/4. */
 	static float DepthSpeedFactor(int32 Depth);
@@ -257,6 +265,12 @@ public:
 
 	/** World -> server position in a zone: X = Kod row, Y = Kod column (may fall outside the room). */
 	FIntPoint WorldToKod(int32 Rid, const FVector& World) const;
+	/** The .roo file (lower case) a zone was built from ("razainn.roo"), or empty. */
+	FString GetRoomFile(int32 Rid) const { return RoomFileOf(Rid); }
+	/** A zone's ROO point (x east, y south, 1024 a square, from its corner) -> world, on the floor when bTraceFloor. */
+	FVector RooToWorld(int32 Rid, const FVector2D& Roo, bool bTraceFloor = true) const;
+	/** World -> a zone's ROO point. */
+	FVector2D WorldToRoo(int32 Rid, const FVector& World) const;
 
 	/** The server owns exits and zone changes: UpdatePawnZone leaves the pawn alone. */
 	void SetServerDriven(bool bInServerDriven) { bServerDriven = bInServerDriven; }
@@ -270,6 +284,7 @@ public:
 
 private:
 	const FMRDepthArea* DepthAreaAt(const FVector& World) const;
+	static bool InsideArea(const FMRDepthArea& Area, const FVector2D& P);
 	bool LoadData();
 	void AddGalleryZone(const FString& Dir);
 	int32 GetPawnZone(const APawn* Pawn) const;
@@ -290,6 +305,10 @@ private:
 
 	/** Every zone geometry's wading areas, world space (DepthAt). */
 	TArray<FMRDepthArea> DepthAreas;
+	/** Every built zone's water floors, world space (IsWaterAt), and a grid of them (cells of WaterCellCm). */
+	TArray<FMRDepthArea> WaterAreas;
+	TMultiMap<FIntPoint, int32> WaterGrid;
+	static constexpr double WaterCellCm = 2000.0;
 
 	/** Pawns that just teleported don't take another exit until they leave the arrival square. */
 	TMap<TWeakObjectPtr<APawn>, FIntVector> ArrivalSquare;

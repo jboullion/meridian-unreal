@@ -42,7 +42,14 @@ def wanted() -> dict[str, int]:
         for rec in json.loads((DATA / name).read_text(encoding="utf-8")):
             if rec.get("vrIcon"):
                 icons.setdefault(stem(rec["vrIcon"]), 0)
+    # the HUD's health, mana and vigor icons (user.kod user_stat_health / _mana / _vigor): online the
+    # server names them, offline these stand in (UMRUISubsystem::VitalIcon)
+    for name in STAT_ICONS:
+        icons.setdefault(name, 0)
     return icons
+
+
+STAT_ICONS = ("heal", "ankh", "bolticon")
 
 
 def stem(icon: str) -> str:

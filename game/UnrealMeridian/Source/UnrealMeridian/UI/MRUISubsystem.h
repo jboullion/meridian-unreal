@@ -17,13 +17,13 @@ class UMRUIStyle;
 struct FSlateBrush;
 
 /**
- * The in-game UI for one local player (docs/adr/0009-user-interface.md): the HUD (vitals, item
- * hotbar, spell bar, minimap) and the inventory dialog (Inventory, Spells, Skills, Stats, Quests),
- * drawn with Slate in C++ over the original client's art.
+ * The in-game UI for one local player (docs/adr/0009-user-interface.md): the HUD (vitals, quick
+ * slots, minimap) and the inventory dialog (Inventory, Spells, Skills, Stats, Quests), drawn with
+ * Slate in C++ over the original client's art.
  *
  * AMRHUD shows it for a local player that can draw (never on a dedicated server or -nullrhi);
- * AMRPlayerController feeds it the UI keys (1-9 and the wheel select the hotbar, numpad 1-9 cast,
- * E / I open the dialog, - / = zoom the map).
+ * AMRPlayerController feeds it the UI keys (1-0 and the numpad's 1-0 use the quick slots, E / I
+ * open the dialog, - / = zoom the map, Q the quick emotes).
  */
 enum class EMRPickAction : uint8;
 
@@ -37,6 +37,7 @@ enum class EMRWindow : uint8
 	Options,
 	Map,
 	Admin,
+	Help,
 	Count,
 };
 enum class EMRObjectAction : uint8;
@@ -54,6 +55,8 @@ public:
 	void ShowHUD(APlayerController* PC);
 	void RemoveHUD();
 	bool HasHUD() const { return HUD.IsValid(); }
+	/** The HUD's widgets (the Help's HUD page points at its parts). */
+	TSharedPtr<SMRHUDRoot> GetHUDRoot() const { return HUD; }
 
 	/** The login screen (playing on a Meridian server; UMRNetWorldSubsystem decides when). */
 	void ShowLogin(APlayerController* PC);
@@ -96,11 +99,12 @@ public:
 	TSharedPtr<class SMRSocialWindow> GetWindow(EMRWindow Window) const;
 
 	// --- keys (from AMRPlayerController)
-	void OnHotbarKey(int32 Index);
-	/** A hotbar item clicked on the HUD: selected and used (put on, if it's worn or wielded). Selecting alone doesn't wield. */
-	void UseHotbarSlot(int32 Index);
-	void OnHotbarScroll(float Delta);
-	void OnSpellKey(int32 Index);
+	/**
+	 * A quick slot's key or a click on it (FMRQuickSlot index): a spell is cast (online at the target,
+	 * else the crosshair's, else the next thing clicked), an item used (put on, or taken off when it's
+	 * on). An empty slot opens the picker.
+	 */
+	void UseQuickSlot(int32 Index);
 	void OnMapZoom(float Steps);
 	void ToggleInventory();
 	void SetInventoryOpen(bool bOpen);
@@ -124,6 +128,8 @@ public:
 	// --- Look (SMRLookDialog; the server's descriptions: UMRNetSubsystem::OnDescription)
 	/** Several things under the crosshair: list them to pick one to look at. */
 	void ShowLookPicker(const TArray<uint32>& Ids);
+	/** Examine on someone of the ambient crowd (docs/adr/0013): their made-up name, role, what they're doing and their mood. */
+	void ShowAmbientPerson(const FString& Name, const FString& Text, const struct FMRSpriteAppearance& Appearance);
 	/** Room objects to pick from, for an action (a pile to pick up from). */
 	void ShowPicker(const TArray<uint32>& Ids, EMRPickAction Action);
 	/** A row was picked: look at it, pick it up, or take it from the container. */
@@ -137,6 +143,29 @@ public:
 	void CloseLook();
 	bool IsLookOpen() const { return bLookOpen; }
 	TSharedPtr<class SMRLookDialog> GetLookDialog() const;
+
+	// --- the quick slots on the HUD (SMRSlot with EMRSlotArea::QuickSlot)
+	/** The mouse went down on a quick slot: carrying something names it there; right: the picker. */
+	void OnQuickSlotMouseDown(int32 Index, bool bRight, bool bShift);
+	/** Released over a quick slot: the one pressed is used, or swapped with this one (dragged onto it). */
+	void OnQuickSlotMouseUp(int32 Index);
+	/** The picker (SMRQuickSlotPicker): the spells we know and the items we carry, for a slot. -1: closed. */
+	void OpenQuickSlotPicker(int32 Index);
+	void CloseQuickSlotPicker() { PickerSlot = INDEX_NONE; ApplyInputMode(); }
+	int32 GetQuickSlotPicker() const { return PickerSlot; }
+	/** The second row of quick slots (the numpad's; Options > Game, mr.UI.SecondHotbar). */
+	static bool ShowsSecondHotbar();
+	/** A quick slot's key, as the slot shows it ("1", "0", "N1"). */
+	static FString QuickSlotKeyLabel(int32 Index);
+	/** A quick slot's tooltip: its name and key, and "(not known)" or "(none carried)". */
+	TSharedPtr<IToolTip> MakeQuickSlotToolTip(int32 Index);
+
+	// --- quick emotes (Q, or a click on our face; Shards' Quick Emotes)
+	void ToggleQuickEmotes() { SetQuickEmotesOpen(!bQuickEmotesOpen); }
+	void SetQuickEmotesOpen(bool bOpen);
+	bool IsQuickEmotesOpen() const { return bQuickEmotesOpen; }
+	/** wave, point, dance (the server's actions online, the sprite's clip offline), or a mood (happy, sad, neutral, wry). */
+	void RunEmote(FName Emote);
 
 	// --- slots (from the slot widgets)
 	void OnSlotMouseDown(const FMRSlotRef& Slot, bool bRight, bool bShift);
@@ -169,12 +198,10 @@ public:
 	TSharedPtr<IToolTip> MakeToolTip(const FMRSlotContent& Content);
 	/** A skill's tooltip: its name, school, percentage and description. */
 	TSharedPtr<IToolTip> MakeSkillToolTip(FName Skill, int32 Percent);
-	/** Spell bar cooldown left (0..1) after a cast. */
+	/** A quick slot's cooldown left (0..1) after its spell was cast. */
 	float SpellCooldown(int32 Index) const;
-	/** Seconds since the spell bar was last used (it shows fully for a moment). */
-	double SpellBarLastUsed() const { return LastSpellKeyTime; }
-	/** Time of the last hotbar selection change (the item name fades out after it). */
-	double LastSelectionTime() const { return SelectionTime; }
+	/** Seconds of the cooldown a quick slot's spell has left (its mask shows them). */
+	float SpellCooldownSeconds(int32 Index) const;
 	float GetMapZoom() const { return MapZoom; }
 	/** The avatar render target (null until the dialog has been opened). */
 	UObject* GetAvatarTarget() const;
@@ -213,6 +240,11 @@ public:
 	 * maximum), OutLimit how far it can fill now (vigor: its current maximum).
 	 */
 	bool GetVitalBar(int32 Index, float& OutValue, float& OutMax, float& OutLimit) const;
+	/**
+	 * Health (0), mana (1) or vigor (2)'s icon beside its bar: the stat's own bitmap online (its name in
+	 * the server's stat group 1: user.kod heal.bgf, ankh.bgf, bolticon.bgf), our prebuilt icon of it first.
+	 */
+	const FSlateBrush* VitalIcon(int32 Index) const;
 	/**
 	 * Our face for the HUD's unit frame: a portrait preview of our own look, captured for a moment
 	 * whenever the look changes (null until there's a character).
@@ -260,7 +292,7 @@ public:
 	void LookAtQuest(uint32 ObjectId);
 	/** An enchantment's icon: its spell's, else its own bitmap (null until that arrives). */
 	const FSlateBrush* EnchantmentIcon(const struct FMRNetObject& O) const;
-	/** What U uses on something: the item under the mouse in the dialog, else the selected hotbar item (0: none). */
+	/** What U uses on something: the item under the mouse in the dialog, else a quick slot's under it (0: none). */
 	uint32 ItemToApply() const;
 	/**
 	 * The minimap picture of a geometry zone (kept loaded), or null if it hasn't been captured or is still loading:
@@ -378,9 +410,11 @@ private:
 	/** Where the mouse went down with an empty cursor: releasing over another slot places (drag and drop). */
 	FMRSlotRef PressSlot;
 	bool bPickedOnPress = false;
-	double SpellCastTime[9] = {};
-	double LastSpellKeyTime = -100.0;
-	double SelectionTime = -100.0;
+	double SpellCastTime[FMRQuickSlot::Num] = {};
+	/** The quick slot the mouse went down on (OnQuickSlotMouseUp), and the picker's (-1: closed). */
+	int32 PressQuick = INDEX_NONE;
+	int32 PickerSlot = INDEX_NONE;
+	bool bQuickEmotesOpen = false;
 	float MapZoom = 1.f;
 
 	TMap<uint32, FVector2f> SlotCentres;

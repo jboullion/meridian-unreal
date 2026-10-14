@@ -213,7 +213,7 @@ An orthographic scene capture straight down, run in the game (`-MRMapCapture`, `
 - Pictures: `build/net/m9_options.png`.
 
 ## The Shards layout (2026-10-10)
-The HUD over the view now copies Meridian Shards' Modern interface (`meridian-browser` `apps/client/src/game/ui/ModernHud.tsx` and the `.game.modern-ui` rules in its `styles.css`; its shots `docs/images/meridian-shards-modern.png`, `modern-third-person.png`). The dialogs and windows above stay ours. It replaced the layout above: the hotbar area and its stone frame, the faint spell bar bottom right, the square map, the loose enchantment icons and the stone chat box.
+The HUD over the view now copies Meridian Shards' Modern interface (`meridian-browser` `apps/client/src/game/ui/ModernHud.tsx` and the `.game.modern-ui` rules in its `styles.css`; its shots `docs/images/meridian-shards-modern.png`, `modern-third-person.png`). The dialogs and windows above stay ours. It replaced the layout above: the hotbar area and its stone frame, the faint spell bar bottom right, the square map, the loose enchantment icons and the stone chat box. (Its unit frame, map buttons and action bar changed again on 2026-10-14: "The Shards layout, second pass" below.)
 - **The look:** Shards' translucent dark panels (`rgba(16,14,10,0.66)`) with a thin gold edge, rounded corners and a soft shadow, drawn with Slate's rounded boxes and gradients (`MRPaint::Rounded`, `Gradient`, `HudPanel`). Sizes are Shards' CSS pixels in `ui_style.json` `"hud"` (`UMRUIStyle::HudPx`, `hud_px` 1 = Shards at 1080p). Names and titles are in **Heidelberg**, the original's title face (`font.c FONT_TITLES`): `tools/ui/build_ui_art.py` copies `Heidelb1.ttf` from the installed client to `data/runtime/fonts/` (git-ignored, packaged with `data/`), and `UMRUIStyle::TitleFont` falls back to the UI font without it.
 - **Our face, top left** (`SMRUnitFrame`): the face in a 60 × 84 panel, from a portrait preview of our own look (`UMRUISubsystem::UpdateSelfPortrait`: captured for 3 s after the look changes, then once a second); our name; online, the toolbar's Rest/Stand (pressed while resting) and mailbox buttons (`rest.bmp`, mailnews's `mailbox.bmp`; `build_ui_art.py` cut `rest.bmp` as 36 × 36 before, it's 24 × 20 halves); our enchantments under it, in small panels. A right click on the face looks at us; a click picks us for a waiting spell.
 - **The target, top centre** (`SMRTargetFrame`, online): its bitmap, its name (red, with a red edge, if it can be attacked) and × to clear it; at most 40 % of the width.
@@ -231,6 +231,75 @@ The HUD over the view now copies Meridian Shards' Modern interface (`meridian-br
   - **Selecting a hotbar slot no longer wields it.** The right hand is an equipment slot of its own offline too, as it always was online (`UMRInventorySource::Resolve` no longer maps it to the selected slot). A weapon is wielded on purpose: dropped on the weapon slot or the figure, shift-clicked in the bag, or clicked on the action bar's hotbar with the dialog closed (`UMRUISubsystem::UseHotbarSlot`, `UMRInventorySource::UseHotbar`: anything worn or wielded goes on, what was there takes its place on the hotbar; online the server uses it). A click on the spell row casts. 1–9 and the wheel still only select (U uses the selected item on something).
   - Pictures: `build/ui/shots/tweaks/` (`inventory`, `inventory_drop_on_avatar`).
 - Pictures: `build/ui/shots/shards/` (`run_ui_shots.ps1 -Label shards`: `hud_size_75`, `hud_size_150`, `hud_hidden` are new), online `Saved/Screenshots/MRNet/combat.png` and `names.png` (`run_net_test.ps1 -Render`, `DONE 58/58`).
+
+## The Shards layout, second pass (2026-10-14)
+Shards' Modern interface changed after the first pass (meridian-browser `ModernHud.tsx`, `QuickSlots.tsx`, `quickSlots.ts`, `Sidebar.tsx` `HudBars`, `HelpDialog.tsx`, 2026-10-12/13). Its screenshots in `docs/images/` are older than its code, so the code is the reference. Side by side at 1600×900: `meridian-browser/ReferenceImages/comparisons/inn-room/{modern,unreal}.png`. The maintainer's choices: Shards' mixed quick slots, the HUD sized like the browser's, the Help dialog, and quick emotes on a click on our face.
+
+**The size: like the browser.**
+- Shards draws CSS pixels 1:1, so at 1600×900 its HUD was about 20% bigger than ours, which scaled with the window's height (the engine's DPI curve, 1.0 at 1080).
+- `UMRUISubsystem::GetHudScale` now undoes the curve's shrinking: on a window up to 1080 high every cluster keeps Shards' pixel size. Above 1080 it still grows with the curve, and HUD Size still multiplies it.
+- Dialogs, the login screen and the names over the world keep the old scaling.
+- `mr.UI.HudLikeBrowser 0` goes back.
+
+**Top left** (`SMRUnitFrame`, `SMRVitalBars`), Shards' `.unit-frame`:
+- The face (60×84). Beside it, 8 px away, a 200 px column with the bars and our enchantments under them.
+- **The bars** are the original's graph bars, as Shards' `StatBar` draws them (`graphctl.c`):
+  - a faint dark box (padding 3), a row of 15 px for each of health, mana and vigor;
+  - the stat's icon (17×15): online the server's own bitmap (stat group 1 names `heal.bgf`, `ankh.bgf`, `bolticon.bgf`), our prebuilt icon of it first; offline `build_icons.py` makes the three (`UMRUISubsystem::VitalIcon`);
+  - the bar: 13 px, `COLOR_BAR1` green (red while vigor is under `MIN_VIGOR`), the limit in `COLOR_BAR2` (how far it can fill now), `COLOR_BAR3` behind;
+  - the number in white, inside at the left once over 70%, else just past the fill;
+  - the original frame (`bar_left`, `bar_right`, `bar_top`, `bar_bottom`).
+  - A hover shows the numbers with their maximum. A click picks us while a spell waits for its target.
+- **Gone from here:** the name (Shards has none), and Rest/Mail (now at the map).
+- **The face's colours** (2026-10-14): the portrait (and the creator's face and the Look dialog's, the same `AMRAvatarPreview`) is a scene capture, which the room's post-process volume reaches too: the Inn's tone curve and grading made the face orange (a skin-3 cheek (166, 111, 69) came out (148, 56, 1)). Its capture now turns the tone mapper and the grading off (`ShowFlags` Tonemapper, ColorGrading), so it shows the palette's colours as Shards does (ADR 0005 "The original's colours inside"). `mr.UI.AvatarBrightness` still dims it.
+- **A click on the face** picks us for a waiting spell, else opens the **quick emotes** (`SMRQuickEmotes`, Shards' `QUICK_EMOTES`), also on **Q** (`QuickEmotes` in `MRKeys`).
+  - The emotes: Wave, Point, Dance | Happy, Sad, Neutral, Wry, a row of buttons at the top centre, 78 px down.
+  - Online they're the original's commands (`RunChatLine`). Offline, wave, point and dance play the sprite's clip.
+  - Esc closes them.
+
+**Top right** (`SMRMapCluster`):
+- Rest/Stand and the mailbox are round 30 px buttons at the map ring's top corners (Shards' `.map-tool`: the toolbar art at 20×17, a gold edge and glow while resting). They show online only, as before.
+- The Meridian time under the room's name is gone (Shards has none).
+
+**Bottom: the quick slots** (`SMRActionBar`, `UMRInventorySource` quick slots), in place of the health/mana/vigor bars, the spell row, the item hotbar and the experience line.
+- **The rows:** two rows of ten, row 0 on keys 1–9 and 0, row 1 on the numpad's 1–9 and 0, drawn over row 0 (Shards' Second Hotbar).
+  - Options > Game > "Second hotbar (numpad)" (`mr.UI.SecondHotbar`) hides row 1.
+  - It's on by default, since we always had a spell row (Shards: off).
+- **A slot names a spell or an item; it doesn't hold it** (`FMRQuickSlot`, Shards' `quickSlots.ts`):
+  - it's kept by name, since saves renumber objects and a drunk potion's stack is a new object;
+  - online, items are matched by the server's name, else by class; the one in use first;
+  - the item stays in the bag, so Minecraft's item hotbar is gone (`EMRSlotArea::Hotbar` and `SpellBar` became `QuickSlot`).
+- **Using one:** its key, or a click (released on the same slot): a spell is cast (the target, else the crosshair's, else the next click), an item used (put on, or taken off when on, as Shards; online whatever using does).
+- **What a slot shows:**
+  - its key top left, and the count carried;
+  - greyed when the spell isn't known or none is carried;
+  - a gold edge and glow while its item is in use;
+  - after a cast, a shadow clearing clockwise from the top with the seconds left (Shards' `.qs-cooldown`, a triangle fan of custom vertices).
+  - The tooltip reads "Name (key)", with "(not known)" or "(none carried)".
+- **Filling one:**
+  - drop a stack or a spell from the dialog on it (the stack goes back);
+  - point at something in the dialog and press the slot's key (the number keys used to swap with Minecraft's hotbar);
+  - shift-click something in the dialog (spells to the numpad row first);
+  - or right-click a slot for the **picker** (`SMRQuickSlotPicker`: the spells we know, the items we carry one per kind, shillings left out, and Empty).
+  - Dragging one slot onto another swaps them; shift-click empties one.
+  - An empty slot's key or click opens the picker too.
+- **Gone with the selection:**
+  - the wheel no longer selects a slot; it zooms the camera, and Ctrl + wheel still does;
+  - the selected item's name over the bar is gone;
+  - U uses the item pointed at in the dialog, or on a quick slot.
+- **Experience** left the HUD (Shards' Modern shows none). It's on the Stats page, first under Character, from stat group 1.
+- **Kept and moved:**
+  - online the slots are kept per character in the social file (`quick_slots`, each `spell|<id>` or `item|<id>|<icon>|<name>`);
+  - a file from before is read once: its `hotbar` goes to row 0, its `spell_bar` to row 1;
+  - offline, `mock_inventory.json` `quick_slots` seeds them (the old hotbar's items moved to the end of the bag).
+
+**Help** (`SMRHelpDialog`, `EMRWindow::Help`; Help in the Escape menu, F1 offline, since online F1 is the quick chat's "help"). Three pages, after Shards' `HelpDialog.tsx`:
+- **Controls:** a keyboard drawn from the bindings now (`MRKeys`) and the fixed keys, each key coloured by its group (Shards' groups and colours). Pointing at a group lights its keys; a key's tooltip names its uses. The mouse's buttons and the wheel are listed under it.
+- **HUD:** Shards takes a picture of the screen; ours outlines and numbers the live HUD's parts where they stand (`SMRHUDRoot::GetHudParts`), with a list beside it. Pointing at a line lights its part.
+- **Interface:** the Escape menu, the inventory dialog's pages and the other windows, written for this game.
+
+- Pictures: `build/ui/shots/hud2/` and `hud2_900/` (`run_ui_shots.ps1 -Label hud2`, and `-Label hud2_900 -StartZone 301 -ResX 1600 -ResY 900`: `hud_picker`, `hud_emotes`, `help_controls`, `help_hud`, `help_interface` are new); Shards beside ours at 1600×900, `build/ui/shots/hud2_compare.png`.
+- **Checks:** `run_net_test.ps1 -Render` `DONE 60/60` (appraise cast from a quick slot; an old hotbar file moved to quick slots; the quick slot found again after the relog); unit tests 30/30, movement 23/23, the step survey's known 41.
 
 ## The admin console (2026-10-10)
 - **"Admin Console"** in the Escape menu, shown only for characters the server gave the admin or DM module (`UMRNetSubsystem::IsStaff`; `docs/research/blakserv-protocol.md` "Admins and DMs"). A window like the others (`UI/SMRAdminConsole`, `EMRWindow::Admin`), after the original's admin window (`module/admin admindlg.c`) and Meridian Shards' `AdminConsole.tsx`, with buttons where the original made you type:

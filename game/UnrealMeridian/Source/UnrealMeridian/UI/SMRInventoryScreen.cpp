@@ -360,7 +360,7 @@ TSharedRef<SWidget> SMRInventoryScreen::MakeInventoryPage()
 		return C.IsEmpty() ? LOCTEXT("Bare", "Bare hands") : Ui->NameFor(C);
 	});
 
-	// (no hotbar row: items go straight onto the HUD's hotbar, which stays over the dialog)
+	// (no hotbar row: items and spells are named on the HUD's quick slots, which stay over the dialog)
 	BagGrid = SNew(SUniformGridPanel);
 
 	const float AvatarW = SlotPx * 3.f, AvatarH = SlotPx * 5.f;
@@ -767,7 +767,7 @@ void SMRInventoryScreen::RebuildSpells()
 				FLinearColor(0.75f, 0.73f, 0.68f))
 		];
 	}
-	TSharedRef<STextBlock> Help = Label(S, LOCTEXT("SpellHelp", "Click a spell and put it on the spell bar, or shift-click it. Numpad 1-9 casts."), 7.5f,
+	TSharedRef<STextBlock> Help = Label(S, LOCTEXT("SpellHelp", "Click a spell and put it on a quick slot, or shift-click it, or point at it and press the slot's key."), 7.5f,
 		false, FLinearColor(0.7f, 0.68f, 0.62f));
 	Help->SetAutoWrapText(true);
 	SpellList->AddSlot().AutoHeight().Padding(2.f * Px, 6.f * Px, 2.f * Px, 2.f * Px)
@@ -1190,13 +1190,16 @@ FReply SMRInventoryScreen::OnKeyDown(const FGeometry& Geo, const FKeyEvent& Even
 		Ui->SetInventoryOpen(false);
 		return FReply::Handled();
 	}
-	// a number over a slot swaps it with that hotbar slot (Minecraft); otherwise the game selects
-	const FKey Numbers[] = {EKeys::One, EKeys::Two, EKeys::Three, EKeys::Four, EKeys::Five, EKeys::Six, EKeys::Seven, EKeys::Eight, EKeys::Nine};
+	// a number over a slot names what it holds on that quick slot (1-0; Minecraft's swap with the hotbar
+	// until 2026-10-14); otherwise the game uses the quick slot
+	const FKey Numbers[] = {EKeys::One, EKeys::Two, EKeys::Three, EKeys::Four, EKeys::Five, EKeys::Six, EKeys::Seven, EKeys::Eight, EKeys::Nine,
+		EKeys::Zero, EKeys::NumPadOne, EKeys::NumPadTwo, EKeys::NumPadThree, EKeys::NumPadFour, EKeys::NumPadFive, EKeys::NumPadSix,
+		EKeys::NumPadSeven, EKeys::NumPadEight, EKeys::NumPadNine, EKeys::NumPadZero};
 	for (int32 i = 0; i < UE_ARRAY_COUNT(Numbers); ++i)
 	{
 		if (Key == Numbers[i] && Ui->GetHoveredSlot().IsValid() && Ui->GetSource())
 		{
-			Ui->GetSource()->SwapWithHotbar(Ui->GetHoveredSlot(), i);
+			Ui->GetSource()->AssignQuickSlot(Ui->GetHoveredSlot(), i);
 			return FReply::Handled();
 		}
 	}
@@ -1233,7 +1236,7 @@ FReply SMRInventoryScreen::OnMouseMove(const FGeometry& Geo, const FPointerEvent
 
 FReply SMRInventoryScreen::OnMouseWheel(const FGeometry& Geo, const FPointerEvent& Event)
 {
-	return FReply::Handled();  // no hotbar scrolling or camera zoom behind the window
+	return FReply::Handled();  // no camera zoom behind the window
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -679,13 +679,14 @@
     },
     "raza_interior_day": {
       "_lighting_doc": "No bounce lighting inside (dynamic_global_illumination_method None, whatever the Lighting option; the user's choice 2026-10-10): the original's warm, dark rooms, without the blue haze the sky put into Lumen's fill, and ~40% less GPU time. The outdoor moods set Lumen again (raza_afternoon). The Mausoleum inherits it (raza_crypt).",
+      "_colour_doc": "The original's colours (2026-10-14, the user: the signs, tables, faces and helmets read orange beside Meridian Shards): a neutral ambient floor, skylight leak and lower sky (each warm until then: AmbientTint [1, 0.86, 0.7], leak tint [1, 0.82, 0.65], lower hemisphere [0.085, 0.064, 0.043]), and no tone curve or grading (tone_curve_amount and expand_gamut 0; the afternoon's saturation and contrast 1.08, warm highlights and cool shadows undone). The filmic curve crushed the dark channels per channel, so a dim brown went orange and blue went to 0: a sign's saturation 0.83 against the bitmap's 0.63, now 0.61 (Shards 0.60). The lamps keep their warm light. Sheets: build/lookdev/colour/inn.png, outdoor.png (the outdoors keep the curve: flat and grey without it).",
       "_doc": "Inside a Raza building by day: no sun (the zone profile turns it off), the room's own lights, the painted windows lit with daylight (Collection WindowDaylight, scaled by the zone's daylight), a warm ambient floor so corners away from the lights stay readable (Lumen skylight leaking, tinted warm, over the sky light's constant lower hemisphere), a dusty haze that only the room's lights show up in (volumetric fog at density 0.3 with a near-black warm fog colour and the sky light mostly out of it: warm glows around the lamps, torches and candles, no grey veil; chosen 2026-10-05 from mood_zz_haze_* in look-dev, docs/adr/0005 \"Hazy interiors\"), and a fixed exposure (EV -1, chosen by bracketing: mood_raza_interior_day_ev*), as the original renders at a fixed brightness: the room light itself dims at night instead of the camera adapting it away.",
       "inherit": "raza_afternoon",
       "SkyLight": {
         "intensity": 1.0,
         "volumetric_scattering_intensity": 0.15,
         "lower_hemisphere_is_black": false,
-        "lower_hemisphere_color": [0.085, 0.064, 0.043, 1.0]
+        "lower_hemisphere_color": [0.067, 0.067, 0.067, 1.0]
       },
       "HeightFog": {
         "fog_density": 0.3,
@@ -701,9 +702,16 @@
           "auto_exposure_max_brightness": -1.0,
           "auto_exposure_bias": 0.0,
           "lumen_skylight_leaking": 0.3,
-          "lumen_skylight_leaking_tint": [1.0, 0.82, 0.65, 1.0],
+          "lumen_skylight_leaking_tint": [1.0, 1.0, 1.0, 1.0],
           "bloom_intensity": 0.6,
-          "vignette_intensity": 0.4
+          "vignette_intensity": 0.4,
+          "tone_curve_amount": 0.0,
+          "expand_gamut": 0.0,
+          "film_toe": 0.55,
+          "color_saturation": [1.0, 1.0, 1.0, 1.0],
+          "color_contrast": [1.0, 1.0, 1.0, 1.0],
+          "color_gain_shadows": [1.0, 1.0, 1.0, 1.0],
+          "color_gain_highlights": [1.0, 1.0, 1.0, 1.0]
         }
       },
       "Collection": {
@@ -711,14 +719,14 @@
         "WindowDaylight": 0.5,
         "Stars": 0.0,
         "SectorAmbient": 0.85,
-        "AmbientTint": [1.0, 0.86, 0.7]
+        "AmbientTint": [1.0, 1.0, 1.0]
       }
     },
     "raza_interior_night": {
       "_doc": "Inside a Raza building at night: the windows dark, the room lit by its own lights over a dimmer warm ambient floor, exposure allowed to go darker.",
       "inherit": "raza_interior_day",
       "SkyLight": {
-        "lower_hemisphere_color": [0.051, 0.036, 0.022, 1.0]
+        "lower_hemisphere_color": [0.038, 0.038, 0.038, 1.0]
       },
       "GlobalPostProcess": {
         "settings": {
@@ -764,7 +772,10 @@
           "color_saturation": [0.82, 0.82, 0.82, 1.0],
           "color_contrast": [1.15, 1.15, 1.15, 1.0],
           "color_gain_shadows": [0.88, 0.95, 1.12, 1.0],
-          "color_gain_highlights": [1.06, 1.0, 0.92, 1.0]
+          "color_gain_highlights": [1.06, 1.0, 0.92, 1.0],
+          "tone_curve_amount": 1.0,
+          "expand_gamut": 1.0,
+          "film_toe": 0.6
         }
       },
       "Collection": {

@@ -1,5 +1,7 @@
 #include "Tests/MRNetTest.h"
 
+#include "Ambient/MRAmbientSubsystem.h"
+
 #include "EngineUtils.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
@@ -119,6 +121,7 @@ void UMRNetTest::Start(APlayerController* InController)
 	FParse::Value(FCommandLine::Get(), TEXT("MRNetPal="), PalName);
 	bDeath = FParse::Param(FCommandLine::Get(), TEXT("MRNetDeath"));
 	bAdmin = FParse::Param(FCommandLine::Get(), TEXT("MRNetAdmin"));
+	bArena = FParse::Param(FCommandLine::Get(), TEXT("MRNetArena"));
 	// the travel step's runtime room: Deep in the Forest of Farol is a built zone since the world remaster's
 	// batch build (2026-10-11), so it's drawn as built at runtime here, as the rooms we haven't built are
 	if (IConsoleVariable* Forced = IConsoleManager::Get().FindConsoleVariable(TEXT("mr.Zones.ForceRuntime")))
@@ -862,13 +865,51 @@ void UMRNetTest::Tick()
 				NextStage();
 			}
 		}
-		else if (StageAge > 1.5)
+		else if (ArenaStage == 0 && StageAge > 1.5)
 		{
 			// (a moment for the last screenshot)
 			if (UI && UI->IsWindowOpen(EMRWindow::Admin))
 			{
 				UI->SetWindowOpen(EMRWindow::Admin, false);
 			}
+			if (!bArena)
+			{
+				Advance(EStep::Logoff);
+				break;
+			}
+			// the Arena of Kraanan (Kod room 60): the relay's fights (docs/adr/0013)
+			Net->AdminCommand(FString::Printf(TEXT("send object %u teleportto rid int 60"), Net->GetPlayer().Id));
+			ArenaStage = 1;
+			ArenaTime = Now;
+		}
+		else if (ArenaStage == 1)
+		{
+			const UMRAmbientSubsystem* Ambient = PC->GetWorld()->GetSubsystem<UMRAmbientSubsystem>();
+			const FMRArenaPlayback* Arena = Ambient ? Ambient->GetArena() : nullptr;
+			const bool bThere = Net->GetPlayer().RoomFile.Equals(TEXT("tosarena.roo"), ESearchCase::IgnoreCase) && PC->GetPawn() && !Net->IsWaiting();
+			if (bThere && Arena && Arena->IsReady() && (Arena->NumFigures() > 0 || Arena->GetPhase() == TEXT("closed")) && Now - ArenaTime > 8.0)
+			{
+				if (FApp::CanEverRender())
+				{
+					// toward the floor, from the stands
+					PC->SetControlRotation(FRotator(-18.0, PC->GetControlRotation().Yaw, 0.0));
+					const FString File = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Screenshots"), TEXT("MRNet"), TEXT("arena.png"));
+					FScreenshotRequest::RequestScreenshot(File, true, false);
+				}
+				Pass(FString::Printf(TEXT("watched the arena on the relay: %d people, the round's phase %s"), Arena->NumFigures(), *Arena->GetPhase()));
+				ArenaStage = 2;
+				ArenaTime = Now;
+			}
+			else if (Now - ArenaTime > 40.0)
+			{
+				Fail(FString::Printf(TEXT("the arena: %s, %s"), bThere ? TEXT("there") : *FString::Printf(TEXT("still in %s"), *Net->GetPlayer().RoomFile),
+					!Arena ? TEXT("no playback (no relay?)") : !Arena->IsReady() ? TEXT("nothing from the relay") : TEXT("nobody in it")));
+				Advance(EStep::Logoff);
+			}
+		}
+		else if (ArenaStage == 2 && Now - ArenaTime > 1.5)
+		{
+			Net->AdminCommand(FString::Printf(TEXT("send object %u teleportto rid int 301"), Net->GetPlayer().Id));
 			Advance(EStep::Logoff);
 		}
 		break;
@@ -1152,6 +1193,31 @@ void UMRNetTest::Tick()
 		{
 			Pass(FString::Printf(TEXT("looked at %s: \"%s\"%s"), *D.Object.Name, *MRServerText::StripStyle(D.Text).Left(70),
 				D.Inscription.IsEmpty() ? TEXT("") : *FString::Printf(TEXT(" (inscribed \"%s\")"), *D.Inscription.Left(40))));
+			// ambient life (docs/adr/0013): the room's crowd, which only we see, none of it in the server's world
+			if (const UMRAmbientSubsystem* Ambient = PC->GetWorld()->GetSubsystem<UMRAmbientSubsystem>();
+				Ambient && MRAmbient::FData::Get().Room(Net->GetPlayer().RoomFile) && UMRAmbientSubsystem::LevelScale() > 0.0)
+			{
+				TArray<FString> Names;
+				bool bLeaked = false;
+				for (const auto& F : Ambient->GetFigures())
+				{
+					FString Name, Text;
+					FMRSpriteAppearance Look;
+					if (Ambient->Inspect(F.Key, Name, Text, Look))
+					{
+						Names.Add(Name);
+					}
+					bLeaked |= Net->GetObjects().Contains(F.Key) || NetWorld->FindActor(F.Key) != nullptr;
+				}
+				if (Names.Num() && !bLeaked)
+				{
+					Pass(FString::Printf(TEXT("%s has %d people only we see (ambient life): %s"), *Net->GetPlayer().RoomName, Names.Num(), *FString::Join(Names, TEXT(", "))));
+				}
+				else
+				{
+					Fail(FString::Printf(TEXT("ambient life in %s: %d people%s"), *Net->GetPlayer().RoomFile, Names.Num(), bLeaked ? TEXT(", some in the server's world") : TEXT("")));
+				}
+			}
 			StageTime = Now;
 			LookStage = 2;
 		}
@@ -1785,7 +1851,7 @@ void UMRNetTest::Tick()
 			break;
 		case 20:
 		{
-			// a carried item on the hotbar's last slot: kept with the character, for the relog to find
+			// a carried item on quick slot 10 (key 0): kept with the character, for the relog to find
 			// (a stack: shillings or reagents, which nothing wields later)
 			UMRInventorySource* Source = UI->GetSource();
 			int32 Pick = INDEX_NONE;
@@ -1797,13 +1863,13 @@ void UMRNetTest::Tick()
 			}
 			if (Source && Pick != INDEX_NONE)
 			{
-				Source->SwapWithHotbar(FMRSlotRef(EMRSlotArea::Bag, Pick), 8);
+				Source->AssignQuickSlot(FMRSlotRef(EMRSlotArea::Bag, Pick), FMRQuickSlot::PerRow - 1);
 			}
 			const FMRSocial& S = Net->GetSocial();
-			HotbarKey = S.Hotbar.IsValidIndex(8) ? S.Hotbar[8] : FString();
+			HotbarKey = S.QuickSlots.IsValidIndex(FMRQuickSlot::PerRow - 1) ? S.QuickSlots[FMRQuickSlot::PerRow - 1] : FString();
 			if (HotbarKey.IsEmpty())
 			{
-				Fail(TEXT("settings: nothing kept on the hotbar's last slot"));
+				Fail(TEXT("settings: nothing kept on quick slot 0"));
 			}
 			Net->OnPasswordChanged.RemoveAll(this);
 			Advance(PalName.IsEmpty() ? EStep::Items : EStep::Pair);
@@ -2072,10 +2138,6 @@ void UMRNetTest::Tick()
 				{
 					Worn += Src->Get(FMRSlotRef::Equip(static_cast<EMREquipSlot>(i))).ObjectId ? 1 : 0;
 				}
-				for (int32 i = 0; i < 9; ++i)
-				{
-					Shown += Src->Get(FMRSlotRef(EMRSlotArea::Hotbar, i)).ObjectId ? 1 : 0;
-				}
 				if (Shown + Worn == W.Inventory.Num())
 				{
 					Pass(FString::Printf(TEXT("the inventory screen shows them: %d on equipment slots, %d in the bag"), Worn, Shown));
@@ -2343,7 +2405,25 @@ void UMRNetTest::Tick()
 				}
 				NetWorld->ClearTarget();
 				SpellChat = Net->GetChat().Num();
-				const bool bSent = NetWorld->CastSpell(Appraise->Object.Id);
+				// from a quick slot, as a player casts (numpad 0: the second row's last), our spell found by its name
+				UMRUISubsystem* SpellUI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
+				UMRInventorySource* SpellSource = SpellUI ? SpellUI->GetSource() : nullptr;
+				const FName* AppraiseId = SpellSource ? SpellSource->GetKnownSpells().FindByPredicate([SpellUI](const FName& Id)
+				{
+					return SpellUI->NameFor(FMRSlotContent::Spell(Id)).ToString().Equals(TEXT("appraise"), ESearchCase::IgnoreCase);
+				}) : nullptr;
+				bool bSent = false;
+				if (AppraiseId)
+				{
+					constexpr int32 Slot = FMRQuickSlot::Num - 1;
+					SpellSource->SetQuickSlot(Slot, SpellSource->QuickSlotFor(FMRSlotContent::Spell(*AppraiseId)));
+					SpellUI->UseQuickSlot(Slot);
+				}
+				else
+				{
+					UE_LOG(LogMeridian, Warning, TEXT("MRNetTest: appraise isn't in our spell list; cast without a quick slot"));
+					bSent = NetWorld->CastSpell(Appraise->Object.Id);
+				}
 				if (!bSent && NetWorld->IsChoosingTarget())
 				{
 					UE_LOG(LogMeridian, Display, TEXT("MRNetTest: %s"), *NetWorld->GetChoosingText());
@@ -2355,7 +2435,7 @@ void UMRNetTest::Tick()
 		}
 		else if (SpellStage == 2 && !Answer(false).IsEmpty() && Now - StageTime > 0.5)
 		{
-			Pass(FString::Printf(TEXT("cast appraise on the mace (BP_REQ_CAST, one target): \"%s\""), *Answer(false)));
+			Pass(FString::Printf(TEXT("cast appraise on the mace from a quick slot (BP_REQ_CAST, one target): \"%s\""), *Answer(false)));
 			SpellChat = Net->GetChat().Num();
 			NetWorld->CastSpell(Meditate ? Meditate->Object.Id : 0);
 			SpellStage = 3;
@@ -3274,17 +3354,19 @@ void UMRNetTest::Tick()
 		else if (bSaid && Net->GetPhase() == EMRNetPhase::InGame && NetWorld->GetRid() && PC->GetPawn() && Net->GetNetWorld().bHasInventory)
 		{
 			Pass(FString::Printf(TEXT("logged off to the character list and entered again (%s)"), *Net->GetPlayer().RoomName));
-			// the hotbar kept with the character (M9): its last slot holds the item placed before
+			// the quick slots kept with the character (M9): quick slot 0 names the item placed before, and finds it carried
 			const UMRUISubsystem* UI = PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UMRUISubsystem>() : nullptr;
-			const FMRSlotContent Kept = UI && UI->GetSource() ? UI->GetSource()->Get(FMRSlotRef(EMRSlotArea::Hotbar, 8)) : FMRSlotContent();
-			const FMRNetObject* O = Kept.ObjectId ? Net->FindInventory(Kept.ObjectId) : nullptr;
-			if (!HotbarKey.IsEmpty() && O && O->Icon + TEXT("|") + O->Name == HotbarKey)
+			const UMRInventorySource* Src = UI ? UI->GetSource() : nullptr;
+			constexpr int32 Slot = FMRQuickSlot::PerRow - 1;
+			const FString Kept = Src ? Src->GetQuickSlot(Slot).ToString() : FString();
+			const FMRNetObject* O = Src ? Net->FindInventory(Src->Get(FMRSlotRef(EMRSlotArea::QuickSlot, Slot)).ObjectId) : nullptr;
+			if (!HotbarKey.IsEmpty() && Kept == HotbarKey && O && Src->IsQuickSlotAvailable(Slot))
 			{
-				Pass(FString::Printf(TEXT("the hotbar came back with the character: %s on its last slot"), *O->Name));
+				Pass(FString::Printf(TEXT("the quick slots came back with the character: %s on quick slot 0"), *O->Name));
 			}
 			else if (!HotbarKey.IsEmpty())
 			{
-				Fail(FString::Printf(TEXT("relog: the hotbar's last slot holds %s, not %s"), O ? *O->Name : TEXT("nothing"), *HotbarKey));
+				Fail(FString::Printf(TEXT("relog: quick slot 0 names %s (%s), not %s"), *Kept, O ? *O->Name : TEXT("none carried"), *HotbarKey));
 			}
 			Advance(bCreated ? EStep::Delete : EStep::Logoff);
 		}

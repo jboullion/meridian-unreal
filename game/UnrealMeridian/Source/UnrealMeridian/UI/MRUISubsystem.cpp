@@ -3,7 +3,10 @@
 #include "Abilities/MRAttributeSet.h"
 #include "Brushes/SlateNoResource.h"
 #include "Character/MRCharacter.h"
+#include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
+#include "Engine/UserInterfaceSettings.h"
+#include "UnrealClient.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/Texture2D.h"
 #include "Engine/TextureRenderTarget2D.h"
@@ -56,13 +59,17 @@
 
 namespace
 {
-	constexpr float SpellCooldownSeconds = 1.5f;  // mock: the spell bar's sweep after a cast
+	constexpr float CastCooldownSeconds = 1.5f;  // the quick slot's cooldown after a cast (ours: the server has none it sends)
 	TAutoConsoleVariable<int32> CVarDamageNumbers(TEXT("mr.UI.DamageNumbers"), 1,
 		TEXT("Damage numbers over what we hit and over ourselves when hit (ours; the original only printed the line). 0 hides them."));
 	TAutoConsoleVariable<int32> CVarHudSize(TEXT("mr.UI.HudSize"), 100,
 		TEXT("HUD Size in percent (75-150): the HUD's clusters grow where they stand (Options > Game; Shards' HUD Size)."));
 	TAutoConsoleVariable<int32> CVarFreeCursor(TEXT("mr.Input.FreeCursor"), 1,
 		TEXT("1: the cursor stays free and aims; holding the right mouse button turns the view (a right click looks). 0: the mouse always turns the view, aiming with the crosshair (Options > Controls)."));
+	TAutoConsoleVariable<int32> CVarHudLikeBrowser(TEXT("mr.UI.HudLikeBrowser"), 1,
+		TEXT("1: the HUD keeps Meridian Shards' pixel sizes on windows up to 1080 high (as a browser draws them), growing above; 0: it scales with the window's height as the rest of the UI (before 2026-10-14)."));
+	TAutoConsoleVariable<int32> CVarSecondHotbar(TEXT("mr.UI.SecondHotbar"), 1,
+		TEXT("The second row of quick slots, on the numpad's keys, over the first (Options > Game; Shards' Second Hotbar, off there by default: ours was the spell bar)."));
 	TAutoConsoleVariable<float> CVarChatWidth(TEXT("mr.UI.ChatWidth"), 0.f,
 		TEXT("The chat's width in HUD pixels, as last dragged by its right edge (0: ui_style.json hud chat_width)."));
 }
@@ -109,14 +116,10 @@ void UMRUISubsystem::UseSource(UMRInventorySource* InSource)
 	if (Source)
 	{
 		Source->ReturnCursor();
-		Source->OnSelectionChanged.RemoveAll(this);
 	}
 	Source = InSource;
-	if (Source)
-	{
-		Source->OnSelectionChanged.AddWeakLambda(this, [this]() { SelectionTime = Now(); });
-	}
 	HoveredSlot = PressSlot = FMRSlotRef();
+	PressQuick = PickerSlot = INDEX_NONE;
 	++StatsVersion;
 }
 
@@ -590,6 +593,32 @@ void UMRUISubsystem::OnNetContents()
 	SetLookOpen(true);
 }
 
+void UMRUISubsystem::ShowAmbientPerson(const FString& Name, const FString& Text, const FMRSpriteAppearance& Appearance)
+{
+	TSharedPtr<SMRLookDialog> Dialog = GetLookDialog();
+	if (!Dialog.IsValid())
+	{
+		return;
+	}
+	// as a player is looked at: the description and their face from the creator's portrait preview
+	FMRNetDescription D;
+	D.Object.Name = Name;
+	D.bPlayer = true;
+	D.Text = Text;
+	LookBrush = FSlateBrush();
+	LookBrush.DrawAs = ESlateBrushDrawType::NoDrawType;
+	LookPicture = nullptr;
+	LookPictureFor = 0;
+	SetCreatorAppearance(Appearance);
+	SetCreatorCapturing(true);
+	if (UObject* Target = GetCreatorTarget(true))
+	{
+		UMRUIStyle::SetImage(LookBrush, Target, FVector2f(256.f, 256.f));
+	}
+	Dialog->ShowDescription(D, &LookBrush);
+	SetLookOpen(true);
+}
+
 void UMRUISubsystem::OnNetDescription()
 {
 	UMRNetSubsystem* Net = GetNet();
@@ -909,41 +938,24 @@ void UMRUISubsystem::OnStyleReloaded()
 
 // ------------------------------------------------------------------------------ keys
 
-void UMRUISubsystem::OnHotbarKey(int32 Index)
+void UMRUISubsystem::UseQuickSlot(int32 Index)
 {
-	if (Source)
-	{
-		Source->SelectHotbar(Index);
-	}
-}
-
-void UMRUISubsystem::UseHotbarSlot(int32 Index)
-{
-	if (Source)
-	{
-		Source->UseHotbar(Index);
-		SelectionTime = Now();
-	}
-}
-
-void UMRUISubsystem::OnHotbarScroll(float Delta)
-{
-	if (Source && !FMath::IsNearlyZero(Delta) && !bInventoryOpen)
-	{
-		// wheel down moves right, as Minecraft
-		Source->SelectHotbar(Source->GetSelectedHotbar() + (Delta < 0.f ? 1 : -1));
-	}
-}
-
-void UMRUISubsystem::OnSpellKey(int32 Index)
-{
-	if (!Source || Index < 0 || Index >= 9)
+	if (!Source || Index < 0 || Index >= FMRQuickSlot::Num)
 	{
 		return;
 	}
-	LastSpellKeyTime = Now();
-	const FMRSlotContent C = Source->Get(FMRSlotRef(EMRSlotArea::SpellBar, Index));
-	if (C.IsEmpty() || SpellCooldown(Index) > 0.f)
+	const FMRQuickSlot& Q = Source->GetQuickSlot(Index);
+	if (Q.IsEmpty())
+	{
+		OpenQuickSlotPicker(Index);  // (Shards: an empty slot's click or key asks what goes there)
+		return;
+	}
+	if (!Q.bSpell)
+	{
+		Source->UseQuickItem(Index);
+		return;
+	}
+	if (SpellCooldown(Index) > 0.f || !Source->IsQuickSlotAvailable(Index))
 	{
 		return;
 	}
@@ -952,14 +964,14 @@ void UMRUISubsystem::OnSpellKey(int32 Index)
 	if (UMRNetWorldSubsystem* NetWorld = ThePC && ThePC->GetWorld() ? ThePC->GetWorld()->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
 		NetWorld && NetWorld->IsActive())
 	{
-		const uint32* Id = SpellIds.Find(C.Id);
+		const uint32* Id = SpellIds.Find(Q.Id);
 		if (Id && NetWorld->CastSpell(*Id))
 		{
 			SpellCastTime[Index] = Now();
 		}
 		return;
 	}
-	// mock cast: the sprite's cast action and the slot's cooldown sweep (spells come with the server)
+	// mock cast: the sprite's cast action and the slot's cooldown (spells come with the server)
 	SpellCastTime[Index] = Now();
 	if (APlayerController* PC = GetPlayerController())
 	{
@@ -968,17 +980,154 @@ void UMRUISubsystem::OnSpellKey(int32 Index)
 			Char->PlaySpriteAction(TEXT("cast"));
 		}
 	}
-	UE_LOG(LogMeridian, Log, TEXT("UI: cast %s (mock)"), *C.Id.ToString());
+	UE_LOG(LogMeridian, Log, TEXT("UI: cast %s (mock)"), *Q.Id.ToString());
 }
 
 float UMRUISubsystem::SpellCooldown(int32 Index) const
 {
-	if (Index < 0 || Index >= 9)
+	if (Index < 0 || Index >= FMRQuickSlot::Num || SpellCastTime[Index] <= 0.0)
 	{
 		return 0.f;
 	}
 	const double Since = Now() - SpellCastTime[Index];
-	return Since >= 0.0 && Since < SpellCooldownSeconds && SpellCastTime[Index] > 0.0 ? 1.f - static_cast<float>(Since / SpellCooldownSeconds) : 0.f;
+	return Since >= 0.0 && Since < CastCooldownSeconds ? 1.f - static_cast<float>(Since / CastCooldownSeconds) : 0.f;
+}
+
+float UMRUISubsystem::SpellCooldownSeconds(int32 Index) const
+{
+	return SpellCooldown(Index) * CastCooldownSeconds;
+}
+
+void UMRUISubsystem::OnQuickSlotMouseDown(int32 Index, bool bRight, bool bShift)
+{
+	if (!Source)
+	{
+		return;
+	}
+	PressQuick = INDEX_NONE;
+	if (IsCarrying())
+	{
+		// an item or a spell carried from the dialog: named here, the stack goes back
+		Source->Click(FMRSlotRef(EMRSlotArea::QuickSlot, Index), false);
+		bPickedOnPress = false;
+		PressSlot = FMRSlotRef();
+		return;
+	}
+	if (bRight)
+	{
+		OpenQuickSlotPicker(Index);  // Shards: a right click changes the slot
+		return;
+	}
+	if (bShift)
+	{
+		Source->QuickMove(FMRSlotRef(EMRSlotArea::QuickSlot, Index));  // emptied
+		return;
+	}
+	PressQuick = Index;
+}
+
+void UMRUISubsystem::OnQuickSlotMouseUp(int32 Index)
+{
+	if (Source && PressSlot.IsValid() && bPickedOnPress)
+	{
+		// a stack dragged from the dialog onto the slot
+		OnSlotMouseUp(FMRSlotRef(EMRSlotArea::QuickSlot, Index));
+		return;
+	}
+	const int32 From = PressQuick;
+	PressQuick = INDEX_NONE;
+	if (!Source || From == INDEX_NONE)
+	{
+		return;
+	}
+	if (From == Index)
+	{
+		UseQuickSlot(Index);
+	}
+	else
+	{
+		Source->SwapQuickSlots(From, Index);  // dragged onto another slot
+	}
+}
+
+void UMRUISubsystem::OpenQuickSlotPicker(int32 Index)
+{
+	if (Index < 0 || Index >= FMRQuickSlot::Num || !HUD.IsValid())
+	{
+		return;
+	}
+	SetQuickEmotesOpen(false);
+	PickerSlot = Index;
+	ApplyInputMode();
+}
+
+bool UMRUISubsystem::ShowsSecondHotbar()
+{
+	return CVarSecondHotbar.GetValueOnGameThread() != 0;
+}
+
+FString UMRUISubsystem::QuickSlotKeyLabel(int32 Index)
+{
+	const int32 Col = Index % FMRQuickSlot::PerRow;
+	const FString Digit = FString::FromInt((Col + 1) % 10);
+	return Index < FMRQuickSlot::PerRow ? Digit : TEXT("N") + Digit;
+}
+
+TSharedPtr<IToolTip> UMRUISubsystem::MakeQuickSlotToolTip(int32 Index)
+{
+	if (!Source)
+	{
+		return nullptr;
+	}
+	const FMRQuickSlot& Q = Source->GetQuickSlot(Index);
+	const FString Key = QuickSlotKeyLabel(Index);
+	if (Q.IsEmpty())
+	{
+		return FramedToolTip(FText::Format(LOCTEXT("QuickEmpty", "Empty ({0})"), FText::FromString(Key)),
+			LOCTEXT("QuickEmptyLine", "Drag a spell or an item here; right click to choose one."), FText::GetEmpty());
+	}
+	const FMRSlotContent C = Source->Get(FMRSlotRef(EMRSlotArea::QuickSlot, Index));
+	FText Name = Q.bSpell ? NameFor(C) : (Q.Name.IsEmpty() ? NameFor(C) : FText::FromString(Q.Name));
+	if (!Source->IsQuickSlotAvailable(Index))
+	{
+		const FText Why = Q.bSpell ? LOCTEXT("QuickNotKnown", "(not known)") : LOCTEXT("QuickNoneCarried", "(none carried)");
+		return FramedToolTip(FText::Format(LOCTEXT("QuickTitleKey", "{0} ({1})"), Name, FText::FromString(Key)), Why, FText::GetEmpty());
+	}
+	return FramedToolTip(FText::Format(LOCTEXT("QuickTitleKey", "{0} ({1})"), Name, FText::FromString(Key)),
+		Q.bSpell ? LOCTEXT("QuickCast", "Cast it with its key or a click; right click to change it.")
+			: LOCTEXT("QuickUse", "Use it with its key or a click; right click to change it."), FText::GetEmpty());
+}
+
+void UMRUISubsystem::SetQuickEmotesOpen(bool bOpen)
+{
+	if (bQuickEmotesOpen == bOpen || (bOpen && !HUD.IsValid()))
+	{
+		return;
+	}
+	if (bOpen)
+	{
+		PickerSlot = INDEX_NONE;
+	}
+	bQuickEmotesOpen = bOpen;
+	ApplyInputMode();
+}
+
+void UMRUISubsystem::RunEmote(FName Emote)
+{
+	SetQuickEmotesOpen(false);
+	const FString E = Emote.ToString().ToLower();
+	APlayerController* ThePC = GetPlayerController();
+	const UMRNetWorldSubsystem* NetWorld = ThePC && ThePC->GetWorld() ? ThePC->GetWorld()->GetSubsystem<UMRNetWorldSubsystem>() : nullptr;
+	if (NetWorld && NetWorld->IsActive())
+	{
+		RunChatLine(E);  // the original's commands: wave, point, dance (BP_ACTION) and the moods (BP_CHANGE_MOOD)
+		return;
+	}
+	// offline: the sprite's clip (the moods are the server's)
+	if (AMRCharacter* Char = ThePC ? Cast<AMRCharacter>(ThePC->GetPawn()) : nullptr; Char && (E == TEXT("wave") || E == TEXT("point") || E == TEXT("dance")))
+	{
+		Char->PlaySpriteAction(FName(*E));
+	}
 }
 
 void UMRUISubsystem::OnMapZoom(float Steps)
@@ -1142,9 +1291,9 @@ void UMRUISubsystem::ApplyInputMode()
 		PC->bShowMouseCursor = UsesFreeCursor();
 		PC->SetIgnoreLookInput(true);
 	}
-	else if (bInventoryOpen)
+	else if (bInventoryOpen || PickerSlot != INDEX_NONE || bQuickEmotesOpen)
 	{
-		// the cursor for the window; WASD still walks (an online game doesn't pause), the mouse doesn't look
+		// the cursor for the window (the quick slot picker, the quick emotes); WASD still walks (an online game doesn't pause), the mouse doesn't look
 		FInputModeGameAndUI Mode;
 		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 		Mode.SetHideCursorDuringCapture(false);
@@ -1644,7 +1793,8 @@ uint32 UMRUISubsystem::ItemToApply() const
 			return Id;
 		}
 	}
-	return Source->Get(FMRSlotRef(EMRSlotArea::Hotbar, Source->GetSelectedHotbar())).ObjectId;
+	// a quick slot pointed at on the HUD: its item
+	return HoveredSlot.Area == EMRSlotArea::QuickSlot ? Source->Get(HoveredSlot).ObjectId : 0;
 }
 
 bool UMRUISubsystem::GetCarried(bool bWeight, int32& OutValue, int32& OutMax) const
@@ -1700,6 +1850,19 @@ void UMRUISubsystem::GetStatSections(TArray<FMRStatSection>& Out) const
 			V.Min = S.Min;
 			V.Max = S.Tag == 1 ? (S.CurrentMax > 0 ? S.CurrentMax : S.Max) : 0;
 			V.Text = S.ValueText;
+			List.Add(V);
+		}
+		// experience, from the HUD's group (Condition: health, mana, vigor, experience); the HUD shows it
+		// no longer (Shards' Modern interface hasn't it: since 2026-10-14)
+		if (const FMRNetStatGroup* Main = Net->FindStatGroup(1); Main && Main->bReceived && Main->Stats.IsValidIndex(3)
+			&& Main->Stats[3].Type == FMRNetStat::Numeric)
+		{
+			const FMRNetStat& Xp = Main->Stats[3];
+			FMRStatView V;
+			V.Name = LOCTEXT("Experience", "Experience").ToString();
+			V.Value = Xp.Value;
+			V.Min = Xp.Min;
+			V.Max = Xp.Max;
 			List.Add(V);
 		}
 		if (const FMRServerEntry* Server = Net->GetServer())
@@ -1854,6 +2017,28 @@ bool UMRUISubsystem::GetVitalBar(int32 Index, float& OutValue, float& OutMax, fl
 	return true;
 }
 
+const FSlateBrush* UMRUISubsystem::VitalIcon(int32 Index) const
+{
+	static const TCHAR* Defaults[] = {TEXT("heal.bgf"), TEXT("ankh.bgf"), TEXT("bolticon.bgf")};
+	if (Index < 0 || Index >= UE_ARRAY_COUNT(Defaults))
+	{
+		return nullptr;
+	}
+	FString Bgf = Defaults[Index];
+	const UMRNetSubsystem* Net = GetNet();
+	const FMRNetStatGroup* G = Net && Net->GetPhase() == EMRNetPhase::InGame ? Net->FindStatGroup(1) : nullptr;
+	if (G && G->bReceived && G->Stats.IsValidIndex(Index) && G->Stats[Index].Name.EndsWith(TEXT(".bgf"), ESearchCase::IgnoreCase))
+	{
+		Bgf = G->Stats[Index].Name;
+	}
+	UMRUIStyle* Style = GetStyle();
+	if (const FSlateBrush* Icon = Style ? Style->Icon(FName(*FPaths::GetBaseFilename(Bgf).ToLower())) : nullptr)
+	{
+		return Icon;
+	}
+	return BitmapIcon(Bgf, 1);
+}
+
 UObject* UMRUISubsystem::UpdateSelfPortrait()
 {
 	APlayerController* PC = GetPlayerController();
@@ -1918,7 +2103,17 @@ bool UMRUISubsystem::GetHudNote(FString& OutText, double& OutAge) const
 
 float UMRUISubsystem::GetHudScale()
 {
-	return FMath::Clamp(CVarHudSize.GetValueOnGameThread(), 75, 150) / 100.f;
+	// sized like the browser (Shards draws CSS pixels 1:1): on a window up to 1080 high the HUD keeps
+	// its full pixel size where the engine's DPI curve would shrink it (to 83 % at 900); above, it grows
+	// with the curve as before
+	float Browser = 1.f;
+	if (CVarHudLikeBrowser.GetValueOnGameThread() != 0 && GEngine && GEngine->GameViewport && GEngine->GameViewport->Viewport)
+	{
+		const FIntPoint Size = GEngine->GameViewport->Viewport->GetSizeXY();
+		const float Dpi = Size.X > 0 && Size.Y > 0 ? GetDefault<UUserInterfaceSettings>()->GetDPIScaleBasedOnSize(Size) : 1.f;
+		Browser = Dpi > 0.f && Dpi < 1.f ? 1.f / Dpi : 1.f;
+	}
+	return FMath::Clamp(CVarHudSize.GetValueOnGameThread(), 75, 150) / 100.f * Browser;
 }
 
 float UMRUISubsystem::GetChatWidth() const

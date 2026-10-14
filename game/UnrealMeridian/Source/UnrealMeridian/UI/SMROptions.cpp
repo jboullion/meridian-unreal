@@ -525,7 +525,15 @@ TSharedRef<SWidget> SMROptionsDialog::MakeGame()
 	}
 	// Shards' HUD Size: the bars, slots, map, target and chat together, each grown where it stands
 	Add(LOCTEXT("HudSize", "HUD size (%)"), CVarSlider(Ui, TEXT("mr.UI.HudSize"), 75, 150));
+	Add(LOCTEXT("SecondHotbar", "Second hotbar (numpad)"), CVarToggle(Ui, TEXT("mr.UI.SecondHotbar")));
 	Add(LOCTEXT("Damage", "Damage numbers"), CVarToggle(Ui, TEXT("mr.UI.DamageNumbers")));
+	// Shards' Ambient Life: the crowds only we see (docs/adr/0013)
+	Add(LOCTEXT("AmbientLife", "Ambient life"), Choices(Ui, {LOCTEXT("AmbientOff", "Off"), LOCTEXT("AmbientFew", "Few"), LOCTEXT("AmbientNormal", "Normal"),
+		LOCTEXT("AmbientMany", "Many")}, []() { return FMath::RoundToInt(MRSettings::GetCVar(TEXT("mr.Ambient.Level"))); },
+		[](int32 i) { MRSettings::SetCVar(TEXT("mr.Ambient.Level"), static_cast<float>(i)); }));
+	Add(LOCTEXT("AmbientCritters", "Critters"), CVarToggle(Ui, TEXT("mr.Ambient.Critters")));
+	Add(LOCTEXT("AmbientNature", "Butterflies and fish"), CVarToggle(Ui, TEXT("mr.Ambient.Nature")));
+	Add(LOCTEXT("AmbientFlyers", "Birds and bats"), CVarToggle(Ui, TEXT("mr.Ambient.Flyers")));
 	Add(LOCTEXT("OriginalTyping", "Every line a command"), CVarToggle(Ui, TEXT("mr.Chat.OriginalTyping")));
 	Box->AddSlot().AutoHeight()[MRUI::Label(S, LOCTEXT("OriginalTypingHelp", "(as the original client: \"say\" to speak)"), 8.5f, false, Dim)];
 	return Box;

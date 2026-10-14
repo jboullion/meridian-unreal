@@ -1,5 +1,7 @@
 #include "Net/MRNetWorldSubsystem.h"
 
+#include "Ambient/MRAmbientSubsystem.h"
+
 #include "Character/MRCharacter.h"
 #include "Character/MRSpriteBodyComponent.h"
 #include "Character/MRSpriteData.h"
@@ -296,7 +298,8 @@ void UMRNetWorldSubsystem::OnRoomEntered()
 			{
 				if (Self)
 				{
-					Self->GetWorld()->GetTimerManager().ClearTimer(*Handle);
+					const TSharedRef<FTimerHandle> Keep = Handle;  // (ClearTimer frees this lambda, then writes the handle)
+					Self->GetWorld()->GetTimerManager().ClearTimer(*Keep);
 				}
 				return;  // another room came since
 			}
@@ -309,12 +312,17 @@ void UMRNetWorldSubsystem::OnRoomEntered()
 			{
 				bIn = Z->EnsureZoneLoaded(BuiltRid, true);  // still streaming: wait for it rather than walk on nothing
 			}
-			Self->GetWorld()->GetTimerManager().ClearTimer(*Handle);
-			UE_LOG(LogMeridian, Log, TEXT("MRNet: zone %d %s after %.2f s"), BuiltRid, bIn ? TEXT("in") : TEXT("still not in"),
-				FPlatformTime::Seconds() - Start);
+			// clearing the timer destroys this lambda and its captures: copy what's still needed first (reading
+			// them after put the player in "zone -572662307", off every floor)
+			const int32 NewRid = BuiltRid;
+			const int32 OldRid = PrevRid;
+			const double Waited = FPlatformTime::Seconds() - Start;
+			const TSharedRef<FTimerHandle> Keep = Handle;
+			Self->GetWorld()->GetTimerManager().ClearTimer(*Keep);
+			UE_LOG(LogMeridian, Log, TEXT("MRNet: zone %d %s after %.2f s"), NewRid, bIn ? TEXT("in") : TEXT("still not in"), Waited);
 			Self->LoadingRoom.Reset();
-			Self->Rid = BuiltRid;
-			Self->FinishEnterRoom(PrevRid);
+			Self->Rid = NewRid;
+			Self->FinishEnterRoom(OldRid);
 		}), 0.1f, true);
 		return;
 	}
@@ -1469,6 +1477,15 @@ void UMRNetWorldSubsystem::OnProjectile(const FMRNetProjectile& P)
 		Ends.Add(To);
 	}
 	const double SpeedCms = P.Speed * MRUnits::CmPerSquare;  // Speed squares a second
+	// the ambient crowd runs from spells, at both ends (Shards' gameScene scatterAmbient; docs/adr/0013)
+	if (UMRAmbientSubsystem* Ambient = GetWorld()->GetSubsystem<UMRAmbientSubsystem>())
+	{
+		Ambient->OnSpell(From);
+		for (const FVector& To : Ends)
+		{
+			Ambient->OnSpell(To);
+		}
+	}
 	TArray<TWeakObjectPtr<AMRNetProjectile>> Made;
 	for (const FVector& To : Ends)
 	{

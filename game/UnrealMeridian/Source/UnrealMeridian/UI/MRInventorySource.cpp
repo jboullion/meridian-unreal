@@ -12,7 +12,6 @@
 
 namespace
 {
-	constexpr int32 HotbarSlots = 9;
 	constexpr int32 BagColumns = 9;
 	constexpr int32 MinBagRows = 4;
 	constexpr int32 MaxNumberStack = 9999;  // Kod NumberItems have no limit; a slot has to stop somewhere
@@ -21,6 +20,40 @@ namespace
 	const TCHAR* EquipNames[] = {TEXT("Head"), TEXT("Amulet"), TEXT("Torso"), TEXT("Hands"), TEXT("Legs"),
 		TEXT("Ring1"), TEXT("Ring2"), TEXT("LeftHand"), TEXT("RightHand")};
 	static_assert(UE_ARRAY_COUNT(EquipNames) == static_cast<int32>(EMREquipSlot::Count), "EquipNames");
+
+	bool ValidQuick(int32 Index) { return Index >= 0 && Index < FMRQuickSlot::Num; }
+}
+
+// ------------------------------------------------------------------------------ quick slot text
+
+FString FMRQuickSlot::ToString() const
+{
+	if (IsEmpty())
+	{
+		return FString();
+	}
+	return bSpell ? FString::Printf(TEXT("spell|%s"), *Id.ToString())
+		: FString::Printf(TEXT("item|%s|%s|%s"), *Id.ToString(), *Icon, *Name);
+}
+
+FMRQuickSlot FMRQuickSlot::FromString(const FString& Text)
+{
+	FMRQuickSlot Q;
+	TArray<FString> Parts;
+	Text.ParseIntoArray(Parts, TEXT("|"), false);
+	if (Parts.Num() >= 2 && Parts[0] == TEXT("spell") && !Parts[1].IsEmpty())
+	{
+		Q.bSpell = true;
+		Q.Id = FName(*Parts[1]);
+	}
+	else if (Parts.Num() >= 4 && Parts[0] == TEXT("item") && !Parts[1].IsEmpty())
+	{
+		Q.Id = FName(*Parts[1]);
+		Q.Icon = Parts[2];
+		// (a name with a "|" in it: the rest of the line)
+		Q.Name = FString::Join(TArrayView<const FString>(Parts).RightChop(3), TEXT("|"));
+	}
+	return Q;
 }
 
 // ------------------------------------------------------------------------------ queries
@@ -29,9 +62,8 @@ int32 UMRInventorySource::NumSlots(EMRSlotArea Area) const
 {
 	switch (Area)
 	{
-	case EMRSlotArea::Hotbar:
-	case EMRSlotArea::SpellBar:
-		return HotbarSlots;
+	case EMRSlotArea::QuickSlot:
+		return FMRQuickSlot::Num;
 	case EMRSlotArea::Equipment:
 		return static_cast<int32>(EMREquipSlot::Count);
 	case EMRSlotArea::SpellBook:
@@ -64,7 +96,7 @@ int32 UMRInventorySource::NumSlots(EMRSlotArea Area) const
 FMRSlotRef UMRInventorySource::Resolve(const FMRSlotRef& Slot) const
 {
 	// (until 2026-10-10 the right hand was the selected hotbar slot, as Minecraft's; it is a slot of
-	// its own now, offline as online: selecting a hotbar slot doesn't wield it)
+	// its own now, offline as online)
 	return Slot;
 }
 
@@ -75,6 +107,22 @@ FMRSlotContent UMRInventorySource::Get(const FMRSlotRef& Slot) const
 	{
 		const TArray<FName>& Known = GetKnownSpells();
 		return Known.IsValidIndex(S.Index) ? FMRSlotContent::Spell(Known[S.Index]) : FMRSlotContent();
+	}
+	if (S.Area == EMRSlotArea::QuickSlot)
+	{
+		// what the slot names: its spell, or the item it stands for now (how many are carried); named
+		// but not carried, the item by its class (drawn greyed: IsQuickSlotAvailable)
+		const FMRQuickSlot& Q = GetQuickSlot(S.Index);
+		if (Q.IsEmpty())
+		{
+			return FMRSlotContent();
+		}
+		if (Q.bSpell)
+		{
+			return FMRSlotContent::Spell(Q.Id);
+		}
+		const FQuickItem Item = FindQuickItem(Q);
+		return Item.Content.IsEmpty() ? FMRSlotContent(Q.Id, 1) : Item.Content;
 	}
 	return GetRaw(S);
 }
@@ -89,12 +137,10 @@ bool UMRInventorySource::Accepts(const FMRSlotRef& Slot, const FMRSlotContent& C
 	switch (S.Area)
 	{
 	case EMRSlotArea::Bag:
-	case EMRSlotArea::Hotbar:
 		return !Content.bSpell;
 	case EMRSlotArea::Cursor:
+	case EMRSlotArea::QuickSlot:
 		return true;
-	case EMRSlotArea::SpellBar:
-		return Content.bSpell;
 	case EMRSlotArea::Equipment:
 	{
 		if (Content.bSpell || !Data)
@@ -136,18 +182,201 @@ void UMRInventorySource::GetTotals(int32& OutWeight, int32& OutBulk) const
 	{
 		Add(GetRaw(FMRSlotRef(EMRSlotArea::Bag, i)));
 	}
-	for (int32 i = 0; i < HotbarSlots; ++i)
-	{
-		Add(GetRaw(FMRSlotRef(EMRSlotArea::Hotbar, i)));
-	}
-	// (offline the right hand is the selected hotbar slot, already counted; online it is a slot of its own)
-	const bool bOwnRightHand = Resolve(FMRSlotRef::Equip(EMREquipSlot::RightHand)).Area == EMRSlotArea::Equipment;
-	const int32 Slots = static_cast<int32>(bOwnRightHand ? EMREquipSlot::Count : EMREquipSlot::RightHand);
-	for (int32 i = 0; i < Slots; ++i)
+	for (int32 i = 0; i < static_cast<int32>(EMREquipSlot::Count); ++i)
 	{
 		Add(GetRaw(FMRSlotRef(EMRSlotArea::Equipment, i)));
 	}
 	Add(GetRaw(CursorSlot));
+}
+
+// ------------------------------------------------------------------------------ quick slots
+
+const FMRQuickSlot& UMRInventorySource::GetQuickSlot(int32 Index) const
+{
+	static const FMRQuickSlot None;
+	return ValidQuick(Index) ? QuickSlots[Index] : None;
+}
+
+void UMRInventorySource::SetQuickSlot(int32 Index, const FMRQuickSlot& Slot)
+{
+	if (!ValidQuick(Index) || QuickSlots[Index] == Slot)
+	{
+		return;
+	}
+	QuickSlots[Index] = Slot;
+	OnQuickSlotsChanged();
+	Changed();
+}
+
+void UMRInventorySource::SwapQuickSlots(int32 A, int32 B)
+{
+	if (!ValidQuick(A) || !ValidQuick(B) || A == B)
+	{
+		return;
+	}
+	Swap(QuickSlots[A], QuickSlots[B]);
+	OnQuickSlotsChanged();
+	Changed();
+}
+
+FMRQuickSlot UMRInventorySource::QuickSlotFor(const FMRSlotContent& Content) const
+{
+	FMRQuickSlot Q;
+	if (Content.IsEmpty())
+	{
+		return Q;
+	}
+	Q.bSpell = Content.bSpell;
+	Q.Id = Content.Id;
+	if (!Content.bSpell)
+	{
+		const FMRItemDef* Item = Data ? Data->FindItem(Content.Id) : nullptr;
+		Q.Icon = Item ? Item->Icon.ToString() + TEXT(".bgf") : Content.Id.ToString() + TEXT(".bgf");
+		Q.Name = Item ? Item->Name.ToString() : Content.Id.ToString();
+	}
+	return Q;
+}
+
+UMRInventorySource::FQuickItem UMRInventorySource::FindQuickItem(const FMRQuickSlot& Slot) const
+{
+	// offline: by class, the equipment first (in use), then the bag
+	FQuickItem Found;
+	if (Slot.IsEmpty() || Slot.bSpell)
+	{
+		return Found;
+	}
+	int32 Count = 0;
+	for (int32 i = 0; i < static_cast<int32>(EMREquipSlot::Count); ++i)
+	{
+		const FMRSlotContent C = GetRaw(FMRSlotRef(EMRSlotArea::Equipment, i));
+		if (!C.IsEmpty() && C.Id == Slot.Id)
+		{
+			Count += C.Count;
+			if (Found.Content.IsEmpty())
+			{
+				Found.Content = C;
+				Found.bInUse = true;
+			}
+		}
+	}
+	const int32 BagSlots = NumSlots(EMRSlotArea::Bag);
+	for (int32 i = 0; i < BagSlots; ++i)
+	{
+		const FMRSlotContent C = GetRaw(FMRSlotRef(EMRSlotArea::Bag, i));
+		if (!C.IsEmpty() && C.Id == Slot.Id)
+		{
+			Count += C.Count;
+			if (Found.Content.IsEmpty())
+			{
+				Found.Content = C;
+			}
+		}
+	}
+	Found.Content.Count = Count;
+	return Found;
+}
+
+bool UMRInventorySource::IsQuickSlotAvailable(int32 Index) const
+{
+	const FMRQuickSlot& Q = GetQuickSlot(Index);
+	if (Q.IsEmpty())
+	{
+		return false;
+	}
+	return Q.bSpell ? GetKnownSpells().Contains(Q.Id) : !FindQuickItem(Q).Content.IsEmpty();
+}
+
+bool UMRInventorySource::IsQuickSlotInUse(int32 Index) const
+{
+	const FMRQuickSlot& Q = GetQuickSlot(Index);
+	return !Q.IsEmpty() && !Q.bSpell && FindQuickItem(Q).bInUse;
+}
+
+void UMRInventorySource::AssignQuickSlot(const FMRSlotRef& Slot, int32 Index)
+{
+	const FMRSlotRef S = Resolve(Slot);
+	if (S.Area == EMRSlotArea::QuickSlot)
+	{
+		SwapQuickSlots(S.Index, Index);
+		return;
+	}
+	const FMRSlotContent In = Get(S);
+	if (!In.IsEmpty() && S.Area != EMRSlotArea::Cursor)
+	{
+		SetQuickSlot(Index, QuickSlotFor(In));
+	}
+}
+
+void UMRInventorySource::UseQuickItem(int32 Index)
+{
+	// offline: put it on in its own slot (what was there goes to the bag), or take it off
+	const FMRQuickSlot& Q = GetQuickSlot(Index);
+	if (Q.IsEmpty() || Q.bSpell)
+	{
+		return;
+	}
+	for (int32 i = 0; i < static_cast<int32>(EMREquipSlot::Count); ++i)
+	{
+		const FMRSlotRef E(EMRSlotArea::Equipment, i);
+		if (GetRaw(E).Id == Q.Id)
+		{
+			QuickMove(E);  // on already: off to the bag
+			return;
+		}
+	}
+	const int32 BagSlots = NumSlots(EMRSlotArea::Bag);
+	for (int32 i = 0; i < BagSlots; ++i)
+	{
+		const FMRSlotRef B(EMRSlotArea::Bag, i);
+		const FMRSlotContent In = GetRaw(B);
+		if (In.IsEmpty() || In.Id != Q.Id)
+		{
+			continue;
+		}
+		const FMRItemDef* Item = Data ? Data->FindItem(In.Id) : nullptr;
+		EMREquipSlot Fit = Item ? Data->EquipSlotFor(*Item) : EMREquipSlot::Count;
+		if (Fit == EMREquipSlot::Count)
+		{
+			return;  // nothing to put on (eating and reading come with the server)
+		}
+		if (Fit == EMREquipSlot::Ring1 && !GetRaw(FMRSlotRef::Equip(EMREquipSlot::Ring1)).IsEmpty()
+			&& GetRaw(FMRSlotRef::Equip(EMREquipSlot::Ring2)).IsEmpty())
+		{
+			Fit = EMREquipSlot::Ring2;
+		}
+		const FMRSlotRef E = FMRSlotRef::Equip(Fit);
+		const FMRSlotContent Was = GetRaw(E);
+		SetRaw(E, FMRSlotContent(In.Id, 1));
+		SetRaw(B, In.Count > 1 ? FMRSlotContent(In.Id, In.Count - 1) : FMRSlotContent());
+		if (!Was.IsEmpty())
+		{
+			Insert(EMRSlotArea::Bag, Was);
+		}
+		Changed();
+		return;
+	}
+}
+
+void UMRInventorySource::LoadQuickSlots(const TArray<FString>& Saved)
+{
+	for (int32 i = 0; i < FMRQuickSlot::Num; ++i)
+	{
+		QuickSlots[i] = Saved.IsValidIndex(i) ? FMRQuickSlot::FromString(Saved[i]) : FMRQuickSlot();
+	}
+}
+
+void UMRInventorySource::SaveQuickSlots(TArray<FString>& Out) const
+{
+	Out.SetNum(FMRQuickSlot::Num);
+	for (int32 i = 0; i < FMRQuickSlot::Num; ++i)
+	{
+		Out[i] = QuickSlots[i].ToString();
+	}
+	// (empty slots at the end aren't kept)
+	while (Out.Num() > 0 && Out.Last().IsEmpty())
+	{
+		Out.Pop();
+	}
 }
 
 // ------------------------------------------------------------------------------ interactions
@@ -157,6 +386,17 @@ void UMRInventorySource::Click(const FMRSlotRef& Slot, bool bRight)
 	const FMRSlotRef S = Resolve(Slot);
 	FMRSlotContent Cur = GetRaw(CursorSlot);
 	const FMRSlotContent In = Get(S);
+
+	if (S.Area == EMRSlotArea::QuickSlot)
+	{
+		// carrying something: name it here, and the stack goes back where it came from (a spell is let go)
+		if (!Cur.IsEmpty())
+		{
+			SetQuickSlot(S.Index, QuickSlotFor(Cur));
+			ReturnCursor();
+		}
+		return;
+	}
 
 	if (S.Area == EMRSlotArea::SpellBook)
 	{
@@ -193,7 +433,7 @@ void UMRInventorySource::Click(const FMRSlotRef& Slot, bool bRight)
 	{
 		if (Cur.bSpell)
 		{
-			SetRaw(CursorSlot, FMRSlotContent());  // a spell only lives on the spell bar
+			SetRaw(CursorSlot, FMRSlotContent());  // a spell only goes on a quick slot
 			Changed();
 		}
 		return;
@@ -201,13 +441,6 @@ void UMRInventorySource::Click(const FMRSlotRef& Slot, bool bRight)
 
 	if (In.IsEmpty() || In.SameThing(Cur))
 	{
-		if (Cur.bSpell)
-		{
-			SetRaw(S, Cur);
-			SetRaw(CursorSlot, FMRSlotContent());
-			Changed();
-			return;
-		}
 		const int32 Room = MaxStack(S, Cur) - (In.IsEmpty() ? 0 : In.Count);
 		const int32 Put = FMath::Min(bRight ? 1 : Cur.Count, Room);
 		if (Put <= 0)
@@ -292,25 +525,38 @@ void UMRInventorySource::QuickMove(const FMRSlotRef& Slot)
 	{
 		return;
 	}
+	// name it on the first free quick slot (the numpad row first for a spell, as the spell bar was), unless one names it already
+	auto ToQuickSlot = [this](const FMRSlotContent& C)
+	{
+		const FMRQuickSlot Q = QuickSlotFor(C);
+		for (int32 i = 0; i < FMRQuickSlot::Num; ++i)
+		{
+			if (QuickSlots[i] == Q)
+			{
+				return;
+			}
+		}
+		for (int32 n = 0; n < FMRQuickSlot::Num; ++n)
+		{
+			const int32 i = C.bSpell ? (n + FMRQuickSlot::PerRow) % FMRQuickSlot::Num : n;
+			if (QuickSlots[i].IsEmpty())
+			{
+				SetQuickSlot(i, Q);
+				return;
+			}
+		}
+	};
 	switch (S.Area)
 	{
 	case EMRSlotArea::SpellBook:
-		for (int32 i = 0; i < HotbarSlots; ++i)
-		{
-			const FMRSlotRef B(EMRSlotArea::SpellBar, i);
-			if (GetRaw(B).SameThing(In))
-			{
-				return;  // already on the bar
-			}
-		}
-		Insert(EMRSlotArea::SpellBar, In);
-		break;
-	case EMRSlotArea::SpellBar:
-		SetRaw(S, FMRSlotContent());
-		break;
+		ToQuickSlot(In);
+		return;
+	case EMRSlotArea::QuickSlot:
+		SetQuickSlot(S.Index, FMRQuickSlot());
+		return;
 	case EMRSlotArea::Bag:
 	{
-		// equip it if its slot is free (the first free ring slot for rings), else to the hotbar
+		// equip it if its slot is free (the first free ring slot for rings), else name it on a quick slot
 		const FMRItemDef* Item = Data ? Data->FindItem(In.Id) : nullptr;
 		const EMREquipSlot Fit = Item ? Data->EquipSlotFor(*Item) : EMREquipSlot::Count;
 		if (Fit != EMREquipSlot::Count)
@@ -327,10 +573,9 @@ void UMRInventorySource::QuickMove(const FMRSlotRef& Slot)
 				}
 			}
 		}
-		SetRaw(S, Insert(EMRSlotArea::Hotbar, In));
-		break;
+		ToQuickSlot(In);
+		return;
 	}
-	case EMRSlotArea::Hotbar:
 	case EMRSlotArea::Equipment:
 		SetRaw(S, FMRSlotContent());
 		SetRaw(S, Insert(EMRSlotArea::Bag, In));
@@ -338,25 +583,6 @@ void UMRInventorySource::QuickMove(const FMRSlotRef& Slot)
 	default:
 		return;
 	}
-	Changed();
-}
-
-void UMRInventorySource::SwapWithHotbar(const FMRSlotRef& Slot, int32 HotbarIndex)
-{
-	const FMRSlotRef S = Resolve(Slot);
-	const FMRSlotRef H(EMRSlotArea::Hotbar, FMath::Clamp(HotbarIndex, 0, HotbarSlots - 1));
-	if (S == H || S.Area == EMRSlotArea::SpellBook || S.Area == EMRSlotArea::SpellBar)
-	{
-		return;
-	}
-	const FMRSlotContent A = GetRaw(S);
-	const FMRSlotContent B = GetRaw(H);
-	if (!Accepts(S, B) || !Accepts(H, A) || (!B.IsEmpty() && B.Count > MaxStack(S, B)))
-	{
-		return;
-	}
-	SetRaw(S, B);
-	SetRaw(H, A);
 	Changed();
 }
 
@@ -410,55 +636,6 @@ void UMRInventorySource::ReturnCursor()
 	Changed();
 }
 
-void UMRInventorySource::SelectHotbar(int32 Index)
-{
-	const int32 New = ((Index % HotbarSlots) + HotbarSlots) % HotbarSlots;
-	if (New == SelectedHotbar)
-	{
-		return;
-	}
-	SelectedHotbar = New;
-	OnSelectionChanged.Broadcast();
-	Changed();
-}
-
-void UMRInventorySource::UseHotbar(int32 Index)
-{
-	// a click on a hotbar item: put it on, in its own slot (the second ring slot for a second ring),
-	// what was there taking its place on the hotbar; anything else is only selected
-	const FMRSlotRef H(EMRSlotArea::Hotbar, FMath::Clamp(Index, 0, HotbarSlots - 1));
-	SelectHotbar(H.Index);
-	const FMRSlotContent In = GetRaw(H);
-	const FMRItemDef* Item = !In.IsEmpty() && !In.bSpell && Data ? Data->FindItem(In.Id) : nullptr;
-	EMREquipSlot Fit = Item ? Data->EquipSlotFor(*Item) : EMREquipSlot::Count;
-	if (Fit == EMREquipSlot::Count)
-	{
-		return;
-	}
-	if (Fit == EMREquipSlot::Ring1 && !GetRaw(FMRSlotRef::Equip(EMREquipSlot::Ring1)).IsEmpty()
-		&& GetRaw(FMRSlotRef::Equip(EMREquipSlot::Ring2)).IsEmpty())
-	{
-		Fit = EMREquipSlot::Ring2;
-	}
-	const FMRSlotRef E = FMRSlotRef::Equip(Fit);
-	const FMRSlotContent Was = GetRaw(E);
-	SetRaw(E, FMRSlotContent(In.Id, 1));
-	FMRSlotContent Rest = In.Count > 1 ? FMRSlotContent(In.Id, In.Count - 1) : FMRSlotContent();
-	if (!Was.IsEmpty())
-	{
-		if (Rest.IsEmpty())
-		{
-			Rest = Was;
-		}
-		else
-		{
-			Insert(EMRSlotArea::Bag, Was);
-		}
-	}
-	SetRaw(H, Rest);
-	Changed();
-}
-
 void UMRInventorySource::OnDropped(const FMRSlotContent& Content)
 {
 }
@@ -494,13 +671,6 @@ void UMRMockInventory::LoadFromJson()
 	};
 
 	const TArray<TSharedPtr<FJsonValue>>* Arr = nullptr;
-	if (Root->TryGetArrayField(TEXT("hotbar"), Arr))
-	{
-		for (int32 i = 0; i < Arr->Num() && i < HotbarSlots; ++i)
-		{
-			Hotbar[i] = ReadStack((*Arr)[i]);
-		}
-	}
 	if (Root->TryGetArrayField(TEXT("bag"), Arr))
 	{
 		for (const TSharedPtr<FJsonValue>& V : *Arr)
@@ -534,14 +704,20 @@ void UMRMockInventory::LoadFromJson()
 			}
 		}
 	}
-	if (Root->TryGetArrayField(TEXT("spell_bar"), Arr))
+	// the quick slots: "quick_slots" [{"item": ...} or {"spell": ...} or null], row 0 (1-0) then row 1 (the numpad)
+	if (Root->TryGetArrayField(TEXT("quick_slots"), Arr))
 	{
-		for (int32 i = 0; i < Arr->Num() && i < HotbarSlots; ++i)
+		for (int32 i = 0; i < Arr->Num() && i < FMRQuickSlot::Num; ++i)
 		{
-			FString Spell;
-			if ((*Arr)[i].IsValid() && (*Arr)[i]->TryGetString(Spell))
+			const TSharedPtr<FJsonObject> O = (*Arr)[i].IsValid() ? (*Arr)[i]->AsObject() : nullptr;
+			FString Name;
+			if (O && O->TryGetStringField(TEXT("spell"), Name))
 			{
-				SpellBar[i] = FMRSlotContent::Spell(FName(*Spell));
+				QuickSlots[i] = QuickSlotFor(FMRSlotContent::Spell(FName(*Name)));
+			}
+			else if (O && O->TryGetStringField(TEXT("item"), Name))
+			{
+				QuickSlots[i] = QuickSlotFor(FMRSlotContent(FName(*Name), 1));
 			}
 		}
 	}
@@ -579,12 +755,8 @@ FMRSlotContent UMRMockInventory::GetRaw(const FMRSlotRef& Slot) const
 	{
 	case EMRSlotArea::Bag:
 		return Bag.IsValidIndex(Slot.Index) ? Bag[Slot.Index] : FMRSlotContent();
-	case EMRSlotArea::Hotbar:
-		return Slot.Index >= 0 && Slot.Index < HotbarSlots ? Hotbar[Slot.Index] : FMRSlotContent();
 	case EMRSlotArea::Equipment:
 		return Slot.Index >= 0 && Slot.Index < static_cast<int32>(EMREquipSlot::Count) ? Equipment[Slot.Index] : FMRSlotContent();
-	case EMRSlotArea::SpellBar:
-		return Slot.Index >= 0 && Slot.Index < HotbarSlots ? SpellBar[Slot.Index] : FMRSlotContent();
 	case EMRSlotArea::Cursor:
 		return Cursor;
 	default:
@@ -615,22 +787,10 @@ void UMRMockInventory::SetRaw(const FMRSlotRef& Slot, const FMRSlotContent& Cont
 			}
 		}
 		break;
-	case EMRSlotArea::Hotbar:
-		if (Slot.Index >= 0 && Slot.Index < HotbarSlots)
-		{
-			Hotbar[Slot.Index] = C;
-		}
-		break;
 	case EMRSlotArea::Equipment:
 		if (Slot.Index >= 0 && Slot.Index < static_cast<int32>(EMREquipSlot::Count))
 		{
 			Equipment[Slot.Index] = C;
-		}
-		break;
-	case EMRSlotArea::SpellBar:
-		if (Slot.Index >= 0 && Slot.Index < HotbarSlots)
-		{
-			SpellBar[Slot.Index] = C;
 		}
 		break;
 	case EMRSlotArea::Cursor:
@@ -651,16 +811,9 @@ void UMRMockInventory::OnDropped(const FMRSlotContent& Content)
 
 void UMRNetInventory::SetKnownSpells(const TArray<FName>& InSpells, const TMap<FName, int32>& InPercents)
 {
+	// (a quick slot keeps a spell the character no longer knows, greyed, as Shards does)
 	KnownSpells = InSpells;
 	SpellPercents = InPercents;
-	// a spell the character no longer knows leaves the bar
-	for (FMRSlotContent& S : SpellBar)
-	{
-		if (!S.IsEmpty() && KnownSpells.Num() > 0 && !KnownSpells.Contains(S.Id))
-		{
-			S = FMRSlotContent();
-		}
-	}
 	Changed();
 }
 
@@ -674,14 +827,10 @@ FMRSlotContent UMRNetInventory::GetRaw(const FMRSlotRef& Slot) const
 {
 	switch (Slot.Area)
 	{
-	case EMRSlotArea::SpellBar:
-		return Slot.Index >= 0 && Slot.Index < HotbarSlots ? SpellBar[Slot.Index] : FMRSlotContent();
 	case EMRSlotArea::Cursor:
 		return Cursor;
 	case EMRSlotArea::Bag:
 		return BagView.IsValidIndex(Slot.Index) ? BagView[Slot.Index] : FMRSlotContent();
-	case EMRSlotArea::Hotbar:
-		return Slot.Index >= 0 && Slot.Index < HotbarSlots ? HotbarView[Slot.Index] : FMRSlotContent();
 	case EMRSlotArea::Equipment:
 		return Slot.Index >= 0 && Slot.Index < static_cast<int32>(EMREquipSlot::Count) ? EquipView[Slot.Index] : FMRSlotContent();
 	default:
@@ -691,16 +840,10 @@ FMRSlotContent UMRNetInventory::GetRaw(const FMRSlotRef& Slot) const
 
 void UMRNetInventory::SetRaw(const FMRSlotRef& Slot, const FMRSlotContent& Content)
 {
-	// only what lives on this client: the spell bar and the cursor (spells: the base class's rules)
-	const FMRSlotContent C = Content.IsEmpty() ? FMRSlotContent() : Content;
-	if (Slot.Area == EMRSlotArea::SpellBar && Slot.Index >= 0 && Slot.Index < HotbarSlots)
+	// only what lives on this client: the cursor (spells: the base class's rules)
+	if (Slot.Area == EMRSlotArea::Cursor)
 	{
-		SpellBar[Slot.Index] = C;
-		SaveLayout();
-	}
-	else if (Slot.Area == EMRSlotArea::Cursor)
-	{
-		Cursor = C;
+		Cursor = Content.IsEmpty() ? FMRSlotContent() : Content;
 	}
 }
 
@@ -724,18 +867,39 @@ void UMRNetInventory::SetNet(UMRNetSubsystem* InNet)
 
 void UMRNetInventory::LoadLayout()
 {
-	const UMRNetSubsystem* N = Net.Get();
+	UMRNetSubsystem* N = Net.Get();
 	if (!N)
 	{
 		Rebuild();
 		return;
 	}
-	const FMRSocial& S = N->GetSocial();
-	for (int32 i = 0; i < HotbarSlots; ++i)
+	FMRSocial& S = N->GetSocial();
+	LoadQuickSlots(S.QuickSlots);
+	// kept before 2026-10-14: the item hotbar (icon|name, keys 1-9) to row 0, the spell bar (numpad) to row 1
+	if (S.Hotbar.Num() > 0 || S.SpellBar.Num() > 0)
 	{
-		// by icon and name: the ids are found when the inventory comes (Rebuild)
-		HotbarRefs[i] = S.Hotbar.IsValidIndex(i) && !S.Hotbar[i].IsEmpty() ? FHotbarRef{0, S.Hotbar[i]} : FHotbarRef();
-		SpellBar[i] = S.SpellBar.IsValidIndex(i) && !S.SpellBar[i].IsEmpty() ? FMRSlotContent::Spell(FName(*S.SpellBar[i])) : FMRSlotContent();
+		for (int32 i = 0; i < 9; ++i)
+		{
+			FString Icon, Name;
+			if (S.Hotbar.IsValidIndex(i) && S.Hotbar[i].Split(TEXT("|"), &Icon, &Name) && QuickSlots[i].IsEmpty())
+			{
+				const FMRItemDef* Item = Data ? Data->FindItemByIcon(FPaths::GetBaseFilename(Icon).ToLower()) : nullptr;
+				FMRQuickSlot& Q = QuickSlots[i];
+				Q.Id = Item ? Item->Class : FName(*FPaths::GetBaseFilename(Icon).ToLower());
+				Q.Icon = Icon;
+				Q.Name = Name;
+			}
+			FMRQuickSlot& Spell = QuickSlots[FMRQuickSlot::PerRow + i];
+			if (S.SpellBar.IsValidIndex(i) && !S.SpellBar[i].IsEmpty() && Spell.IsEmpty())
+			{
+				Spell.bSpell = true;
+				Spell.Id = FName(*S.SpellBar[i]);
+			}
+		}
+		UE_LOG(LogMeridian, Log, TEXT("MRNet: the hotbar and spell bar kept before became quick slots"));
+		S.Hotbar.Reset();
+		S.SpellBar.Reset();
+		SaveLayout();
 	}
 	Rebuild();
 }
@@ -747,14 +911,7 @@ void UMRNetInventory::SaveLayout()
 	{
 		return;
 	}
-	FMRSocial& S = N->GetSocial();
-	S.Hotbar.SetNum(HotbarSlots);
-	S.SpellBar.SetNum(HotbarSlots);
-	for (int32 i = 0; i < HotbarSlots; ++i)
-	{
-		S.Hotbar[i] = HotbarRefs[i].Key;
-		S.SpellBar[i] = SpellBar[i].IsEmpty() ? FString() : SpellBar[i].Id.ToString();
-	}
+	SaveQuickSlots(N->GetSocial().QuickSlots);
 	N->SaveSocial();
 }
 
@@ -787,14 +944,62 @@ EMREquipSlot UMRNetInventory::SlotFor(const FMRSlotContent& C) const
 	return Item ? Data->EquipSlotFor(*Item) : EMREquipSlot::Count;
 }
 
+UMRInventorySource::FQuickItem UMRNetInventory::FindQuickItem(const FMRQuickSlot& Slot) const
+{
+	// by the server's name first (an identified item's real name), else by class: the one in use first
+	// (using the slot again puts a wielded weapon away), else the first carried; Count: how many in all
+	FQuickItem Found;
+	const UMRNetSubsystem* N = Net.Get();
+	if (!N || Slot.IsEmpty() || Slot.bSpell)
+	{
+		return Found;
+	}
+	const TArray<FMRNetObject>& Inv = N->GetInventory();
+	bool bByName = false;
+	for (const FMRNetObject& O : Inv)
+	{
+		if (!Slot.Name.IsEmpty() && O.Name.Equals(Slot.Name, ESearchCase::IgnoreCase))
+		{
+			bByName = true;
+			break;
+		}
+	}
+	int32 Count = 0;
+	for (const FMRNetObject& O : Inv)
+	{
+		const FMRSlotContent C = ContentOf(O);
+		if (bByName ? !O.Name.Equals(Slot.Name, ESearchCase::IgnoreCase) : C.Id != Slot.Id)
+		{
+			continue;
+		}
+		Count += C.Count;
+		const bool bUsing = N->IsUsing(O.Id);
+		if (Found.Content.IsEmpty() || (bUsing && !Found.bInUse))
+		{
+			Found.Content = C;
+			Found.bInUse = bUsing;
+		}
+	}
+	Found.Content.Count = Count;
+	return Found;
+}
+
+FMRQuickSlot UMRNetInventory::QuickSlotFor(const FMRSlotContent& Content) const
+{
+	// a server item: its own name (an identified item's real name) and bitmap
+	FMRQuickSlot Q = Super::QuickSlotFor(Content);
+	if (const FMRNetObject* O = !Content.bSpell ? FindObject(Content) : nullptr)
+	{
+		Q.Name = O->Name;
+		Q.Icon = O->Icon;
+	}
+	return Q;
+}
+
 void UMRNetInventory::Rebuild()
 {
 	const UMRNetSubsystem* N = Net.Get();
 	BagView.Reset();
-	for (FMRSlotContent& C : HotbarView)
-	{
-		C = FMRSlotContent();
-	}
 	for (FMRSlotContent& C : EquipView)
 	{
 		C = FMRSlotContent();
@@ -806,7 +1011,6 @@ void UMRNetInventory::Rebuild()
 	}
 	const TArray<FMRNetObject>& Inv = N->GetInventory();
 	TSet<uint32> Placed;
-	auto KeyOf = [](const FMRNetObject& O) { return O.Icon + TEXT("|") + O.Name; };
 	// the carried item (picked up whole) isn't shown where it was
 	if (!Cursor.IsEmpty() && Cursor.ObjectId)
 	{
@@ -843,26 +1047,6 @@ void UMRNetInventory::Rebuild()
 			Placed.Add(O.Id);
 		}
 	}
-	// the hotbar layout; an id that went away (renumbered by a save) is found again by its icon and name
-	for (int32 i = 0; i < HotbarSlots; ++i)
-	{
-		FHotbarRef& Ref = HotbarRefs[i];
-		if (!Ref.Id && Ref.Key.IsEmpty())
-		{
-			continue;
-		}
-		const FMRNetObject* O = N->FindInventory(Ref.Id);
-		if (!O && N->GetNetWorld().bHasInventory)
-		{
-			O = Inv.FindByPredicate([&](const FMRNetObject& E) { return !Placed.Contains(E.Id) && KeyOf(E) == Ref.Key; });
-			Ref = O ? FHotbarRef{O->Id, KeyOf(*O)} : FHotbarRef();
-		}
-		if (O && !Placed.Contains(O->Id))
-		{
-			HotbarView[i] = ContentOf(*O);
-			Placed.Add(O->Id);
-		}
-	}
 	// the rest, in the server's order
 	for (const FMRNetObject& O : Inv)
 	{
@@ -872,40 +1056,6 @@ void UMRNetInventory::Rebuild()
 		}
 	}
 	Changed();
-}
-
-void UMRNetInventory::PlaceOnHotbar(uint32 ObjectId, int32 Index)
-{
-	const UMRNetSubsystem* N = Net.Get();
-	const FMRNetObject* O = N ? N->FindInventory(ObjectId) : nullptr;
-	if (!O || Index < 0 || Index >= HotbarSlots)
-	{
-		return;
-	}
-	RemoveFromHotbar(ObjectId);
-	HotbarRefs[Index] = FHotbarRef{ObjectId, O->Icon + TEXT("|") + O->Name};
-	SaveLayout();
-}
-
-void UMRNetInventory::RemoveFromHotbar(uint32 ObjectId)
-{
-	if (!ObjectId)
-	{
-		return;  // (a slot still waiting for its item by name has no id yet)
-	}
-	bool bChanged = false;
-	for (FHotbarRef& Ref : HotbarRefs)
-	{
-		if (Ref.Id == ObjectId)
-		{
-			Ref = FHotbarRef();
-			bChanged = true;
-		}
-	}
-	if (bChanged)
-	{
-		SaveLayout();
-	}
 }
 
 void UMRNetInventory::ClearCursor()
@@ -937,8 +1087,8 @@ void UMRNetInventory::Click(const FMRSlotRef& Slot, bool bRight)
 {
 	UMRNetSubsystem* N = Net.Get();
 	const FMRSlotContent In = GetRaw(Slot);
-	// spells: the base class's rules (the spell bar lives on this client)
-	if (Slot.Area == EMRSlotArea::SpellBar || Slot.Area == EMRSlotArea::SpellBook || Cursor.bSpell || (Cursor.IsEmpty() && In.bSpell))
+	// spells and quick slots: the base class's rules (they live on this client)
+	if (Slot.Area == EMRSlotArea::QuickSlot || Slot.Area == EMRSlotArea::SpellBook || Cursor.bSpell || (Cursor.IsEmpty() && In.bSpell))
 	{
 		Super::Click(Slot, bRight);
 		return;
@@ -976,33 +1126,14 @@ void UMRNetInventory::Click(const FMRSlotRef& Slot, bool bRight)
 		if (Accepts(Slot, Cursor) && !bFromEquip)
 		{
 			N->UseItem(Id);
-			RemoveFromHotbar(Id);
 			ClearCursor();
 		}
 		return;
-	case EMRSlotArea::Hotbar:
-	{
-		if (bFromEquip)
-		{
-			N->UnuseItem(Id);
-		}
-		// the hotbar is a layout here: a different item already there goes where this one came from
-		const uint32 There = In.ObjectId;
-		const int32 From = CursorOrigin.Area == EMRSlotArea::Hotbar ? CursorOrigin.Index : INDEX_NONE;
-		PlaceOnHotbar(Id, Slot.Index);
-		if (There && There != Id && From != INDEX_NONE)
-		{
-			PlaceOnHotbar(There, From);
-		}
-		ClearCursor();
-		return;
-	}
 	case EMRSlotArea::Bag:
 		if (bFromEquip)
 		{
 			N->UnuseItem(Id);
 		}
-		RemoveFromHotbar(Id);
 		// onto another item in the bag: take its place in the server's list (not items in use)
 		if (In.ObjectId && In.ObjectId != Id && !bFromEquip && !N->IsUsing(In.ObjectId) && !N->IsUsing(Id))
 		{
@@ -1019,7 +1150,7 @@ void UMRNetInventory::QuickMove(const FMRSlotRef& Slot)
 {
 	UMRNetSubsystem* N = Net.Get();
 	const FMRSlotContent In = GetRaw(Slot);
-	if (Slot.Area == EMRSlotArea::SpellBar || Slot.Area == EMRSlotArea::SpellBook)
+	if (Slot.Area == EMRSlotArea::QuickSlot || Slot.Area == EMRSlotArea::SpellBook)
 	{
 		Super::QuickMove(Slot);
 		return;
@@ -1037,34 +1168,23 @@ void UMRNetInventory::QuickMove(const FMRSlotRef& Slot)
 	N->UseItem(In.ObjectId);
 }
 
-void UMRNetInventory::UseHotbar(int32 Index)
+void UMRNetInventory::UseQuickItem(int32 Index)
 {
-	// the server's use: wield, wear, eat, read... (a worn item leaves the hotbar for its equipment
-	// slot while in use, and comes back to it when taken off)
-	SelectHotbar(Index);
-	const FMRSlotContent In = GetRaw(FMRSlotRef(EMRSlotArea::Hotbar, FMath::Clamp(Index, 0, HotbarSlots - 1)));
-	if (UMRNetSubsystem* N = Net.Get(); N && In.ObjectId)
-	{
-		N->UseItem(In.ObjectId);
-	}
-}
-
-void UMRNetInventory::SwapWithHotbar(const FMRSlotRef& Slot, int32 HotbarIndex)
-{
-	const FMRSlotContent In = GetRaw(Slot);
-	if (!In.ObjectId || Slot.Area == EMRSlotArea::Equipment)
+	// the server's use: wield, wear, eat, read...; the one in use is taken off (a weapon put away)
+	UMRNetSubsystem* N = Net.Get();
+	const FQuickItem Item = FindQuickItem(GetQuickSlot(Index));
+	if (!N || !Item.Content.ObjectId)
 	{
 		return;
 	}
-	const int32 H = FMath::Clamp(HotbarIndex, 0, HotbarSlots - 1);
-	const uint32 There = HotbarView[H].ObjectId;
-	const int32 From = Slot.Area == EMRSlotArea::Hotbar ? Slot.Index : INDEX_NONE;
-	PlaceOnHotbar(In.ObjectId, H);
-	if (There && There != In.ObjectId && From != INDEX_NONE)
+	if (Item.bInUse)
 	{
-		PlaceOnHotbar(There, From);
+		N->UnuseItem(Item.Content.ObjectId);
 	}
-	Rebuild();
+	else
+	{
+		N->UseItem(Item.Content.ObjectId);
+	}
 }
 
 void UMRNetInventory::DropCursor(bool bOne)
@@ -1079,7 +1199,6 @@ void UMRNetInventory::DropCursor(bool bOne)
 		const FMRNetObject* O = N->FindInventory(Cursor.ObjectId);
 		// a number item: how many (right click: one); anything else goes whole
 		N->Drop(Cursor.ObjectId, O && O->bNumber ? static_cast<uint32>(bOne ? 1 : Cursor.Count) : 0);
-		RemoveFromHotbar(Cursor.ObjectId);
 	}
 	ClearCursor();
 }

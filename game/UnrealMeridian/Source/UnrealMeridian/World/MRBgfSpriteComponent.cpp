@@ -2,6 +2,7 @@
 #include "World/MRBgfTextures.h"
 
 #include "Camera/PlayerCameraManager.h"
+#include "HAL/IConsoleManager.h"
 #include "Engine/Texture2D.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
@@ -15,6 +16,12 @@
 
 namespace
 {
+	TAutoConsoleVariable<int32> CVarObjectsLit(TEXT("mr.Sprite.ObjectsLit"), 1,
+		TEXT("1: objects drawn from their sprites in the zones we built are lit by the world, as the characters are ")
+		TEXT("(M_BgfSpriteLit online, M_ObjectSprite offline); 0: at the bitmap's full brightness, as until 2026-10-13. ")
+		TEXT("Applies to objects spawned after the change."));
+	const TCHAR* LitMaterialPath = TEXT("/Game/Generated/Runtime/M_BgfSpriteLit.M_BgfSpriteLit");
+
 	/** The server's animation record -> a track over 1-based groups (server.c ExtractAnimation). */
 	FMRSpriteTrackDef ToTrack(const FMRNetAnimation& A)
 	{
@@ -54,6 +61,11 @@ UMRBgfSpriteComponent::UMRBgfSpriteComponent(const FObjectInitializer& ObjectIni
 	bUseAsyncCooking = true;
 }
 
+bool UMRBgfSpriteComponent::ObjectsLit()
+{
+	return CVarObjectsLit.GetValueOnGameThread() != 0;
+}
+
 void UMRBgfSpriteComponent::SetBgf(TSharedPtr<const FMRBgf> InBgf)
 {
 	Bgf = InBgf;
@@ -61,12 +73,56 @@ void UMRBgfSpriteComponent::SetBgf(TSharedPtr<const FMRBgf> InBgf)
 	Shown = INDEX_NONE;
 	if (!Material)
 	{
-		if (UMaterialInterface* Base = AMRRuntimeRoom::LoadMaterial())
-		{
-			Material = UMaterialInstanceDynamic::Create(Base, this);
-		}
+		MakeMaterial();
 	}
 	Restart();
+}
+
+void UMRBgfSpriteComponent::SetLitByWorld(bool bLit)
+{
+	bLit = bLit && ObjectsLit();
+	if (bLit == bLitByWorld)
+	{
+		return;
+	}
+	bLitByWorld = bLit;
+	if (Material)
+	{
+		MakeMaterial();
+		if (Bgf && Bgf->Bitmaps.IsValidIndex(Shown))
+		{
+			Show(Shown);
+		}
+	}
+	for (UMRBgfSpriteComponent* C : OverlayComps)
+	{
+		if (C)
+		{
+			C->SetLitByWorld(bLit);
+		}
+	}
+}
+
+void UMRBgfSpriteComponent::MakeMaterial()
+{
+	UMaterialInterface* Base = nullptr;
+	if (bLitByWorld)
+	{
+		Base = LoadObject<UMaterialInterface>(nullptr, LitMaterialPath);
+		static bool bWarned = false;
+		if (!Base && !bWarned)
+		{
+			bWarned = true;
+			UE_LOG(LogMeridian, Warning, TEXT("World: %s missing (tools/ue/build_world.ps1 -Script build_runtime_materials.py builds it); object sprites unlit"),
+				LitMaterialPath);
+		}
+	}
+	if (!Base)
+	{
+		Base = AMRRuntimeRoom::LoadMaterial();
+	}
+	Material = Base ? UMaterialInstanceDynamic::Create(Base, this) : nullptr;
+	SetDrawEffect(DrawEffect);
 }
 
 void UMRBgfSpriteComponent::SetBaseHidden(bool bHidden)
@@ -101,6 +157,7 @@ void UMRBgfSpriteComponent::SetOverlays(const TArray<FOverlay>& InOverlays)
 		}
 		UMRBgfSpriteComponent* C = NewObject<UMRBgfSpriteComponent>(GetOwner());
 		C->bIsOverlay = true;
+		C->bLitByWorld = bLitByWorld;
 		C->SetupAttachment(this);
 		C->RegisterComponent();
 		C->SetBgf(O.Bgf);
@@ -141,6 +198,7 @@ void UMRBgfSpriteComponent::PlaceOverlays()
 
 void UMRBgfSpriteComponent::SetDrawEffect(uint8 Effect)
 {
+	DrawEffect = Effect;
 	if (!Material)
 	{
 		return;

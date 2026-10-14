@@ -1,5 +1,7 @@
 #include "Net/MRNetSubsystem.h"
 
+#include "Ambient/MRAmbientSubsystem.h"
+
 #include "Dom/JsonObject.h"
 #include "Engine/World.h"
 #include "HAL/FileManager.h"
@@ -124,6 +126,8 @@ void UMRNetSubsystem::LoadServers()
 		E.Assets = S->GetStringField(TEXT("assets"));
 		E.SecretKey = S->GetStringField(TEXT("secret_key"));
 		S->TryGetStringField(TEXT("ruleset"), E.Ruleset);
+		S->TryGetStringField(TEXT("social"), E.Social);
+		S->TryGetStringField(TEXT("social_server"), E.SocialServer);
 		if (!S->TryGetStringField(TEXT("origin"), E.Origin))
 		{
 			E.Origin = DefaultOrigin;
@@ -435,6 +439,12 @@ void UMRNetSubsystem::DoAction(uint8 Action)
 	if (CanSend())
 	{
 		Connection->Send(FMRWriter(MRMsg::BP_ACTION).U8(Action));
+		// our wave: the ambient crowd, which only we see, waves back (docs/adr/0013)
+		UMRAmbientSubsystem* Ambient = Action == MRMsg::UA_WAVE && GetGameInstance()->GetWorld() ? GetGameInstance()->GetWorld()->GetSubsystem<UMRAmbientSubsystem>() : nullptr;
+		if (Ambient)
+		{
+			Ambient->OnPlayerWave();
+		}
 	}
 }
 
@@ -585,6 +595,7 @@ void UMRNetSubsystem::LoadCharacterData()
 				}
 			}
 		}
+		Root->TryGetStringArrayField(TEXT("quick_slots"), Social.QuickSlots);
 		Root->TryGetStringArrayField(TEXT("hotbar"), Social.Hotbar);
 		Root->TryGetStringArrayField(TEXT("spell_bar"), Social.SpellBar);
 		const TSharedPtr<FJsonObject>* Notes = nullptr;
@@ -662,8 +673,12 @@ void UMRNetSubsystem::SaveSocial() const
 		}
 		return Out;
 	};
-	Root->SetArrayField(TEXT("hotbar"), Strings(Social.Hotbar));
-	Root->SetArrayField(TEXT("spell_bar"), Strings(Social.SpellBar));
+	Root->SetArrayField(TEXT("quick_slots"), Strings(Social.QuickSlots));
+	if (Social.Hotbar.Num() > 0 || Social.SpellBar.Num() > 0)
+	{
+		Root->SetArrayField(TEXT("hotbar"), Strings(Social.Hotbar));
+		Root->SetArrayField(TEXT("spell_bar"), Strings(Social.SpellBar));
+	}
 	TSharedRef<FJsonObject> Notes = MakeShared<FJsonObject>();
 	for (const TPair<FString, TArray<FMRMapNote>>& P : Social.MapNotes)
 	{

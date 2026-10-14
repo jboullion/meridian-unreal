@@ -133,6 +133,8 @@ public:
 	 * (room.kod SomethingTryGo) takes the door on that square, or says it's locked.
 	 */
 	void RequestGo();
+	/** The server's bitmap of a file (fetched through the asset cache, parsed once); Done runs with it, maybe later (ambient critters too). */
+	void FetchBgf(const FString& File, TFunction<void(TSharedPtr<const FMRBgf>)> Done);
 
 private:
 	UMRNetSubsystem* GetNet() const;
@@ -161,8 +163,6 @@ private:
 	void OnProjectile(const FMRNetProjectile& P);
 	/** A one-off animation a BP_CHANGE carries (ANIMATE_ONCE: a swing, a cast, a bite) played on a sprite body. */
 	void PlayServerAction(const FMRNetObject& O);
-	/** The server's bitmap of a file (fetched through the asset cache, parsed once); Done runs with it, maybe later. */
-	void FetchBgf(const FString& File, TFunction<void(TSharedPtr<const FMRBgf>)> Done);
 	/** Where an object (or our pawn) stands: its feet. False if it isn't here. */
 	bool FeetOf(uint32 Id, FVector& Out) const;
 	/** Send where we stand now if it changed (before a go or an attack: the server checks from there). */
